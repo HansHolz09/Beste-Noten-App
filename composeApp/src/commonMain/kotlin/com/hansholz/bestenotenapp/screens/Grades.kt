@@ -2,6 +2,7 @@
 
 package com.hansholz.bestenotenapp.screens
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -41,7 +42,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun Grades(
     viewModel: ViewModel
@@ -54,14 +55,18 @@ fun Grades(
     val showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
     val showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
 
+    var isLoading by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
+            isLoading = true
             if (viewModel.collections.isEmpty()) {
                 viewModel.getCollections()
             }
             if (viewModel.years.isEmpty()) {
                 viewModel.years.addAll(viewModel.api.getYears().data)
             }
+            isLoading = false
         }
     }
 
@@ -109,125 +114,133 @@ fun Grades(
 
             val pagerState = rememberPagerState { 2 }
             HorizontalPager(pagerState, Modifier.hazeSource(viewModel.hazeBackgroundState)) {
-                when(it) {
-                    0 -> {
-                        LazyColumn(contentPadding = contentPadding) {
-                            items(
-                                viewModel
-                                    .collections
-                                    .filter { if (showCollectionsWithoutGrades) true else it.grades?.size != 0 }
-                                    .sortedByDescending { it.givenAt }
-                            ) {
-                                EnhancedAnimated(
-                                    preset = ZoomIn(),
-                                    durationMillis = 200,
-                                ) {
-                                    ListItem(
-                                        headlineContent = {
-                                            Text("${it.subject?.name}: ${it.name}")
-                                        },
-                                        supportingContent = {
-                                            Column {
-                                                Text("${it.type} vom ${LocalDate.parse(it.givenAt).let { "${it.dayOfMonth}.${it.monthNumber}.${it.year}" }}")
-
-                                                val histories = it.grades?.getOrNull(0)?.histories
-
-                                                if (histories?.isEmpty() == false && showGradeHistory) {
-                                                    Spacer(Modifier.height(10.dp))
-                                                    Text("Historie deiner Note:")
-                                                    histories.forEach {
-                                                        Text("${if (showTeachersWithFirstname) it.conductor.forename else it.conductor.forename?.take(1) + "."} ${it.conductor.name}: ${it.body}")
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        leadingContent = {
-                                            Text(it.grades?.getOrNull(0)?.value ?: "🚫", textAlign = TextAlign.Center, modifier = Modifier.width(30.dp))
-                                        },
-                                        colors = ListItemDefaults.colors(Color.Transparent),
-                                        modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    1 -> {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding()),
-                            contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding())
-                        ) {
-                            viewModel.collections
-                                .filter { if (showCollectionsWithoutGrades) true else it.grades?.size != 0 }
-                                .sortedWith(compareBy({ it.subject?.name }, { it.givenAt }))
-                                .groupBy { it.subject?.name }
-                                .toList()
-                                .forEachIndexed { secIdx, (title, items) ->
-                                    stickyHeader {
-                                        EnhancedAnimated(
-                                            preset = ZoomIn(),
-                                            durationMillis = 200,
+                AnimatedContent(isLoading) { targetState ->
+                    Box(Modifier.fillMaxSize()) {
+                        if (targetState) {
+                            ContainedLoadingIndicator(Modifier.padding(contentPadding).align(Alignment.Center))
+                        } else {
+                            when(it) {
+                                0 -> {
+                                    LazyColumn(contentPadding = contentPadding) {
+                                        items(
+                                            viewModel
+                                                .collections
+                                                .filter { if (showCollectionsWithoutGrades) true else it.grades?.size != 0 }
+                                                .sortedByDescending { it.givenAt }
                                         ) {
-                                            Column(
-                                                Modifier
-                                                    .fillMaxWidth()
-                                                    .height(56.dp)
+                                            EnhancedAnimated(
+                                                preset = ZoomIn(),
+                                                durationMillis = 200,
                                             ) {
-                                                HorizontalDivider(thickness = 1.dp)
-                                                Box(Modifier.weight(1f)) {
-                                                    Box(
-                                                        Modifier
-                                                            .fillMaxSize()
-                                                            .enhancedHazeEffect(viewModel.hazeBackgroundState3, colorScheme.secondaryContainer)
-                                                            .enhancedHazeEffect(viewModel.hazeBackgroundState2, colorScheme.secondaryContainer) {
-                                                                mask = Brush.verticalGradient(
-                                                                    colors = listOf(Color.Transparent, Color.Red)
-                                                                )
-                                                            }
-                                                    )
-                                                    Text(
-                                                        text = title ?: "Kein Fach",
-                                                        modifier = Modifier
-                                                            .align(Alignment.CenterStart)
-                                                            .padding(start = 16.dp)
-                                                    )
-                                                }
-                                                HorizontalDivider(thickness = 1.dp)
-                                            }
-                                        }
-                                    }
-                                    items(items) {
-                                        EnhancedAnimated(
-                                            preset = ZoomIn(),
-                                            durationMillis = 200,
-                                        ) {
-                                            ListItem(
-                                                headlineContent = {
-                                                    Text("${it.name} - ${it.type}")
-                                                },
-                                                supportingContent = {
-                                                    Column {
-                                                        Text("Gegeben am ${LocalDate.parse(it.givenAt).let { "${it.dayOfMonth}.${it.monthNumber}.${it.year}" }}")
+                                                ListItem(
+                                                    headlineContent = {
+                                                        Text("${it.subject?.name}: ${it.name}")
+                                                    },
+                                                    supportingContent = {
+                                                        Column {
+                                                            Text("${it.type} vom ${LocalDate.parse(it.givenAt).let { "${it.dayOfMonth}.${it.monthNumber}.${it.year}" }}")
 
-                                                        val histories = it.grades?.getOrNull(0)?.histories
+                                                            val histories = it.grades?.getOrNull(0)?.histories
 
-                                                        if (histories?.isEmpty() == false && showGradeHistory) {
-                                                            Spacer(Modifier.height(10.dp))
-                                                            Text("Historie deiner Note:")
-                                                            histories.forEach {
-                                                                Text("${if (showTeachersWithFirstname) it.conductor.forename else it.conductor.forename?.take(1) + "."} ${it.conductor.name}: ${it.body}")
+                                                            if (histories?.isEmpty() == false && showGradeHistory) {
+                                                                Spacer(Modifier.height(10.dp))
+                                                                Text("Historie deiner Note:")
+                                                                histories.forEach {
+                                                                    Text("${if (showTeachersWithFirstname) it.conductor.forename else it.conductor.forename?.take(1) + "."} ${it.conductor.name}: ${it.body}")
+                                                                }
                                                             }
                                                         }
-                                                    }
-                                                },
-                                                leadingContent = {
-                                                    Text(it.grades?.getOrNull(0)?.value ?: "🚫", textAlign = TextAlign.Center, modifier = Modifier.width(30.dp))
-                                                },
-                                                colors = ListItemDefaults.colors(Color.Transparent),
-                                                modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2)
-                                            )
+                                                    },
+                                                    leadingContent = {
+                                                        Text(it.grades?.getOrNull(0)?.value ?: "🚫", textAlign = TextAlign.Center, modifier = Modifier.width(30.dp))
+                                                    },
+                                                    colors = ListItemDefaults.colors(Color.Transparent),
+                                                    modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2)
+                                                )
+                                            }
                                         }
                                     }
                                 }
+                                1 -> {
+                                    LazyColumn(
+                                        modifier = Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding()),
+                                        contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding())
+                                    ) {
+                                        viewModel.collections
+                                            .filter { if (showCollectionsWithoutGrades) true else it.grades?.size != 0 }
+                                            .sortedWith(compareBy({ it.subject?.name }, { it.givenAt }))
+                                            .groupBy { it.subject?.name }
+                                            .toList()
+                                            .forEachIndexed { secIdx, (title, items) ->
+                                                stickyHeader {
+                                                    EnhancedAnimated(
+                                                        preset = ZoomIn(),
+                                                        durationMillis = 200,
+                                                    ) {
+                                                        Column(
+                                                            Modifier
+                                                                .fillMaxWidth()
+                                                                .height(56.dp)
+                                                        ) {
+                                                            HorizontalDivider(thickness = 1.dp)
+                                                            Box(Modifier.weight(1f)) {
+                                                                Box(
+                                                                    Modifier
+                                                                        .fillMaxSize()
+                                                                        .enhancedHazeEffect(viewModel.hazeBackgroundState3, colorScheme.secondaryContainer)
+                                                                        .enhancedHazeEffect(viewModel.hazeBackgroundState2, colorScheme.secondaryContainer) {
+                                                                            mask = Brush.verticalGradient(
+                                                                                colors = listOf(Color.Transparent, Color.Red)
+                                                                            )
+                                                                        }
+                                                                )
+                                                                Text(
+                                                                    text = title ?: "Kein Fach",
+                                                                    modifier = Modifier
+                                                                        .align(Alignment.CenterStart)
+                                                                        .padding(start = 16.dp)
+                                                                )
+                                                            }
+                                                            HorizontalDivider(thickness = 1.dp)
+                                                        }
+                                                    }
+                                                }
+                                                items(items) {
+                                                    EnhancedAnimated(
+                                                        preset = ZoomIn(),
+                                                        durationMillis = 200,
+                                                    ) {
+                                                        ListItem(
+                                                            headlineContent = {
+                                                                Text("${it.name} - ${it.type}")
+                                                            },
+                                                            supportingContent = {
+                                                                Column {
+                                                                    Text("Gegeben am ${LocalDate.parse(it.givenAt).let { "${it.dayOfMonth}.${it.monthNumber}.${it.year}" }}")
+
+                                                                    val histories = it.grades?.getOrNull(0)?.histories
+
+                                                                    if (histories?.isEmpty() == false && showGradeHistory) {
+                                                                        Spacer(Modifier.height(10.dp))
+                                                                        Text("Historie deiner Note:")
+                                                                        histories.forEach {
+                                                                            Text("${if (showTeachersWithFirstname) it.conductor.forename else it.conductor.forename?.take(1) + "."} ${it.conductor.name}: ${it.body}")
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            leadingContent = {
+                                                                Text(it.grades?.getOrNull(0)?.value ?: "🚫", textAlign = TextAlign.Center, modifier = Modifier.width(30.dp))
+                                                            },
+                                                            colors = ListItemDefaults.colors(Color.Transparent),
+                                                            modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2)
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
