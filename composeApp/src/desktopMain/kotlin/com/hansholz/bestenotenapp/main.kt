@@ -2,6 +2,7 @@ package com.hansholz.bestenotenapp
 
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import com.hansholz.bestenotenapp.main.App
 
 fun main() = application {
     Window(

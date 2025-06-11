@@ -4,7 +4,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.graphics.Color
 import com.materialkolor.ktx.animateColorScheme
 import com.russhwolf.settings.Settings
 
@@ -90,6 +89,7 @@ internal val LocalThemeIsDark = compositionLocalOf { mutableStateOf(true) }
 internal val LocalUseCustomColorScheme = compositionLocalOf { mutableStateOf(false) }
 internal val LocalSupportsCustomColorScheme = compositionLocalOf { mutableStateOf(false) }
 internal val LocalAnimationsEnabled = compositionLocalOf { mutableStateOf(false) }
+internal val LocalBlurEnabled = compositionLocalOf { mutableStateOf(false) }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -101,11 +101,13 @@ internal fun AppTheme(content: @Composable () -> Unit) {
     val useCustomColorSchemeState = remember { mutableStateOf(settings.getBoolean("useCustomColorScheme", false)) }
     val supportsCustomColorSchemeState = remember { mutableStateOf(false) }
     val animationsEnabledState = remember { mutableStateOf(settings.getBoolean("animationsEnabled", true)) }
+    val blurEnabledState = remember { mutableStateOf(settings.getBoolean("blurEnabled", true)) }
     CompositionLocalProvider(
         LocalThemeIsDark provides isDarkState,
         LocalUseCustomColorScheme provides useCustomColorSchemeState,
         LocalSupportsCustomColorScheme provides supportsCustomColorSchemeState,
-        LocalAnimationsEnabled provides animationsEnabledState
+        LocalAnimationsEnabled provides animationsEnabledState,
+        LocalBlurEnabled provides blurEnabledState
     ) {
         val isDark by isDarkState
         val useCustomColorScheme by useCustomColorSchemeState
@@ -116,7 +118,7 @@ internal fun AppTheme(content: @Composable () -> Unit) {
         }
         val colorScheme = (if (useCustomColorScheme) customColorScheme else null) ?: if (isDark) DarkColorScheme else LightColorScheme
         MaterialExpressiveTheme(
-            colorScheme = animateColorScheme(colorScheme, { tween<Color>(750) }),
+            colorScheme = animateColorScheme(colorScheme, { tween(750) }),
             content = { Surface(content = content) },
         )
     }

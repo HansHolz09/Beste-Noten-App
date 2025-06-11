@@ -29,10 +29,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
-import dev.chrisbanes.haze.HazeProgressive
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.hazeEffect
 import kotlinx.coroutines.launch
 
 @Composable
@@ -141,10 +138,7 @@ internal fun DrawerSheet(
                 .then(predictiveBackDrawerContainerModifier)
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(topEnd = 30.dp, bottomEnd = 30.dp))
-                .hazeEffect(hazeState, HazeStyle(colorScheme.surfaceContainerHighest, emptyList())) {
-                    noiseFactor = 0f
-                    progressive = HazeProgressive.verticalGradient(startIntensity = 1f)
-                },
+                .enhancedHazeEffect(hazeState, colorScheme.surfaceContainerHighest),
         shape = drawerShape,
         color = drawerContainerColor,
         contentColor = drawerContentColor,

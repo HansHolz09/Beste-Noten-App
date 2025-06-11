@@ -21,18 +21,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.hansholz.bestenotenapp.ViewModel
 import com.hansholz.bestenotenapp.components.EnhancedAnimated
-import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
-import com.hansholz.bestenotenapp.theme.LocalSupportsCustomColorScheme
-import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
-import com.hansholz.bestenotenapp.theme.LocalUseCustomColorScheme
+import com.hansholz.bestenotenapp.components.enhancedHazeEffect
+import com.hansholz.bestenotenapp.main.*
+import com.hansholz.bestenotenapp.theme.*
 import com.nomanr.animate.compose.presets.specials.JackInTheBox
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
-import dev.chrisbanes.haze.HazeProgressive
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
 
@@ -75,6 +70,11 @@ fun Settings(
             var useCustomColorScheme by LocalUseCustomColorScheme.current
             val supportsCustomColorScheme by LocalSupportsCustomColorScheme.current
             var animationsEnabled by LocalAnimationsEnabled.current
+            var blurEnabled by LocalBlurEnabled.current
+            var backgroundEnabled by LocalBackgroundEnabled.current
+            var showGradeHistory by LocalShowGradeHistory.current
+            var showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
+            var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
             val settings = Settings()
 
             LazyColumn(
@@ -200,16 +200,16 @@ fun Settings(
                     ) {
                         Text("Unschärfe-Effekt", fontSize = 18.sp)
                         Switch(
-                            checked = animationsEnabled,
+                            checked = blurEnabled,
                             onCheckedChange = {
-                                animationsEnabled = it
-                                settings["animationsEnabled"] = it
+                                blurEnabled = it
+                                settings["blurEnabled"] = it
                             },
                             thumbContent =
-                                if (animationsEnabled) {
+                                if (blurEnabled) {
                                     {
                                         Icon(
-                                            imageVector = Icons.Outlined.Animation,
+                                            imageVector = Icons.Outlined.BlurOn,
                                             contentDescription = null,
                                             modifier = Modifier.size(SwitchDefaults.IconSize),
                                         )
@@ -217,7 +217,41 @@ fun Settings(
                                 } else {
                                     {
                                         Icon(
-                                            imageVector = Icons.Outlined.MotionPhotosOff,
+                                            imageVector = Icons.Outlined.BlurOff,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(SwitchDefaults.IconSize),
+                                        )
+                                    }
+                                },
+                        )
+                    }
+                }
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text("Hintergrundbild", fontSize = 18.sp)
+                        Switch(
+                            checked = backgroundEnabled,
+                            onCheckedChange = {
+                                backgroundEnabled = it
+                                settings["backgroundEnabled"] = it
+                            },
+                            thumbContent =
+                                if (backgroundEnabled) {
+                                    {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Texture,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(SwitchDefaults.IconSize),
+                                        )
+                                    }
+                                } else {
+                                    {
+                                        Icon(
+                                            imageVector = Icons.Outlined.NotInterested,
                                             contentDescription = null,
                                             modifier = Modifier.size(SwitchDefaults.IconSize),
                                         )
@@ -241,16 +275,16 @@ fun Settings(
                     ) {
                         Text("Noten-Historien anzeigen", fontSize = 18.sp)
                         Switch(
-                            checked = isDark,
+                            checked = showGradeHistory,
                             onCheckedChange = {
-                                isDark = it
-                                settings["isDark"] = it
+                                showGradeHistory = it
+                                settings["showGradeHistory"] = it
                             },
                             thumbContent =
-                                if (isDark) {
+                                if (showGradeHistory) {
                                     {
                                         Icon(
-                                            imageVector = Icons.Outlined.DarkMode,
+                                            imageVector = Icons.Outlined.Done,
                                             contentDescription = null,
                                             modifier = Modifier.size(SwitchDefaults.IconSize),
                                         )
@@ -258,7 +292,7 @@ fun Settings(
                                 } else {
                                     {
                                         Icon(
-                                            imageVector = Icons.Outlined.WbSunny,
+                                            imageVector = Icons.Outlined.Close,
                                             contentDescription = null,
                                             modifier = Modifier.size(SwitchDefaults.IconSize),
                                         )
@@ -275,16 +309,16 @@ fun Settings(
                     ) {
                         Text("Leistungen ohne Noten anzeigen", fontSize = 18.sp)
                         Switch(
-                            checked = isDark,
+                            checked = showCollectionsWithoutGrades,
                             onCheckedChange = {
-                                isDark = it
-                                settings["isDark"] = it
+                                showCollectionsWithoutGrades = it
+                                settings["showCollectionsWithoutGrades"] = it
                             },
                             thumbContent =
-                                if (isDark) {
+                                if (showCollectionsWithoutGrades) {
                                     {
                                         Icon(
-                                            imageVector = Icons.Outlined.DarkMode,
+                                            imageVector = Icons.Outlined.Done,
                                             contentDescription = null,
                                             modifier = Modifier.size(SwitchDefaults.IconSize),
                                         )
@@ -292,7 +326,7 @@ fun Settings(
                                 } else {
                                     {
                                         Icon(
-                                            imageVector = Icons.Outlined.WbSunny,
+                                            imageVector = Icons.Outlined.Close,
                                             contentDescription = null,
                                             modifier = Modifier.size(SwitchDefaults.IconSize),
                                         )
@@ -302,6 +336,13 @@ fun Settings(
                     }
                 }
                 item {
+                    Spacer(Modifier.height(10.dp))
+                    HorizontalDivider(thickness = 2.dp)
+                }
+                item {
+                    Text("Allgemein", Modifier.padding(horizontal = 15.dp).padding(top = 10.dp), colorScheme.primary)
+                }
+                item {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -309,16 +350,16 @@ fun Settings(
                     ) {
                         Text("Lehrer mit Vornamen anzeigen", fontSize = 18.sp)
                         Switch(
-                            checked = isDark,
+                            checked = showTeachersWithFirstname,
                             onCheckedChange = {
-                                isDark = it
-                                settings["isDark"] = it
+                                showTeachersWithFirstname = it
+                                settings["showTeachersWithFirstname"] = it
                             },
                             thumbContent =
-                                if (isDark) {
+                                if (showTeachersWithFirstname) {
                                     {
                                         Icon(
-                                            imageVector = Icons.Outlined.DarkMode,
+                                            imageVector = Icons.Outlined.Done,
                                             contentDescription = null,
                                             modifier = Modifier.size(SwitchDefaults.IconSize),
                                         )
@@ -326,7 +367,7 @@ fun Settings(
                                 } else {
                                     {
                                         Icon(
-                                            imageVector = Icons.Outlined.WbSunny,
+                                            imageVector = Icons.Outlined.Close,
                                             contentDescription = null,
                                             modifier = Modifier.size(SwitchDefaults.IconSize),
                                         )
@@ -339,10 +380,7 @@ fun Settings(
             Box(Modifier
                 .fillMaxWidth()
                 .height(innerPadding.calculateTopPadding())
-                .hazeEffect(viewModel.hazeBackgroundState, HazeStyle(colorScheme.secondaryContainer, emptyList())) {
-                    noiseFactor = 0f
-                    progressive = HazeProgressive.verticalGradient(startIntensity = 1f)
-                }
+                .enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.secondaryContainer)
             )
         }
     )

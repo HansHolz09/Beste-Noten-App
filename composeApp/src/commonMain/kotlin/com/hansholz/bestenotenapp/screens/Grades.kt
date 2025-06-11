@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.BarChart
@@ -25,13 +26,14 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.hansholz.bestenotenapp.ViewModel
 import com.hansholz.bestenotenapp.components.EnhancedAnimated
+import com.hansholz.bestenotenapp.components.enhancedHazeEffect
+import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
+import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
+import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
+import com.hansholz.bestenotenapp.main.ViewModel
 import com.nomanr.animate.compose.presets.specials.JackInTheBox
 import com.nomanr.animate.compose.presets.zoomingextrances.ZoomIn
-import dev.chrisbanes.haze.HazeProgressive
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -47,6 +49,10 @@ fun Grades(
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+
+    val showGradeHistory by LocalShowGradeHistory.current
+    val showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
+    val showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
@@ -88,9 +94,7 @@ fun Grades(
                 onClick = {
 
                 },
-                modifier = Modifier.clip(FloatingActionButtonDefaults.shape).hazeEffect(viewModel.hazeBackgroundState, HazeStyle(colorScheme.primaryContainer, emptyList())) {
-                    noiseFactor = 0f
-                },
+                modifier = Modifier.clip(FloatingActionButtonDefaults.shape).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
                 containerColor = Color.Transparent,
                 contentColor = colorScheme.onPrimaryContainer,
                 elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp, 0.dp, 0.dp)
@@ -111,7 +115,7 @@ fun Grades(
                             items(
                                 viewModel
                                     .collections
-                                    .filter { if (viewModel.showCollectionsWithoutGrades) true else it.grades?.size != 0 }
+                                    .filter { if (showCollectionsWithoutGrades) true else it.grades?.size != 0 }
                                     .sortedByDescending { it.givenAt }
                             ) {
                                 EnhancedAnimated(
@@ -128,11 +132,11 @@ fun Grades(
 
                                                 val histories = it.grades?.getOrNull(0)?.histories
 
-                                                if (histories?.isEmpty() == false) {
+                                                if (histories?.isEmpty() == false && showGradeHistory) {
                                                     Spacer(Modifier.height(10.dp))
                                                     Text("Historie deiner Note:")
                                                     histories.forEach {
-                                                        Text("${it.conductor.forename} ${it.conductor.name}: ${it.body}")
+                                                        Text("${if (showTeachersWithFirstname) it.conductor.forename else it.conductor.forename?.take(1) + "."} ${it.conductor.name}: ${it.body}")
                                                     }
                                                 }
                                             }
@@ -153,7 +157,7 @@ fun Grades(
                             contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding())
                         ) {
                             viewModel.collections
-                                .filter { if (viewModel.showCollectionsWithoutGrades) true else it.grades?.size != 0 }
+                                .filter { if (showCollectionsWithoutGrades) true else it.grades?.size != 0 }
                                 .sortedWith(compareBy({ it.subject?.name }, { it.givenAt }))
                                 .groupBy { it.subject?.name }
                                 .toList()
@@ -173,11 +177,8 @@ fun Grades(
                                                     Box(
                                                         Modifier
                                                             .fillMaxSize()
-                                                            .hazeEffect(viewModel.hazeBackgroundState3, HazeStyle(colorScheme.secondaryContainer, emptyList())) {
-                                                                noiseFactor = 0f
-                                                            }
-                                                            .hazeEffect(viewModel.hazeBackgroundState2, HazeStyle(colorScheme.secondaryContainer, emptyList())) {
-                                                                noiseFactor = 0f
+                                                            .enhancedHazeEffect(viewModel.hazeBackgroundState3, colorScheme.secondaryContainer)
+                                                            .enhancedHazeEffect(viewModel.hazeBackgroundState2, colorScheme.secondaryContainer) {
                                                                 mask = Brush.verticalGradient(
                                                                     colors = listOf(Color.Transparent, Color.Red)
                                                                 )
@@ -209,11 +210,11 @@ fun Grades(
 
                                                         val histories = it.grades?.getOrNull(0)?.histories
 
-                                                        if (histories?.isEmpty() == false) {
+                                                        if (histories?.isEmpty() == false && showGradeHistory) {
                                                             Spacer(Modifier.height(10.dp))
                                                             Text("Historie deiner Note:")
                                                             histories.forEach {
-                                                                Text("${it.conductor.forename} ${it.conductor.name}: ${it.body}")
+                                                                Text("${if (showTeachersWithFirstname) it.conductor.forename else it.conductor.forename?.take(1) + "."} ${it.conductor.name}: ${it.body}")
                                                             }
                                                         }
                                                     }
@@ -234,10 +235,7 @@ fun Grades(
             Box(Modifier
                 .fillMaxWidth()
                 .height(topPadding)
-                .hazeEffect(viewModel.hazeBackgroundState, HazeStyle(colorScheme.secondaryContainer, emptyList())) {
-                    noiseFactor = 0f
-                    progressive = HazeProgressive.verticalGradient(startIntensity = 1f)
-                }
+                .enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.secondaryContainer)
             )
             PrimaryTabRow(
                 selectedTabIndex = pagerState.currentPage,
@@ -258,6 +256,7 @@ fun Grades(
                             pagerState.animateScrollToPage(0)
                         }
                     },
+                    modifier = Modifier.clip(RoundedCornerShape(8.dp)),
                     text = {
                         Text(
                             text = "Nach Datum",
@@ -273,6 +272,7 @@ fun Grades(
                             pagerState.animateScrollToPage(1)
                         }
                     },
+                    modifier = Modifier.clip(RoundedCornerShape(8.dp)),
                     text = {
                         Text(
                             text = "Nach Fächern",

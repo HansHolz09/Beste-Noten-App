@@ -1,4 +1,4 @@
-package com.hansholz.bestenotenapp
+package com.hansholz.bestenotenapp.main
 
 enum class Platform {
     ANDROID,

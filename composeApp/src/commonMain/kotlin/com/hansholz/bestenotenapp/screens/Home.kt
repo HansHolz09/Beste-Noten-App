@@ -16,12 +16,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.hansholz.bestenotenapp.ViewModel
 import com.hansholz.bestenotenapp.components.EnhancedAnimated
+import com.hansholz.bestenotenapp.components.enhancedHazeEffect
+import com.hansholz.bestenotenapp.main.ViewModel
 import com.nomanr.animate.compose.presets.specials.JackInTheBox
-import dev.chrisbanes.haze.HazeProgressive
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
 
@@ -76,10 +74,7 @@ fun Home(
             Box(Modifier
                 .fillMaxWidth()
                 .height(innerPadding.calculateTopPadding())
-                .hazeEffect(viewModel.hazeBackgroundState, HazeStyle(colorScheme.secondaryContainer, emptyList())) {
-                    noiseFactor = 0f
-                    progressive = HazeProgressive.verticalGradient(startIntensity = 1f)
-                }
+                .enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.secondaryContainer)
             )
         }
     )

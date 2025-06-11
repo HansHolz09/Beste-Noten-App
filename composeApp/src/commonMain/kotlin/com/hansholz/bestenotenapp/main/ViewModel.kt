@@ -1,13 +1,9 @@
-@file:Suppress("DEPRECATION")
-
-package com.hansholz.bestenotenapp
+package com.hansholz.bestenotenapp.main
 
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.hansholz.bestenotenapp.api.*
@@ -30,10 +26,8 @@ class ViewModel : ViewModel() {
     val collections = mutableStateListOf<GradeCollection>()
     val years = mutableStateListOf<Year>()
 
-    var showCollectionsWithoutGrades by mutableStateOf(false)
-
     suspend fun closeOrOpenDrawer(windowWidthSizeClass: WindowWidthSizeClass) {
-        if (windowWidthSizeClass == WindowWidthSizeClass.COMPACT) {
+        if (windowWidthSizeClass == WindowWidthSizeClass.Companion.COMPACT) {
             if (compactDrawerState.value.isClosed) {
                 compactDrawerState.value.open()
             } else {

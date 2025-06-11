@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.*
@@ -31,7 +33,9 @@ fun NavigationDrawer(drawerState: DrawerState, hazeState: HazeState, drawerConte
                     hazeState = hazeState,
                     drawerContainerColor = Color.Transparent,
                 ) {
-                    drawerContent()
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                        drawerContent()
+                    }
                 }
             }
         ) {
@@ -53,7 +57,7 @@ fun NavigationDrawer(drawerState: DrawerState, hazeState: HazeState, drawerConte
                         modifier = if (windowWidthSizeClass == WindowWidthSizeClass.MEDIUM) Modifier.width(width / 2.5f) else Modifier,
                         drawerContainerColor = Color.Transparent
                     ) {
-                        Column(Modifier.weight(1f)) {
+                        Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                             drawerContent()
                         }
                     }
