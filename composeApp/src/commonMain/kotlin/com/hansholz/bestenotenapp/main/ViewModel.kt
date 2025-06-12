@@ -7,9 +7,11 @@ import androidx.compose.material3.DrawerValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.hansholz.bestenotenapp.api.*
 import dev.chrisbanes.haze.HazeState
+import kotlinx.coroutines.launch
 
 class ViewModel : ViewModel() {
     val api = BesteSchuleApi(AuthToken.TOKEN)
@@ -21,6 +23,7 @@ class ViewModel : ViewModel() {
     val compactDrawerState = mutableStateOf(DrawerState(DrawerValue.Closed))
     val mediumExpandedDrawerState = mutableStateOf(DrawerState(DrawerValue.Open))
 
+    val user = mutableStateOf<UserDetail?>(null)
     val finalGrades = mutableStateListOf<FinalGrade>()
     val subjects = mutableStateListOf<Subject>()
 
@@ -53,5 +56,11 @@ class ViewModel : ViewModel() {
             }
         }
         return collections
+    }
+
+    init {
+        viewModelScope.launch {
+            user.value = api.getUser().data
+        }
     }
 }

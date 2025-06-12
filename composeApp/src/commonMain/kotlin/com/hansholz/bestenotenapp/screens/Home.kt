@@ -108,7 +108,12 @@ fun Home(
                 ) {
                     if (showGreetings) {
                         item {
-                            var greeting by remember { mutableStateOf(getGreeting("Hans")) }
+                            var greeting by remember { mutableStateOf("") }
+                            LaunchedEffect(viewModel.user.value) {
+                                if (viewModel.user.value?.students?.firstOrNull() != null) {
+                                    greeting = getGreeting(viewModel.user.value?.students?.firstOrNull()?.forename ?: "du")
+                                }
+                            }
                             AnimatedContent(greeting) {
                                 Text(
                                     text = it,
@@ -116,7 +121,7 @@ fun Home(
                                         interactionSource = remember { MutableInteractionSource() },
                                         indication = null
                                     ) {
-                                        greeting = getGreeting("Hans")
+                                        greeting = getGreeting(viewModel.user.value?.students?.firstOrNull()?.forename ?: "du")
                                     },
                                     textAlign = TextAlign.Center,
                                     fontSize = 22.sp,

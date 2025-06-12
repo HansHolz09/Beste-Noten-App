@@ -54,6 +54,87 @@ data class Meta(
 )
 
 @Serializable
+data class ApiResponse<T>(
+    val data: T,
+    val meta: Meta? = null
+)
+
+@Serializable
+data class UserDetail(
+    val id: Int,
+    val username: String,
+    val email: String?,
+    @SerialName("email_verified") val emailVerified: Boolean,
+    @SerialName("two_factor") val twoFactor: Boolean,
+    val teacher: Teacher?,
+    val guardian: Guardian?,
+    val students: List<UserStudent>,
+    val year: Year,
+    val config: Config,
+    val school: School,
+    @SerialName("unread_notifications_count") val unreadNotificationsCount: Int,
+    val schools: List<School>,
+    val guardians: List<Guardian>,
+    @SerialName("firebase_devices") val firebaseDevices: List<FirebaseDevice>,
+    val role: String
+)
+
+@Serializable
+data class UserStudent(
+    val id: Int,
+    val forename: String,
+    val name: String,
+    val nickname: String?,
+    val users: List<UserInStudent>,
+    val guardians: List<Guardian>
+)
+
+@Serializable
+data class UserInStudent(
+    val id: Int,
+    val username: String,
+    val role: String
+)
+
+@Serializable
+data class Guardian(
+    val id: Int,
+    val forename: String,
+    val name: String
+)
+
+@Serializable
+data class Config(
+    val id: Int,
+    val role: String,
+    @SerialName("year_id") val yearId: Int
+)
+
+@Serializable
+data class School(
+    val id: Int,
+    val customer: Boolean,
+    val name: String,
+    val email: String?,
+    val type: String?,
+    val street: String?,
+    @SerialName("street_nr") val streetNr: String?,
+    @SerialName("postal_code") val postalCode: String?,
+    val city: String?,
+    val state: String?,
+    val modules: List<String>
+)
+
+@Serializable
+data class FirebaseDevice(
+    val id: Int,
+    val name: String,
+    val language: String,
+    @SerialName("user_id") val userId: Int,
+    @SerialName("created_at") val createdAt: String
+)
+
+@Serializable
 data class Year(
     val id: Int,
     val ids: List<Int>? = null, // Oft redundant, aber im Beispiel vorhanden
@@ -236,6 +317,13 @@ class BesteSchuleApi(private val authToken: String) {
             header(HttpHeaders.ContentType, ContentType.Application.Json)
         }
     }
+
+    /**
+     * Ruft alle detaillierten Informationen zum aktuell authentifizierten Benutzer ab.
+     *
+     * @return Ein `ApiResponse`-Objekt, das das `UserDetail`-Objekt enthält.
+     */
+    suspend fun getUser(): ApiResponse<UserDetail> = client.get("user").body()
 
     /**
      * Ruft eine Liste aller verfügbaren Schuljahre samt ihrer Intervalle (Halbjahre) ab.
