@@ -14,15 +14,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.hansholz.bestenotenapp.components.EnhancedAnimated
 import com.hansholz.bestenotenapp.components.enhancedHazeEffect
+import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.*
 import com.hansholz.bestenotenapp.theme.*
 import com.nomanr.animate.compose.presets.specials.JackInTheBox
@@ -72,6 +71,8 @@ fun Settings(
             var animationsEnabled by LocalAnimationsEnabled.current
             var blurEnabled by LocalBlurEnabled.current
             var backgroundEnabled by LocalBackgroundEnabled.current
+            var showGreetings by LocalShowGreetings.current
+            var showNewestGrades by LocalShowNewestGrades.current
             var showGradeHistory by LocalShowGradeHistory.current
             var showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
             var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
@@ -88,178 +89,81 @@ fun Settings(
                 item {
                     Text("Design", Modifier.padding(horizontal = 15.dp).padding(top = 10.dp), colorScheme.primary)
                 }
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text("Dunkles-Design", fontSize = 18.sp)
-                        Switch(
-                            checked = isDark,
-                            onCheckedChange = {
-                                isDark = it
-                                settings["isDark"] = it
-                            },
-                            thumbContent =
-                                if (isDark) {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Outlined.DarkMode,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                                        )
-                                    }
-                                } else {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Outlined.WbSunny,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                                        )
-                                    }
-                                },
-                        )
-                    }
-                }
+                settingsToggleItem(
+                    checked = isDark,
+                    onCheckedChange = {
+                        isDark = it
+                        settings["isDark"] = it
+                    },
+                    text = "Dunkles-Design",
+                    checkedIcon = Icons.Outlined.DarkMode,
+                    uncheckedIcon = Icons.Outlined.WbSunny
+                )
                 if (supportsCustomColorScheme) {
-                    item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text("Material-You", fontSize = 18.sp)
-                            Switch(
-                                checked = useCustomColorScheme,
-                                onCheckedChange = {
-                                    useCustomColorScheme = it
-                                    settings["useCustomColorScheme"] = it
-                                },
-                                thumbContent =
-                                    if (useCustomColorScheme) {
-                                        {
-                                            Icon(
-                                                imageVector = Icons.Outlined.InvertColors,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(SwitchDefaults.IconSize),
-                                            )
-                                        }
-                                    } else {
-                                        {
-                                            Icon(
-                                                imageVector = Icons.Outlined.InvertColorsOff,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(SwitchDefaults.IconSize),
-                                            )
-                                        }
-                                    },
-                            )
-                        }
-                    }
+                    settingsToggleItem(
+                        checked = useCustomColorScheme,
+                        onCheckedChange = {
+                            useCustomColorScheme = it
+                            settings["useCustomColorScheme"] = it
+                        },
+                        text = "Material-You",
+                        checkedIcon = Icons.Outlined.InvertColors,
+                        uncheckedIcon = Icons.Outlined.InvertColorsOff
+                    )
+                }
+                settingsToggleItem(
+                    checked = animationsEnabled,
+                    onCheckedChange = {
+                        animationsEnabled = it
+                        settings["animationsEnabled"] = it
+                    },
+                    text = "Animationen",
+                    checkedIcon = Icons.Outlined.Animation,
+                    uncheckedIcon = Icons.Outlined.MotionPhotosOff
+                )
+                settingsToggleItem(
+                    checked = blurEnabled,
+                    onCheckedChange = {
+                        blurEnabled = it
+                        settings["blurEnabled"] = it
+                    },
+                    text = "Unschärfe-Effekt",
+                    checkedIcon = Icons.Outlined.BlurOn,
+                    uncheckedIcon = Icons.Outlined.BlurOff
+                )
+                settingsToggleItem(
+                    checked = backgroundEnabled,
+                    onCheckedChange = {
+                        backgroundEnabled = it
+                        settings["backgroundEnabled"] = it
+                    },
+                    text = "Hintergrundbild",
+                    checkedIcon = Icons.Outlined.Texture,
+                    uncheckedIcon = Icons.Outlined.NotInterested
+                )
+                item {
+                    Spacer(Modifier.height(10.dp))
+                    HorizontalDivider(thickness = 2.dp)
                 }
                 item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text("Animationen", fontSize = 18.sp)
-                        Switch(
-                            checked = animationsEnabled,
-                            onCheckedChange = {
-                                animationsEnabled = it
-                                settings["animationsEnabled"] = it
-                            },
-                            thumbContent =
-                                if (animationsEnabled) {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Animation,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                                        )
-                                    }
-                                } else {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Outlined.MotionPhotosOff,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                                        )
-                                    }
-                                },
-                        )
-                    }
+                    Text("Startseite", Modifier.padding(horizontal = 15.dp).padding(top = 10.dp), colorScheme.primary)
                 }
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text("Unschärfe-Effekt", fontSize = 18.sp)
-                        Switch(
-                            checked = blurEnabled,
-                            onCheckedChange = {
-                                blurEnabled = it
-                                settings["blurEnabled"] = it
-                            },
-                            thumbContent =
-                                if (blurEnabled) {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Outlined.BlurOn,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                                        )
-                                    }
-                                } else {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Outlined.BlurOff,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                                        )
-                                    }
-                                },
-                        )
-                    }
-                }
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text("Hintergrundbild", fontSize = 18.sp)
-                        Switch(
-                            checked = backgroundEnabled,
-                            onCheckedChange = {
-                                backgroundEnabled = it
-                                settings["backgroundEnabled"] = it
-                            },
-                            thumbContent =
-                                if (backgroundEnabled) {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Texture,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                                        )
-                                    }
-                                } else {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Outlined.NotInterested,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                                        )
-                                    }
-                                },
-                        )
-                    }
-                }
+                settingsToggleItem(
+                    checked = showGreetings,
+                    onCheckedChange = {
+                        showGreetings = it
+                        settings["showGreetings"] = it
+                    },
+                    text = "Begrüßung anzeigen"
+                )
+                settingsToggleItem(
+                    checked = showNewestGrades,
+                    onCheckedChange = {
+                        showNewestGrades = it
+                        settings["showNewestGrades"] = it
+                    },
+                    text = "Neuste Noten anzeigen"
+                )
                 item {
                     Spacer(Modifier.height(10.dp))
                     HorizontalDivider(thickness = 2.dp)
@@ -267,74 +171,22 @@ fun Settings(
                 item {
                     Text("Noten", Modifier.padding(horizontal = 15.dp).padding(top = 10.dp), colorScheme.primary)
                 }
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text("Noten-Historien anzeigen", fontSize = 18.sp)
-                        Switch(
-                            checked = showGradeHistory,
-                            onCheckedChange = {
-                                showGradeHistory = it
-                                settings["showGradeHistory"] = it
-                            },
-                            thumbContent =
-                                if (showGradeHistory) {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Done,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                                        )
-                                    }
-                                } else {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Close,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                                        )
-                                    }
-                                },
-                        )
-                    }
-                }
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text("Leistungen ohne Noten anzeigen", fontSize = 18.sp)
-                        Switch(
-                            checked = showCollectionsWithoutGrades,
-                            onCheckedChange = {
-                                showCollectionsWithoutGrades = it
-                                settings["showCollectionsWithoutGrades"] = it
-                            },
-                            thumbContent =
-                                if (showCollectionsWithoutGrades) {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Done,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                                        )
-                                    }
-                                } else {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Close,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                                        )
-                                    }
-                                },
-                        )
-                    }
-                }
+                settingsToggleItem(
+                    checked = showGradeHistory,
+                    onCheckedChange = {
+                        showGradeHistory = it
+                        settings["showGradeHistory"] = it
+                    },
+                    text = "Noten-Historien anzeigen"
+                )
+                settingsToggleItem(
+                    checked = showCollectionsWithoutGrades,
+                    onCheckedChange = {
+                        showCollectionsWithoutGrades = it
+                        settings["showCollectionsWithoutGrades"] = it
+                    },
+                    text = "Leistungen ohne Noten anzeigen"
+                )
                 item {
                     Spacer(Modifier.height(10.dp))
                     HorizontalDivider(thickness = 2.dp)
@@ -342,40 +194,14 @@ fun Settings(
                 item {
                     Text("Allgemein", Modifier.padding(horizontal = 15.dp).padding(top = 10.dp), colorScheme.primary)
                 }
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text("Lehrer mit Vornamen anzeigen", fontSize = 18.sp)
-                        Switch(
-                            checked = showTeachersWithFirstname,
-                            onCheckedChange = {
-                                showTeachersWithFirstname = it
-                                settings["showTeachersWithFirstname"] = it
-                            },
-                            thumbContent =
-                                if (showTeachersWithFirstname) {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Done,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                                        )
-                                    }
-                                } else {
-                                    {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Close,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                                        )
-                                    }
-                                },
-                        )
-                    }
-                }
+                settingsToggleItem(
+                    checked = showTeachersWithFirstname,
+                    onCheckedChange = {
+                        showTeachersWithFirstname = it
+                        settings["showTeachersWithFirstname"] = it
+                    },
+                    text = "Lehrer mit Vornamen anzeigen"
+                )
             }
             Box(Modifier
                 .fillMaxWidth()

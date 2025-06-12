@@ -2,34 +2,75 @@
 
 package com.hansholz.bestenotenapp.screens
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import bestenotenapp.composeapp.generated.resources.Res
+import bestenotenapp.composeapp.generated.resources.grades
 import com.hansholz.bestenotenapp.components.EnhancedAnimated
 import com.hansholz.bestenotenapp.components.enhancedHazeEffect
+import com.hansholz.bestenotenapp.components.repeatingBackground
+import com.hansholz.bestenotenapp.main.LocalShowGreetings
+import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.utils.getGreeting
 import com.nomanr.animate.compose.presets.specials.JackInTheBox
 import dev.chrisbanes.haze.hazeSource
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.datetime.LocalDate
+import org.jetbrains.compose.resources.imageResource
+import kotlin.random.Random
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun Home(
     viewModel: ViewModel
 ) {
     val scope = rememberCoroutineScope()
     val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+
+    val showGreetings by LocalShowGreetings.current
+    val showNewestGrades by LocalShowNewestGrades.current
+
+    var isGradesLoading by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) {
+            if (showNewestGrades) {
+                isGradesLoading = true
+                if (viewModel.collections.isEmpty()) {
+                    viewModel.getCollections()
+                }
+                isGradesLoading = false
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -57,18 +98,93 @@ fun Home(
         },
         containerColor = Color.Transparent,
         content = { innerPadding ->
-            LazyColumn(
+            LazyVerticalStaggeredGrid(
+                columns = StaggeredGridCells.Adaptive(400.dp),
                 modifier = Modifier.hazeSource(viewModel.hazeBackgroundState),
                 contentPadding = innerPadding,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                val list = (0..75).map { it.toString() }
-                items(count = list.size) {
-                    Text(
-                        text = list[it],
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-                    )
+                if (showGreetings) {
+                    item {
+                        var greeting by remember { mutableStateOf(getGreeting("Hans")) }
+                        AnimatedContent(greeting) {
+                            Text(
+                                text = it,
+                                modifier = Modifier.padding(20.dp).clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
+                                    greeting = getGreeting("Hans")
+                                },
+                                textAlign = TextAlign.Center,
+                                fontSize = 22.sp,
+                                fontFamily = FontFamily.Companion.Cursive
+                            )
+                        }
+                    }
+                }
+                item {
+                    val imageBitmap = imageResource(Res.drawable.grades)
+                    Box(Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(colorScheme.surfaceContainerHighest.copy(0.7f))
+                        .repeatingBackground(
+                            imageBitmap = imageBitmap,
+                            alpha = 0.2f,
+                            scale = 0.75f,
+                            offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = 0f) }
+                        )
+                        .border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
+                    ) {
+                        Column {
+                            Text(
+                                text = "Noten",
+                                modifier = Modifier.padding(10.dp).padding(top = 10.dp).align(Alignment.CenterHorizontally),
+                                fontFamily = FontFamily.Serif,
+                                fontSize = 28.sp
+                            )
+                            if (showNewestGrades) {
+                                AnimatedContent(isGradesLoading) { targetState ->
+                                    Box(Modifier.fillMaxWidth().sizeIn(minHeight = 100.dp)) {
+                                        if (targetState) {
+                                            ContainedLoadingIndicator(Modifier.align(Alignment.Center))
+                                        } else {
+                                            Column {
+                                                viewModel
+                                                    .collections
+                                                    .filter { it.grades?.size != 0 }
+                                                    .sortedByDescending { it.givenAt }
+                                                    .take(5)
+                                                    .forEach {
+                                                        ListItem(
+                                                            headlineContent = {
+                                                                Text("${it.subject?.name}: ${it.name}")
+                                                            },
+                                                            supportingContent = {
+                                                                Column {
+                                                                    Text("${it.type} vom ${LocalDate.parse(it.givenAt).let { "${it.dayOfMonth}.${it.monthNumber}.${it.year}" }}")
+                                                                }
+                                                            },
+                                                            leadingContent = {
+                                                                Text(it.grades?.getOrNull(0)?.value ?: "🚫", textAlign = TextAlign.Center, modifier = Modifier.width(30.dp))
+                                                            },
+                                                            colors = ListItemDefaults.colors(Color.Transparent),
+                                                            modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2)
+                                                        )
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            Text(
+                                text = "Tippen, um deine Noten ansehen und analysieren zu können",
+                                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 }
             }
             Box(Modifier
