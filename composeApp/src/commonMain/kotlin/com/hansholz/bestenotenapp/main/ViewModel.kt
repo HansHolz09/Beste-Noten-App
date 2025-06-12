@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.hansholz.bestenotenapp.main
 
 import androidx.compose.material3.DrawerState
@@ -16,7 +18,6 @@ class ViewModel : ViewModel() {
     val hazeBackgroundState2 = HazeState()
     val hazeBackgroundState3 = HazeState()
 
-    val currentScreen = mutableStateOf(Screen.HOME)
     val compactDrawerState = mutableStateOf(DrawerState(DrawerValue.Closed))
     val mediumExpandedDrawerState = mutableStateOf(DrawerState(DrawerValue.Open))
 

@@ -47,6 +47,7 @@ kotlin {
             implementation(libs.material3.adaptive.layout)
             implementation(libs.material3.adaptive.navigation)
             implementation(libs.ui.backhandler)
+            implementation(libs.navigation.compose)
             implementation(libs.androidx.lifecycle.viewmodel.compose)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
@@ -57,7 +58,7 @@ kotlin {
             implementation(libs.koalaplot.core)
             implementation(libs.haze)
             implementation(libs.material.kolor)
-            implementation("com.nomanr:animate-compose:0.0.1")
+            implementation(libs.animate.compose)
         }
         androidMain.dependencies {
             implementation(compose.preview)

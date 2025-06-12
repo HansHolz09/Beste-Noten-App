@@ -3,6 +3,9 @@
 package com.hansholz.bestenotenapp.screens
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -29,119 +32,131 @@ import com.hansholz.bestenotenapp.components.EnhancedAnimated
 import com.hansholz.bestenotenapp.components.enhancedHazeEffect
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
-import com.nomanr.animate.compose.presets.specials.JackInTheBox
 import com.nomanr.animate.compose.presets.zoomingextrances.ZoomIn
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun SubjectsAndTeachers(
-    viewModel: ViewModel
+    viewModel: ViewModel,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
-    val scope = rememberCoroutineScope()
-    val density = LocalDensity.current
-    val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+    with(sharedTransitionScope) {
+        val scope = rememberCoroutineScope()
+        val density = LocalDensity.current
+        val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
-    val showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
+        val showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
 
-    var isLoading by remember { mutableStateOf(false) }
+        var isLoading by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        isLoading = true
-        if (viewModel.finalGrades.isEmpty()) {
-            viewModel.finalGrades.addAll(viewModel.api.getFinalGrades().data)
+        LaunchedEffect(Unit) {
+            isLoading = true
+            if (viewModel.finalGrades.isEmpty()) {
+                viewModel.finalGrades.addAll(viewModel.api.getFinalGrades().data)
+            }
+            if (viewModel.subjects.isEmpty()) {
+                viewModel.subjects.addAll(viewModel.api.getSubjects().data)
+            }
+            isLoading = false
         }
-        if (viewModel.subjects.isEmpty()) {
-            viewModel.subjects.addAll(viewModel.api.getSubjects().data)
-        }
-        isLoading = false
-    }
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    EnhancedAnimated(
-                        preset = JackInTheBox(),
-                    ) {
-                        Text("Fächer und Lehrer", fontFamily = FontFamily.Serif, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    }
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            scope.launch {
-                                viewModel.closeOrOpenDrawer(windowWithSizeClass)
+        Scaffold(
+            modifier = Modifier.sharedBounds(
+                sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-card"),
+                animatedVisibilityScope = animatedVisibilityScope
+            ),
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            text = "Fächer und Lehrer",
+                            modifier = Modifier.sharedElement(
+                                sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-title"),
+                                animatedVisibilityScope = animatedVisibilityScope
+                            ).skipToLookaheadSize(),
+                            fontFamily = FontFamily.Serif,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                scope.launch {
+                                    viewModel.closeOrOpenDrawer(windowWithSizeClass)
+                                }
                             }
+                        ) {
+                            Icon(Icons.Filled.Menu, null)
                         }
-                    ) {
-                        Icon(Icons.Filled.Menu, null)
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(Color.Transparent)
-            )
-        },
-        containerColor = Color.Transparent,
-        content = { innerPadding ->
-            var topPadding by remember { mutableStateOf(0.dp) }
-            val contentPadding = PaddingValues(top = topPadding, bottom = innerPadding.calculateBottomPadding())
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(Color.Transparent)
+                )
+            },
+            containerColor = Color.Transparent,
+            content = { innerPadding ->
+                var topPadding by remember { mutableStateOf(0.dp) }
+                val contentPadding = PaddingValues(top = topPadding, bottom = innerPadding.calculateBottomPadding())
 
-            val pagerState = rememberPagerState { 2 }
-            HorizontalPager(pagerState, Modifier.hazeSource(viewModel.hazeBackgroundState)) {
-                AnimatedContent(isLoading) { targetState ->
-                    Box(Modifier.fillMaxSize()) {
-                        if (targetState) {
-                            ContainedLoadingIndicator(Modifier.padding(contentPadding).align(Alignment.Center))
-                        } else {
-                            when(it) {
-                                0 -> {
-                                    LazyColumn(contentPadding = contentPadding) {
-                                        items(
-                                            viewModel.subjects) { subject ->
-                                            EnhancedAnimated(
-                                                preset = ZoomIn(),
-                                                durationMillis = 200,
-                                            ) {
-                                                ListItem(
-                                                    headlineContent = {
-                                                        Text(
-                                                            text = "${subject.name} " +
-                                                                    "(${viewModel.finalGrades
-                                                                        .groupBy { it.subject }.map {
-                                                                            it.key to it.value.map { it.teacher }.toSet()
-                                                                        }
-                                                                        .firstOrNull { it.first.localId == subject.localId }
-                                                                        ?.second
-                                                                        ?.joinToString { (if (showTeachersWithFirstname) it.forename else it.forename?.take(1) + ".") + " " + it.name }
-                                                                        ?: "Kein Lehrer"})"
-                                                        )
-                                                    },
-                                                    leadingContent = {
-                                                        Text(subject.localId ?: "", textAlign = TextAlign.Center, modifier = Modifier.width(50.dp))
-                                                    },
-                                                    colors = ListItemDefaults.colors(Color.Transparent)
-                                                )
+                val pagerState = rememberPagerState { 2 }
+                HorizontalPager(pagerState, Modifier.hazeSource(viewModel.hazeBackgroundState)) {
+                    AnimatedContent(isLoading) { targetState ->
+                        Box(Modifier.fillMaxSize()) {
+                            if (targetState) {
+                                ContainedLoadingIndicator(Modifier.padding(contentPadding).align(Alignment.Center))
+                            } else {
+                                when(it) {
+                                    0 -> {
+                                        LazyColumn(contentPadding = contentPadding) {
+                                            items(
+                                                viewModel.subjects) { subject ->
+                                                EnhancedAnimated(
+                                                    preset = ZoomIn(),
+                                                    durationMillis = 200,
+                                                ) {
+                                                    ListItem(
+                                                        headlineContent = {
+                                                            Text(
+                                                                text = "${subject.name} " +
+                                                                        "(${viewModel.finalGrades
+                                                                            .groupBy { it.subject }.map {
+                                                                                it.key to it.value.map { it.teacher }.toSet()
+                                                                            }
+                                                                            .firstOrNull { it.first.localId == subject.localId }
+                                                                            ?.second
+                                                                            ?.joinToString { (if (showTeachersWithFirstname) it.forename else it.forename?.take(1) + ".") + " " + it.name }
+                                                                            ?: "Kein Lehrer"})"
+                                                            )
+                                                        },
+                                                        leadingContent = {
+                                                            Text(subject.localId ?: "", textAlign = TextAlign.Center, modifier = Modifier.width(50.dp))
+                                                        },
+                                                        colors = ListItemDefaults.colors(Color.Transparent)
+                                                    )
+                                                }
                                             }
                                         }
                                     }
-                                }
-                                1 -> {
-                                    LazyColumn(contentPadding = contentPadding) {
-                                        items(viewModel.finalGrades.groupBy { it.teacher }.map { it.key to it.value.map { it.subject.name }.toSet().joinToString() }) {
-                                            EnhancedAnimated(
-                                                preset = ZoomIn(),
-                                                durationMillis = 200,
-                                            ) {
-                                                ListItem(
-                                                    headlineContent = {
-                                                        Text((if (showTeachersWithFirstname) it.first.forename else it.first.forename?.take(1) + ".") + " " + it.first.name + " (" + it.second + ")")
-                                                    },
-                                                    leadingContent = {
-                                                        Text(it.first.localId ?: "", textAlign = TextAlign.Center, modifier = Modifier.width(50.dp))
-                                                    },
-                                                    colors = ListItemDefaults.colors(Color.Transparent)
-                                                )
+                                    1 -> {
+                                        LazyColumn(contentPadding = contentPadding) {
+                                            items(viewModel.finalGrades.groupBy { it.teacher }.map { it.key to it.value.map { it.subject.name }.toSet().joinToString() }) {
+                                                EnhancedAnimated(
+                                                    preset = ZoomIn(),
+                                                    durationMillis = 200,
+                                                ) {
+                                                    ListItem(
+                                                        headlineContent = {
+                                                            Text((if (showTeachersWithFirstname) it.first.forename else it.first.forename?.take(1) + ".") + " " + it.first.name + " (" + it.second + ")")
+                                                        },
+                                                        leadingContent = {
+                                                            Text(it.first.localId ?: "", textAlign = TextAlign.Center, modifier = Modifier.width(50.dp))
+                                                        },
+                                                        colors = ListItemDefaults.colors(Color.Transparent)
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -150,55 +165,55 @@ fun SubjectsAndTeachers(
                         }
                     }
                 }
-            }
-            Box(Modifier
-                .fillMaxWidth()
-                .height(topPadding)
-                .enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.secondaryContainer)
-            )
-            PrimaryTabRow(
-                selectedTabIndex = pagerState.currentPage,
-                modifier = Modifier
-                    .padding(top = innerPadding.calculateTopPadding())
-                    .onGloballyPositioned {
-                        topPadding = with(density) { it.size.height.toDp() } + innerPadding.calculateTopPadding()
-                    },
-                containerColor = Color.Transparent,
-                divider = { HorizontalDivider(thickness = 2.dp) }
-            ) {
-                Tab(
-                    selected = pagerState.currentPage == 0,
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(0)
-                        }
-                    },
-                    modifier = Modifier.clip(RoundedCornerShape(8.dp)),
-                    text = {
-                        Text(
-                            text = "Fächer",
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
+                Box(Modifier
+                    .fillMaxWidth()
+                    .height(topPadding)
+                    .enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.secondaryContainer)
                 )
-                Tab(
-                    selected = pagerState.currentPage == 1,
-                    onClick = {
-                        scope.launch {
-                            pagerState.animateScrollToPage(1)
+                PrimaryTabRow(
+                    selectedTabIndex = pagerState.currentPage,
+                    modifier = Modifier
+                        .padding(top = innerPadding.calculateTopPadding())
+                        .onGloballyPositioned {
+                            topPadding = with(density) { it.size.height.toDp() } + innerPadding.calculateTopPadding()
+                        },
+                    containerColor = Color.Transparent,
+                    divider = { HorizontalDivider(thickness = 2.dp) }
+                ) {
+                    Tab(
+                        selected = pagerState.currentPage == 0,
+                        onClick = {
+                            scope.launch {
+                                pagerState.animateScrollToPage(0)
+                            }
+                        },
+                        modifier = Modifier.clip(RoundedCornerShape(8.dp)),
+                        text = {
+                            Text(
+                                text = "Fächer",
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
-                    },
-                    modifier = Modifier.clip(RoundedCornerShape(8.dp)),
-                    text = {
-                        Text(
-                            text = "Lehrer",
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                )
+                    )
+                    Tab(
+                        selected = pagerState.currentPage == 1,
+                        onClick = {
+                            scope.launch {
+                                pagerState.animateScrollToPage(1)
+                            }
+                        },
+                        modifier = Modifier.clip(RoundedCornerShape(8.dp)),
+                        text = {
+                            Text(
+                                text = "Lehrer",
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    )
+                }
             }
-        }
-    )
+        )
+    }
 }
