@@ -1,5 +1,5 @@
 [versions]
-agp = "8.9.3"
+agp = "8.10.1"
 adaptive = "1.2.0-alpha01"
 androidx-activity = "1.10.1"
 androidx-lifecycle = "2.9.0"
