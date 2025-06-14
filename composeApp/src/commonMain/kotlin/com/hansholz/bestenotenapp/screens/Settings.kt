@@ -19,12 +19,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.hansholz.bestenotenapp.components.EnhancedAnimated
 import com.hansholz.bestenotenapp.components.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.*
 import com.hansholz.bestenotenapp.theme.*
-import com.nomanr.animate.compose.presets.specials.JackInTheBox
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
 import dev.chrisbanes.haze.hazeSource
@@ -42,11 +40,7 @@ fun Settings(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    EnhancedAnimated(
-                        preset = JackInTheBox(),
-                    ) {
-                        Text("Einstellungen", fontFamily = FontFamily.Serif, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    }
+                    Text("Einstellungen", fontFamily = FontFamily.Serif, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 },
                 navigationIcon = {
                     IconButton(
