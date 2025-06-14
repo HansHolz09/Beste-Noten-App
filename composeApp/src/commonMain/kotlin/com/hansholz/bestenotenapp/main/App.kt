@@ -65,6 +65,7 @@ fun App() {
                     imageBitmap = imageResource(Res.drawable.background),
                     modifier = Modifier
                         .hazeSource(viewModel.hazeBackgroundState)
+                        .hazeSource(viewModel.hazeBackgroundState1)
                         .hazeSource(viewModel.hazeBackgroundState2)
                         .hazeSource(viewModel.hazeBackgroundState3)
                         .enhancedHazeEffect()

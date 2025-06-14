@@ -17,6 +17,7 @@ class ViewModel : ViewModel() {
     val api = BesteSchuleApi(AuthToken.TOKEN)
 
     val hazeBackgroundState = HazeState()
+    val hazeBackgroundState1 = HazeState()
     val hazeBackgroundState2 = HazeState()
     val hazeBackgroundState3 = HazeState()
 

@@ -103,7 +103,7 @@ fun Home(
             content = { innerPadding ->
                 LazyVerticalStaggeredGrid(
                     columns = StaggeredGridCells.Adaptive(400.dp),
-                    modifier = Modifier.hazeSource(viewModel.hazeBackgroundState),
+                    modifier = Modifier.hazeSource(viewModel.hazeBackgroundState1),
                     contentPadding = innerPadding,
                 ) {
                     if (showGreetings) {
@@ -264,7 +264,7 @@ fun Home(
                 Box(Modifier
                     .fillMaxWidth()
                     .height(innerPadding.calculateTopPadding())
-                    .enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.secondaryContainer)
+                    .enhancedHazeEffect(viewModel.hazeBackgroundState1, colorScheme.secondaryContainer)
                 )
             }
         )
