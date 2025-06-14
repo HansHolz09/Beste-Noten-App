@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Color
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import dev.chrisbanes.haze.*
 
+@OptIn(ExperimentalHazeApi::class)
 @Composable
 fun Modifier.enhancedHazeEffect(hazeState: HazeState? = null, color: Color? = null, block: (HazeEffectScope.() -> Unit)? = null): Modifier {
     val blurEnabled = LocalBlurEnabled.current.value
@@ -15,6 +16,7 @@ fun Modifier.enhancedHazeEffect(hazeState: HazeState? = null, color: Color? = nu
             backgroundColor = it
             fallbackTint = HazeTint(it)
         }
+        inputScale = HazeInputScale.Auto
         noiseFactor = 0f
         progressive = HazeProgressive.verticalGradient(startIntensity = 1f)
         block?.invoke(this)
