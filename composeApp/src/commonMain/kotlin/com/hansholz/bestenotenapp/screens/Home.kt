@@ -40,13 +40,13 @@ import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.navigation.Screen
+import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.getGreeting
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.imageResource
 import kotlin.random.Random
 
@@ -71,8 +71,8 @@ fun Home(
             withContext(Dispatchers.IO) {
                 if (showNewestGrades) {
                     isGradesLoading = true
-                    if (viewModel.collections.isEmpty()) {
-                        viewModel.getCollections()
+                    if (viewModel.startGradeCollections.isEmpty()) {
+                        viewModel.startGradeCollections.addAll(viewModel.getCollections())
                     }
                     isGradesLoading = false
                 }
@@ -178,7 +178,7 @@ fun Home(
                                             } else {
                                                 Column {
                                                     viewModel
-                                                        .collections
+                                                        .startGradeCollections
                                                         .filter { it.grades?.size != 0 }
                                                         .sortedByDescending { it.givenAt }
                                                         .take(5)
@@ -189,7 +189,7 @@ fun Home(
                                                                 },
                                                                 supportingContent = {
                                                                     Column {
-                                                                        Text("${it.type} vom ${LocalDate.parse(it.givenAt).let { "${it.dayOfMonth}.${it.monthNumber}.${it.year}" }}")
+                                                                        Text("${it.type} vom ${formateDate(it.givenAt)}")
                                                                     }
                                                                 },
                                                                 leadingContent = {

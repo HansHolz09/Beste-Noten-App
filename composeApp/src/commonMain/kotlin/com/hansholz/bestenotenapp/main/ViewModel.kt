@@ -27,7 +27,9 @@ class ViewModel : ViewModel() {
     val finalGrades = mutableStateListOf<FinalGrade>()
     val subjects = mutableStateListOf<Subject>()
 
-    val collections = mutableStateListOf<GradeCollection>()
+    val startGradeCollections = mutableStateListOf<GradeCollection>()
+    val gradeCollections = mutableStateListOf<GradeCollection>()
+    val allGradeCollectionsLoaded = mutableStateOf(false)
     val years = mutableStateListOf<Year>()
 
     suspend fun closeOrOpenDrawer(windowWidthSizeClass: WindowWidthSizeClass) {
@@ -46,13 +48,26 @@ class ViewModel : ViewModel() {
         }
     }
 
-    suspend fun getCollections(): List<GradeCollection> {
+    suspend fun getCollections(years: List<Year>? = null): List<GradeCollection> {
+        val collections = mutableStateListOf<GradeCollection>()
         collections.clear()
-        val collection = api.getCollections(include = listOf("grades", "interval", "grades.histories"))
-        collections.addAll(collection.data)
-        if (collection.meta?.lastPage!! > 1) {
-            for (i in 2..collection.meta.lastPage) {
-                collections.addAll(api.getCollections(include = listOf("grades", "interval", "grades.histories"), page = i).data)
+        if (years.isNullOrEmpty()) {
+            val collection = api.getCollections(include = listOf("grades", "interval", "grades.histories"))
+            collections.addAll(collection.data)
+            if (collection.meta?.lastPage!! > 1) {
+                for (i in 2..collection.meta.lastPage) {
+                    collections.addAll(api.getCollections(include = listOf("grades", "interval", "grades.histories"), page = i).data)
+                }
+            }
+        } else {
+            years.forEach {
+                val collection = api.getCollections(include = listOf("grades", "interval", "grades.histories"), yearIds = listOf(it.id))
+                collections.addAll(collection.data)
+                if (collection.meta?.lastPage!! > 1) {
+                    for (i in 2..collection.meta.lastPage) {
+                        collections.addAll(api.getCollections(include = listOf("grades", "interval", "grades.histories"), page = i).data)
+                    }
+                }
             }
         }
         return collections
