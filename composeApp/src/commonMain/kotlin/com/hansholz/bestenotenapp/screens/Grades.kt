@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -52,14 +53,29 @@ import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.isScrollingUp
+import com.hansholz.bestenotenapp.utils.normalizeGrade
 import com.nomanr.animate.compose.presets.zoomingextrances.ZoomIn
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
+import dev.chrisbanes.haze.HazeProgressive
 import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
+import io.github.koalaplot.core.ChartLayout
+import io.github.koalaplot.core.Symbol
+import io.github.koalaplot.core.bar.*
+import io.github.koalaplot.core.legend.FlowLegend
+import io.github.koalaplot.core.legend.LegendLocation
+import io.github.koalaplot.core.style.KoalaPlotTheme
+import io.github.koalaplot.core.util.ExperimentalKoalaPlotApi
+import io.github.koalaplot.core.util.generateHueColorPalette
+import io.github.koalaplot.core.util.toString
+import io.github.koalaplot.core.xygraph.CategoryAxisModel
+import io.github.koalaplot.core.xygraph.FloatLinearAxisModel
+import io.github.koalaplot.core.xygraph.XYGraph
 import kotlinx.coroutines.*
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class,
-    ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class
+    ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class, ExperimentalKoalaPlotApi::class
 )
 @Composable
 fun Grades(
@@ -396,7 +412,7 @@ fun Grades(
 
                         AnimatedContent(
                             targetState = state,
-                            modifier = Modifier.onGloballyPositioned {
+                            modifier = Modifier.padding(top = topPadding + 24.dp + innerPadding.calculateBottomPadding()).onGloballyPositioned {
                                 toolbarPadding = with(density) { ime.getBottom(density).toDp() + it.size.height.toDp() + 12.dp }
                             },
                             contentAlignment = Alignment.BottomCenter,
@@ -643,7 +659,8 @@ fun Grades(
                                                                     } else {
                                                                         selectedYears.add(year)
                                                                     }
-                                                                }
+                                                                },
+                                                                enabled = !isLoading
                                                             )
                                                             Text(
                                                                 text = "${year.name} (${formateDate(year.from)} - ${formateDate(year.to)})",
@@ -751,6 +768,7 @@ fun Grades(
                                     Box(
                                         contentAlignment = Alignment.BottomCenter
                                     ) {
+                                        val hazeState = rememberHazeState()
                                         Card(
                                             modifier = Modifier
                                                 .sharedBounds(
@@ -762,22 +780,345 @@ fun Grades(
                                                 )
                                                 .then(backHandlingModifier)
                                                 .padding(horizontal = 12.dp)
-                                                .sizeIn(maxWidth = 500.dp)
+                                                .sizeIn(maxWidth = 600.dp)
                                                 .clip(RoundedCornerShape(12.dp)).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
                                             colors = CardDefaults.cardColors(Color.Transparent)
                                         ) {
-                                            Text("TODO", Modifier.fillMaxWidth().height(200.dp))
-                                            Button(
-                                                onClick = {
-                                                    scope.launch {
-                                                        state = 0
-                                                        contentBlurred = false
-                                                        delay(1000)
-                                                        if (state == 0) userScrollEnabled = true
+                                            Box {
+                                                var analyzeYears by remember { mutableStateOf(false) }
+                                                var titleHeight by remember { mutableStateOf(0.dp) }
+                                                var closeBarHeight by remember { mutableStateOf(0.dp) }
+                                                val lazyListState = rememberLazyListState()
+
+                                                AnimatedContent(analyzeYears) { analyzeYears ->
+                                                    if (!analyzeYears) {
+                                                        LazyColumn(
+                                                            modifier = Modifier.hazeSource(hazeState),
+                                                            state = lazyListState,
+                                                            contentPadding = PaddingValues(top = titleHeight, bottom = closeBarHeight),
+                                                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                                                        ) {
+                                                            item {
+                                                                val grades = viewModel.gradeCollections
+                                                                    .toSet().filter { selectedYears.map { it.id }.contains(it.interval?.yearId) }
+                                                                    .filter { !it.grades.isNullOrEmpty() && it.grades.firstOrNull()?.value?.take(1)?.toIntOrNull() != null }
+                                                                    .map { it.grades!![0].value?.take(1)?.toIntOrNull() ?: 0 }.sortedBy { it }.groupBy { it }.toList()
+                                                                val barChartEntries = buildList {
+                                                                    grades.map { (int, grade) ->
+                                                                        add(DefaultVerticalBarPlotEntry(int.toFloat(), DefaultVerticalBarPosition(0f, grade.size.toFloat())))
+                                                                    }
+                                                                }
+                                                                XYGraph(
+                                                                    xAxisModel = FloatLinearAxisModel(
+                                                                        if (grades.isNotEmpty()) (grades.minOf { it.first }.toFloat() - 1f)..(grades.maxOf { it.first }.toFloat() + 1f) else 0f..1f,
+                                                                        minimumMajorTickIncrement = 1f,
+                                                                        minimumMajorTickSpacing = 10.dp,
+                                                                        minorTickCount = 0
+                                                                    ),
+                                                                    yAxisModel = FloatLinearAxisModel(
+                                                                        if (grades.isNotEmpty()) 0f..grades.maxOf { it.second.size }.toFloat() else 0f..1f,
+                                                                        minimumMajorTickIncrement = 1f,
+                                                                        minorTickCount = 0
+                                                                    ),
+                                                                    modifier = Modifier.padding(10.dp).height(400.dp),
+                                                                    xAxisLabels = {
+                                                                        try {
+                                                                            if (it != 0f && it != (grades.maxOf { it.first }.toFloat() + 1f)) it.toString(0) else ""
+                                                                        } catch (_: Exception) {
+                                                                            ""
+                                                                        }
+                                                                    },
+                                                                    xAxisTitle = null,
+                                                                    yAxisLabels = { it.toString(0) },
+                                                                    verticalMajorGridLineStyle = null,
+                                                                ) {
+                                                                    VerticalBarPlot(
+                                                                        barChartEntries,
+                                                                        bar = { index ->
+                                                                            DefaultVerticalBar(
+                                                                                brush = SolidColor(colorScheme.primary),
+                                                                                modifier = Modifier.fillMaxWidth(),
+                                                                                shape = RoundedCornerShape(8.dp)
+                                                                            ) {
+                                                                                Surface(
+                                                                                    shadowElevation = 2.dp,
+                                                                                    shape = MaterialTheme.shapes.small,
+                                                                                    color = colorScheme.surfaceContainerHighest,
+                                                                                ) {
+                                                                                    Box(Modifier.padding(5.dp)) {
+                                                                                        Text(grades[index].second.size.toString())
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                    )
+                                                                }
+                                                            }
+                                                        }
+                                                    } else {
+                                                        AnimatedContent(isLoading) { targetState ->
+                                                            Box(Modifier.fillMaxWidth().sizeIn(minHeight = 300.dp)) {
+                                                                if (targetState) {
+                                                                    ContainedLoadingIndicator(Modifier.align(Alignment.Center).padding(top = titleHeight, bottom = closeBarHeight))
+                                                                } else {
+                                                                    LazyColumn(
+                                                                        modifier = Modifier.hazeSource(hazeState),
+                                                                        state = lazyListState,
+                                                                        contentPadding = PaddingValues(top = titleHeight, bottom = closeBarHeight),
+                                                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                                                    ) {
+                                                                        val allGradesByYear: List<Pair<Int, String>> = viewModel.gradeCollections
+                                                                            .toSet()
+                                                                            .filter { it.interval?.yearId != null && !it.grades.isNullOrEmpty() }
+                                                                            .flatMap { gradeCollection ->
+                                                                                gradeCollection.grades!!.map { grade ->
+                                                                                    (gradeCollection.interval!!.yearId) to normalizeGrade(grade.value)
+                                                                                }
+                                                                            }
+                                                                            .filter { it.second != "N/A" }
+
+                                                                        val groupedData: Map<Int, Map<String, Int>> = allGradesByYear
+                                                                            .groupBy { it.first }
+                                                                            .mapValues { entry ->
+                                                                                entry.value
+                                                                                    .map { it.second }
+                                                                                    .groupingBy { it }
+                                                                                    .eachCount()
+                                                                            }
+
+                                                                        item {
+                                                                            val uniqueGrades: List<String> = groupedData.values
+                                                                                .flatMap { it.keys }
+                                                                                .distinct()
+                                                                                .sortedBy { it.toIntOrNull() ?: Int.MAX_VALUE }
+
+                                                                            val sortedYears: List<Int> = groupedData.keys.sorted()
+
+                                                                            val barChartEntries = sortedYears.map { yearId ->
+                                                                                val yearName = viewModel.years.firstOrNull { it.id == yearId }?.name ?: yearId.toString()
+                                                                                val gradesForYear = groupedData[yearId] ?: emptyMap()
+
+                                                                                object : VerticalBarPlotGroupedPointEntry<String, Float> {
+                                                                                    override val x: String = yearName
+
+                                                                                    override val y: List<VerticalBarPosition<Float>> = uniqueGrades.map { grade ->
+                                                                                        val count = gradesForYear[grade]?.toFloat() ?: 0f
+                                                                                        DefaultVerticalBarPosition(0f, count)
+                                                                                    }
+                                                                                }
+                                                                            }
+
+                                                                            val allYearNames = barChartEntries.map { it.x }
+                                                                            val maxCount = groupedData.values
+                                                                                .maxOfOrNull { it.values.maxOrNull() ?: 0 }?.toFloat() ?: 1f
+
+                                                                            val xAxisModel = CategoryAxisModel(categories = allYearNames)
+                                                                            val yAxisModel = FloatLinearAxisModel(
+                                                                                range = 0f..maxCount,
+                                                                                minimumMajorTickIncrement = 1f,
+                                                                                minorTickCount = 0
+                                                                            )
+
+                                                                            val gradeColors = listOf(
+                                                                                Color(0xFF4CAF50),
+                                                                                Color(0xFF8BC34A),
+                                                                                Color(0xFFCDDC39),
+                                                                                Color(0xFFFFEB3B),
+                                                                                Color(0xFFFF9800),
+                                                                                Color(0xFFF44336)
+                                                                            )
+
+                                                                            ChartLayout(
+                                                                                modifier = Modifier.padding(10.dp).height(400.dp),
+                                                                                legend = {
+                                                                                    FlowLegend(
+                                                                                        itemCount = uniqueGrades.size,
+                                                                                        symbol = { i ->
+                                                                                            Symbol(modifier = Modifier.size(12.dp).clip(CircleShape), fillBrush = SolidColor(gradeColors[i % gradeColors.size]))
+                                                                                        },
+                                                                                        label = { i ->
+                                                                                            Text("Note $i")
+                                                                                        },
+                                                                                        modifier = Modifier.padding(top = 16.dp)
+                                                                                    )
+                                                                                },
+                                                                                legendLocation = LegendLocation.BOTTOM
+                                                                            ) {
+                                                                                XYGraph(
+                                                                                    xAxisModel = xAxisModel,
+                                                                                    yAxisModel = yAxisModel,
+                                                                                    xAxisLabels = { it },
+                                                                                    yAxisLabels = { it.toInt().toString() },
+                                                                                    xAxisTitle = "Jahr",
+                                                                                    yAxisTitle = "Anzahl",
+                                                                                ) {
+                                                                                    GroupedVerticalBarPlot(
+                                                                                        data = barChartEntries,
+                                                                                        bar = { dataIndex, groupIndex, value ->
+                                                                                            DefaultVerticalBar(
+                                                                                                brush = SolidColor(gradeColors[groupIndex % gradeColors.size]),
+                                                                                                shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
+                                                                                            )
+                                                                                        },
+                                                                                        animationSpec = KoalaPlotTheme.animationSpec
+                                                                                    )
+                                                                                }
+                                                                            }
+                                                                        }
+
+                                                                        item {
+                                                                            Spacer(Modifier.height(20.dp))
+                                                                        }
+
+                                                                        item {
+                                                                            val pivotedData = mutableMapOf<String, MutableMap<Int, Int>>()
+                                                                            groupedData.forEach { (yearId, gradesMap) ->
+                                                                                gradesMap.forEach { (grade, count) ->
+                                                                                    pivotedData.getOrPut(grade) { mutableMapOf() }[yearId] = count
+                                                                                }
+                                                                            }
+
+                                                                            val sortedGrades = pivotedData.keys.sortedBy { it.toIntOrNull() ?: Int.MAX_VALUE }
+
+                                                                            val sortedYears = groupedData.keys.sorted()
+
+                                                                            val yearColors = generateHueColorPalette(sortedYears.size)
+
+                                                                            val stackedBarEntries = sortedGrades.map { grade ->
+                                                                                object : VerticalBarPlotStackedPointEntry<String, Float> {
+                                                                                    override val x: String = grade
+
+                                                                                    override val yOrigin: Float = 0f
+
+                                                                                    override val y: List<Float> =
+                                                                                        pivotedData[grade]?.let { countsByYear ->
+                                                                                            sortedYears.map { yearId -> countsByYear[yearId]?.toFloat() ?: 0f }
+                                                                                        }?.scan(0f) { accumulator, value -> accumulator + value }?.drop(1) ?: emptyList()
+                                                                                }
+                                                                            }
+
+                                                                            val maxYValue = stackedBarEntries.maxOfOrNull { it.y.lastOrNull() ?: 0f } ?: 1f
+
+                                                                            ChartLayout(
+                                                                                modifier = Modifier.padding(10.dp).fillMaxWidth().height(400.dp),
+                                                                                legend = {
+                                                                                    FlowLegend(
+                                                                                        itemCount = sortedYears.size,
+                                                                                        symbol = { i ->
+                                                                                            Symbol(modifier = Modifier.size(12.dp).clip(CircleShape), fillBrush = SolidColor(yearColors[i]))
+                                                                                        },
+                                                                                        label = { i ->
+                                                                                            val yearName = viewModel.years.firstOrNull { it.id == sortedYears[i] }?.name ?: sortedYears[i].toString()
+                                                                                            Text(yearName)
+                                                                                        },
+                                                                                        modifier = Modifier.padding(top = 16.dp)
+                                                                                    )
+                                                                                },
+                                                                                legendLocation = LegendLocation.BOTTOM
+                                                                            ) {
+                                                                                XYGraph(
+                                                                                    xAxisModel = CategoryAxisModel(categories = sortedGrades),
+                                                                                    yAxisModel = FloatLinearAxisModel(range = 0f..maxYValue, minimumMajorTickIncrement = 5f),
+                                                                                    xAxisLabels = { it },
+                                                                                    yAxisLabels = { it.toInt().toString() },
+                                                                                    xAxisTitle = "Note",
+                                                                                    yAxisTitle = "Anzahl",
+                                                                                ) {
+                                                                                    StackedVerticalBarPlot(
+                                                                                        data = stackedBarEntries,
+                                                                                        bar = { xIndex, barIndex ->
+                                                                                            DefaultVerticalBar(
+                                                                                                brush = SolidColor(yearColors[barIndex % yearColors.size]),
+                                                                                                shape = RoundedCornerShape(8.dp)
+                                                                                            )
+                                                                                        }
+                                                                                    )
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
                                                     }
                                                 }
-                                            ) {
-                                                Text("Schließen")
+
+                                                Column(Modifier
+                                                    .fillMaxWidth()
+                                                    .align(Alignment.TopCenter)
+                                                    .enhancedHazeEffect(hazeState, colorScheme.primaryContainer) {
+                                                        if (!lazyListState.canScrollForward && !lazyListState.canScrollBackward) blurEnabled = false
+                                                        progressive = HazeProgressive.verticalGradient(startIntensity = 1f, endIntensity = 0f)
+                                                    }
+                                                    .onGloballyPositioned {
+                                                        titleHeight = with(density) { it.size.height.toDp() }
+                                                    }
+                                                ) {
+                                                    Text(
+                                                        text = "Noten analysieren/vergleichen",
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .padding(15.dp)
+                                                            .align(Alignment.CenterHorizontally),
+                                                        color = colorScheme.onPrimaryContainer,
+                                                        style = typography.headlineSmall,
+                                                        textAlign = TextAlign.Center
+                                                    )
+
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                    ) {
+                                                        Checkbox(
+                                                            checked = analyzeYears,
+                                                            onCheckedChange = {
+                                                                scope.launch {
+                                                                    analyzeYears = it
+                                                                    if (it) {
+                                                                        if (!viewModel.allGradeCollectionsLoaded.value) {
+                                                                            isLoading = true
+                                                                            viewModel.gradeCollections.clear()
+                                                                            viewModel.gradeCollections.addAll(viewModel.getCollections(viewModel.years))
+                                                                            viewModel.allGradeCollectionsLoaded.value = true
+                                                                            isLoading = false
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            enabled = !isLoading
+                                                        )
+                                                        Text(
+                                                            text = "Jahre analysieren/vergleichen",
+                                                            fontSize = 18.sp
+                                                        )
+                                                    }
+                                                }
+
+                                                Box(Modifier
+                                                    .fillMaxWidth()
+                                                    .align(Alignment.BottomCenter)
+                                                    .enhancedHazeEffect(hazeState, colorScheme.primaryContainer) {
+                                                        if (!lazyListState.canScrollForward && !lazyListState.canScrollBackward) blurEnabled = false
+                                                        progressive = HazeProgressive.verticalGradient()
+                                                    }
+                                                    .onGloballyPositioned {
+                                                        closeBarHeight = with(density) { it.size.height.toDp() }
+                                                    }
+                                                ) {
+                                                    Button(
+                                                        onClick = {
+                                                            scope.launch {
+                                                                state = 0
+                                                                contentBlurred = false
+                                                                delay(1000)
+                                                                if (state == 0) userScrollEnabled = true
+                                                            }
+                                                        },
+                                                        modifier = Modifier.padding(10.dp).align(Alignment.CenterEnd)
+                                                    ) {
+                                                        Text("Schließen")
+                                                    }
+                                                }
                                             }
                                         }
                                     }
