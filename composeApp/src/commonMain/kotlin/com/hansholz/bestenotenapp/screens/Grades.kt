@@ -65,14 +65,18 @@ import io.github.koalaplot.core.Symbol
 import io.github.koalaplot.core.bar.*
 import io.github.koalaplot.core.legend.FlowLegend
 import io.github.koalaplot.core.legend.LegendLocation
+import io.github.koalaplot.core.line.AreaBaseline
+import io.github.koalaplot.core.line.AreaPlot
+import io.github.koalaplot.core.polar.*
+import io.github.koalaplot.core.style.AreaStyle
 import io.github.koalaplot.core.style.KoalaPlotTheme
+import io.github.koalaplot.core.style.LineStyle
 import io.github.koalaplot.core.util.ExperimentalKoalaPlotApi
 import io.github.koalaplot.core.util.generateHueColorPalette
 import io.github.koalaplot.core.util.toString
-import io.github.koalaplot.core.xygraph.CategoryAxisModel
-import io.github.koalaplot.core.xygraph.FloatLinearAxisModel
-import io.github.koalaplot.core.xygraph.XYGraph
+import io.github.koalaplot.core.xygraph.*
 import kotlinx.coroutines.*
+import kotlin.math.ceil
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class,
     ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class, ExperimentalKoalaPlotApi::class
@@ -781,7 +785,7 @@ fun Grades(
                                                 .then(backHandlingModifier)
                                                 .padding(horizontal = 12.dp)
                                                 .sizeIn(maxWidth = 600.dp)
-                                                .clip(RoundedCornerShape(12.dp)).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
+                                                .clip(RoundedCornerShape(12.dp)).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.surfaceContainerHighest),
                                             colors = CardDefaults.cardColors(Color.Transparent)
                                         ) {
                                             Box {
@@ -1036,6 +1040,157 @@ fun Grades(
                                                                                 }
                                                                             }
                                                                         }
+
+                                                                        if (viewModel.years.size > 2) {
+                                                                            item {
+                                                                                Spacer(Modifier.height(20.dp))
+                                                                            }
+
+                                                                            item {
+                                                                                val chartData = remember(viewModel.gradeCollections, viewModel.years) {
+                                                                                    val groupedData = viewModel.gradeCollections.asSequence()
+                                                                                        .filter { it.interval?.yearId != null && !it.grades.isNullOrEmpty() }
+                                                                                        .flatMap { gc -> gc.grades!!.map { grade -> gc.interval!!.yearId to normalizeGrade(grade.value) } }
+                                                                                        .filter { it.second != "N/A" }
+                                                                                        .groupBy({ it.first }) { it.second }
+                                                                                        .mapValues { entry -> entry.value.groupingBy { it }.eachCount() }
+
+                                                                                    val sortedGrades = groupedData.values.flatMap { it.keys }.distinct().sortedBy { it.toIntOrNull() ?: Int.MAX_VALUE }
+                                                                                    val sortedYears = groupedData.keys.sorted()
+                                                                                    val yearNames = sortedYears.map { yearId -> viewModel.years.firstOrNull { it.id == yearId }?.name ?: yearId.toString() }
+                                                                                    val gradeColors = generateHueColorPalette(sortedGrades.size)
+
+                                                                                    val polarData = sortedGrades.map { grade ->
+                                                                                        sortedYears.map { yearId ->
+                                                                                            val count = groupedData[yearId]?.get(grade)?.toFloat() ?: 0f
+                                                                                            val yearName = viewModel.years.firstOrNull { it.id == yearId }?.name ?: yearId.toString()
+                                                                                            DefaultPolarPoint(count, yearName)
+                                                                                        }
+                                                                                    }
+
+                                                                                    val maxCount = polarData.flatten().maxOfOrNull { it.r } ?: 0f
+
+                                                                                    val tickStep = when {
+                                                                                        maxCount <= 20 -> 5
+                                                                                        maxCount <= 50 -> 10
+                                                                                        maxCount <= 100 -> 20
+                                                                                        else -> 25
+                                                                                    }
+
+                                                                                    val radialAxisMax = (ceil(maxCount / tickStep) * tickStep).coerceAtLeast(10f)
+                                                                                    val radialAxisTicks = (0..radialAxisMax.toInt() step tickStep).map { it.toFloat() }
+
+                                                                                    object {
+                                                                                        val data = polarData
+                                                                                        val angularAxisCategories = yearNames
+                                                                                        val radialAxisTicks = radialAxisTicks
+                                                                                        val legendItems = sortedGrades.mapIndexed { index, grade -> "Note $grade" to gradeColors[index] }
+                                                                                    }
+                                                                                }
+
+                                                                                ChartLayout(
+                                                                                    modifier = Modifier.padding(10.dp).fillMaxWidth().aspectRatio(1f),
+                                                                                    legend = {
+                                                                                        FlowLegend(
+                                                                                            itemCount = chartData.legendItems.size,
+                                                                                            symbol = { i ->
+                                                                                                Symbol(modifier = Modifier.size(12.dp).clip(CircleShape), fillBrush = SolidColor(chartData.legendItems[i].second))
+                                                                                            },
+                                                                                            label = { i -> Text(chartData.legendItems[i].first) }
+                                                                                        )
+                                                                                    },
+                                                                                    legendLocation = LegendLocation.BOTTOM
+                                                                                ) {
+                                                                                    PolarGraph(
+                                                                                        radialAxisModel = rememberFloatRadialAxisModel(tickValues = chartData.radialAxisTicks),
+                                                                                        angularAxisModel = rememberCategoryAngularAxisModel(categories = chartData.angularAxisCategories),
+                                                                                        radialAxisLabels = { Text(it.toInt().toString()) },
+                                                                                        angularAxisLabels = { Text(it) },
+                                                                                        polarGraphProperties = PolarGraphDefaults.PolarGraphPropertyDefaults()
+                                                                                    ) {
+                                                                                        chartData.data.forEachIndexed { index, seriesData ->
+                                                                                            val color = chartData.legendItems[index].second
+                                                                                            PolarPlotSeries(
+                                                                                                data = seriesData,
+                                                                                                lineStyle = LineStyle(SolidColor(color), strokeWidth = 2.dp),
+                                                                                                areaStyle = AreaStyle(SolidColor(color), alpha = 0.3f),
+                                                                                                symbols = { Symbol(shape = CircleShape, fillBrush = SolidColor(color)) }
+                                                                                            )
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+
+
+                                                                        item {
+                                                                            Spacer(Modifier.height(20.dp))
+                                                                        }
+
+                                                                        item {
+                                                                            val chartData = remember(viewModel.gradeCollections, viewModel.years) {
+                                                                                val groupedData = viewModel.gradeCollections.asSequence()
+                                                                                    .filter { it.interval?.yearId != null && !it.grades.isNullOrEmpty() }
+                                                                                    .flatMap { gc -> gc.grades!!.map { grade -> gc.interval!!.yearId to normalizeGrade(grade.value) } }
+                                                                                    .filter { it.second != "N/A" && it.second.toIntOrNull() != null }
+                                                                                    .groupBy({ it.first }) { it.second }
+                                                                                    .mapValues { entry -> entry.value.groupingBy { it }.eachCount() }
+
+                                                                                val averageGrades: Map<Int, Float> = groupedData.mapNotNull { (yearId, gradesMap) ->
+                                                                                    val totalCount = gradesMap.values.sum()
+                                                                                    if (totalCount == 0) {
+                                                                                        null
+                                                                                    } else {
+                                                                                        val weightedSum = gradesMap.entries.sumOf { (grade, count) ->
+                                                                                            (grade.toIntOrNull() ?: 0) * count
+                                                                                        }
+                                                                                        val average = weightedSum.toFloat() / totalCount.toFloat()
+                                                                                        yearId to average
+                                                                                    }
+                                                                                }.toMap()
+
+                                                                                val sortedYears = averageGrades.keys.sorted()
+
+                                                                                val plotData: List<Point<String, Float>> = sortedYears.map { yearId ->
+                                                                                    val yearName = viewModel.years.firstOrNull { it.id == yearId }?.name ?: yearId.toString()
+                                                                                    DefaultPoint(yearName, averageGrades[yearId]!!)
+                                                                                }
+
+                                                                                val yearNames = plotData.map { it.x }
+                                                                                val yAxisRange = 0.5f..6.5f
+
+                                                                                object {
+                                                                                    val data = plotData
+                                                                                    val yearCategories = yearNames
+                                                                                    val yAxisRange = yAxisRange
+                                                                                }
+                                                                            }
+
+                                                                            if (chartData.data.isEmpty()) {
+                                                                                Text("Nicht genügend Daten für die Durchschnittsanzeige vorhanden.", modifier = Modifier.padding(16.dp))
+                                                                            }
+
+                                                                            ChartLayout(modifier = Modifier.padding(10.dp).fillMaxWidth().height(400.dp)) {
+                                                                                XYGraph(
+                                                                                    xAxisModel = CategoryAxisModel(categories = chartData.yearCategories),
+                                                                                    yAxisModel = FloatLinearAxisModel(range = chartData.yAxisRange),
+                                                                                    xAxisLabels = { it },
+                                                                                    yAxisLabels = { it.toString(0) },
+                                                                                    xAxisTitle = "Jahr",
+                                                                                    yAxisTitle = "Durchschnittsnote"
+                                                                                ) {
+                                                                                    AreaPlot(
+                                                                                        data = chartData.data,
+                                                                                        lineStyle = LineStyle(brush = SolidColor(colorScheme.primary), strokeWidth = 3.dp),
+                                                                                        areaStyle = AreaStyle(
+                                                                                            brush = SolidColor(colorScheme.primary.copy(0.5f)),
+                                                                                            alpha = 0.5f,
+                                                                                        ),
+                                                                                        areaBaseline = AreaBaseline.ConstantLine(chartData.yAxisRange.start)
+                                                                                    )
+                                                                                }
+                                                                            }
+                                                                        }
                                                                     }
                                                                 }
                                                             }
@@ -1046,7 +1201,7 @@ fun Grades(
                                                 Column(Modifier
                                                     .fillMaxWidth()
                                                     .align(Alignment.TopCenter)
-                                                    .enhancedHazeEffect(hazeState, colorScheme.primaryContainer) {
+                                                    .enhancedHazeEffect(hazeState, colorScheme.surfaceContainerHighest) {
                                                         if (!lazyListState.canScrollForward && !lazyListState.canScrollBackward) blurEnabled = false
                                                         progressive = HazeProgressive.verticalGradient(startIntensity = 1f, endIntensity = 0f)
                                                     }
@@ -1060,7 +1215,7 @@ fun Grades(
                                                             .fillMaxWidth()
                                                             .padding(15.dp)
                                                             .align(Alignment.CenterHorizontally),
-                                                        color = colorScheme.onPrimaryContainer,
+                                                        color = colorScheme.onSurface,
                                                         style = typography.headlineSmall,
                                                         textAlign = TextAlign.Center
                                                     )
@@ -1097,7 +1252,7 @@ fun Grades(
                                                 Box(Modifier
                                                     .fillMaxWidth()
                                                     .align(Alignment.BottomCenter)
-                                                    .enhancedHazeEffect(hazeState, colorScheme.primaryContainer) {
+                                                    .enhancedHazeEffect(hazeState, colorScheme.surfaceContainerHighest) {
                                                         if (!lazyListState.canScrollForward && !lazyListState.canScrollBackward) blurEnabled = false
                                                         progressive = HazeProgressive.verticalGradient()
                                                     }
