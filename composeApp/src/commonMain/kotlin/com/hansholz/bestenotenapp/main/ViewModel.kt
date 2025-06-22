@@ -14,7 +14,8 @@ import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.launch
 
 class ViewModel : ViewModel() {
-    val api = BesteSchuleApi(AuthToken.TOKEN)
+    val httpClient = createHttpClient()
+    val api = BesteSchuleApi(httpClient, AuthToken.TOKEN)
 
     val hazeBackgroundState = HazeState()
     val hazeBackgroundState1 = HazeState()
@@ -24,8 +25,8 @@ class ViewModel : ViewModel() {
     val compactDrawerState = mutableStateOf(DrawerState(DrawerValue.Closed))
     val mediumExpandedDrawerState = mutableStateOf(DrawerState(DrawerValue.Open))
 
-    val user = mutableStateOf<UserDetail?>(null)
-    val finalGrades = mutableStateListOf<FinalGrade>()
+    val user = mutableStateOf<User?>(null)
+    val finalGrades = mutableStateListOf<Finalgrade>()
     val subjects = mutableStateListOf<Subject>()
 
     val startGradeCollections = mutableStateListOf<GradeCollection>()
@@ -50,23 +51,24 @@ class ViewModel : ViewModel() {
     }
 
     suspend fun getCollections(years: List<Year>? = null): List<GradeCollection> {
+        val includes = listOf("grades", "interval", "grades.histories")
         val collections = mutableStateListOf<GradeCollection>()
         collections.clear()
         if (years.isNullOrEmpty()) {
-            val collection = api.getCollections(include = listOf("grades", "interval", "grades.histories"))
+            val collection = api.collectionsIndex(include = includes)
             collections.addAll(collection.data)
             if (collection.meta?.lastPage!! > 1) {
                 for (i in 2..collection.meta.lastPage) {
-                    collections.addAll(api.getCollections(include = listOf("grades", "interval", "grades.histories"), page = i).data)
+                    collections.addAll(api.collectionsIndex(include = includes, page = i).data)
                 }
             }
         } else {
             years.forEach {
-                val collection = api.getCollections(include = listOf("grades", "interval", "grades.histories"), yearIds = listOf(it.id))
+                val collection = api.collectionsIndex(include = includes, filterYear = it.id.toString())
                 collections.addAll(collection.data)
                 if (collection.meta?.lastPage!! > 1) {
                     for (i in 2..collection.meta.lastPage) {
-                        collections.addAll(api.getCollections(include = listOf("grades", "interval", "grades.histories"), page = i).data)
+                        collections.addAll(api.collectionsIndex(include = includes, filterYear = it.id.toString(), page = i).data)
                     }
                 }
             }
@@ -76,7 +78,7 @@ class ViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            user.value = api.getUser().data
+            user.value = api.userMe().data
         }
     }
 }

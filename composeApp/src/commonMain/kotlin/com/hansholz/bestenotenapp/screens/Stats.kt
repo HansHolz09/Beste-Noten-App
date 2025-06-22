@@ -1,21 +1,16 @@
 package com.hansholz.bestenotenapp.screens
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
@@ -23,7 +18,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
@@ -33,12 +27,6 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.hansholz.bestenotenapp.api.BesteSchuleApi
-import com.hansholz.bestenotenapp.api.DayStudentStats
-import com.hansholz.bestenotenapp.api.LessonStudentDetail
-import com.hansholz.bestenotenapp.api.LessonStudentStats
-import io.github.koalaplot.core.pie.BezierLabelConnector
-import io.github.koalaplot.core.pie.PieChart
 import io.github.koalaplot.core.pie.PieSliceScope
 import io.github.koalaplot.core.util.*
 import kotlin.math.asin
@@ -49,122 +37,122 @@ import kotlin.math.sin
 @OptIn(ExperimentalKoalaPlotApi::class)
 @Composable
 fun Stats() {
-    val api = remember {
-        BesteSchuleApi("eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxMiIsImp0aSI6IjQ1ZjAyMzc3ODY4Zjc4ZWVmNmUzMmNhYzUxNmE3Y2IwZDRiY2M2Njg5ZmE4ZjNkN2I3MTU5OTdlNDQ0MjFlYmI5OWFkYjE2ZjRjMjY2NGM0IiwiaWF0IjoxNzQ5MjMwOTE1Ljk2ODYyNCwibmJmIjoxNzQ5MjMwOTE1Ljk2ODYyNSwiZXhwIjoxNzgwNzY2OTE1Ljk2NjgxMywic3ViIjoiMjI0OSIsInNjb3BlcyI6W119.UMQF6Nu0i_yE053ywq_i-9dt29zKDpTbLLLDoWEUbDpf2iYGTZRDCuwJvK-zg-gQCmF7cd2honCneRBZ9hzsxHzRE5p1qrB220DYMdEJXdhjgilULrXUW-FbUVQ4QwYWeFvQellJB2SAqxvBPnJsRNYgTFQNvo-5ZTg4Rgi9nhKVQ1nkReWfFmHYGWBIFmwhvZ4572m_9wQHzr2ELf8tXr1X2TaVGuz3A_ng_jMqiXgVtzDhC3eA55rsKsZpDupLsrF58RQ7j_GmVo_D5U7bzXbL_I4A4ZP6mjGEiwrDWISPfNoicaH3DIT8UQMMd0qoiPJ1iQS89YE4i-o6EwncPN6TWdOuETRbeFVJW3UBtXbJQNpQf0-KEcaCTX-tn36ofRCILdueu1AgsoZWkjVzYvAc5zKIaEvc3eFFu68XLLGoUvxm08OtomP_JDprzf2ZEAyzBQ-a2_ycNYMHbQCivzTKeVHhyNqqYP67bNfpzGcUt3pNqTEDlGT3v9aBCJKz-T6z1XRKZHVl5hsh9t3k8MsyTu-aHfEDOL5hPjYqxuhdgqr0ZZPq5yY6jawPih9slJx7SbT7PJUy4iNJUEVZBgt2SIRIvejsLaUehtJ1_aeQ4Orumo5AoPyr6vKChi-naUPOs0G_ySg2FAt4qgk7W7qBHuY-7EmavO9hc8hjsf4")
-    }
-
-    val lessonStudentStats = remember { mutableStateOf<LessonStudentStats?>(null) }
-    val dayStudentStats = remember { mutableStateOf<DayStudentStats?>(null) }
-    val lessonStudentDetail = remember { mutableStateListOf<LessonStudentDetail>() }
-
-    var rooms by remember { mutableStateOf(listOf<Pair<String, Int>>()) }
-
-    LaunchedEffect(Unit) {
-        dayStudentStats.value = api.getDayStudentStats().data[0]
-        lessonStudentStats.value = api.getLessonStudentStats().data[0]
-        api.getYears().data.last {
-            lessonStudentDetail.addAll(api.getLessonStudentDetails(it.from, it.to).data)
-        }
-        rooms = lessonStudentDetail
-            .map { it.lesson.rooms[0].localId }
-            .groupingBy { it }
-            .eachCount()
-            .toList()
-            .take(10)
-            .sortedByDescending { it.second }
-            .map { value -> (value.first ?: "") to value.second }
-    }
-
-    LazyColumn {
-        item {
-            Text("Schultage: ${dayStudentStats.value?.count}")
-        }
-        item {
-            Text("Fehltage: ${dayStudentStats.value?.notPresentCount}")
-        }
-        item {
-            Text("Entschuldigte Fehltage: ${dayStudentStats.value?.notPresentWithAbsenceCount}")
-        }
-        item {
-            Text("Unentschuldigte Fehltage: ${dayStudentStats.value?.notPresentWithoutAbsenceCount}")
-        }
-        item {
-            Text("Schulstunden: ${dayStudentStats.value?.lessonsCount}")
-        }
-        item {
-            Text("Entschuldigte Fehlstunden: ${dayStudentStats.value?.lessonsNotPresentWithAbsenceCount}")
-        }
-        item {
-            Text("Unentschuldigte Fehlstunden: ${dayStudentStats.value?.lessonsNotPresentWithoutAbsenceCount}")
-        }
-        item {
-            Text("Schulstunden zu spät: ${lessonStudentStats.value?.tooLateWithAbsenceSum}")
-        }
-        item {
-            Text("Schulstunden zu früh: ${lessonStudentStats.value?.tooEarlyWithAbsenceSum}")
-        }
-        item {
-            Text("Schulzeug vergessen: ${lessonStudentStats.value?.missingEquipmentSum}")
-        }
-        item {
-            Text("Hausaufgaben vergessen: ${lessonStudentStats.value?.missingHomeworkSum}")
-        }
-        item {
-            Text("Schulstunden dieses Schuljahr: ${lessonStudentDetail.size}")
-        }
-        item {
-            AnimatedVisibility(rooms.isNotEmpty()) {
-                Column {
-                    Text("Wie oft in welchem Raum gewesen?")
-                    Spacer(Modifier.height(10.dp))
-                    var text by remember { mutableStateOf("Klicken") }
-                    PieChart(
-                        values = rooms.map { value -> value.second.toFloat() },
-                        slice = {
-                            val colors = remember(rooms.size) { generateHueColorPalette(rooms.size) }
-                            DefaultSlice(
-                                color = colors[it].copy(0.85f),
-                                gap = 5f,
-                                hoverExpandFactor = 1.1f,
-                                hoverElement = {
-                                    Surface(
-                                        shadowElevation = 2.dp,
-                                        shape = MaterialTheme.shapes.small,
-                                        color = colorScheme.surfaceContainerHighest,
-                                    ) {
-                                        Box(Modifier.padding(5.dp)) {
-                                            Text(rooms[it].second.toString())
-                                        }
-                                    }
-                                },
-                                clickable = true,
-                                onClick = {
-                                    text = rooms[it].second.toString() + " mal"
-                                }
-                            )
-                        },
-                        label = {
-                            Text(rooms[it].first)
-                        },
-                        labelConnector = {
-                            BezierLabelConnector(connectorStroke = Stroke(3f))
-                        },
-                        holeSize = 0.5f,
-                        holeContent = {
-                            AnimatedContent(
-                                targetState = text,
-                                modifier = Modifier.fillMaxSize(),
-                            ) {
-                                Box(Modifier.fillMaxSize()) {
-                                    Text(it, Modifier.align(Alignment.Center))
-                                }
-                            }
-                        }
-                    )
-                }
-            }
-        }
-    }
+//    val api = remember {
+//        BesteSchuleApi("eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxMiIsImp0aSI6IjQ1ZjAyMzc3ODY4Zjc4ZWVmNmUzMmNhYzUxNmE3Y2IwZDRiY2M2Njg5ZmE4ZjNkN2I3MTU5OTdlNDQ0MjFlYmI5OWFkYjE2ZjRjMjY2NGM0IiwiaWF0IjoxNzQ5MjMwOTE1Ljk2ODYyNCwibmJmIjoxNzQ5MjMwOTE1Ljk2ODYyNSwiZXhwIjoxNzgwNzY2OTE1Ljk2NjgxMywic3ViIjoiMjI0OSIsInNjb3BlcyI6W119.UMQF6Nu0i_yE053ywq_i-9dt29zKDpTbLLLDoWEUbDpf2iYGTZRDCuwJvK-zg-gQCmF7cd2honCneRBZ9hzsxHzRE5p1qrB220DYMdEJXdhjgilULrXUW-FbUVQ4QwYWeFvQellJB2SAqxvBPnJsRNYgTFQNvo-5ZTg4Rgi9nhKVQ1nkReWfFmHYGWBIFmwhvZ4572m_9wQHzr2ELf8tXr1X2TaVGuz3A_ng_jMqiXgVtzDhC3eA55rsKsZpDupLsrF58RQ7j_GmVo_D5U7bzXbL_I4A4ZP6mjGEiwrDWISPfNoicaH3DIT8UQMMd0qoiPJ1iQS89YE4i-o6EwncPN6TWdOuETRbeFVJW3UBtXbJQNpQf0-KEcaCTX-tn36ofRCILdueu1AgsoZWkjVzYvAc5zKIaEvc3eFFu68XLLGoUvxm08OtomP_JDprzf2ZEAyzBQ-a2_ycNYMHbQCivzTKeVHhyNqqYP67bNfpzGcUt3pNqTEDlGT3v9aBCJKz-T6z1XRKZHVl5hsh9t3k8MsyTu-aHfEDOL5hPjYqxuhdgqr0ZZPq5yY6jawPih9slJx7SbT7PJUy4iNJUEVZBgt2SIRIvejsLaUehtJ1_aeQ4Orumo5AoPyr6vKChi-naUPOs0G_ySg2FAt4qgk7W7qBHuY-7EmavO9hc8hjsf4")
+//    }
+//
+//    val lessonStudentStats = remember { mutableStateOf<LessonStudentStats?>(null) }
+//    val dayStudentStats = remember { mutableStateOf<DayStudentStats?>(null) }
+//    val lessonStudentDetail = remember { mutableStateListOf<LessonStudentDetail>() }
+//
+//    var rooms by remember { mutableStateOf(listOf<Pair<String, Int>>()) }
+//
+//    LaunchedEffect(Unit) {
+//        dayStudentStats.value = api.getDayStudentStats().data[0]
+//        lessonStudentStats.value = api.getLessonStudentStats().data[0]
+//        api.getYears().data.last {
+//            lessonStudentDetail.addAll(api.getLessonStudentDetails(it.from, it.to).data)
+//        }
+//        rooms = lessonStudentDetail
+//            .map { it.lesson.rooms[0].localId }
+//            .groupingBy { it }
+//            .eachCount()
+//            .toList()
+//            .take(10)
+//            .sortedByDescending { it.second }
+//            .map { value -> (value.first ?: "") to value.second }
+//    }
+//
+//    LazyColumn {
+//        item {
+//            Text("Schultage: ${dayStudentStats.value?.count}")
+//        }
+//        item {
+//            Text("Fehltage: ${dayStudentStats.value?.notPresentCount}")
+//        }
+//        item {
+//            Text("Entschuldigte Fehltage: ${dayStudentStats.value?.notPresentWithAbsenceCount}")
+//        }
+//        item {
+//            Text("Unentschuldigte Fehltage: ${dayStudentStats.value?.notPresentWithoutAbsenceCount}")
+//        }
+//        item {
+//            Text("Schulstunden: ${dayStudentStats.value?.lessonsCount}")
+//        }
+//        item {
+//            Text("Entschuldigte Fehlstunden: ${dayStudentStats.value?.lessonsNotPresentWithAbsenceCount}")
+//        }
+//        item {
+//            Text("Unentschuldigte Fehlstunden: ${dayStudentStats.value?.lessonsNotPresentWithoutAbsenceCount}")
+//        }
+//        item {
+//            Text("Schulstunden zu spät: ${lessonStudentStats.value?.tooLateWithAbsenceSum}")
+//        }
+//        item {
+//            Text("Schulstunden zu früh: ${lessonStudentStats.value?.tooEarlyWithAbsenceSum}")
+//        }
+//        item {
+//            Text("Schulzeug vergessen: ${lessonStudentStats.value?.missingEquipmentSum}")
+//        }
+//        item {
+//            Text("Hausaufgaben vergessen: ${lessonStudentStats.value?.missingHomeworkSum}")
+//        }
+//        item {
+//            Text("Schulstunden dieses Schuljahr: ${lessonStudentDetail.size}")
+//        }
+//        item {
+//            AnimatedVisibility(rooms.isNotEmpty()) {
+//                Column {
+//                    Text("Wie oft in welchem Raum gewesen?")
+//                    Spacer(Modifier.height(10.dp))
+//                    var text by remember { mutableStateOf("Klicken") }
+//                    PieChart(
+//                        values = rooms.map { value -> value.second.toFloat() },
+//                        slice = {
+//                            val colors = remember(rooms.size) { generateHueColorPalette(rooms.size) }
+//                            DefaultSlice(
+//                                color = colors[it].copy(0.85f),
+//                                gap = 5f,
+//                                hoverExpandFactor = 1.1f,
+//                                hoverElement = {
+//                                    Surface(
+//                                        shadowElevation = 2.dp,
+//                                        shape = MaterialTheme.shapes.small,
+//                                        color = colorScheme.surfaceContainerHighest,
+//                                    ) {
+//                                        Box(Modifier.padding(5.dp)) {
+//                                            Text(rooms[it].second.toString())
+//                                        }
+//                                    }
+//                                },
+//                                clickable = true,
+//                                onClick = {
+//                                    text = rooms[it].second.toString() + " mal"
+//                                }
+//                            )
+//                        },
+//                        label = {
+//                            Text(rooms[it].first)
+//                        },
+//                        labelConnector = {
+//                            BezierLabelConnector(connectorStroke = Stroke(3f))
+//                        },
+//                        holeSize = 0.5f,
+//                        holeContent = {
+//                            AnimatedContent(
+//                                targetState = text,
+//                                modifier = Modifier.fillMaxSize(),
+//                            ) {
+//                                Box(Modifier.fillMaxSize()) {
+//                                    Text(it, Modifier.align(Alignment.Center))
+//                                }
+//                            }
+//                        }
+//                    )
+//                }
+//            }
+//        }
+//    }
 }
 
 @ExperimentalKoalaPlotApi

@@ -55,10 +55,10 @@ fun SubjectsAndTeachers(
         LaunchedEffect(Unit) {
             isLoading = true
             if (viewModel.finalGrades.isEmpty()) {
-                viewModel.finalGrades.addAll(viewModel.api.getFinalGrades().data)
+                viewModel.finalGrades.addAll(viewModel.api.finalgradesIndex().data)
             }
             if (viewModel.subjects.isEmpty()) {
-                viewModel.subjects.addAll(viewModel.api.getSubjects().data)
+                viewModel.subjects.addAll(viewModel.api.subjectsIndex().data)
             }
             isLoading = false
         }
@@ -125,14 +125,14 @@ fun SubjectsAndTeachers(
                                                                             .groupBy { it.subject }.map {
                                                                                 it.key to it.value.map { it.teacher }.toSet()
                                                                             }
-                                                                            .firstOrNull { it.first.localId == subject.localId }
+                                                                            .firstOrNull { it.first?.localId == subject.localId }
                                                                             ?.second
-                                                                            ?.joinToString { (if (showTeachersWithFirstname) it.forename else it.forename?.take(1) + ".") + " " + it.name }
+                                                                            ?.joinToString { (if (showTeachersWithFirstname) it?.forename else it?.forename?.take(1) + ".") + " " + it?.name }
                                                                             ?: "Kein Lehrer"})"
                                                             )
                                                         },
                                                         leadingContent = {
-                                                            Text(subject.localId ?: "", textAlign = TextAlign.Center, modifier = Modifier.width(50.dp))
+                                                            Text(subject.localId, textAlign = TextAlign.Center, modifier = Modifier.width(50.dp))
                                                         },
                                                         colors = ListItemDefaults.colors(Color.Transparent)
                                                     )
@@ -142,17 +142,17 @@ fun SubjectsAndTeachers(
                                     }
                                     1 -> {
                                         LazyColumn(contentPadding = contentPadding) {
-                                            items(viewModel.finalGrades.groupBy { it.teacher }.map { it.key to it.value.map { it.subject.name }.toSet().joinToString() }) {
+                                            items(viewModel.finalGrades.groupBy { it.teacher }.map { it.key to it.value.map { it.subject?.name }.toSet().joinToString() }) {
                                                 EnhancedAnimated(
                                                     preset = ZoomIn(),
                                                     durationMillis = 200,
                                                 ) {
                                                     ListItem(
                                                         headlineContent = {
-                                                            Text((if (showTeachersWithFirstname) it.first.forename else it.first.forename?.take(1) + ".") + " " + it.first.name + " (" + it.second + ")")
+                                                            Text((if (showTeachersWithFirstname) it.first?.forename else it.first?.forename?.take(1) + ".") + " " + it.first?.name + " (" + it.second + ")")
                                                         },
                                                         leadingContent = {
-                                                            Text(it.first.localId ?: "", textAlign = TextAlign.Center, modifier = Modifier.width(50.dp))
+                                                            Text(it.first?.localId ?: "", textAlign = TextAlign.Center, modifier = Modifier.width(50.dp))
                                                         },
                                                         colors = ListItemDefaults.colors(Color.Transparent)
                                                     )

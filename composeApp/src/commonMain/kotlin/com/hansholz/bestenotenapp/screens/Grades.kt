@@ -54,6 +54,7 @@ import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.isScrollingUp
 import com.hansholz.bestenotenapp.utils.normalizeGrade
+import com.hansholz.bestenotenapp.utils.translateHistoryBody
 import com.nomanr.animate.compose.presets.zoomingextrances.ZoomIn
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
@@ -105,7 +106,7 @@ fun Grades(
             withContext(Dispatchers.IO) {
                 isLoading = true
                 if (viewModel.years.isEmpty()) {
-                    viewModel.years.addAll(viewModel.api.getYears().data)
+                    viewModel.years.addAll(viewModel.api.yearIndex().data)
                 }
                 if (viewModel.gradeCollections.isEmpty()) {
                     viewModel.gradeCollections.addAll(viewModel.getCollections(listOf(viewModel.years.last())))
@@ -196,7 +197,7 @@ fun Grades(
                                                         .toSet()
                                                         .filter { selectedYears.map { it.id }.contains(it.interval?.yearId) }
                                                         .filter { if (showCollectionsWithoutGrades) true else it.grades?.size != 0 }
-                                                        .filter { it.name.contains(searchQuery, true) }
+                                                        .filter { (it.name ?: "").contains(searchQuery, true) }
                                                         .sortedByDescending { it.givenAt }
                                                         .toList()
                                                 ) {
@@ -218,7 +219,7 @@ fun Grades(
                                                                         Spacer(Modifier.height(10.dp))
                                                                         Text("Historie deiner Note:")
                                                                         histories.forEach {
-                                                                            Text("${if (showTeachersWithFirstname) it.conductor.forename else it.conductor.forename?.take(1) + "."} ${it.conductor.name}: ${it.body}")
+                                                                            Text("${if (showTeachersWithFirstname) it.conductor?.forename else it.conductor?.forename?.take(1) + "."} ${it.conductor?.name}: ${translateHistoryBody(it.body)}")
                                                                         }
                                                                     }
                                                                 }
@@ -244,7 +245,7 @@ fun Grades(
                                                     .toSet()
                                                     .filter { selectedYears.map { it.id }.contains(it.interval?.yearId) }
                                                     .filter { if (showCollectionsWithoutGrades) true else it.grades?.size != 0 }
-                                                    .filter { it.name.contains(searchQuery, true) }
+                                                    .filter { (it.name ?: "").contains(searchQuery, true) }
                                                     .sortedWith(compareBy({ it.subject?.name }, { it.givenAt }))
                                                     .groupBy { it.subject?.name }
                                                     .toList()
@@ -301,7 +302,7 @@ fun Grades(
                                                                                 Spacer(Modifier.height(10.dp))
                                                                                 Text("Historie deiner Note:")
                                                                                 histories.forEach {
-                                                                                    Text("${if (showTeachersWithFirstname) it.conductor.forename else it.conductor.forename?.take(1) + "."} ${it.conductor.name}: ${it.body}")
+                                                                                    Text("${if (showTeachersWithFirstname) it.conductor?.forename else it.conductor?.forename?.take(1) + "."} ${it.conductor?.name}: ${translateHistoryBody(it.body)}")
                                                                                 }
                                                                             }
                                                                         }
@@ -806,7 +807,7 @@ fun Grades(
                                                                 val grades = viewModel.gradeCollections
                                                                     .toSet().filter { selectedYears.map { it.id }.contains(it.interval?.yearId) }
                                                                     .filter { !it.grades.isNullOrEmpty() && it.grades.firstOrNull()?.value?.take(1)?.toIntOrNull() != null }
-                                                                    .map { it.grades!![0].value?.take(1)?.toIntOrNull() ?: 0 }.sortedBy { it }.groupBy { it }.toList()
+                                                                    .map { it.grades!![0].value.take(1).toIntOrNull() ?: 0 }.sortedBy { it }.groupBy { it }.toList()
                                                                 val barChartEntries = buildList {
                                                                     grades.map { (int, grade) ->
                                                                         add(DefaultVerticalBarPlotEntry(int.toFloat(), DefaultVerticalBarPosition(0f, grade.size.toFloat())))
