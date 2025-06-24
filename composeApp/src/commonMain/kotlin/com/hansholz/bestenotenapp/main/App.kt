@@ -38,7 +38,7 @@ import com.hansholz.bestenotenapp.navigation.AppNavigation
 import com.hansholz.bestenotenapp.navigation.Screen
 import com.hansholz.bestenotenapp.theme.AppTheme
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
-import com.hansholz.bestenotenapp.theme.LocalIsDark
+import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
 import com.hansholz.bestenotenapp.utils.forceHitTest
 import com.nomanr.animate.compose.animated.rememberAnimatedState
@@ -54,7 +54,7 @@ import org.jetbrains.compose.resources.imageResource
 fun App(isDark: (Boolean) -> Unit = {}, colors: (ColorScheme) -> Unit = {}) {
     AppTheme {
         colors(colorScheme)
-        isDark(LocalIsDark.current.value)
+        isDark(LocalThemeIsDark.current)
         ProvideCupertinoOverscrollEffect(listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())) {
             SettingsProvider {
                 val scope = rememberCoroutineScope()
@@ -80,8 +80,8 @@ fun App(isDark: (Boolean) -> Unit = {}, colors: (ColorScheme) -> Unit = {}) {
                     drawerState = if (windowWithSizeClass == WindowWidthSizeClass.COMPACT) viewModel.compactDrawerState.value else viewModel.mediumExpandedDrawerState.value,
                     hazeState = viewModel.hazeBackgroundState,
                     drawerContent = {
-                        Column {
-                            Spacer(Modifier.fillMaxWidth().height(LocalMacOSTitelBarHeight.current ?: 15.dp).customTitleBarMouseEventHandler { forceHitTest(it) })
+                        Column(Modifier.customTitleBarMouseEventHandler { forceHitTest(it) }) {
+                            Spacer(Modifier.fillMaxWidth().height(LocalMacOSTitelBarHeight.current ?: 15.dp))
                             val animateState = rememberAnimatedState()
                             LaunchedEffect(viewModel.compactDrawerState.value.currentValue) {
                                 while (viewModel.compactDrawerState.value.isOpen) {

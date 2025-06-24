@@ -25,6 +25,9 @@ import com.hansholz.bestenotenapp.components.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.*
 import com.hansholz.bestenotenapp.theme.*
+import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
+import com.hansholz.bestenotenapp.utils.forceHitTest
+import com.hansholz.bestenotenapp.utils.topAppBarPadding
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
 import dev.chrisbanes.haze.hazeSource
@@ -44,6 +47,7 @@ fun Settings(
                 title = {
                     Text("Einstellungen", fontFamily = FontFamily.Serif, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 },
+                modifier = LocalTitleBarModifier.current.customTitleBarMouseEventHandler { forceHitTest(it) }.topAppBarPadding(viewModel.mediumExpandedDrawerState.value.isOpen),
                 navigationIcon = {
                     IconButton(
                         onClick = {

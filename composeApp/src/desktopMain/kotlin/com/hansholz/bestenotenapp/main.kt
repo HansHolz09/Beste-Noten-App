@@ -18,6 +18,7 @@ import com.jetbrains.JBR
 import io.github.kdroidfilter.platformtools.darkmodedetector.mac.setMacOsAdaptiveTitleBar
 import com.hansholz.bestenotenapp.decoratedWindow.DecoratedWindow
 import com.hansholz.bestenotenapp.decoratedWindow.TitleBar
+import org.jetbrains.skiko.hostOs
 import java.awt.Color
 import java.awt.Dimension
 
@@ -37,11 +38,18 @@ fun main() {
             TitleBar(isDark = isDark, titleBarHeight = titleBarHeight)
             CompositionLocalProvider(
                 LocalTitleBarModifier provides Modifier.onGloballyPositioned { titleBarHeight.value = with(density) { it.size.height.toDp() } },
-                LocalMacOSTitelBarHeight provides if (getExactPlatform() == ExactPlatform.MACOS) titleBarHeight.value else 0.dp
+                LocalMacOSTitelBarHeight provides if (getExactPlatform() == ExactPlatform.MACOS) titleBarHeight.value else null
             ) {
                 App(
                     isDark = { isDark = it },
-                    colors = { JBR.getRoundedCornersManager().setRoundedCorners(window, arrayOf(20f, 2, Color(it.outline.toArgb()))) }
+                    colors = {
+                        if (JBR.isRoundedCornersManagerSupported()) {
+                            JBR.getRoundedCornersManager().setRoundedCorners(
+                                window,
+                                if (hostOs.isWindows) "full" else if (hostOs.isMacOS) arrayOf(20f, 2, Color(it.outline.toArgb())) else null
+                            )
+                        }
+                    }
                 )
             }
         }

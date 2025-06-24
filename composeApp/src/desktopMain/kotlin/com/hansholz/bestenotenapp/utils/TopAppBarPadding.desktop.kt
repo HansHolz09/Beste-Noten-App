@@ -14,6 +14,6 @@ import com.hansholz.bestenotenapp.decoratedWindow.LocalDecoratedWindowState
 @Composable
 actual fun Modifier.topAppBarPadding(sideMenuExpanded: Boolean): Modifier {
     val startPadding = animateDpAsState(if (getExactPlatform() == ExactPlatform.MACOS && !sideMenuExpanded && !LocalDecoratedWindowState.current.isFullscreen) 90.dp else 0.dp, tween(400))
-    val endPadding = remember { if ((getExactPlatform() == ExactPlatform.WINDOWS || getExactPlatform() == ExactPlatform.LINUX) && !sideMenuExpanded) 80.dp else 0.dp }
+    val endPadding = remember { if (getExactPlatform() == ExactPlatform.WINDOWS || getExactPlatform() == ExactPlatform.LINUX) 80.dp else 0.dp }
     return this.padding(start = startPadding.value, end = endPadding)
 }
