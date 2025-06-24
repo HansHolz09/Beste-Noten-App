@@ -14,11 +14,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.hansholz.bestenotenapp.components.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.*
@@ -28,7 +30,7 @@ import com.russhwolf.settings.set
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun Settings(
     viewModel: ViewModel
@@ -59,7 +61,8 @@ fun Settings(
         containerColor = Color.Transparent,
         content = { innerPadding ->
 
-            var isDark by LocalThemeIsDark.current
+            var useSystemIsDark by LocalUseSystemIsDark.current
+            var isDark by LocalIsDark.current
             var useCustomColorScheme by LocalUseCustomColorScheme.current
             val supportsCustomColorScheme by LocalSupportsCustomColorScheme.current
             var animationsEnabled by LocalAnimationsEnabled.current
@@ -83,16 +86,51 @@ fun Settings(
                 item {
                     Text("Design", Modifier.padding(horizontal = 15.dp).padding(top = 10.dp), colorScheme.primary)
                 }
-                settingsToggleItem(
-                    checked = isDark,
-                    onCheckedChange = {
-                        isDark = it
-                        settings["isDark"] = it
-                    },
-                    text = "Dunkles-Design",
-                    checkedIcon = Icons.Outlined.DarkMode,
-                    uncheckedIcon = Icons.Outlined.WbSunny
-                )
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text("Nachtmodus", fontSize = 18.sp)
+                        Row {
+                            FilledIconToggleButton(
+                                checked = useSystemIsDark,
+                                onCheckedChange = {
+                                    useSystemIsDark = it
+                                    settings["useSystemIsDark"] = it
+                                },
+                                shapes = IconButtonDefaults.toggleableShapes()
+                            ) {
+                                Icon(Icons.Outlined.BrightnessAuto, null)
+                            }
+                            FilledIconToggleButton(
+                                checked = !useSystemIsDark && !isDark,
+                                onCheckedChange = {
+                                    useSystemIsDark = !it
+                                    settings["useSystemIsDark"] = !it
+                                    isDark = !it
+                                    settings["isDark"] = !it
+                                },
+                                shapes = IconButtonDefaults.toggleableShapes()
+                            ) {
+                                Icon(Icons.Outlined.LightMode, null)
+                            }
+                            FilledIconToggleButton(
+                                checked = !useSystemIsDark && isDark,
+                                onCheckedChange = {
+                                    useSystemIsDark = !it
+                                    settings["useSystemIsDark"] = !it
+                                    isDark = it
+                                    settings["isDark"] = it
+                                },
+                                shapes = IconButtonDefaults.toggleableShapes()
+                            ) {
+                                Icon(Icons.Outlined.DarkMode, null)
+                            }
+                        }
+                    }
+                }
                 if (supportsCustomColorScheme) {
                     settingsToggleItem(
                         checked = useCustomColorScheme,

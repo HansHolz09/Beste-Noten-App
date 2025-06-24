@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -61,7 +62,7 @@ fun NavigationDrawer(drawerState: DrawerState, hazeState: HazeState, drawerConte
                             drawerContent()
                         }
                     }
-                    VerticalDivider(thickness = 2.dp)
+                    VerticalDivider(thickness = 2.dp, color = colorScheme.outline)
                 }
             }
         ) {

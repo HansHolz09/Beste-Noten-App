@@ -1,11 +1,11 @@
 package com.hansholz.bestenotenapp.theme
 
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import com.materialkolor.ktx.animateColorScheme
 import com.russhwolf.settings.Settings
+import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
 
 private val LightColorScheme =
     lightColorScheme(
@@ -85,7 +85,9 @@ private val DarkColorScheme =
         surfaceContainerHighest = surfaceContainerHighestDark,
     )
 
-internal val LocalThemeIsDark = compositionLocalOf { mutableStateOf(true) }
+internal val LocalUseSystemIsDark  = compositionLocalOf { mutableStateOf(true) }
+internal val LocalIsDark = compositionLocalOf { mutableStateOf(true) }
+internal val LocalThemeIsDark = compositionLocalOf { true }
 internal val LocalUseCustomColorScheme = compositionLocalOf { mutableStateOf(false) }
 internal val LocalSupportsCustomColorScheme = compositionLocalOf { mutableStateOf(false) }
 internal val LocalAnimationsEnabled = compositionLocalOf { mutableStateOf(false) }
@@ -96,20 +98,23 @@ internal val LocalBlurEnabled = compositionLocalOf { mutableStateOf(false) }
 internal fun AppTheme(content: @Composable () -> Unit) {
     val settings = Settings()
 
-    val systemIsDark = settings.getBoolean("isDark", isSystemInDarkTheme())
-    val isDarkState = remember { mutableStateOf(systemIsDark) }
+    val useSystemIsDark = remember { mutableStateOf(settings.getBoolean("useSystemIsDark", true)) }
+    val isDark = remember { mutableStateOf(settings.getBoolean("isDark", false)) }
+    val isDarkState = if (useSystemIsDark.value) isSystemInDarkMode() else isDark.value
     val useCustomColorSchemeState = remember { mutableStateOf(settings.getBoolean("useCustomColorScheme", false)) }
     val supportsCustomColorSchemeState = remember { mutableStateOf(false) }
     val animationsEnabledState = remember { mutableStateOf(settings.getBoolean("animationsEnabled", true)) }
     val blurEnabledState = remember { mutableStateOf(settings.getBoolean("blurEnabled", true)) }
     CompositionLocalProvider(
+        LocalUseSystemIsDark provides useSystemIsDark,
+        LocalIsDark provides isDark,
         LocalThemeIsDark provides isDarkState,
         LocalUseCustomColorScheme provides useCustomColorSchemeState,
         LocalSupportsCustomColorScheme provides supportsCustomColorSchemeState,
         LocalAnimationsEnabled provides animationsEnabledState,
         LocalBlurEnabled provides blurEnabledState
     ) {
-        val isDark by isDarkState
+        val isDark = isDarkState
         val useCustomColorScheme by useCustomColorSchemeState
         var customColorScheme: ColorScheme? = null
         SystemAppearance(!isDark) {

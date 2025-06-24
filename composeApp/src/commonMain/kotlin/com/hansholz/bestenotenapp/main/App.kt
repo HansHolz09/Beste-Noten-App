@@ -9,10 +9,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
@@ -41,6 +38,9 @@ import com.hansholz.bestenotenapp.navigation.AppNavigation
 import com.hansholz.bestenotenapp.navigation.Screen
 import com.hansholz.bestenotenapp.theme.AppTheme
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
+import com.hansholz.bestenotenapp.theme.LocalIsDark
+import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
+import com.hansholz.bestenotenapp.utils.forceHitTest
 import com.nomanr.animate.compose.animated.rememberAnimatedState
 import com.nomanr.animate.compose.presets.attentionseekers.Jello
 import com.nomanr.animate.compose.presets.attentionseekers.RubberBand
@@ -51,8 +51,10 @@ import org.jetbrains.compose.resources.imageResource
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun App() {
+fun App(isDark: (Boolean) -> Unit = {}, colors: (ColorScheme) -> Unit = {}) {
     AppTheme {
+        colors(colorScheme)
+        isDark(LocalIsDark.current.value)
         ProvideCupertinoOverscrollEffect(listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())) {
             SettingsProvider {
                 val scope = rememberCoroutineScope()
@@ -79,7 +81,7 @@ fun App() {
                     hazeState = viewModel.hazeBackgroundState,
                     drawerContent = {
                         Column {
-                            Spacer(Modifier.height(15.dp))
+                            Spacer(Modifier.fillMaxWidth().height(LocalMacOSTitelBarHeight.current ?: 15.dp).customTitleBarMouseEventHandler { forceHitTest(it) })
                             val animateState = rememberAnimatedState()
                             LaunchedEffect(viewModel.compactDrawerState.value.currentValue) {
                                 while (viewModel.compactDrawerState.value.isOpen) {
@@ -143,7 +145,7 @@ fun App() {
                                     )
                                 }
                             }
-                            HorizontalDivider(thickness = 2.dp)
+                            HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
                             AnimatedContent(
                                 targetState = currentRoute?.destination?.route == Screen.Settings.route,
                                 transitionSpec = {

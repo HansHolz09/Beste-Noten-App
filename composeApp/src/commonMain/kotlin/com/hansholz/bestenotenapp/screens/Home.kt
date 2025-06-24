@@ -38,10 +38,10 @@ import com.hansholz.bestenotenapp.components.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.repeatingBackground
 import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
+import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.navigation.Screen
-import com.hansholz.bestenotenapp.utils.formateDate
-import com.hansholz.bestenotenapp.utils.getGreeting
+import com.hansholz.bestenotenapp.utils.*
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -85,6 +85,7 @@ fun Home(
                     title = {
                         Text("Startseite", fontFamily = FontFamily.Serif, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     },
+                    modifier = LocalTitleBarModifier.current.customTitleBarMouseEventHandler { forceHitTest(it) }.topAppBarPadding(viewModel.mediumExpandedDrawerState.value.isOpen),
                     navigationIcon = {
                         IconButton(
                             onClick = {

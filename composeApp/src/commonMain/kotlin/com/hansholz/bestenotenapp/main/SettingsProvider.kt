@@ -1,6 +1,8 @@
 package com.hansholz.bestenotenapp.main
 
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import com.russhwolf.settings.Settings
 
 internal val LocalBackgroundEnabled = compositionLocalOf { mutableStateOf(false) }
@@ -9,6 +11,9 @@ internal val LocalShowNewestGrades = compositionLocalOf { mutableStateOf(false) 
 internal val LocalShowGradeHistory = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowCollectionsWithoutGrades = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowTeachersWithFirstname = compositionLocalOf { mutableStateOf(false) }
+
+internal val LocalTitleBarModifier = compositionLocalOf<Modifier> { Modifier }
+internal val LocalMacOSTitelBarHeight = compositionLocalOf<Dp?> { null }
 
 @Composable
 fun SettingsProvider(content: @Composable () -> Unit) {

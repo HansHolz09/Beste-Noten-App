@@ -58,6 +58,7 @@ kotlin {
             implementation(libs.koalaplot.core)
             implementation(libs.haze)
             implementation(libs.material.kolor)
+            implementation(libs.platformtools.darkmodedetector)
             implementation(libs.animate.compose)
         }
         androidMain.dependencies {
@@ -72,6 +73,7 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.ktor.client.cio)
+            implementation(libs.jna.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -114,14 +116,6 @@ dependencies {
 compose.desktop {
     application {
         mainClass = "com.hansholz.bestenotenapp.MainKt"
-
-        jvmArgs("--add-opens", "java.desktop/sun.awt=ALL-UNNAMED")
-        jvmArgs("--add-opens", "java.desktop/java.awt.peer=ALL-UNNAMED") // recommended but not necessary
-
-        if (System.getProperty("os.name").contains("Mac")) {
-            jvmArgs("--add-opens", "java.desktop/sun.lwawt=ALL-UNNAMED")
-            jvmArgs("--add-opens", "java.desktop/sun.lwawt.macosx=ALL-UNNAMED")
-        }
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
