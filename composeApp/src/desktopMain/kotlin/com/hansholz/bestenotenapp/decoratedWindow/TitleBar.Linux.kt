@@ -1,52 +1,79 @@
 package com.hansholz.bestenotenapp.decoratedWindow
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.CloseFullscreen
+import androidx.compose.material.icons.outlined.OpenInFull
+import androidx.compose.material.icons.outlined.Remove
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerButton
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.onPointerEvent
-import androidx.compose.ui.platform.LocalViewConfiguration
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.jetbrains.JBR
 import java.awt.Frame
-import java.awt.event.MouseEvent
+import java.awt.event.WindowEvent
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun DecoratedWindowScope.TitleBarOnLinux(
     modifier: Modifier = Modifier,
+    isDark: Boolean,
     titleBarHeight: MutableState<Dp>,
 ) {
-    var lastPress = 0L
-    val viewConfig = LocalViewConfiguration.current
     TitleBarImpl(
-        modifier.onPointerEvent(PointerEventType.Press, PointerEventPass.Main) {
-            if (
-                this.currentEvent.button == PointerButton.Primary &&
-                    this.currentEvent.changes.any { changed -> !changed.isConsumed }
+        modifier,
+        { _, _ -> PaddingValues(0.dp) },
+        titleBarHeight
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().height(titleBarHeight.value),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val colors = if (isDark) {
+                IconButtonDefaults.filledIconButtonColors(Color(38, 40, 42), Color.LightGray)
+            } else {
+                IconButtonDefaults.filledIconButtonColors(Color(227, 227, 227), Color.DarkGray)
+            }
+            Spacer(Modifier.weight(1f))
+            FilledIconButton(
+                onClick = {
+                    window.extendedState = Frame.ICONIFIED
+                },
+                colors = colors
             ) {
-                JBR.getWindowMove()?.startMovingTogetherWithMouse(window, MouseEvent.BUTTON1)
-                if (
-                    System.currentTimeMillis() - lastPress in
-                        viewConfig.doubleTapMinTimeMillis..viewConfig.doubleTapTimeoutMillis
-                ) {
+                Icon(Icons.Outlined.Remove, null)
+            }
+            FilledIconButton(
+                onClick = {
                     if (state.isMaximized) {
                         window.extendedState = Frame.NORMAL
                     } else {
                         window.extendedState = Frame.MAXIMIZED_BOTH
                     }
-                }
-                lastPress = System.currentTimeMillis()
+                },
+                colors = colors
+            ) {
+                Icon(if (state.isMaximized) Icons.Outlined.CloseFullscreen else Icons.Outlined.OpenInFull, null)
             }
-        },
-        { _, _ -> PaddingValues(0.dp) },
-        titleBarHeight
-    ) {
-        // TODO: Add Buttons for Linux
+            FilledIconButton(
+                onClick = {
+                    window.dispatchEvent(WindowEvent(window, WindowEvent.WINDOW_CLOSING))
+                },
+                colors = colors
+            ) {
+                Icon(Icons.Outlined.Close, null)
+            }
+        }
     }
 }

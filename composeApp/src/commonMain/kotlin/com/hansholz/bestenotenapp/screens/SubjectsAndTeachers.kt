@@ -34,7 +34,6 @@ import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
-import com.hansholz.bestenotenapp.utils.forceHitTest
 import com.hansholz.bestenotenapp.utils.topAppBarPadding
 import com.nomanr.animate.compose.presets.zoomingextrances.ZoomIn
 import dev.chrisbanes.haze.hazeSource
@@ -86,7 +85,7 @@ fun SubjectsAndTeachers(
                             overflow = TextOverflow.Ellipsis
                         )
                     },
-                    modifier = LocalTitleBarModifier.current.customTitleBarMouseEventHandler { forceHitTest(it) }.topAppBarPadding(viewModel.mediumExpandedDrawerState.value.isOpen),
+                    modifier = LocalTitleBarModifier.current.customTitleBarMouseEventHandler().topAppBarPadding(viewModel.mediumExpandedDrawerState.value.isOpen),
                     navigationIcon = {
                         IconButton(
                             onClick = {

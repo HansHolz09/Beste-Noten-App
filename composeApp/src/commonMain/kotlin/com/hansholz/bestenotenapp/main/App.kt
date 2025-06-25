@@ -40,7 +40,6 @@ import com.hansholz.bestenotenapp.theme.AppTheme
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
-import com.hansholz.bestenotenapp.utils.forceHitTest
 import com.nomanr.animate.compose.animated.rememberAnimatedState
 import com.nomanr.animate.compose.presets.attentionseekers.Jello
 import com.nomanr.animate.compose.presets.attentionseekers.RubberBand
@@ -80,7 +79,7 @@ fun App(isDark: (Boolean) -> Unit = {}, colors: (ColorScheme) -> Unit = {}) {
                     drawerState = if (windowWithSizeClass == WindowWidthSizeClass.COMPACT) viewModel.compactDrawerState.value else viewModel.mediumExpandedDrawerState.value,
                     hazeState = viewModel.hazeBackgroundState,
                     drawerContent = {
-                        Column(Modifier.customTitleBarMouseEventHandler { forceHitTest(it) }) {
+                        Column(Modifier.customTitleBarMouseEventHandler()) {
                             Spacer(Modifier.fillMaxWidth().height(LocalMacOSTitelBarHeight.current ?: 15.dp))
                             val animateState = rememberAnimatedState()
                             LaunchedEffect(viewModel.compactDrawerState.value.currentValue) {

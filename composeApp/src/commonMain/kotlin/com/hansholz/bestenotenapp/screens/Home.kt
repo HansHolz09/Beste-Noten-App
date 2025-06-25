@@ -85,7 +85,7 @@ fun Home(
                     title = {
                         Text("Startseite", fontFamily = FontFamily.Serif, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     },
-                    modifier = LocalTitleBarModifier.current.customTitleBarMouseEventHandler { forceHitTest(it) }.topAppBarPadding(viewModel.mediumExpandedDrawerState.value.isOpen),
+                    modifier = LocalTitleBarModifier.current.customTitleBarMouseEventHandler().topAppBarPadding(viewModel.mediumExpandedDrawerState.value.isOpen),
                     navigationIcon = {
                         IconButton(
                             onClick = {

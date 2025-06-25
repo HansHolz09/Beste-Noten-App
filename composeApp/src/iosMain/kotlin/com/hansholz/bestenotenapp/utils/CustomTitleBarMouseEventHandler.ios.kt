@@ -1,4 +1,7 @@
 package com.hansholz.bestenotenapp.utils
 
-actual fun forceHitTest(boolean: Boolean) {
-}
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+
+@Composable
+actual fun Modifier.customTitleBarMouseEventHandler(): Modifier = this

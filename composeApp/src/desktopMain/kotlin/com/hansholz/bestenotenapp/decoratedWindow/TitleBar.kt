@@ -28,7 +28,7 @@ fun DecoratedWindowScope.TitleBar(
     titleBarHeight: MutableState<Dp>,
 ) {
     when (getExactPlatform()) {
-        ExactPlatform.LINUX -> TitleBarOnLinux(modifier, titleBarHeight)
+        ExactPlatform.LINUX -> TitleBarOnLinux(modifier, isDark, titleBarHeight)
         ExactPlatform.WINDOWS -> TitleBarOnWindows(modifier, isDark, titleBarHeight)
         ExactPlatform.MACOS -> TitleBarOnMacOs(modifier, titleBarHeight)
         else -> error("TitleBar is not supported on this platform(${System.getProperty("os.name")})")

@@ -1,9 +1,17 @@
 package com.hansholz.bestenotenapp.decoratedWindow
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import com.jetbrains.JBR
 import org.jetbrains.skiko.hostOs
@@ -36,17 +44,14 @@ fun DecoratedWindow(
         }
     }
 
-    // Using undecorated window for linux
-    val undecorated = hostOs.isLinux
-
     Window(
         onCloseRequest,
         state,
         visible,
         title,
         icon,
-        undecorated,
-        transparent = false,
+        undecorated = hostOs.isLinux,
+        transparent = hostOs.isLinux,
         resizable,
         enabled,
         focusable,
@@ -116,8 +121,10 @@ fun DecoratedWindow(
                     override val window: ComposeWindow
                         get() = this@Window.window
                 }
-            CompositionLocalProvider(LocalDecoratedWindowState provides scope.state) {
-                scope.content()
+            CompositionLocalProvider(LocalDecoratedWindowScope provides scope) {
+                Box(if (hostOs.isLinux) Modifier.clip(RoundedCornerShape(8.dp)).border(2.dp, Color.Gray, RoundedCornerShape(8.dp)).padding(2.dp) else Modifier) {
+                    scope.content()
+                }
             }
         }
     }
@@ -183,6 +190,6 @@ internal val LocalTitleBarInfo: ProvidableCompositionLocal<TitleBarInfo> = compo
     error("LocalTitleBarInfo not provided, TitleBar must be used in DecoratedWindow")
 }
 
-internal val LocalDecoratedWindowState: ProvidableCompositionLocal<DecoratedWindowState> = compositionLocalOf {
+internal val LocalDecoratedWindowScope: ProvidableCompositionLocal<DecoratedWindowScope> = compositionLocalOf {
     error("LocalDecoratedWindowState not provided, DecoratedWindow must be used")
 }

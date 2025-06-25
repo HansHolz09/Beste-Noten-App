@@ -35,7 +35,6 @@ fun main() {
             window.minimumSize = Dimension(with(density) { 800.toDp().roundToPx() }, with(density) { 600.toDp().roundToPx() })
             val titleBarHeight = remember { mutableStateOf(20.dp) }
             var isDark by remember { mutableStateOf(false) }
-            TitleBar(isDark = isDark, titleBarHeight = titleBarHeight)
             CompositionLocalProvider(
                 LocalTitleBarModifier provides Modifier.onGloballyPositioned { titleBarHeight.value = with(density) { it.size.height.toDp() } },
                 LocalMacOSTitelBarHeight provides if (getExactPlatform() == ExactPlatform.MACOS) titleBarHeight.value else null
@@ -52,6 +51,7 @@ fun main() {
                     }
                 )
             }
+            TitleBar(isDark = isDark, titleBarHeight = titleBarHeight)
         }
     }
 }
