@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.hansholz.bestenotenapp.utils
 
 import androidx.compose.animation.core.animateDpAsState
@@ -9,7 +11,6 @@ import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowWidthSizeClass
 import kotlinx.cinterop.ExperimentalForeignApi
 
-@Suppress("DEPRECATION")
 @OptIn(ExperimentalForeignApi::class)
 @Composable
 actual fun Modifier.topAppBarPadding(sideMenuExpanded: Boolean): Modifier {

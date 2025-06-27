@@ -441,8 +441,8 @@ internal class CupertinoOverscrollEffect(
         val dpSize = scrollSize / density
 
         return Offset(
-            rubberBandedValue(dpOffset.x, dpSize.width, RUBBER_BAND_COEFFICIENT),
-            rubberBandedValue(dpOffset.y, dpSize.height, RUBBER_BAND_COEFFICIENT),
+            rubberBandedValue(dpOffset.x, dpSize.width),
+            rubberBandedValue(dpOffset.y, dpSize.height),
         ) * density
     }
 
@@ -453,8 +453,7 @@ internal class CupertinoOverscrollEffect(
     private fun rubberBandedValue(
         value: Float,
         dimension: Float,
-        coefficient: Float,
-    ) = sign(value) * (1f - (1f / (abs(value) * coefficient / dimension + 1f))) * dimension
+    ) = sign(value) * (1f - (1f / (abs(value) * RUBBER_BAND_COEFFICIENT / dimension + 1f))) * dimension
 
     companion object Companion {
         private const val RUBBER_BAND_COEFFICIENT = 0.55f

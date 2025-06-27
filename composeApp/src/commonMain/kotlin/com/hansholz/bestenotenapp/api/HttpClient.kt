@@ -7,8 +7,6 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
-val client = createHttpClient()
-
 expect fun createHttpClient(): HttpClient
 
 fun commonHttpClientConfig(config: HttpClientConfig<*>): HttpClientConfig<*> {
