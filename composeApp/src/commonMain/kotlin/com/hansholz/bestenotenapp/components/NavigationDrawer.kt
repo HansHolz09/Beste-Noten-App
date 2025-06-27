@@ -13,7 +13,9 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -66,7 +68,9 @@ fun NavigationDrawer(drawerState: DrawerState, hazeState: HazeState, drawerConte
                 }
             }
         ) {
-            content()
+            Box(Modifier.clip(RectangleShape)) {
+                content()
+            }
         }
     }
 }

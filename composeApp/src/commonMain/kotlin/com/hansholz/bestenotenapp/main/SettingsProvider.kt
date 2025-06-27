@@ -13,7 +13,7 @@ internal val LocalShowCollectionsWithoutGrades = compositionLocalOf { mutableSta
 internal val LocalShowTeachersWithFirstname = compositionLocalOf { mutableStateOf(false) }
 
 internal val LocalTitleBarModifier = compositionLocalOf<Modifier> { Modifier }
-internal val LocalMacOSTitelBarHeight = compositionLocalOf<Dp?> { null }
+internal val LocalNavigationDrawerTopPadding = compositionLocalOf<Dp?> { null }
 
 @Composable
 fun SettingsProvider(content: @Composable () -> Unit) {

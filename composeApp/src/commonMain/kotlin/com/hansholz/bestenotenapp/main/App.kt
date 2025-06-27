@@ -80,7 +80,7 @@ fun App(isDark: (Boolean) -> Unit = {}, colors: (ColorScheme) -> Unit = {}) {
                     hazeState = viewModel.hazeBackgroundState,
                     drawerContent = {
                         Column(Modifier.customTitleBarMouseEventHandler()) {
-                            Spacer(Modifier.fillMaxWidth().height(LocalMacOSTitelBarHeight.current ?: 15.dp))
+                            Spacer(Modifier.fillMaxWidth().height(LocalNavigationDrawerTopPadding.current ?: 15.dp))
                             val animateState = rememberAnimatedState()
                             LaunchedEffect(viewModel.compactDrawerState.value.currentValue) {
                                 while (viewModel.compactDrawerState.value.isOpen) {

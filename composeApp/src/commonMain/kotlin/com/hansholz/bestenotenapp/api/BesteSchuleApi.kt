@@ -1934,7 +1934,7 @@ data class GroupSubjectOrderResponse(
 )
 
 class BesteSchuleApi(httpClient: HttpClient, authToken: String) {
-    private val baseUrl = "http://beste.schule/api"
+    private val baseUrl = "https://beste.schule/api"
 
     private val client = httpClient.config {
         defaultRequest {
