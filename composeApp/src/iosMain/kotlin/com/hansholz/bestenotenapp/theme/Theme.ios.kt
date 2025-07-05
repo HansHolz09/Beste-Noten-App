@@ -15,7 +15,7 @@ internal actual fun SystemAppearance(
 ) {
     LaunchedEffect(isDark) {
         UIApplication.sharedApplication.setStatusBarStyle(
-            if (isDark) UIStatusBarStyleDarkContent else UIStatusBarStyleLightContent,
+            if (!isDark) UIStatusBarStyleDarkContent else UIStatusBarStyleLightContent,
         )
     }
 }

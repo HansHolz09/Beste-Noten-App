@@ -69,7 +69,7 @@ internal actual fun SystemAppearance(
         if (color != null) {
             rememberDynamicColorScheme(
                 seedColor = color,
-                isDark = !isDark,
+                isDark = isDark,
                 specVersion = ColorSpec.SpecVersion.SPEC_2025,
             )
         } else {

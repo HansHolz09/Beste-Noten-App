@@ -45,7 +45,7 @@ internal fun AppTheme(content: @Composable () -> Unit) {
         val isDark = isDarkState
         val useCustomColorScheme by useCustomColorSchemeState
         var customColorScheme: ColorScheme? = null
-        SystemAppearance(!isDark) {
+        SystemAppearance(isDark) {
             customColorScheme = it
             if (it != null) LocalSupportsCustomColorScheme.current.value = true
         }

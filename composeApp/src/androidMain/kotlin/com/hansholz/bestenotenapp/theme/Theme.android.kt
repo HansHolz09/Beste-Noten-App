@@ -26,8 +26,8 @@ internal actual fun SystemAppearance(
         val window = (view.context as Activity).window
 
         WindowInsetsControllerCompat(window, window.decorView).apply {
-            isAppearanceLightStatusBars = isDark
-            isAppearanceLightNavigationBars = isDark
+            isAppearanceLightStatusBars = !isDark
+            isAppearanceLightNavigationBars = !isDark
         }
 
         if (window is Window && Build.VERSION.SDK_INT >= VERSION_CODES.VANILLA_ICE_CREAM) {
@@ -44,7 +44,7 @@ internal actual fun SystemAppearance(
     }
     if (Build.VERSION.SDK_INT >= VERSION_CODES.S) {
         customColorScheme(
-            if (isDark) dynamicLightColorScheme(context) else dynamicDarkColorScheme(context),
+            if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context),
         )
     }
 }
