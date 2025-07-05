@@ -21,6 +21,7 @@ import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,7 +42,10 @@ import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
 import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.navigation.Screen
-import com.hansholz.bestenotenapp.utils.*
+import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
+import com.hansholz.bestenotenapp.utils.formateDate
+import com.hansholz.bestenotenapp.utils.getGreeting
+import com.hansholz.bestenotenapp.utils.topAppBarPadding
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -109,9 +113,9 @@ fun Home(
                 ) {
                     if (showGreetings) {
                         item {
-                            var greeting by remember { mutableStateOf("") }
+                            var greeting by rememberSaveable { mutableStateOf("") }
                             LaunchedEffect(viewModel.user.value) {
-                                if (viewModel.user.value?.students?.firstOrNull() != null) {
+                                if (viewModel.user.value?.students?.firstOrNull() != null && greeting.isEmpty()) {
                                     greeting = getGreeting(viewModel.user.value?.students?.firstOrNull()?.forename ?: "du")
                                 }
                             }
