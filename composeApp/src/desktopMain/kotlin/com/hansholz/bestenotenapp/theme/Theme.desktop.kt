@@ -3,6 +3,7 @@ package com.hansholz.bestenotenapp.theme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.rememberDynamicColorScheme
 import org.jetbrains.skiko.hostOs
 import java.io.BufferedReader
@@ -66,7 +67,11 @@ internal actual fun SystemAppearance(
 
     customColorScheme(
         if (color != null) {
-            rememberDynamicColorScheme(color, !isDark, false)
+            rememberDynamicColorScheme(
+                seedColor = color,
+                isDark = !isDark,
+                specVersion = ColorSpec.SpecVersion.SPEC_2025,
+            )
         } else {
             null
         },
