@@ -45,19 +45,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hansholz.bestenotenapp.api.Year
 import com.hansholz.bestenotenapp.components.EnhancedAnimated
+import com.hansholz.bestenotenapp.components.PreferencePosition
 import com.hansholz.bestenotenapp.components.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.settingsToggleItem
-import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
-import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
-import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
-import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
-import com.hansholz.bestenotenapp.main.ViewModel
-import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
-import com.hansholz.bestenotenapp.utils.formateDate
-import com.hansholz.bestenotenapp.utils.isScrollingUp
-import com.hansholz.bestenotenapp.utils.normalizeGrade
-import com.hansholz.bestenotenapp.utils.topAppBarPadding
-import com.hansholz.bestenotenapp.utils.translateHistoryBody
+import com.hansholz.bestenotenapp.main.*
+import com.hansholz.bestenotenapp.utils.*
 import com.nomanr.animate.compose.presets.zoomingextrances.ZoomIn
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
@@ -729,7 +721,7 @@ fun Grades(
                                             )
                                             ProvideTextStyle(LocalTextStyle.current.copy(colorScheme.onPrimaryContainer)) {
                                                 LazyColumn(
-                                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                                    verticalArrangement = Arrangement.spacedBy(2.dp)
                                                 ) {
                                                     settingsToggleItem(
                                                         checked = showGradeHistory,
@@ -737,7 +729,9 @@ fun Grades(
                                                             showGradeHistory = it
                                                             settings["showGradeHistory"] = it
                                                         },
-                                                        text = "Noten-Historien anzeigen"
+                                                        text = "Noten-Historien anzeigen",
+                                                        icon = Icons.Outlined.History,
+                                                        position = PreferencePosition.Top,
                                                     )
                                                     settingsToggleItem(
                                                         checked = showCollectionsWithoutGrades,
@@ -745,7 +739,9 @@ fun Grades(
                                                             showCollectionsWithoutGrades = it
                                                             settings["showCollectionsWithoutGrades"] = it
                                                         },
-                                                        text = "Leistungen ohne Noten anzeigen"
+                                                        text = "Leistungen ohne Noten anzeigen",
+                                                        icon = Icons.Outlined.DisabledVisible,
+                                                        position = PreferencePosition.Middle,
                                                     )
                                                     settingsToggleItem(
                                                         checked = showTeachersWithFirstname,
@@ -753,7 +749,9 @@ fun Grades(
                                                             showTeachersWithFirstname = it
                                                             settings["showTeachersWithFirstname"] = it
                                                         },
-                                                        text = "Lehrer mit Vornamen anzeigen"
+                                                        text = "Lehrer mit Vornamen anzeigen",
+                                                        position = PreferencePosition.Bottom,
+                                                        icon = Icons.Outlined.Title,
                                                     )
                                                 }
                                             }

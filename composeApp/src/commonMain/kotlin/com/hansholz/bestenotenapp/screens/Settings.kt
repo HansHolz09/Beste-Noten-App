@@ -14,15 +14,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.hansholz.bestenotenapp.components.enhancedHazeEffect
-import com.hansholz.bestenotenapp.components.settingsToggleItem
+import com.hansholz.bestenotenapp.components.*
 import com.hansholz.bestenotenapp.main.*
 import com.hansholz.bestenotenapp.theme.*
 import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
@@ -81,21 +78,18 @@ fun Settings(
             LazyColumn(
                 modifier = Modifier.hazeSource(viewModel.hazeBackgroundState),
                 contentPadding = innerPadding,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 item {
-                    Spacer(Modifier.height(5.dp))
+                    PreferenceCategory("Design", Modifier.padding(horizontal = 15.dp))
                 }
                 item {
-                    Text("Design", Modifier.padding(horizontal = 15.dp).padding(top = 10.dp), colorScheme.primary)
-                }
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
+                    PreferenceItem(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        title = "Nachtmodus",
+                        icon = Icons.Outlined.Brightness4,
+                        position = PreferencePosition.Top,
                     ) {
-                        Text("Nachtmodus", fontSize = 18.sp)
                         Row {
                             FilledIconToggleButton(
                                 checked = useSystemIsDark,
@@ -142,8 +136,8 @@ fun Settings(
                             settings["useCustomColorScheme"] = it
                         },
                         text = "Material-You",
-                        checkedIcon = Icons.Outlined.InvertColors,
-                        uncheckedIcon = Icons.Outlined.InvertColorsOff
+                        icon = Icons.Outlined.InvertColors,
+                        position = PreferencePosition.Middle,
                     )
                 }
                 settingsToggleItem(
@@ -153,8 +147,8 @@ fun Settings(
                         settings["animationsEnabled"] = it
                     },
                     text = "Animationen",
-                    checkedIcon = Icons.Outlined.Animation,
-                    uncheckedIcon = Icons.Outlined.MotionPhotosOff
+                    icon = Icons.Outlined.Animation,
+                    position = PreferencePosition.Middle,
                 )
                 settingsToggleItem(
                     checked = blurEnabled,
@@ -163,8 +157,8 @@ fun Settings(
                         settings["blurEnabled"] = it
                     },
                     text = "Unschärfe-Effekt",
-                    checkedIcon = Icons.Outlined.BlurOn,
-                    uncheckedIcon = Icons.Outlined.BlurOff
+                    icon = Icons.Outlined.BlurOn,
+                    position = PreferencePosition.Middle,
                 )
                 settingsToggleItem(
                     checked = backgroundEnabled,
@@ -173,15 +167,11 @@ fun Settings(
                         settings["backgroundEnabled"] = it
                     },
                     text = "Hintergrundbild",
-                    checkedIcon = Icons.Outlined.Texture,
-                    uncheckedIcon = Icons.Outlined.NotInterested
+                    icon = Icons.Outlined.Texture,
+                    position = PreferencePosition.Bottom,
                 )
                 item {
-                    Spacer(Modifier.height(10.dp))
-                    HorizontalDivider(thickness = 2.dp)
-                }
-                item {
-                    Text("Startseite", Modifier.padding(horizontal = 15.dp).padding(top = 10.dp), colorScheme.primary)
+                    PreferenceCategory("Startseite", Modifier.padding(horizontal = 15.dp))
                 }
                 settingsToggleItem(
                     checked = showGreetings,
@@ -189,7 +179,9 @@ fun Settings(
                         showGreetings = it
                         settings["showGreetings"] = it
                     },
-                    text = "Begrüßung anzeigen"
+                    text = "Begrüßung anzeigen",
+                    icon = Icons.Outlined.WavingHand,
+                    position = PreferencePosition.Top,
                 )
                 settingsToggleItem(
                     checked = showNewestGrades,
@@ -197,14 +189,12 @@ fun Settings(
                         showNewestGrades = it
                         settings["showNewestGrades"] = it
                     },
-                    text = "Neuste Noten anzeigen"
+                    text = "Neuste Noten anzeigen",
+                    icon = Icons.Outlined.FiberNew,
+                    position = PreferencePosition.Bottom,
                 )
                 item {
-                    Spacer(Modifier.height(10.dp))
-                    HorizontalDivider(thickness = 2.dp)
-                }
-                item {
-                    Text("Noten", Modifier.padding(horizontal = 15.dp).padding(top = 10.dp), colorScheme.primary)
+                    PreferenceCategory("Noten", Modifier.padding(horizontal = 15.dp))
                 }
                 settingsToggleItem(
                     checked = showGradeHistory,
@@ -212,7 +202,9 @@ fun Settings(
                         showGradeHistory = it
                         settings["showGradeHistory"] = it
                     },
-                    text = "Noten-Historien anzeigen"
+                    text = "Noten-Historien anzeigen",
+                    icon = Icons.Outlined.History,
+                    position = PreferencePosition.Top,
                 )
                 settingsToggleItem(
                     checked = showCollectionsWithoutGrades,
@@ -220,14 +212,12 @@ fun Settings(
                         showCollectionsWithoutGrades = it
                         settings["showCollectionsWithoutGrades"] = it
                     },
-                    text = "Leistungen ohne Noten anzeigen"
+                    text = "Leistungen ohne Noten anzeigen",
+                    icon = Icons.Outlined.DisabledVisible,
+                    position = PreferencePosition.Bottom,
                 )
                 item {
-                    Spacer(Modifier.height(10.dp))
-                    HorizontalDivider(thickness = 2.dp)
-                }
-                item {
-                    Text("Allgemein", Modifier.padding(horizontal = 15.dp).padding(top = 10.dp), colorScheme.primary)
+                    PreferenceCategory("Allgemein", Modifier.padding(horizontal = 15.dp))
                 }
                 settingsToggleItem(
                     checked = showTeachersWithFirstname,
@@ -235,8 +225,12 @@ fun Settings(
                         showTeachersWithFirstname = it
                         settings["showTeachersWithFirstname"] = it
                     },
-                    text = "Lehrer mit Vornamen anzeigen"
+                    text = "Lehrer mit Vornamen anzeigen",
+                    icon = Icons.Outlined.Title,
                 )
+                item {
+                    Spacer(Modifier.height(12.dp))
+                }
             }
             Box(Modifier
                 .fillMaxWidth()
