@@ -121,6 +121,8 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.hansholz.bestenotenapp"
             packageVersion = "1.0.0"
+
+            modules += "jdk.unsupported"
         }
     }
 }

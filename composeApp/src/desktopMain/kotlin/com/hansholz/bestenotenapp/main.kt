@@ -14,6 +14,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.hansholz.bestenotenapp.decoratedWindow.DecoratedWindow
+import com.hansholz.bestenotenapp.decoratedWindow.LocalDecoratedWindowScope
 import com.hansholz.bestenotenapp.decoratedWindow.TitleBar
 import com.hansholz.bestenotenapp.main.*
 import com.jetbrains.JBR
@@ -37,7 +38,7 @@ fun main() {
             var isDark by remember { mutableStateOf(false) }
             CompositionLocalProvider(
                 LocalTitleBarModifier provides Modifier.onGloballyPositioned { titleBarHeight.value = with(density) { it.size.height.toDp() } },
-                LocalNavigationDrawerTopPadding provides if (getExactPlatform() == ExactPlatform.MACOS) titleBarHeight.value else null
+                LocalNavigationDrawerTopPadding provides if (getExactPlatform() == ExactPlatform.MACOS && !LocalDecoratedWindowScope.current.state.isFullscreen) titleBarHeight.value else null
             ) {
                 App(
                     isDark = { isDark = it },
