@@ -97,7 +97,7 @@ fun App(isDark: (Boolean) -> Unit = {}, colors: (ColorScheme) -> Unit = {}) {
                                     text = "Beste-Noten-App",
                                     modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 40.dp),
                                     color = colorScheme.onSurface,
-                                    autoSize = TextAutoSize.StepBased(),
+                                    autoSize = TextAutoSize.StepBased(10.sp),
                                     fontFamily = FontFamily.Serif,
                                     maxLines = 1
                                 )

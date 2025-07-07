@@ -159,10 +159,7 @@ fun Grades(
                     val pagerState = rememberPagerState { 2 }
                     var userScrollEnabled by remember { mutableStateOf(true) }
                     var contentBlurred by remember { mutableStateOf(false) }
-                    val contentBlurRadius = animateDpAsState(
-                        targetValue = if (contentBlurred) 20.dp else 0.dp,
-                        animationSpec = tween(1000)
-                    )
+                    val contentBlurRadius = animateDpAsState(if (contentBlurred) 10.dp else 0.dp)
                     val firstLazyListState = rememberLazyListState()
                     val secondLazyListState = rememberLazyListState()
                     val currentLazyListState = when(pagerState.currentPage) {
@@ -172,7 +169,7 @@ fun Grades(
                     }
                     HorizontalPager(
                         state = pagerState,
-                        modifier = Modifier.hazeSource(viewModel.hazeBackgroundState).enhancedHazeEffect { blurRadius = contentBlurRadius.value },
+                        modifier = Modifier.hazeSource(viewModel.hazeBackgroundState).enhancedHazeEffect(blurRadius = contentBlurRadius.value),
                         userScrollEnabled = userScrollEnabled
                     ) {
                         AnimatedContent(isLoading) { targetState ->
@@ -395,7 +392,7 @@ fun Grades(
                                     searchQuery = ""
                                     state = 0
                                     contentBlurred = false
-                                    delay(1000)
+                                    delay(250)
                                     if (state == 0) userScrollEnabled = true
                                     isBackInProgress = false
                                     backProgress = 0f
@@ -441,7 +438,8 @@ fun Grades(
                                                     animatedVisibilityScope = this@AnimatedContent,
                                                     boundsTransform = { _, _ ->
                                                         spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
-                                                    }
+                                                    },
+                                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds
                                                 )
                                                 .clip(FloatingToolbarDefaults.ContainerShape).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
                                             colors = FloatingToolbarDefaults.standardFloatingToolbarColors(Color.Transparent),
@@ -554,12 +552,13 @@ fun Grades(
                                                     animatedVisibilityScope = this@AnimatedContent,
                                                     boundsTransform = { _, _ ->
                                                         spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
-                                                    }
+                                                    },
+                                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds
                                                 )
                                                 .then(backHandlingModifier)
                                                 .padding(horizontal = 12.dp)
                                                 .sizeIn(maxWidth = 500.dp)
-                                                .clip(RoundedCornerShape(12.dp)).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
+                                                .clip(RoundedCornerShape(16.dp)).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
                                             colors = CardDefaults.cardColors(Color.Transparent)
                                         ) {
                                             Row(
@@ -594,7 +593,7 @@ fun Grades(
                                                             searchQuery = ""
                                                             state = 0
                                                             userScrollEnabled = false
-                                                            delay(1000)
+                                                            delay(250)
                                                             if (state == 0) userScrollEnabled = true
                                                         }
                                                     }
@@ -620,12 +619,13 @@ fun Grades(
                                                     animatedVisibilityScope = this@AnimatedContent,
                                                     boundsTransform = { _, _ ->
                                                         spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
-                                                    }
+                                                    },
+                                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds
                                                 )
                                                 .then(backHandlingModifier)
                                                 .padding(horizontal = 12.dp)
                                                 .sizeIn(maxWidth = 500.dp)
-                                                .clip(RoundedCornerShape(12.dp)).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
+                                                .clip(RoundedCornerShape(16.dp)).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
                                             colors = CardDefaults.cardColors(Color.Transparent)
                                         ) {
                                             LaunchedEffect(Unit) {
@@ -676,7 +676,7 @@ fun Grades(
                                                     scope.launch {
                                                         state = 0
                                                         contentBlurred = false
-                                                        delay(1000)
+                                                        delay(250)
                                                         if (state == 0) userScrollEnabled = true
                                                     }
                                                 },
@@ -705,12 +705,13 @@ fun Grades(
                                                     animatedVisibilityScope = this@AnimatedContent,
                                                     boundsTransform = { _, _ ->
                                                         spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
-                                                    }
+                                                    },
+                                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds
                                                 )
                                                 .then(backHandlingModifier)
                                                 .padding(horizontal = 12.dp)
                                                 .sizeIn(maxWidth = 500.dp)
-                                                .clip(RoundedCornerShape(12.dp)).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
+                                                .clip(RoundedCornerShape(16.dp)).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
                                             colors = CardDefaults.cardColors(Color.Transparent)
                                         ) {
                                             Text(
@@ -731,6 +732,7 @@ fun Grades(
                                                         },
                                                         text = "Noten-Historien anzeigen",
                                                         icon = Icons.Outlined.History,
+                                                        textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Top,
                                                     )
                                                     settingsToggleItem(
@@ -741,6 +743,7 @@ fun Grades(
                                                         },
                                                         text = "Leistungen ohne Noten anzeigen",
                                                         icon = Icons.Outlined.DisabledVisible,
+                                                        textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Middle,
                                                     )
                                                     settingsToggleItem(
@@ -750,8 +753,9 @@ fun Grades(
                                                             settings["showTeachersWithFirstname"] = it
                                                         },
                                                         text = "Lehrer mit Vornamen anzeigen",
-                                                        position = PreferencePosition.Bottom,
                                                         icon = Icons.Outlined.Title,
+                                                        textModifier = Modifier.skipToLookaheadSize(),
+                                                        position = PreferencePosition.Bottom,
                                                     )
                                                 }
                                             }
@@ -760,7 +764,7 @@ fun Grades(
                                                     scope.launch {
                                                         state = 0
                                                         contentBlurred = false
-                                                        delay(1000)
+                                                        delay(250)
                                                         if (state == 0) userScrollEnabled = true
                                                     }
                                                 },
@@ -783,12 +787,13 @@ fun Grades(
                                                     animatedVisibilityScope = this@AnimatedContent,
                                                     boundsTransform = { _, _ ->
                                                         spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
-                                                    }
+                                                    },
+                                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds
                                                 )
                                                 .then(backHandlingModifier)
                                                 .padding(horizontal = 12.dp)
                                                 .sizeIn(maxWidth = 600.dp)
-                                                .clip(RoundedCornerShape(12.dp)).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.surfaceContainerHighest),
+                                                .clip(RoundedCornerShape(16.dp)).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.surfaceContainerHighest),
                                             colors = CardDefaults.cardColors(Color.Transparent)
                                         ) {
                                             Box {
@@ -1268,7 +1273,7 @@ fun Grades(
                                                             scope.launch {
                                                                 state = 0
                                                                 contentBlurred = false
-                                                                delay(1000)
+                                                                delay(250)
                                                                 if (state == 0) userScrollEnabled = true
                                                             }
                                                         },

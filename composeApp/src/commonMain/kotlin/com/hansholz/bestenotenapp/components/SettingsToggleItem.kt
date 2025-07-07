@@ -18,13 +18,16 @@ fun LazyListScope.settingsToggleItem(
     onCheckedChange: (Boolean) -> Unit,
     text: String,
     icon: ImageVector? = null,
+    modifier: Modifier = Modifier,
+    textModifier: Modifier = Modifier,
     position: PreferencePosition = PreferencePosition.Single,
     checkedIcon: ImageVector = Icons.Outlined.Done,
     uncheckedIcon: ImageVector = Icons.Outlined.Close,
 ) {
     item {
         PreferenceItem(
-            modifier = Modifier.padding(horizontal = 16.dp),
+            modifier = modifier.padding(horizontal = 16.dp),
+            textModifier = textModifier,
             title = text,
             icon = icon,
             position = position,
