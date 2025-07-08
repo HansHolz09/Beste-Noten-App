@@ -71,6 +71,7 @@ kotlin {
             implementation(libs.material.kolor)
             implementation(libs.platformtools.darkmodedetector)
             implementation(libs.animate.compose)
+            implementation(libs.emoji.compose.m3)
         }
         androidMain.dependencies {
             implementation(compose.preview)
@@ -115,6 +116,7 @@ android {
         getByName("release") {
             isMinifyEnabled = true
             isShrinkResources = true
+            proguardFiles("src/androidMain/proguard-rules.pro")
         }
     }
     compileOptions {

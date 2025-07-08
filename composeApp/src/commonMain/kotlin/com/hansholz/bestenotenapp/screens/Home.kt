@@ -73,6 +73,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.imageResource
+import org.kodein.emoji.compose.m3.TextWithNotoAnimatedEmoji
 import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class)
@@ -141,7 +142,7 @@ fun Home(
                                 }
                             }
                             AnimatedContent(greeting) {
-                                Text(
+                                TextWithNotoAnimatedEmoji(
                                     text = it,
                                     modifier = Modifier.padding(20.dp).clickable(
                                         interactionSource = remember { MutableInteractionSource() },

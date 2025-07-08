@@ -171,6 +171,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.kodein.emoji.compose.m3.TextWithNotoImageEmoji
 import kotlin.math.ceil
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class,
@@ -317,7 +318,7 @@ fun Grades(
                                                                 }
                                                             },
                                                             leadingContent = {
-                                                                Text(it.grades?.getOrNull(0)?.value ?: "🚫", textAlign = TextAlign.Center, modifier = Modifier.width(30.dp))
+                                                                TextWithNotoImageEmoji(it.grades?.getOrNull(0)?.value ?: "🚫", textAlign = TextAlign.Center, modifier = Modifier.width(30.dp))
                                                             },
                                                             colors = ListItemDefaults.colors(Color.Transparent),
                                                             modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2)
@@ -400,7 +401,7 @@ fun Grades(
                                                                         }
                                                                     },
                                                                     leadingContent = {
-                                                                        Text(it.grades?.getOrNull(0)?.value ?: "🚫", textAlign = TextAlign.Center, modifier = Modifier.width(30.dp))
+                                                                        TextWithNotoImageEmoji(it.grades?.getOrNull(0)?.value ?: "🚫", textAlign = TextAlign.Center, modifier = Modifier.width(30.dp))
                                                                     },
                                                                     colors = ListItemDefaults.colors(Color.Transparent),
                                                                     modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2)
