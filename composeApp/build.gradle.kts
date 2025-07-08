@@ -139,6 +139,19 @@ compose.desktop {
             packageVersion = "1.0.0"
 
             modules += "jdk.unsupported"
+
+            macOS {
+                infoPlist {
+                    extraKeysRawXml =
+                        """
+                        <key>CFBundleLocalizations</key>
+                        <array>
+                            <string>de</string>
+                            <string>en</string>
+                        </array>
+                        """.trimIndent()
+                }
+            }
         }
     }
 }
