@@ -11,7 +11,7 @@ koalaplotCore = "0.9.0"
 kotlin = "2.2.0"
 kotlinxDatetime = "0.7.0"
 kotlinx-coroutines = "1.10.2"
-kotlinxSerializationJson = "1.8.1"
+kotlinxSerializationJson = "1.9.0"
 ktorClientCore = "3.2.1"
 jna = "5.17.0"
 platformtools = "0.4.0"
@@ -38,6 +38,7 @@ ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktorClien
 ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktorClientCore" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorClientCore" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktorClientCore" }
+ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktorClientCore" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorClientCore" }
 material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 platformtools-darkmodedetector = { module = "io.github.kdroidfilter:platformtools.darkmodedetector", version.ref = "platformtools" }

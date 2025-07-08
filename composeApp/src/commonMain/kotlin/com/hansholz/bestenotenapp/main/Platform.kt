@@ -4,6 +4,7 @@ enum class Platform {
     ANDROID,
     IOS,
     DESKTOP,
+    WEB,
 }
 
 enum class ExactPlatform {
@@ -14,6 +15,7 @@ enum class ExactPlatform {
     IOS,
     IPADOS,
     VISIONOS,
+    WEBWASM,
     UNKNOWN,
 }
 

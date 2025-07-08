@@ -1,17 +1,17 @@
 package com.hansholz.bestenotenapp.components
 
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
-import kotlin.math.max
-import kotlin.math.roundToInt
+import androidx.compose.ui.graphics.ImageShader
+import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.graphics.drawscope.withTransform
 
 @Composable
 fun RepeatingBackground(
@@ -20,38 +20,13 @@ fun RepeatingBackground(
     scale: Float = 1.0f,
     offset: Offset = Offset.Zero
 ) {
-    require(scale > 0f) { "Scale must be positive" }
-
-    val scaledWidthFloat = imageBitmap.width * scale
-    val scaledHeightFloat = imageBitmap.height * scale
-
-    val scaledWidthInt = max(1, scaledWidthFloat.roundToInt())
-    val scaledHeightInt = max(1, scaledHeightFloat.roundToInt())
-
-    BoxWithConstraints(modifier = modifier) {
-        val boxWidth = constraints.maxWidth
-        val boxHeight = constraints.maxHeight
-
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val startX = (offset.x % scaledWidthFloat).let { if (it > 0) it - scaledWidthFloat else it }
-            val startY = (offset.y % scaledHeightFloat).let { if (it > 0) it - scaledHeightFloat else it }
-
-            val startXInt = startX.roundToInt()
-            val startYInt = startY.roundToInt()
-
-            val scaledSize = IntSize(scaledWidthInt, scaledHeightInt)
-
-            for (x in startXInt until boxWidth step scaledWidthInt) {
-                for (y in startYInt until boxHeight step scaledHeightInt) {
-                    drawImage(
-                        image = imageBitmap,
-                        dstOffset = IntOffset(x, y),
-                        dstSize = scaledSize
-                    )
-                }
-            }
-        }
-    }
+    Box(
+        modifier.fillMaxSize().repeatingBackground(
+            imageBitmap = imageBitmap,
+            scale = scale,
+            offset = offset
+        )
+    )
 }
 
 fun Modifier.repeatingBackground(
@@ -63,32 +38,27 @@ fun Modifier.repeatingBackground(
     require(scale > 0f) { "Scale must be positive" }
 
     return this.drawBehind {
-        val scaledWidthFloat = imageBitmap.width * scale
-        val scaledHeightFloat = imageBitmap.height * scale
+        val imageShader = ImageShader(imageBitmap, TileMode.Repeated, TileMode.Repeated)
+        val brush = ShaderBrush(imageShader)
 
-        val scaledWidthInt = max(1, scaledWidthFloat.roundToInt())
-        val scaledHeightInt = max(1, scaledHeightFloat.roundToInt())
+        val scaledWidth = imageBitmap.width * scale
+        val scaledHeight = imageBitmap.height * scale
 
-        val canvasWidth = size.width.roundToInt()
-        val canvasHeight = size.height.roundToInt()
+        val correctedStartX = (offset.x % scaledWidth).let { if (it > 0) it - scaledWidth else it }
+        val correctedStartY = (offset.y % scaledHeight).let { if (it > 0) it - scaledHeight else it }
 
-        val startX = (offset.x % scaledWidthFloat).let { if (it > 0) it - scaledWidthFloat else it }
-        val startY = (offset.y % scaledHeightFloat).let { if (it > 0) it - scaledHeightFloat else it }
-
-        val startXInt = startX.roundToInt()
-        val startYInt = startY.roundToInt()
-
-        val scaledSize = IntSize(scaledWidthInt, scaledHeightInt)
-
-        for (x in startXInt until canvasWidth step scaledWidthInt) {
-            for (y in startYInt until canvasHeight step scaledHeightInt) {
-                drawImage(
-                    image = imageBitmap,
-                    dstOffset = IntOffset(x, y),
-                    dstSize = scaledSize,
-                    alpha = alpha
+        withTransform({
+            translate(left = correctedStartX, top = correctedStartY)
+            scale(scaleX = scale, scaleY = scale, pivot = Offset.Zero)
+        }) {
+            drawRect(
+                brush = brush,
+                alpha = alpha,
+                size = Size(
+                    width = (this.size.width - correctedStartX) / scale,
+                    height = (this.size.height - correctedStartY) / scale
                 )
-            }
+            )
         }
     }
 }
