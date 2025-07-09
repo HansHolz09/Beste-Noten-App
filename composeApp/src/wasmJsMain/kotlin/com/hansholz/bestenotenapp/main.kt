@@ -1,14 +1,18 @@
 package com.hansholz.bestenotenapp
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
+import androidx.navigation.ExperimentalBrowserHistoryApi
+import androidx.navigation.bindToNavigation
 import com.hansholz.bestenotenapp.main.App
 import kotlinx.browser.document
+import kotlinx.browser.window
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalBrowserHistoryApi::class)
 fun main() {
     ComposeViewport(document.body!!) {
-        App()
+        App {
+            window.bindToNavigation(it)
+        }
     }
 }

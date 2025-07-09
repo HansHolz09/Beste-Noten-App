@@ -3,24 +3,34 @@ package com.hansholz.bestenotenapp.navigation
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed class Screen(val label: String, val route: String) {
+sealed class Screen(val route: String) {
     @Serializable
-    data object Home : Screen("Startseite", "home")
+    data object Login : Screen("login")
 
     @Serializable
-    data object Grades : Screen("Noten", "grades")
+    data object Main : Screen("main")
+}
+
+@Serializable
+sealed class Fragment(val label: String, val route: String) {
 
     @Serializable
-    data object SubjectsAndTeachers : Screen("Fächer und Lehrer", "subjects_and_teachers")
+    data object Home : Fragment("Startseite", "home")
 
     @Serializable
-    data object Stats : Screen("Statistiken", "stats")
+    data object Grades : Fragment("Noten", "grades")
 
     @Serializable
-    data object Settings : Screen("Einstellungen", "settings")
+    data object SubjectsAndTeachers : Fragment("Fächer und Lehrer", "subjects_and_teachers")
+
+    @Serializable
+    data object Stats : Fragment("Statistiken", "stats")
+
+    @Serializable
+    data object Settings : Fragment("Einstellungen", "settings")
 
     companion object {
-        val entries: List<Screen> by lazy {
+        val entries: List<Fragment> by lazy {
             listOfNotNull(
                 Home,
                 Grades,

@@ -2,6 +2,7 @@
 
 package com.hansholz.bestenotenapp.api
 
+import androidx.compose.runtime.MutableState
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
@@ -1933,12 +1934,12 @@ data class GroupSubjectOrderResponse(
     @SerialName("collection_label") val collectionLabel: String
 )
 
-class BesteSchuleApi(httpClient: HttpClient, authToken: String) {
+class BesteSchuleApi(httpClient: HttpClient, authToken: MutableState<String?>) {
     private val baseUrl = "https://beste.schule/api"
 
     private val client = httpClient.config {
         defaultRequest {
-            bearerAuth(authToken)
+            authToken.value?.let { bearerAuth(it) }
             header(HttpHeaders.Accept, ContentType.Application.Json)
             header(HttpHeaders.ContentType, ContentType.Application.Json)
         }

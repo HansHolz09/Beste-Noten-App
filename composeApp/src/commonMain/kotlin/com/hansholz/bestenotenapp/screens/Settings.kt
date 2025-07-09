@@ -2,13 +2,41 @@
 
 package com.hansholz.bestenotenapp.screens
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.outlined.Animation
+import androidx.compose.material.icons.outlined.BlurOn
+import androidx.compose.material.icons.outlined.Brightness4
+import androidx.compose.material.icons.outlined.BrightnessAuto
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.DisabledVisible
+import androidx.compose.material.icons.outlined.FiberNew
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.InvertColors
+import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.Texture
+import androidx.compose.material.icons.outlined.Title
+import androidx.compose.material.icons.outlined.WavingHand
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledIconToggleButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -19,9 +47,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.hansholz.bestenotenapp.components.*
-import com.hansholz.bestenotenapp.main.*
-import com.hansholz.bestenotenapp.theme.*
+import com.hansholz.bestenotenapp.components.PreferenceCategory
+import com.hansholz.bestenotenapp.components.PreferenceItem
+import com.hansholz.bestenotenapp.components.PreferencePosition
+import com.hansholz.bestenotenapp.components.enhancedHazeEffect
+import com.hansholz.bestenotenapp.components.settingsToggleItem
+import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
+import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
+import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
+import com.hansholz.bestenotenapp.main.LocalShowGreetings
+import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
+import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
+import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
+import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
+import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
+import com.hansholz.bestenotenapp.theme.LocalIsDark
+import com.hansholz.bestenotenapp.theme.LocalSupportsCustomColorScheme
+import com.hansholz.bestenotenapp.theme.LocalUseCustomColorScheme
+import com.hansholz.bestenotenapp.theme.LocalUseSystemIsDark
 import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
 import com.hansholz.bestenotenapp.utils.topAppBarPadding
 import com.russhwolf.settings.Settings
@@ -32,7 +76,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun Settings(
-    viewModel: ViewModel
+    viewModel: ViewModel,
+    onNavigateToLogin: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
@@ -228,6 +273,20 @@ fun Settings(
                     text = "Lehrer mit Vornamen anzeigen",
                     icon = Icons.Outlined.Title,
                 )
+                item {
+                    PreferenceCategory("Account", Modifier.padding(horizontal = 15.dp))
+                }
+                item {
+                    PreferenceItem(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        title = "Abmelden",
+                        icon = Icons.AutoMirrored.Outlined.Logout,
+                        onClick = {
+                            viewModel.logout()
+                            onNavigateToLogin()
+                        },
+                    )
+                }
                 item {
                     Spacer(Modifier.height(12.dp))
                 }

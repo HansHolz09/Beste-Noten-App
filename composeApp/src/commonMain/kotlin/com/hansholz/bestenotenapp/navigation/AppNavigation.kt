@@ -3,56 +3,44 @@ package com.hansholz.bestenotenapp.navigation
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.hansholz.bestenotenapp.main.ViewModel
-import com.hansholz.bestenotenapp.screens.*
+import com.hansholz.bestenotenapp.screens.Login
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AppNavigation(
     viewModel: ViewModel,
-    navController: NavHostController
+    onNavHostReady: suspend (NavController) -> Unit = {}
 ) {
+    val navController = rememberNavController()
     SharedTransitionLayout {
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route
+            startDestination = if (viewModel.authTokenManager.getToken().isNullOrEmpty()) Screen.Login.route else Screen.Main.route
         ) {
-            composable(route = Screen.Home.route) {
-                Home(
+            composable(route = Screen.Login.route) {
+                Login(
                     viewModel = viewModel,
-                    sharedTransitionScope = this@SharedTransitionLayout,
-                    animatedVisibilityScope = this,
-                    onNavigateToScreen = {
-                        navController.navigate(it.route)
+                    onNavigateHome = {
+                        navController.navigate(Screen.Main.route)
+                        navController.clearBackStack(Screen.Login.route)
                     }
                 )
             }
 
-            composable(route = Screen.Grades.route) {
-                Grades(
+            composable(route = Screen.Main.route) {
+                AppNavigationDrawer(
                     viewModel = viewModel,
-                    sharedTransitionScope = this@SharedTransitionLayout,
-                    animatedVisibilityScope = this,
+                    onNavHostReady = onNavHostReady,
+                    onNavigateToLogin = {
+                        navController.navigate(Screen.Login.route)
+                        navController.clearBackStack(Screen.Main.route)
+                    }
                 )
-            }
-
-            composable(route = Screen.SubjectsAndTeachers.route) {
-                SubjectsAndTeachers(
-                    viewModel = viewModel,
-                    sharedTransitionScope = this@SharedTransitionLayout,
-                    animatedVisibilityScope = this,
-                )
-            }
-
-            composable(route = Screen.Stats.route) {
-                Stats()
-            }
-
-            composable(route = Screen.Settings.route) {
-                Settings(viewModel)
             }
         }
     }

@@ -63,7 +63,7 @@ import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
 import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
 import com.hansholz.bestenotenapp.main.ViewModel
-import com.hansholz.bestenotenapp.navigation.Screen
+import com.hansholz.bestenotenapp.navigation.Fragment
 import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.getGreeting
@@ -82,7 +82,7 @@ fun Home(
     viewModel: ViewModel,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    onNavigateToScreen: (Screen) -> Unit
+    onNavigateToScreen: (Fragment) -> Unit
 ) {
     with(sharedTransitionScope) {
         val scope = rememberCoroutineScope()
@@ -172,7 +172,7 @@ fun Home(
                             )
                             .border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
                             .clickable {
-                                onNavigateToScreen(Screen.Grades)
+                                onNavigateToScreen(Fragment.Grades)
                             }
                             .sharedBounds(
                                 sharedContentState = rememberSharedContentState(key = "grades-card"),
@@ -254,7 +254,7 @@ fun Home(
                             )
                             .border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
                             .clickable {
-                                onNavigateToScreen(Screen.SubjectsAndTeachers)
+                                onNavigateToScreen(Fragment.SubjectsAndTeachers)
                             }
                             .sharedBounds(
                                 sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-card"),

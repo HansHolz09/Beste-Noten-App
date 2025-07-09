@@ -9,13 +9,32 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.window.core.layout.WindowWidthSizeClass
-import com.hansholz.bestenotenapp.api.*
+import com.hansholz.bestenotenapp.api.AuthTokenManager
+import com.hansholz.bestenotenapp.api.BesteSchuleApi
+import com.hansholz.bestenotenapp.api.Finalgrade
+import com.hansholz.bestenotenapp.api.GradeCollection
+import com.hansholz.bestenotenapp.api.Subject
+import com.hansholz.bestenotenapp.api.User
+import com.hansholz.bestenotenapp.api.Year
+import com.hansholz.bestenotenapp.api.codeAuthFlowFactory
+import com.hansholz.bestenotenapp.api.createHttpClient
+import com.hansholz.bestenotenapp.api.oidcClient
 import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import org.publicvalue.multiplatform.oidc.DefaultOpenIdConnectClient
+import org.publicvalue.multiplatform.oidc.OpenIdConnectException
 
 class ViewModel : ViewModel() {
-    val httpClient = createHttpClient()
-    val api = BesteSchuleApi(httpClient, AuthToken.TOKEN)
+    private val httpClient = createHttpClient()
+
+    val authTokenManager = AuthTokenManager()
+    val authToken = mutableStateOf<String?>(null)
+    private val authFlow = codeAuthFlowFactory.createAuthFlow(DefaultOpenIdConnectClient(httpClient, oidcClient.config))
+
+
+    val api = BesteSchuleApi(httpClient, authToken)
 
     val hazeBackgroundState = HazeState()
     val hazeBackgroundState1 = HazeState()
@@ -33,6 +52,40 @@ class ViewModel : ViewModel() {
     val gradeCollections = mutableStateListOf<GradeCollection>()
     val allGradeCollectionsLoaded = mutableStateOf(false)
     val years = mutableStateListOf<Year>()
+
+    suspend fun getAccessToken(): Boolean {
+        try {
+            authToken.value = authFlow.getAccessToken().access_token
+            return !authToken.value.isNullOrEmpty()
+        } catch (e: OpenIdConnectException.UnsuccessfulTokenRequest) {
+            try {
+                @Serializable
+                data class TokenResponse(val access_token: String)
+
+                val withUnknownKeys = Json { ignoreUnknownKeys = true }
+                authToken.value = withUnknownKeys.decodeFromString<TokenResponse>(e.body ?: "").access_token
+                return !authToken.value.isNullOrEmpty()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                return false
+            }
+        }
+    }
+
+    fun stayLoggedIn(token: String? = null) {
+        authTokenManager.saveToken(token ?: authToken.value!!)
+    }
+
+    fun logout() {
+        authToken.value = null
+        authTokenManager.deleteToken()
+    }
+
+    suspend fun init() {
+        if (!authToken.value.isNullOrEmpty()) {
+            user.value = api.userMe().data
+        }
+    }
 
     suspend fun closeOrOpenDrawer(windowWidthSizeClass: WindowWidthSizeClass) {
         if (windowWidthSizeClass == WindowWidthSizeClass.Companion.COMPACT) {
@@ -78,7 +131,10 @@ class ViewModel : ViewModel() {
 
     init {
         viewModelScope.launch {
-            user.value = api.userMe().data
+            authToken.value = authTokenManager.getToken()
+            init()
         }
     }
 }
+
+
