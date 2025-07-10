@@ -2,6 +2,8 @@ package com.hansholz.bestenotenapp.navigation
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -20,7 +22,9 @@ fun AppNavigation(
     SharedTransitionLayout {
         NavHost(
             navController = navController,
-            startDestination = if (viewModel.authTokenManager.getToken().isNullOrEmpty()) Screen.Login.route else Screen.Main.route
+            startDestination = if (viewModel.authTokenManager.getToken().isNullOrEmpty()) Screen.Login.route else Screen.Main.route,
+            enterTransition = { fadeIn() },
+            exitTransition = { fadeOut() }
         ) {
             composable(route = Screen.Login.route) {
                 Login(

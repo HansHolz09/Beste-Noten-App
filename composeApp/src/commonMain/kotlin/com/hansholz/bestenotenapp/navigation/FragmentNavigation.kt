@@ -2,6 +2,11 @@ package com.hansholz.bestenotenapp.navigation
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -23,7 +28,23 @@ fun FragmentNavigation(
     SharedTransitionLayout {
         NavHost(
             navController = navController,
-            startDestination = Fragment.Home.route
+            startDestination = Fragment.Home.route,
+            enterTransition = {
+                val isBackwards = initialState.destination.route != navController.previousBackStackEntry?.destination?.route
+                if (isBackwards) {
+                    slideInHorizontally(tween()) { -it / 4 } + fadeIn()
+                } else {
+                    slideInHorizontally(tween()) { it }
+                }
+            },
+            exitTransition = {
+                val isBackwards = initialState.destination.route != navController.previousBackStackEntry?.destination?.route
+                if (isBackwards) {
+                    slideOutHorizontally(tween()) { it }
+                } else {
+                    slideOutHorizontally(tween()) { -it / 4 } + fadeOut()
+                }
+            }
         ) {
             composable(route = Fragment.Home.route) {
                 Home(
