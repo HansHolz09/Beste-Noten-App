@@ -5,12 +5,18 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.ktx.animateColorScheme
 import com.materialkolor.rememberDynamicColorScheme
 import com.russhwolf.settings.Settings
+import dev.chrisbanes.haze.HazeDefaults
 import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
 
 internal val LocalUseSystemIsDark  = compositionLocalOf { mutableStateOf(true) }
@@ -32,7 +38,7 @@ internal fun AppTheme(content: @Composable () -> Unit) {
     val useCustomColorSchemeState = remember { mutableStateOf(settings.getBoolean("useCustomColorScheme", false)) }
     val supportsCustomColorSchemeState = remember { mutableStateOf(false) }
     val animationsEnabledState = remember { mutableStateOf(settings.getBoolean("animationsEnabled", true)) }
-    val blurEnabledState = remember { mutableStateOf(settings.getBoolean("blurEnabled", true)) }
+    val blurEnabledState = remember { mutableStateOf(settings.getBoolean("blurEnabled", HazeDefaults.blurEnabled())) }
     CompositionLocalProvider(
         LocalUseSystemIsDark provides useSystemIsDark,
         LocalIsDark provides isDark,
