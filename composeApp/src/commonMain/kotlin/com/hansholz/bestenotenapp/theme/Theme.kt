@@ -62,6 +62,7 @@ internal fun AppTheme(content: @Composable () -> Unit) {
         )
         MaterialExpressiveTheme(
             colorScheme = animateColorScheme(colorScheme, { tween(750) }),
+            typography = AppTypography(),
             content = { Surface(content = content) },
         )
     }

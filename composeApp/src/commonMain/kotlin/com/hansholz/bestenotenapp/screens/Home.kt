@@ -49,7 +49,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -64,6 +63,7 @@ import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
 import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.navigation.Fragment
+import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.getGreeting
@@ -109,7 +109,7 @@ fun Home(
             topBar = {
                 CenterAlignedTopAppBar(
                     title = {
-                        Text("Startseite", fontFamily = FontFamily.Serif, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text("Startseite", fontFamily = FontFamilies.KeaniaOne(), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     },
                     modifier = LocalTitleBarModifier.current.customTitleBarMouseEventHandler().topAppBarPadding(viewModel.mediumExpandedDrawerState.value.isOpen),
                     navigationIcon = {
@@ -152,7 +152,7 @@ fun Home(
                                     },
                                     textAlign = TextAlign.Center,
                                     fontSize = 22.sp,
-                                    fontFamily = FontFamily.Companion.Cursive
+                                    fontFamily = FontFamilies.Schoolbell()
                                 )
                             }
                         }
@@ -193,7 +193,7 @@ fun Home(
                                                 animatedVisibilityScope = animatedVisibilityScope
                                             )
                                             .skipToLookaheadSize(),
-                                        fontFamily = FontFamily.Serif,
+                                        fontFamily = FontFamilies.KeaniaOne(),
                                         fontSize = 22.sp
                                     )
                                 }
@@ -275,7 +275,7 @@ fun Home(
                                                 animatedVisibilityScope = animatedVisibilityScope
                                             )
                                             .skipToLookaheadSize(),
-                                        fontFamily = FontFamily.Serif,
+                                        fontFamily = FontFamilies.KeaniaOne(),
                                         fontSize = 22.sp
                                     )
                                 }

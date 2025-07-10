@@ -110,7 +110,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -125,6 +124,7 @@ import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.isScrollingUp
@@ -232,7 +232,7 @@ fun Grades(
                                 sharedContentState = rememberSharedContentState(key = "grades-title"),
                                 animatedVisibilityScope = animatedVisibilityScope
                             ).skipToLookaheadSize(),
-                            fontFamily = FontFamily.Serif,
+                            fontFamily = FontFamilies.KeaniaOne(),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )

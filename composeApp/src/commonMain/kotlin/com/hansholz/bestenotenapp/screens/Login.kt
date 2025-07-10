@@ -3,13 +3,16 @@ package com.hansholz.bestenotenapp.screens
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.KeyboardActionHandler
@@ -25,9 +28,11 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -41,8 +46,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
@@ -51,6 +56,7 @@ import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getPlatform
+import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
 import kotlinx.coroutines.launch
 
@@ -70,7 +76,7 @@ fun Login(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text("Login", fontFamily = FontFamily.Serif, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text("Login", fontFamily = FontFamilies.KeaniaOne(), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 },
                 modifier = LocalTitleBarModifier.current.customTitleBarMouseEventHandler(),
                 colors = TopAppBarDefaults.topAppBarColors(Color.Transparent)
@@ -78,7 +84,12 @@ fun Login(
         },
         containerColor = Color.Transparent,
         content = { innerPadding ->
-            Box(Modifier.padding(innerPadding).imePadding().fillMaxSize()) {
+            BoxWithConstraints(
+                modifier = Modifier.padding(innerPadding).imePadding().fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                val width = this.maxWidth
+                val modifier = if (width >= 780.dp) Modifier.width(400.dp) else Modifier.fillMaxWidth()
                 AnimatedContent(
                     targetState = isLoading,
                     modifier = Modifier.align(Alignment.Center),
@@ -90,6 +101,14 @@ fun Login(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             var stayLoggedIn by remember { mutableStateOf(false) }
 
+                            Text(
+                                text = "Melde dich mit deinem Account von beste.schule an",
+                                modifier = modifier,
+                                fontFamily = FontFamilies.Schoolbell(),
+                                textAlign = TextAlign.Center,
+                                style = typography.headlineMedium
+                            )
+                            Spacer(Modifier.height(30.dp))
                             val textFieldState = rememberTextFieldState()
                             suspend fun loginUsingPrivateAccessToken() {
                                 isLoading = true
@@ -108,7 +127,7 @@ fun Login(
                             }
                             OutlinedTextField(
                                 state = textFieldState,
-                                modifier = Modifier.widthIn(max = 500.dp),
+                                modifier = modifier.widthIn(max = 500.dp),
                                 leadingIcon = {
                                     IconButton(
                                         onClick = {
@@ -140,6 +159,7 @@ fun Login(
                                 },
                                 lineLimits = TextFieldLineLimits.SingleLine
                             )
+                            Text("oder")
                             Button(
                                 onClick = {
                                     scope.launch {
@@ -155,19 +175,22 @@ fun Login(
                                         }
                                     }
                                 },
+                                modifier = modifier,
                                 enabled = getPlatform() != Platform.WEB
                             ) {
                                 Text("Login über beste.schule")
                             }
+                            HorizontalDivider(modifier.padding(top = 10.dp))
                             Row(
+                                modifier = modifier,
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                Text("Angemeldet bleiben")
                                 Checkbox(
                                     checked = stayLoggedIn,
                                     onCheckedChange = { stayLoggedIn = it }
                                 )
-                                Text("Angemeldet bleiben")
                             }
                         }
                     }

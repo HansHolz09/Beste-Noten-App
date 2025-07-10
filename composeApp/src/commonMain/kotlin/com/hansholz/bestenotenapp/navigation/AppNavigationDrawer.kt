@@ -31,7 +31,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -42,6 +41,7 @@ import com.hansholz.bestenotenapp.components.EnhancedAnimated
 import com.hansholz.bestenotenapp.components.NavigationDrawer
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
 import com.nomanr.animate.compose.animated.rememberAnimatedState
 import com.nomanr.animate.compose.presets.attentionseekers.Jello
@@ -84,7 +84,7 @@ fun AppNavigationDrawer(
                         modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 40.dp),
                         color = colorScheme.onSurface,
                         autoSize = TextAutoSize.StepBased(10.sp),
-                        fontFamily = FontFamily.Serif,
+                        fontFamily = FontFamilies.KeaniaOne(),
                         maxLines = 1
                     )
                 }
@@ -98,7 +98,7 @@ fun AppNavigationDrawer(
                         modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 80.dp),
                         color = colorScheme.onSurface,
                         autoSize = TextAutoSize.StepBased(5.sp),
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = FontFamilies.Schoolbell(),
                         maxLines = 1
                     )
                 }
