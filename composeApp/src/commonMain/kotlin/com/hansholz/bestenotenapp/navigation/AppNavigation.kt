@@ -26,8 +26,9 @@ fun AppNavigation(
                 Login(
                     viewModel = viewModel,
                     onNavigateHome = {
-                        navController.navigate(Screen.Main.route)
-                        navController.clearBackStack(Screen.Login.route)
+                        navController.navigate(Screen.Main.route) {
+                            popUpTo(navController.graph.id) { inclusive = true }
+                        }
                     }
                 )
             }
@@ -37,8 +38,9 @@ fun AppNavigation(
                     viewModel = viewModel,
                     onNavHostReady = onNavHostReady,
                     onNavigateToLogin = {
-                        navController.navigate(Screen.Login.route)
-                        navController.clearBackStack(Screen.Main.route)
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(navController.graph.id) { inclusive = true }
+                        }
                     }
                 )
             }
