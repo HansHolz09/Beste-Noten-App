@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -106,6 +108,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -186,6 +189,7 @@ fun Grades(
     with(sharedTransitionScope) {
         val scope = rememberCoroutineScope()
         val density = LocalDensity.current
+        val layoutDirection = LocalLayoutDirection.current
         val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
         var showGradeHistory by LocalShowGradeHistory.current
@@ -255,6 +259,7 @@ fun Grades(
                     var toolbarPadding by remember { mutableStateOf(0.dp) }
                     val toolbarContentPadding = PaddingValues(top = topPadding, bottom = innerPadding.calculateBottomPadding())
                     val contentPadding = PaddingValues(top = topPadding, bottom = innerPadding.calculateBottomPadding() + toolbarPadding)
+                    val verticalPadding = PaddingValues(start = innerPadding.calculateStartPadding(layoutDirection), end = innerPadding.calculateEndPadding(layoutDirection))
 
                     val pagerState = rememberPagerState { 2 }
                     var userScrollEnabled by remember { mutableStateOf(true) }
@@ -295,6 +300,7 @@ fun Grades(
                                                         .toList()
                                                 ) {
                                                     EnhancedAnimated(
+                                                        modifier = Modifier.padding(verticalPadding),
                                                         preset = ZoomIn(),
                                                         durationMillis = 200,
                                                     ) {
@@ -378,6 +384,7 @@ fun Grades(
                                                         }
                                                         items(items) {
                                                             EnhancedAnimated(
+                                                                modifier = Modifier.padding(verticalPadding),
                                                                 preset = ZoomIn(),
                                                                 durationMillis = 200,
                                                             ) {
@@ -424,6 +431,7 @@ fun Grades(
                     PrimaryTabRow(
                         selectedTabIndex = pagerState.currentPage,
                         modifier = Modifier
+                            .padding(verticalPadding)
                             .padding(top = innerPadding.calculateTopPadding())
                             .onGloballyPositioned {
                                 topPadding = with(density) { it.size.height.toDp() } + innerPadding.calculateTopPadding()
@@ -471,6 +479,7 @@ fun Grades(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
                             .offset(y = -(toolbarContentPadding.calculateBottomPadding() + 12.dp))
+                            .padding(verticalPadding)
                             .consumeWindowInsets(toolbarContentPadding)
                             .imePadding()
                     ) {
@@ -822,6 +831,7 @@ fun Grades(
                                             )
                                             ProvideTextStyle(LocalTextStyle.current.copy(colorScheme.onPrimaryContainer)) {
                                                 LazyColumn(
+                                                    modifier = Modifier.weight(1f, false),
                                                     verticalArrangement = Arrangement.spacedBy(2.dp)
                                                 ) {
                                                     settingsToggleItem(
