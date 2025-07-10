@@ -8,8 +8,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.KeyboardActionHandler
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
@@ -39,12 +42,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import com.hansholz.bestenotenapp.components.enhancedHazeEffect
 import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
+import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
 import kotlinx.coroutines.launch
 
@@ -72,15 +78,34 @@ fun Login(
         },
         containerColor = Color.Transparent,
         content = { innerPadding ->
-
-            Box(Modifier.padding(innerPadding).fillMaxSize()) {
-                AnimatedContent(isLoading, Modifier.align(Alignment.Center)) {
+            Box(Modifier.padding(innerPadding).imePadding().fillMaxSize()) {
+                AnimatedContent(
+                    targetState = isLoading,
+                    modifier = Modifier.align(Alignment.Center),
+                    contentAlignment = Alignment.Center
+                ) {
                     if (it) {
                         ContainedLoadingIndicator()
                     } else {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             var stayLoggedIn by remember { mutableStateOf(false) }
+
                             val textFieldState = rememberTextFieldState()
+                            suspend fun loginUsingPrivateAccessToken() {
+                                isLoading = true
+                                viewModel.authToken.value = textFieldState.text.toString()
+                                try {
+                                    viewModel.api.userMe().data
+                                    viewModel.init()
+                                    if (stayLoggedIn) {
+                                        viewModel.stayLoggedIn()
+                                    }
+                                    onNavigateHome()
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                    isLoading = false
+                                }
+                            }
                             OutlinedTextField(
                                 state = textFieldState,
                                 modifier = Modifier.widthIn(max = 500.dp),
@@ -99,22 +124,7 @@ fun Login(
                                     IconButton(
                                         onClick = {
                                             scope.launch {
-                                                isLoading = true
-                                                viewModel.authToken.value = textFieldState.text.toString()
-                                                try {
-                                                    viewModel.api.userMe().data
-
-                                                    viewModel.init()
-
-                                                    if (stayLoggedIn) {
-                                                        viewModel.stayLoggedIn()
-                                                    }
-
-                                                    onNavigateHome()
-                                                } catch (e: Exception) {
-                                                    e.printStackTrace()
-                                                }
-                                                isLoading = false
+                                                loginUsingPrivateAccessToken()
                                             }
                                         }
                                     ) {
@@ -122,6 +132,12 @@ fun Login(
                                     }
                                 },
                                 placeholder = { Text("Private-Access-Token") },
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                onKeyboardAction = KeyboardActionHandler {
+                                    scope.launch {
+                                        loginUsingPrivateAccessToken()
+                                    }
+                                },
                                 lineLimits = TextFieldLineLimits.SingleLine
                             )
                             Button(
@@ -133,15 +149,13 @@ fun Login(
                                             if (stayLoggedIn) {
                                                 viewModel.stayLoggedIn()
                                             }
-
-                                            println(viewModel.authToken.value)
-                                            println(viewModel.api.userMe().data.students?.firstOrNull()?.forename ?: "du")
-
                                             onNavigateHome()
+                                        } else {
+                                            isLoading = false
                                         }
-                                        isLoading = false
                                     }
-                                }
+                                },
+                                enabled = getPlatform() != Platform.WEB
                             ) {
                                 Text("Login über beste.schule")
                             }

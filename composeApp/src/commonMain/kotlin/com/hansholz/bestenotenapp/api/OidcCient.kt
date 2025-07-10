@@ -13,10 +13,10 @@ val oidcClient = OpenIdConnectClient {
         endSessionEndpoint = null
     }
 
-    clientId = if (getPlatform() == Platform.DESKTOP) "138" else if (getPlatform() == Platform.WEB) "140" else ""
+    clientId = if (getPlatform() == Platform.DESKTOP) "138" else if (getPlatform() == Platform.WEB) "140" else "141"
     clientSecret = null
     scope = null
     codeChallengeMethod = CodeChallengeMethod.S256
-    redirectUri = if (getPlatform() == Platform.DESKTOP) "http://127.0.0.1:8080/callback" else if (getPlatform() == Platform.WEB) "" else ""
+    redirectUri = if (getPlatform() == Platform.DESKTOP) "http://127.0.0.1:8080/callback" else if (getPlatform() == Platform.WEB) "" else "bestenotenapp://callback"
     postLogoutRedirectUri = null
 }

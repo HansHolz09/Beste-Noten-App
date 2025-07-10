@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import com.hansholz.bestenotenapp.api.androidCodeAuthFlowFactory
 import com.hansholz.bestenotenapp.main.App
 import com.hansholz.bestenotenapp.utils.AndroidContext
 
@@ -14,6 +15,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         AndroidContext.init(this)
+        androidCodeAuthFlowFactory.registerActivity(this)
         setContent {
             App()
         }
