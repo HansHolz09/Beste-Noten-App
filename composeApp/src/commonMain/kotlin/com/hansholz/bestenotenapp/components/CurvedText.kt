@@ -1,0 +1,140 @@
+package com.hansholz.bestenotenapp.components
+
+import androidx.compose.foundation.Canvas
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathMeasure
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.takeOrElse
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
+import kotlin.math.PI
+import kotlin.math.atan2
+import kotlin.math.roundToInt
+
+@Composable
+fun CurvedText(
+    text: String,
+    radius: Dp,
+    modifier: Modifier = Modifier,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontStyle: FontStyle? = null,
+    fontWeight: FontWeight? = null,
+    fontFamily: FontFamily? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    textAlign: TextAlign = TextAlign.Center,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    textStyle: TextStyle = LocalTextStyle.current,
+    startAngle: Float = -180f,
+    sweepAngle: Float = 180f,
+) {
+    val textMeasurer = rememberTextMeasurer()
+    val pathMeasure = remember { PathMeasure() }
+
+    val textColor = color.takeOrElse { textStyle.color.takeOrElse { LocalContentColor.current } }
+    val style =
+        textStyle.merge(
+            color = textColor,
+            fontSize = fontSize,
+            fontWeight = fontWeight,
+            textAlign = textAlign,
+            lineHeight = lineHeight,
+            fontFamily = fontFamily,
+            textDecoration = textDecoration,
+            fontStyle = fontStyle,
+            letterSpacing = letterSpacing,
+        )
+
+    Layout(
+        modifier = modifier,
+        content = {
+            Canvas(modifier = Modifier) {
+                val arcPath = Path().apply {
+                    addArc(
+                        oval = androidx.compose.ui.geometry.Rect(
+                            center = center,
+                            radius = radius.toPx()
+                        ),
+                        startAngleDegrees = startAngle,
+                        sweepAngleDegrees = sweepAngle
+                    )
+                }
+
+                val textLayoutResult = textMeasurer.measure(text, style = style)
+                val textWidth = textLayoutResult.size.width.toFloat()
+
+                pathMeasure.setPath(arcPath, false)
+                val pathLength = pathMeasure.length
+
+                val startDistance = when (textAlign) {
+                    TextAlign.Center -> (pathLength - textWidth) / 2f
+                    TextAlign.End -> pathLength - textWidth
+                    else -> 0f
+                }.coerceAtLeast(0f)
+
+                var currentDistance = startDistance
+
+                drawIntoCanvas { canvas ->
+                    text.forEach { char ->
+                        val charLayoutResult = textMeasurer.measure(char.toString(), style = style)
+                        val charWidth = charLayoutResult.size.width.toFloat()
+                        val halfCharWidth = charWidth / 2f
+                        val targetDistance = currentDistance + halfCharWidth
+
+                        if (targetDistance > pathLength) return@forEach
+
+                        val pos = pathMeasure.getPosition(targetDistance)
+                        val tan = pathMeasure.getTangent(targetDistance)
+                        val angleRad = atan2(tan.y, tan.x)
+                        val angleDeg = (angleRad * 180 / PI).toFloat()
+
+                        canvas.save()
+                        canvas.translate(pos.x, pos.y)
+                        canvas.rotate(angleDeg)
+                        drawText(
+                            textLayoutResult = charLayoutResult,
+                            topLeft = Offset(-halfCharWidth, -charLayoutResult.size.height / 2f)
+                        )
+                        canvas.restore()
+
+                        currentDistance += charWidth
+                    }
+                }
+            }
+        }
+    ) { measurables, constraints ->
+        val diameter = (radius.toPx() * 2).roundToInt()
+
+        val boundedDiameter = diameter.coerceIn(constraints.minWidth, constraints.maxWidth)
+
+        val placeable = measurables.first().measure(
+            constraints.copy(
+                minWidth = boundedDiameter,
+                maxWidth = boundedDiameter,
+                minHeight = boundedDiameter,
+                maxHeight = boundedDiameter
+            )
+        )
+
+        layout(placeable.width, placeable.height) {
+            placeable.placeRelative(0, 0)
+        }
+    }
+}
