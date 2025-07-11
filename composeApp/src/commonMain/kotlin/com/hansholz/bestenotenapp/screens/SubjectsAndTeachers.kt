@@ -83,10 +83,10 @@ fun SubjectsAndTeachers(
         LaunchedEffect(Unit) {
             isLoading = true
             if (viewModel.finalGrades.isEmpty()) {
-                viewModel.finalGrades.addAll(viewModel.api.finalgradesIndex().data)
+                viewModel.getFinalGrades()?.let { viewModel.finalGrades.addAll(it) }
             }
             if (viewModel.subjects.isEmpty()) {
-                viewModel.subjects.addAll(viewModel.api.subjectsIndex().data)
+                viewModel.getSubjects()?.let { viewModel.subjects.addAll(it) }
             }
             isLoading = false
         }

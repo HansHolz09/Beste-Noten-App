@@ -14,6 +14,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.background
+import com.dokar.sonner.Toaster
+import com.dokar.sonner.rememberToasterState
 import com.hansholz.bestenotenapp.components.ProvideCupertinoOverscrollEffect
 import com.hansholz.bestenotenapp.components.RepeatingBackground
 import com.hansholz.bestenotenapp.components.enhancedHazeEffect
@@ -33,10 +35,12 @@ fun App(
 ) {
     AppTheme {
         colors(colorScheme)
-        isDark(LocalThemeIsDark.current)
+        val isDark = LocalThemeIsDark.current
+        isDark(isDark)
         ProvideCupertinoOverscrollEffect(listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())) {
             SettingsProvider {
-                val viewModel = viewModel { ViewModel() }
+                val toasterState = rememberToasterState()
+                val viewModel = viewModel { ViewModel(toasterState) }
                 val blurEnabled = LocalBlurEnabled.current.value
                 val backgroundAlpha = animateFloatAsState(if (LocalBackgroundEnabled.current.value) (if (blurEnabled) 1f else 0.2f) else 0f, tween(750))
                 RepeatingBackground(
@@ -51,6 +55,12 @@ fun App(
                 )
 
                 AppNavigation(viewModel, onNavHostReady)
+
+                Toaster(
+                    state = toasterState,
+                    richColors = true,
+                    darkTheme = isDark
+                )
             }
         }
     }

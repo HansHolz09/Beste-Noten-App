@@ -53,6 +53,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewModelScope
 import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.grades
 import bestenotenapp.composeapp.generated.resources.subjectsAndTeachers
@@ -69,9 +70,7 @@ import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.getGreeting
 import com.hansholz.bestenotenapp.utils.topAppBarPadding
 import dev.chrisbanes.haze.hazeSource
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.imageResource
 import org.kodein.emoji.compose.m3.TextWithNotoAnimatedEmoji
 import kotlin.random.Random
@@ -94,11 +93,11 @@ fun Home(
         var isGradesLoading by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
-            withContext(Dispatchers.Unconfined) {
+            viewModel.viewModelScope.launch {
                 if (showNewestGrades) {
                     isGradesLoading = true
                     if (viewModel.startGradeCollections.isEmpty()) {
-                        viewModel.startGradeCollections.addAll(viewModel.getCollections())
+                        viewModel.getCollections()?.let { viewModel.startGradeCollections.addAll(it) }
                     }
                     isGradesLoading = false
                 }

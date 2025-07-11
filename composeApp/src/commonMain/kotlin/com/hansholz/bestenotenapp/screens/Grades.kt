@@ -205,10 +205,10 @@ fun Grades(
             withContext(Dispatchers.Unconfined) {
                 isLoading = true
                 if (viewModel.years.isEmpty()) {
-                    viewModel.years.addAll(viewModel.api.yearIndex().data)
+                    viewModel.getYears()?.let { viewModel.years.addAll(it) }
                 }
-                if (viewModel.gradeCollections.isEmpty()) {
-                    viewModel.gradeCollections.addAll(viewModel.getCollections(listOf(viewModel.years.last())))
+                if (viewModel.gradeCollections.isEmpty() && viewModel.years.isNotEmpty()) {
+                    viewModel.getCollections(listOf(viewModel.years.last()))?.let { viewModel.gradeCollections.addAll(it) }
                 }
                 if (viewModel.years.isNotEmpty()) {
                     selectedYears.clear()
@@ -591,11 +591,16 @@ fun Grades(
                                                             isLoading = true
                                                             viewModel.gradeCollections.clear()
                                                             if (viewModel.allGradeCollectionsLoaded.value) {
-                                                                viewModel.gradeCollections.addAll(viewModel.getCollections(viewModel.years))
+                                                                viewModel.getCollections(viewModel.years)?.let {
+                                                                    viewModel.gradeCollections.addAll(it)
+                                                                    isLoading = false
+                                                                }
                                                             } else {
-                                                                viewModel.gradeCollections.addAll(viewModel.getCollections(listOf(viewModel.years.last())))
+                                                                viewModel.getCollections(listOf(viewModel.years.last()))?.let {
+                                                                    viewModel.gradeCollections.addAll(it)
+                                                                    isLoading = false
+                                                                }
                                                             }
-                                                            isLoading = false
                                                         }
                                                     },
                                                     enabled = !isLoading
@@ -741,9 +746,11 @@ fun Grades(
                                                 if (!viewModel.allGradeCollectionsLoaded.value) {
                                                     isLoading = true
                                                     viewModel.gradeCollections.clear()
-                                                    viewModel.gradeCollections.addAll(viewModel.getCollections(viewModel.years))
-                                                    viewModel.allGradeCollectionsLoaded.value = true
-                                                    isLoading = false
+                                                    viewModel.getCollections(viewModel.years)?.let {
+                                                        viewModel.gradeCollections.addAll(it)
+                                                        viewModel.allGradeCollectionsLoaded.value = true
+                                                        isLoading = false
+                                                    }
                                                 }
                                             }
                                             Text(
@@ -1351,9 +1358,11 @@ fun Grades(
                                                                         if (!viewModel.allGradeCollectionsLoaded.value) {
                                                                             isLoading = true
                                                                             viewModel.gradeCollections.clear()
-                                                                            viewModel.gradeCollections.addAll(viewModel.getCollections(viewModel.years))
-                                                                            viewModel.allGradeCollectionsLoaded.value = true
-                                                                            isLoading = false
+                                                                            viewModel.getCollections(viewModel.years)?.let {
+                                                                                viewModel.gradeCollections.addAll(it)
+                                                                                viewModel.allGradeCollectionsLoaded.value = true
+                                                                                isLoading = false
+                                                                            }
                                                                         }
                                                                     }
                                                                 }

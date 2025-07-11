@@ -94,8 +94,8 @@ fun Login(
                     targetState = isLoading,
                     modifier = Modifier.align(Alignment.Center),
                     contentAlignment = Alignment.Center
-                ) {
-                    if (it) {
+                ) { targetState ->
+                    if (targetState) {
                         ContainedLoadingIndicator()
                     } else {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -110,21 +110,6 @@ fun Login(
                             )
                             Spacer(Modifier.height(30.dp))
                             val textFieldState = rememberTextFieldState()
-                            suspend fun loginUsingPrivateAccessToken() {
-                                isLoading = true
-                                viewModel.authToken.value = textFieldState.text.toString()
-                                try {
-                                    viewModel.api.userMe().data
-                                    viewModel.init()
-                                    if (stayLoggedIn) {
-                                        viewModel.stayLoggedIn()
-                                    }
-                                    onNavigateHome()
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                    isLoading = false
-                                }
-                            }
                             OutlinedTextField(
                                 state = textFieldState,
                                 modifier = modifier.widthIn(max = 500.dp),
@@ -143,9 +128,16 @@ fun Login(
                                     IconButton(
                                         onClick = {
                                             scope.launch {
-                                                loginUsingPrivateAccessToken()
+                                                viewModel.login(
+                                                    stayLoggedIn = stayLoggedIn,
+                                                    isLoading = { isLoading = it },
+                                                    onNavigateHome = onNavigateHome
+                                                ) {
+                                                    viewModel.authToken.value = textFieldState.text.toString()
+                                                }
                                             }
-                                        }
+                                        },
+                                        enabled = textFieldState.text.isNotEmpty()
                                     ) {
                                         Icon(Icons.AutoMirrored.Outlined.Login, null)
                                     }
@@ -154,7 +146,13 @@ fun Login(
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                                 onKeyboardAction = KeyboardActionHandler {
                                     scope.launch {
-                                        loginUsingPrivateAccessToken()
+                                        viewModel.login(
+                                            stayLoggedIn = stayLoggedIn,
+                                            isLoading = { isLoading = it },
+                                            onNavigateHome = onNavigateHome
+                                        ) {
+                                            viewModel.authToken.value = textFieldState.text.toString()
+                                        }
                                     }
                                 },
                                 lineLimits = TextFieldLineLimits.SingleLine
@@ -163,15 +161,13 @@ fun Login(
                             Button(
                                 onClick = {
                                     scope.launch {
-                                        isLoading = true
-                                        if (viewModel.getAccessToken()) {
-                                            viewModel.init()
-                                            if (stayLoggedIn) {
-                                                viewModel.stayLoggedIn()
-                                            }
-                                            onNavigateHome()
-                                        } else {
-                                            isLoading = false
+                                        viewModel.login(
+                                            stayLoggedIn = stayLoggedIn,
+                                            isLoading = { isLoading = it },
+                                            onNavigateHome = onNavigateHome
+                                        ) {
+                                            val successful = viewModel.getAccessToken()
+                                            if (!successful) error("Could not get Token")
                                         }
                                     }
                                 },

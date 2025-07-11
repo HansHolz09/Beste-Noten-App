@@ -73,6 +73,7 @@ kotlin {
             implementation(libs.platformtools.darkmodedetector)
             implementation(libs.animate.compose)
             implementation(libs.emoji.compose.m3)
+            implementation(libs.sonner)
         }
         androidMain.dependencies {
             implementation(compose.preview)
