@@ -9,8 +9,8 @@ import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.jetbrains.JBR
 import com.hansholz.bestenotenapp.decoratedWindow.utils.macos.MacUtil
+import com.jetbrains.JBR
 
 private class NewFullscreenControlsElement(val newControls: Boolean, val inspectorInfo: InspectorInfo.() -> Unit) :
     ModifierNodeElement<NewFullscreenControlsNode>() {
@@ -40,7 +40,8 @@ internal fun DecoratedWindowScope.TitleBarOnMacOs(
     modifier: Modifier = Modifier,
     titleBarHeight: MutableState<Dp>,
 ) {
-    CustomTitleBarObject.customTitleBar = remember { JBR.getWindowDecorations().createCustomTitleBar() }
+    val titleBar = remember { JBR.getWindowDecorations().createCustomTitleBar() }
+    CustomTitleBarObject.customTitleBar = titleBar
 
     TitleBarImpl(
         modifier = modifier,
@@ -48,13 +49,13 @@ internal fun DecoratedWindowScope.TitleBarOnMacOs(
             if (state.isFullscreen) {
                 MacUtil.updateFullScreenButtons(window)
             }
-            CustomTitleBarObject.customTitleBar?.height = height.value
-            JBR.getWindowDecorations().setCustomTitleBar(window, CustomTitleBarObject.customTitleBar)
+            titleBar?.height = height.value
+            JBR.getWindowDecorations().setCustomTitleBar(window, titleBar)
 
             if (state.isFullscreen) {
                 PaddingValues(start = 80.dp)
             } else {
-                PaddingValues(start = CustomTitleBarObject.customTitleBar?.leftInset?.dp ?: 0.dp, end = CustomTitleBarObject.customTitleBar?.rightInset?.dp ?: 0.dp)
+                PaddingValues(start = titleBar?.leftInset?.dp ?: 0.dp, end = titleBar?.rightInset?.dp ?: 0.dp)
             }
         },
         titleBarHeight = titleBarHeight,

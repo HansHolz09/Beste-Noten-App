@@ -4,7 +4,17 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.draw.clip
@@ -12,7 +22,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.*
+import androidx.compose.ui.window.FrameWindowScope
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.WindowPlacement
+import androidx.compose.ui.window.WindowState
+import androidx.compose.ui.window.rememberWindowState
 import com.jetbrains.JBR
 import org.jetbrains.skiko.hostOs
 import java.awt.event.ComponentEvent
@@ -37,10 +51,7 @@ fun DecoratedWindow(
 ) {
     remember {
         if (!JBR.isAvailable()) {
-            error(
-                "DecoratedWindow can only be used on JetBrainsRuntime(JBR) platform, " +
-                    "please check the document https://github.com/JetBrains/jewel#int-ui-standalone-theme"
-            )
+            error("DecoratedWindow can only be used on JetBrainsRuntime(JBR) platform")
         }
     }
 
