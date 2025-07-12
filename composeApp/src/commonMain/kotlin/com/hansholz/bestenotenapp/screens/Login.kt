@@ -220,7 +220,8 @@ fun Login(
                                     Text("Angemeldet bleiben")
                                     Checkbox(
                                         checked = stayLoggedIn,
-                                        onCheckedChange = { stayLoggedIn = it }
+                                        onCheckedChange = { stayLoggedIn = it },
+                                        enabled = viewModel.authTokenManager.isAvailable
                                     )
                                 }
                             }
