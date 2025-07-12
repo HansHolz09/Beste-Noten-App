@@ -110,7 +110,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.hansholz.bestenotenapp.api.Year
+import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.components.EnhancedAnimated
 import com.hansholz.bestenotenapp.components.PreferencePosition
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold

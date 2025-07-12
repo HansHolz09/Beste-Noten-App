@@ -16,11 +16,11 @@ import com.dokar.sonner.ToastType
 import com.dokar.sonner.ToasterState
 import com.hansholz.bestenotenapp.api.AuthTokenManager
 import com.hansholz.bestenotenapp.api.BesteSchuleApi
-import com.hansholz.bestenotenapp.api.Finalgrade
-import com.hansholz.bestenotenapp.api.GradeCollection
-import com.hansholz.bestenotenapp.api.Subject
-import com.hansholz.bestenotenapp.api.User
-import com.hansholz.bestenotenapp.api.Year
+import com.hansholz.bestenotenapp.api.models.Finalgrade
+import com.hansholz.bestenotenapp.api.models.GradeCollection
+import com.hansholz.bestenotenapp.api.models.Subject
+import com.hansholz.bestenotenapp.api.models.User
+import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.api.codeAuthFlowFactory
 import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.oidcClient
