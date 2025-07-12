@@ -2,6 +2,8 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.text.SimpleDateFormat
+import java.util.*
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -110,8 +112,8 @@ android {
         applicationId = "com.hansholz.bestenotenapp"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = libs.versions.appVersionCode.get().toInt()
+        versionName = libs.versions.appVersion.get()
 
         addManifestPlaceholders(
             mapOf("oidcRedirectScheme" to "bestenotenapp://callback")
@@ -127,6 +129,17 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles("src/androidMain/proguard-rules.pro")
+
+            applicationVariants.all {
+                val variant = this
+                variant.outputs
+                    .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
+                    .forEach { output ->
+                        val outputFileName =
+                            "${libs.versions.appName.get()}-${libs.versions.appVersion.get()}-${libs.versions.appVersionCode.get()}.apk"
+                        output.outputFileName = outputFileName
+                    }
+            }
         }
     }
     compileOptions {
@@ -145,21 +158,33 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Exe, TargetFormat.Deb)
-            packageName = "com.hansholz.bestenotenapp"
-            packageVersion = "1.0.0"
+            packageName = libs.versions.appName.get()
+            packageVersion = libs.versions.appVersion.get()
+            description = libs.versions.appName.get()
+            copyright = "© ${SimpleDateFormat("yyyy").format(Date())} Franz Scholz. All rights reserved."
+            vendor = "Franz Scholz"
 
             modules += "jdk.unsupported"
 
             windows {
                 iconFile = project.file("src/commonMain/composeResources/drawable/icon.ico")
+                upgradeUuid = "a9bdc510-b2a5-4c39-8b69-27c754eea3ff"
+                console = false
+                dirChooser = false
+                perUserInstall = true
+                shortcut = true
             }
 
             linux {
                 iconFile = project.file("src/commonMain/composeResources/drawable/logo.png")
+                appRelease = libs.versions.appVersionCode.get()
+                shortcut = true
             }
 
             macOS {
                 iconFile = project.file("src/commonMain/composeResources/drawable/icon.icns")
+                dockName = libs.versions.appName.get()
+                packageBuildVersion = libs.versions.appVersionCode.get()
                 infoPlist {
                     extraKeysRawXml =
                         """
@@ -172,5 +197,23 @@ compose.desktop {
                 }
             }
         }
+
+        buildTypes.release.proguard {
+            isEnabled = true
+            obfuscate = true
+            optimize = true
+            configurationFiles.from(project.file("src/desktopMain/compose-desktop.pro"))
+        }
     }
+}
+
+gradle.projectsEvaluated {
+    val cfg = file("../iosApp/iosApp/build/Generated.xcconfig")
+    cfg.parentFile.mkdirs()
+    cfg.writeText(
+        """
+        MARKETING_VERSION = ${libs.versions.appVersion.get()}
+        CURRENT_PROJECT_VERSION = ${libs.versions.appVersionCode.get()}
+        """.trimIndent(),
+    )
 }
