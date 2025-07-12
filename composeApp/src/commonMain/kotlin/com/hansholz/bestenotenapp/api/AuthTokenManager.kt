@@ -1,19 +1,40 @@
 package com.hansholz.bestenotenapp.api
 
+import com.hansholz.bestenotenapp.main.ExactPlatform
+import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.hansholz.bestenotenapp.utils.CredentialsStorageFactory
 
 class AuthTokenManager() {
-    private val credentialsStorage = CredentialsStorageFactory().create()
+    private val credentialsStorage = try {
+        if (getExactPlatform() != ExactPlatform.LINUX) {
+            CredentialsStorageFactory().create()
+        } else {
+            null
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+
+    val isAvailable = credentialsStorage != null
 
     fun saveToken(token: String) {
-        credentialsStorage.setString(KEY, token)
+        if (isAvailable) {
+            credentialsStorage?.setString(KEY, token)
+        }
     }
     fun getToken(): String? {
-        val token = credentialsStorage.getString(KEY)
-        return if (token == "null") null else token
+        if (isAvailable) {
+            val token = credentialsStorage?.getString(KEY)
+            return if (token == "null") null else token
+        } else {
+            return null
+        }
     }
     fun deleteToken() {
-        credentialsStorage.setString(KEY, "null")
+        if (isAvailable) {
+            credentialsStorage?.setString(KEY, "null")
+        }
     }
 
     companion object {
