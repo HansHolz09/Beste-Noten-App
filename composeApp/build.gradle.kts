@@ -1,9 +1,10 @@
+
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -168,6 +169,7 @@ compose.desktop {
 
             windows {
                 iconFile = project.file("src/commonMain/composeResources/drawable/icon.ico")
+                menuGroup = libs.versions.appName.get()
                 upgradeUuid = "a9bdc510-b2a5-4c39-8b69-27c754eea3ff"
                 console = false
                 dirChooser = false
