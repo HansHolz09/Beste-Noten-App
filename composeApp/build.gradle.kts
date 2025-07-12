@@ -149,7 +149,16 @@ compose.desktop {
 
             modules += "jdk.unsupported"
 
+            windows {
+                iconFile = project.file("src/commonMain/composeResources/drawable/icon.ico")
+            }
+
+            linux {
+                iconFile = project.file("src/commonMain/composeResources/drawable/logo.png")
+            }
+
             macOS {
+                iconFile = project.file("src/commonMain/composeResources/drawable/icon.icns")
                 infoPlist {
                     extraKeysRawXml =
                         """
