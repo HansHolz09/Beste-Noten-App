@@ -45,7 +45,7 @@ fun main() {
             icon = painterResource(Res.drawable.logo),
         ) {
             val density = LocalDensity.current
-            window.minimumSize = Dimension(with(density) { 800.toDp().roundToPx() }, with(density) { 600.toDp().roundToPx() })
+            window.minimumSize = Dimension(with(density) { 700.toDp().roundToPx() }, with(density) { 500.toDp().roundToPx() })
             val titleBarHeight = remember { mutableStateOf(20.dp) }
             var isDark by remember { mutableStateOf(false) }
             CompositionLocalProvider(

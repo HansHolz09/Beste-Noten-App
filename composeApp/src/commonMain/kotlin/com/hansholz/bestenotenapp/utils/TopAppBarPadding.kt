@@ -1,7 +1,10 @@
 package com.hansholz.bestenotenapp.utils
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 
 @Composable
-expect fun Modifier.topAppBarPadding(sideMenuExpanded: Boolean): Modifier
+expect fun topAppBarStartPadding(sideMenuExpanded: Boolean): Dp
+
+@Composable
+expect fun topAppBarEndPadding(): Dp

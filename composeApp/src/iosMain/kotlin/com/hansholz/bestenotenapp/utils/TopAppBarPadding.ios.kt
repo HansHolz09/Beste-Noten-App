@@ -3,18 +3,18 @@
 package com.hansholz.bestenotenapp.utils
 
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowWidthSizeClass
-import kotlinx.cinterop.ExperimentalForeignApi
 
-@OptIn(ExperimentalForeignApi::class)
 @Composable
-actual fun Modifier.topAppBarPadding(sideMenuExpanded: Boolean): Modifier {
+actual fun topAppBarStartPadding(sideMenuExpanded: Boolean): Dp {
     val windowWidthSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
     val startPadding = animateDpAsState(if ((!sideMenuExpanded || windowWidthSizeClass == WindowWidthSizeClass.COMPACT) && isInWindowMode()) 70.dp else 0.dp)
-    return this.padding(start = startPadding.value)
+    return startPadding.value
 }
+
+@Composable
+actual fun topAppBarEndPadding(): Dp = 0.dp
