@@ -1,10 +1,9 @@
-
+import java.text.SimpleDateFormat
+import java.util.Date
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import java.text.SimpleDateFormat
-import java.util.Date
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -164,6 +163,9 @@ compose.desktop {
             description = libs.versions.appName.get()
             copyright = "© ${SimpleDateFormat("yyyy").format(Date())} Franz Scholz. All rights reserved."
             vendor = "Franz Scholz"
+
+            appResourcesRootDir = layout.projectDirectory.dir("src/desktopMain/assets")
+            jvmArgs += "-splash:${'$'}APPDIR/resources/splash.png"
 
             modules += "jdk.unsupported"
 
