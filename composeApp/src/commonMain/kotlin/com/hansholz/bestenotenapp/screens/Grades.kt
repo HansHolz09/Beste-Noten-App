@@ -140,15 +140,14 @@ import io.github.koalaplot.core.bar.StackedVerticalBarPlot
 import io.github.koalaplot.core.bar.VerticalBarPlot
 import io.github.koalaplot.core.bar.VerticalBarPlotGroupedPointEntry
 import io.github.koalaplot.core.bar.VerticalBarPlotStackedPointEntry
-import io.github.koalaplot.core.bar.VerticalBarPosition
 import io.github.koalaplot.core.legend.FlowLegend
 import io.github.koalaplot.core.legend.LegendLocation
 import io.github.koalaplot.core.line.AreaBaseline
 import io.github.koalaplot.core.line.AreaPlot
 import io.github.koalaplot.core.polar.DefaultPolarPoint
 import io.github.koalaplot.core.polar.PolarGraph
-import io.github.koalaplot.core.polar.PolarGraphDefaults
 import io.github.koalaplot.core.polar.PolarPlotSeries
+import io.github.koalaplot.core.polar.PolarPoint
 import io.github.koalaplot.core.polar.rememberCategoryAngularAxisModel
 import io.github.koalaplot.core.polar.rememberFloatRadialAxisModel
 import io.github.koalaplot.core.style.AreaStyle
@@ -162,13 +161,13 @@ import io.github.koalaplot.core.xygraph.DefaultPoint
 import io.github.koalaplot.core.xygraph.FloatLinearAxisModel
 import io.github.koalaplot.core.xygraph.Point
 import io.github.koalaplot.core.xygraph.XYGraph
+import kotlin.math.ceil
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.emoji.compose.m3.TextWithNotoImageEmoji
-import kotlin.math.ceil
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class,
     ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class, ExperimentalKoalaPlotApi::class
@@ -580,7 +579,7 @@ fun Grades(
                                                         }
                                                     }
                                                 },
-                                                enabled = !isLoading
+                                                enabled = viewModel.years.isNotEmpty() && !isLoading
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Outlined.Refresh,
@@ -914,50 +913,54 @@ fun Grades(
                                                                     add(DefaultVerticalBarPlotEntry(int.toFloat(), DefaultVerticalBarPosition(0f, grade.size.toFloat())))
                                                                 }
                                                             }
-                                                            XYGraph(
-                                                                xAxisModel = FloatLinearAxisModel(
-                                                                    if (grades.isNotEmpty()) (grades.minOf { it.first }.toFloat() - 1f)..(grades.maxOf { it.first }.toFloat() + 1f) else 0f..1f,
-                                                                    minimumMajorTickIncrement = 1f,
-                                                                    minimumMajorTickSpacing = 10.dp,
-                                                                    minorTickCount = 0
-                                                                ),
-                                                                yAxisModel = FloatLinearAxisModel(
-                                                                    if (grades.isNotEmpty()) 0f..grades.maxOf { it.second.size }.toFloat() else 0f..1f,
-                                                                    minimumMajorTickIncrement = 1f,
-                                                                    minorTickCount = 0
-                                                                ),
-                                                                modifier = Modifier.padding(10.dp).height(400.dp),
-                                                                xAxisLabels = {
-                                                                    try {
-                                                                        if (it != 0f && it != (grades.maxOf { it.first }.toFloat() + 1f)) it.toString(0) else ""
-                                                                    } catch (_: Exception) {
-                                                                        ""
-                                                                    }
-                                                                },
-                                                                xAxisTitle = null,
-                                                                yAxisLabels = { it.toString(0) },
-                                                                verticalMajorGridLineStyle = null,
-                                                            ) {
-                                                                VerticalBarPlot(
-                                                                    barChartEntries,
-                                                                    bar = { index ->
-                                                                        DefaultVerticalBar(
-                                                                            brush = SolidColor(colorScheme.primary),
-                                                                            modifier = Modifier.fillMaxWidth(),
-                                                                            shape = RoundedCornerShape(8.dp)
-                                                                        ) {
-                                                                            Surface(
-                                                                                shadowElevation = 2.dp,
-                                                                                shape = MaterialTheme.shapes.small,
-                                                                                color = colorScheme.surfaceContainerHighest,
-                                                                            ) {
-                                                                                Box(Modifier.padding(5.dp)) {
-                                                                                    Text(grades[index].second.size.toString())
-                                                                                }
-                                                                            }
+                                                            if (grades.isNotEmpty()) {
+                                                                XYGraph(
+                                                                    xAxisModel = FloatLinearAxisModel(
+                                                                        if (grades.isNotEmpty()) (grades.minOf { it.first }.toFloat() - 1f)..(grades.maxOf { it.first }.toFloat() + 1f) else 0f..1f,
+                                                                        minimumMajorTickIncrement = 1f,
+                                                                        minimumMajorTickSpacing = 10.dp,
+                                                                        minorTickCount = 0
+                                                                    ),
+                                                                    yAxisModel = FloatLinearAxisModel(
+                                                                        if (grades.isNotEmpty()) 0f..grades.maxOf { it.second.size }.toFloat() else 0f..1f,
+                                                                        minimumMajorTickIncrement = 1f,
+                                                                        minorTickCount = 0
+                                                                    ),
+                                                                    modifier = Modifier.padding(10.dp).height(400.dp),
+                                                                    xAxisLabels = {
+                                                                        try {
+                                                                            if (it != 0f && it != (grades.maxOf { it.first }.toFloat() + 1f)) it.toString(0) else ""
+                                                                        } catch (_: Exception) {
+                                                                            ""
                                                                         }
                                                                     },
-                                                                )
+                                                                    xAxisTitle = null,
+                                                                    yAxisLabels = { it.toString(0) },
+                                                                    verticalMajorGridLineStyle = null,
+                                                                ) {
+                                                                    VerticalBarPlot(
+                                                                        barChartEntries,
+                                                                        bar = { index ->
+                                                                            DefaultVerticalBar(
+                                                                                brush = SolidColor(colorScheme.primary),
+                                                                                modifier = Modifier.fillMaxWidth(),
+                                                                                shape = RoundedCornerShape(8.dp)
+                                                                            ) {
+                                                                                Surface(
+                                                                                    shadowElevation = 2.dp,
+                                                                                    shape = MaterialTheme.shapes.small,
+                                                                                    color = colorScheme.surfaceContainerHighest,
+                                                                                ) {
+                                                                                    Box(Modifier.padding(5.dp)) {
+                                                                                        Text(grades[index].second.size.toString())
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                    )
+                                                                }
+                                                            } else {
+                                                                Text("Noch keine Noten vorhanden", modifier = Modifier.fillMaxWidth().padding(16.dp), textAlign = TextAlign.Center)
                                                             }
                                                         }
                                                     }
@@ -967,63 +970,105 @@ fun Grades(
                                                             if (targetState) {
                                                                 ContainedLoadingIndicator(Modifier.align(Alignment.Center).padding(top = titleHeight, bottom = closeBarHeight))
                                                             } else {
+                                                                val gradeCollections = viewModel.gradeCollections
+                                                                val years = viewModel.years
+                                                                val processedData = remember(gradeCollections, years) {
+                                                                    val allGradesByYear = gradeCollections
+                                                                        .asSequence()
+                                                                        .filter { it.interval?.yearId != null && !it.grades.isNullOrEmpty() }
+                                                                        .flatMap { gc -> gc.grades!!.map { gc.interval!!.yearId to normalizeGrade(it.value) } }
+                                                                        .filter { it.second != "N/A" }
+                                                                        .toList()
+
+                                                                    val groupedByYear = allGradesByYear
+                                                                        .groupBy({ it.first }, { it.second })
+                                                                        .mapValues { it.value.groupingBy { grade -> grade }.eachCount() }
+
+                                                                    val sortedYears = groupedByYear.keys.sorted()
+                                                                    val uniqueGrades = groupedByYear.values
+                                                                        .flatMap { it.keys }
+                                                                        .distinct()
+                                                                        .sortedBy { it.toIntOrNull() ?: Int.MAX_VALUE }
+
+                                                                    val barChartEntries = sortedYears.map { yearId ->
+                                                                        val yearName = years.firstOrNull { it.id == yearId }?.name.orEmpty().removeRange(0,2).removeRange(3,5)
+                                                                        val counts = groupedByYear[yearId] ?: emptyMap()
+                                                                        object : VerticalBarPlotGroupedPointEntry<String, Float> {
+                                                                            override val x = yearName.ifEmpty { yearId.toString() }
+                                                                            override val y = uniqueGrades.map { grade ->
+                                                                                DefaultVerticalBarPosition(0f, counts[grade]?.toFloat() ?: 0f)
+                                                                            }
+                                                                        }
+                                                                    }
+
+                                                                    val pivotedData = mutableMapOf<String, MutableMap<Int, Int>>()
+                                                                    groupedByYear.forEach { (yearId, grades) ->
+                                                                        grades.forEach { (grade, count) ->
+                                                                            pivotedData.getOrPut(grade) { mutableMapOf() }[yearId] = count
+                                                                        }
+                                                                    }
+                                                                    val sortedGrades = uniqueGrades
+                                                                    val yearColors = generateHueColorPalette(sortedYears.size)
+
+                                                                    val stackedEntries = sortedGrades.map { grade ->
+                                                                        object : VerticalBarPlotStackedPointEntry<String, Float> {
+                                                                            override val x = grade
+                                                                            override val yOrigin = 0f
+                                                                            override val y = pivotedData[grade]
+                                                                                ?.let { counts ->
+                                                                                    sortedYears.map { counts[it]?.toFloat() ?: 0f }
+                                                                                        .scan(0f) { acc, v -> acc + v }
+                                                                                        .drop(1)
+                                                                                }
+                                                                                ?: emptyList()
+                                                                        }
+                                                                    }
+
+                                                                    val averageGrades = groupedByYear.mapNotNull { (yearId, counts) ->
+                                                                        val total = counts.values.sum()
+                                                                        if (total > 0) {
+                                                                            val sum = counts.entries.sumOf { (g, c) -> (g.toIntOrNull() ?: 0) * c }
+                                                                            yearId to (sum.toFloat() / total)
+                                                                        } else null
+                                                                    }.toMap()
+
+                                                                    val avgPlot = averageGrades.keys.sorted().map { yearId ->
+                                                                        val yearName = years.firstOrNull { it.id == yearId }?.name.orEmpty().removeRange(0,2).removeRange(3,5)
+                                                                        DefaultPoint(yearName.ifEmpty { yearId.toString() }, averageGrades[yearId]!!)
+                                                                    }
+
+                                                                    val polarData = uniqueGrades.map { grade ->
+                                                                        sortedYears.map { yearId ->
+                                                                            val count = groupedByYear[yearId]?.get(grade)?.toFloat() ?: 0f
+                                                                            val yearName = years.firstOrNull { it.id == yearId }?.name.orEmpty()
+                                                                            DefaultPolarPoint(count, yearName.ifEmpty { yearId.toString() })
+                                                                        }
+                                                                    }
+
+                                                                    mapOf(
+                                                                        "grouped" to groupedByYear,
+                                                                        "sortedYears" to sortedYears,
+                                                                        "uniqueGrades" to uniqueGrades,
+                                                                        "barEntries" to barChartEntries,
+                                                                        "stackedEntries" to stackedEntries,
+                                                                        "avgPlot" to avgPlot,
+                                                                        "polarData" to polarData,
+                                                                        "yearColors" to yearColors
+                                                                    )
+                                                                }
+
+                                                                @Suppress("UNCHECKED_CAST")
                                                                 LazyColumn(
                                                                     modifier = Modifier.hazeSource(hazeState),
                                                                     state = lazyListState,
                                                                     contentPadding = PaddingValues(top = titleHeight, bottom = closeBarHeight),
                                                                     verticalArrangement = Arrangement.spacedBy(8.dp)
                                                                 ) {
-                                                                    val allGradesByYear: List<Pair<Int, String>> = viewModel.gradeCollections
-                                                                        .toSet()
-                                                                        .filter { it.interval?.yearId != null && !it.grades.isNullOrEmpty() }
-                                                                        .flatMap { gradeCollection ->
-                                                                            gradeCollection.grades!!.map { grade ->
-                                                                                (gradeCollection.interval!!.yearId) to normalizeGrade(grade.value)
-                                                                            }
-                                                                        }
-                                                                        .filter { it.second != "N/A" }
-
-                                                                    val groupedData: Map<Int, Map<String, Int>> = allGradesByYear
-                                                                        .groupBy { it.first }
-                                                                        .mapValues { entry ->
-                                                                            entry.value
-                                                                                .map { it.second }
-                                                                                .groupingBy { it }
-                                                                                .eachCount()
-                                                                        }
-
                                                                     item {
-                                                                        val uniqueGrades: List<String> = groupedData.values
-                                                                            .flatMap { it.keys }
-                                                                            .distinct()
-                                                                            .sortedBy { it.toIntOrNull() ?: Int.MAX_VALUE }
-
-                                                                        val sortedYears: List<Int> = groupedData.keys.sorted()
-
-                                                                        val barChartEntries = sortedYears.map { yearId ->
-                                                                            val yearName = viewModel.years.firstOrNull { it.id == yearId }?.name ?: yearId.toString()
-                                                                            val gradesForYear = groupedData[yearId] ?: emptyMap()
-
-                                                                            object : VerticalBarPlotGroupedPointEntry<String, Float> {
-                                                                                override val x: String = yearName
-
-                                                                                override val y: List<VerticalBarPosition<Float>> = uniqueGrades.map { grade ->
-                                                                                    val count = gradesForYear[grade]?.toFloat() ?: 0f
-                                                                                    DefaultVerticalBarPosition(0f, count)
-                                                                                }
-                                                                            }
-                                                                        }
-
-                                                                        val allYearNames = barChartEntries.map { it.x }
-                                                                        val maxCount = groupedData.values
-                                                                            .maxOfOrNull { it.values.maxOrNull() ?: 0 }?.toFloat() ?: 1f
-
-                                                                        val xAxisModel = CategoryAxisModel(categories = allYearNames)
-                                                                        val yAxisModel = FloatLinearAxisModel(
-                                                                            range = 0f..maxCount,
-                                                                            minimumMajorTickIncrement = 1f,
-                                                                            minorTickCount = 0
-                                                                        )
+                                                                        val grouped = processedData["grouped"] as Map<Int, Map<String, Int>>
+                                                                        val uniqueGrades = processedData["uniqueGrades"] as List<String>
+                                                                        val barEntries = processedData["barEntries"] as List<VerticalBarPlotGroupedPointEntry<String, Float>>
+                                                                        val maxCount = grouped.values.maxOfOrNull { it.values.maxOrNull() ?: 0 }?.toFloat() ?: 1f
 
                                                                         val gradeColors = listOf(
                                                                             Color(0xFF4CAF50),
@@ -1042,25 +1087,27 @@ fun Grades(
                                                                                     symbol = { i ->
                                                                                         Symbol(modifier = Modifier.size(12.dp).clip(CircleShape), fillBrush = SolidColor(gradeColors[i % gradeColors.size]))
                                                                                     },
-                                                                                    label = { i ->
-                                                                                        Text("Note $i")
-                                                                                    },
+                                                                                    label = { i -> Text("Note ${uniqueGrades[i]}") },
                                                                                     modifier = Modifier.padding(top = 16.dp)
                                                                                 )
                                                                             },
                                                                             legendLocation = LegendLocation.BOTTOM
                                                                         ) {
                                                                             XYGraph(
-                                                                                xAxisModel = xAxisModel,
-                                                                                yAxisModel = yAxisModel,
+                                                                                xAxisModel = CategoryAxisModel(categories = barEntries.map { it.x }),
+                                                                                yAxisModel = FloatLinearAxisModel(
+                                                                                    range = 0f..maxCount,
+                                                                                    minimumMajorTickIncrement = 1f,
+                                                                                    minorTickCount = 0
+                                                                                ),
                                                                                 xAxisLabels = { it },
                                                                                 yAxisLabels = { it.toInt().toString() },
                                                                                 xAxisTitle = "Jahr",
-                                                                                yAxisTitle = "Anzahl",
+                                                                                yAxisTitle = "Anzahl"
                                                                             ) {
                                                                                 GroupedVerticalBarPlot(
-                                                                                    data = barChartEntries,
-                                                                                    bar = { dataIndex, groupIndex, value ->
+                                                                                    data = barEntries,
+                                                                                    bar = { _, groupIndex, _ ->
                                                                                         DefaultVerticalBar(
                                                                                             brush = SolidColor(gradeColors[groupIndex % gradeColors.size]),
                                                                                             shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
@@ -1071,39 +1118,13 @@ fun Grades(
                                                                             }
                                                                         }
                                                                     }
-
+                                                                    item { Spacer(Modifier.height(20.dp)) }
                                                                     item {
-                                                                        Spacer(Modifier.height(20.dp))
-                                                                    }
-
-                                                                    item {
-                                                                        val pivotedData = mutableMapOf<String, MutableMap<Int, Int>>()
-                                                                        groupedData.forEach { (yearId, gradesMap) ->
-                                                                            gradesMap.forEach { (grade, count) ->
-                                                                                pivotedData.getOrPut(grade) { mutableMapOf() }[yearId] = count
-                                                                            }
-                                                                        }
-
-                                                                        val sortedGrades = pivotedData.keys.sortedBy { it.toIntOrNull() ?: Int.MAX_VALUE }
-
-                                                                        val sortedYears = groupedData.keys.sorted()
-
-                                                                        val yearColors = generateHueColorPalette(sortedYears.size)
-
-                                                                        val stackedBarEntries = sortedGrades.map { grade ->
-                                                                            object : VerticalBarPlotStackedPointEntry<String, Float> {
-                                                                                override val x: String = grade
-
-                                                                                override val yOrigin: Float = 0f
-
-                                                                                override val y: List<Float> =
-                                                                                    pivotedData[grade]?.let { countsByYear ->
-                                                                                        sortedYears.map { yearId -> countsByYear[yearId]?.toFloat() ?: 0f }
-                                                                                    }?.scan(0f) { accumulator, value -> accumulator + value }?.drop(1) ?: emptyList()
-                                                                            }
-                                                                        }
-
-                                                                        val maxYValue = stackedBarEntries.maxOfOrNull { it.y.lastOrNull() ?: 0f } ?: 1f
+                                                                        val stacked = processedData["stackedEntries"] as List<VerticalBarPlotStackedPointEntry<String, Float>>
+                                                                        val sortedGrades = processedData["uniqueGrades"] as List<String>
+                                                                        val sortedYears = processedData["sortedYears"] as List<Int>
+                                                                        val yearColors = processedData["yearColors"] as List<Color>
+                                                                        val maxY = stacked.maxOfOrNull { it.y.lastOrNull() ?: 0f } ?: 1f
 
                                                                         ChartLayout(
                                                                             modifier = Modifier.padding(10.dp).fillMaxWidth().height(400.dp),
@@ -1111,12 +1132,12 @@ fun Grades(
                                                                                 FlowLegend(
                                                                                     itemCount = sortedYears.size,
                                                                                     symbol = { i ->
-                                                                                        Symbol(modifier = Modifier.size(12.dp).clip(CircleShape), fillBrush = SolidColor(yearColors[i]))
+                                                                                        Symbol(
+                                                                                            modifier = Modifier.size(12.dp).clip(CircleShape),
+                                                                                            fillBrush = SolidColor(yearColors[i])
+                                                                                        )
                                                                                     },
-                                                                                    label = { i ->
-                                                                                        val yearName = viewModel.years.firstOrNull { it.id == sortedYears[i] }?.name ?: sortedYears[i].toString()
-                                                                                        Text(yearName)
-                                                                                    },
+                                                                                    label = { i -> Text(years.firstOrNull { it.id == sortedYears[i] }?.name.orEmpty()) },
                                                                                     modifier = Modifier.padding(top = 16.dp)
                                                                                 )
                                                                             },
@@ -1124,15 +1145,15 @@ fun Grades(
                                                                         ) {
                                                                             XYGraph(
                                                                                 xAxisModel = CategoryAxisModel(categories = sortedGrades),
-                                                                                yAxisModel = FloatLinearAxisModel(range = 0f..maxYValue, minimumMajorTickIncrement = 5f),
+                                                                                yAxisModel = FloatLinearAxisModel(range = 0f..maxY, minimumMajorTickIncrement = 5f),
                                                                                 xAxisLabels = { it },
                                                                                 yAxisLabels = { it.toInt().toString() },
                                                                                 xAxisTitle = "Note",
-                                                                                yAxisTitle = "Anzahl",
+                                                                                yAxisTitle = "Anzahl"
                                                                             ) {
                                                                                 StackedVerticalBarPlot(
-                                                                                    data = stackedBarEntries,
-                                                                                    bar = { xIndex, barIndex ->
+                                                                                    data = stacked,
+                                                                                    bar = { _, barIndex ->
                                                                                         DefaultVerticalBar(
                                                                                             brush = SolidColor(yearColors[barIndex % yearColors.size]),
                                                                                             shape = RoundedCornerShape(8.dp)
@@ -1142,154 +1163,80 @@ fun Grades(
                                                                             }
                                                                         }
                                                                     }
-
-                                                                    if (viewModel.years.size > 2) {
-                                                                        item {
-                                                                            Spacer(Modifier.height(20.dp))
-                                                                        }
-
-                                                                        item {
-                                                                            val chartData = remember(viewModel.gradeCollections, viewModel.years) {
-                                                                                val groupedData = viewModel.gradeCollections.asSequence()
-                                                                                    .filter { it.interval?.yearId != null && !it.grades.isNullOrEmpty() }
-                                                                                    .flatMap { gc -> gc.grades!!.map { grade -> gc.interval!!.yearId to normalizeGrade(grade.value) } }
-                                                                                    .filter { it.second != "N/A" }
-                                                                                    .groupBy({ it.first }) { it.second }
-                                                                                    .mapValues { entry -> entry.value.groupingBy { it }.eachCount() }
-
-                                                                                val sortedGrades = groupedData.values.flatMap { it.keys }.distinct().sortedBy { it.toIntOrNull() ?: Int.MAX_VALUE }
-                                                                                val sortedYears = groupedData.keys.sorted()
-                                                                                val yearNames = sortedYears.map { yearId -> viewModel.years.firstOrNull { it.id == yearId }?.name ?: yearId.toString() }
-                                                                                val gradeColors = generateHueColorPalette(sortedGrades.size)
-
-                                                                                val polarData = sortedGrades.map { grade ->
-                                                                                    sortedYears.map { yearId ->
-                                                                                        val count = groupedData[yearId]?.get(grade)?.toFloat() ?: 0f
-                                                                                        val yearName = viewModel.years.firstOrNull { it.id == yearId }?.name ?: yearId.toString()
-                                                                                        DefaultPolarPoint(count, yearName)
-                                                                                    }
-                                                                                }
-
-                                                                                val maxCount = polarData.flatten().maxOfOrNull { it.r } ?: 0f
-
-                                                                                val tickStep = when {
-                                                                                    maxCount <= 20 -> 5
-                                                                                    maxCount <= 50 -> 10
-                                                                                    maxCount <= 100 -> 20
-                                                                                    else -> 25
-                                                                                }
-
-                                                                                val radialAxisMax = (ceil(maxCount / tickStep) * tickStep).coerceAtLeast(10f)
-                                                                                val radialAxisTicks = (0..radialAxisMax.toInt() step tickStep).map { it.toFloat() }
-
-                                                                                object {
-                                                                                    val data = polarData
-                                                                                    val angularAxisCategories = yearNames
-                                                                                    val radialAxisTicks = radialAxisTicks
-                                                                                    val legendItems = sortedGrades.mapIndexed { index, grade -> "Note $grade" to gradeColors[index] }
+                                                                    item { Spacer(Modifier.height(20.dp)) }
+                                                                    item {
+                                                                        val avgPlot = processedData["avgPlot"] as List<Point<String, Float>>
+                                                                        if (avgPlot.isEmpty()) {
+                                                                            Text("Nicht genügend Daten für die Durchschnittsanzeige vorhanden", modifier = Modifier.fillMaxWidth().padding(16.dp), textAlign = TextAlign.Center)
+                                                                        } else {
+                                                                            ChartLayout(modifier = Modifier.padding(10.dp).fillMaxWidth().height(400.dp)) {
+                                                                                XYGraph(
+                                                                                    xAxisModel = CategoryAxisModel(categories = avgPlot.map { it.x }),
+                                                                                    yAxisModel = FloatLinearAxisModel(range = 0.5f..6.5f),
+                                                                                    xAxisLabels = { it },
+                                                                                    yAxisLabels = { it.toString(0) },
+                                                                                    xAxisTitle = "Jahr",
+                                                                                    yAxisTitle = "Durchschnittsnote"
+                                                                                ) {
+                                                                                    AreaPlot(
+                                                                                        data = avgPlot,
+                                                                                        lineStyle = LineStyle(brush = SolidColor(colorScheme.primary), strokeWidth = 3.dp),
+                                                                                        areaStyle = AreaStyle(
+                                                                                            brush = SolidColor(colorScheme.primary.copy(alpha = 0.5f)),
+                                                                                            alpha = 0.5f
+                                                                                        ),
+                                                                                        areaBaseline = AreaBaseline.ConstantLine(0.5f)
+                                                                                    )
                                                                                 }
                                                                             }
+                                                                        }
+                                                                    }
+                                                                    if (years.size > 2) {
+                                                                        item {
+                                                                            val polarData = processedData["polarData"] as List<List<PolarPoint<Float, String>>>
+                                                                            val sortedYears = processedData["sortedYears"] as List<Int>
+                                                                            val uniqueGrades = processedData["uniqueGrades"] as List<String>
+                                                                            val radialMax = polarData.flatten().maxOfOrNull { it.r } ?: 0f
+                                                                            val tick = when {
+                                                                                radialMax <= 20f -> 5
+                                                                                radialMax <= 50f -> 10
+                                                                                radialMax <= 100f -> 20
+                                                                                else -> 25
+                                                                            }
+                                                                            val radialMaxRounded = ceil(radialMax / tick) * tick
+                                                                            val ticks = (0..radialMaxRounded.toInt() step tick).map { it.toFloat() }
 
                                                                             ChartLayout(
                                                                                 modifier = Modifier.padding(10.dp).fillMaxWidth().aspectRatio(1f),
                                                                                 legend = {
                                                                                     FlowLegend(
-                                                                                        itemCount = chartData.legendItems.size,
+                                                                                        itemCount = uniqueGrades.size,
                                                                                         symbol = { i ->
-                                                                                            Symbol(modifier = Modifier.size(12.dp).clip(CircleShape), fillBrush = SolidColor(chartData.legendItems[i].second))
+                                                                                            Symbol(
+                                                                                                modifier = Modifier.size(12.dp).clip(CircleShape),
+                                                                                                fillBrush = SolidColor(processedData["yearColors"]?.let { it as List<Color> }!![i])
+                                                                                            )
                                                                                         },
-                                                                                        label = { i -> Text(chartData.legendItems[i].first) }
+                                                                                        label = { Text("Note ${uniqueGrades[it]}") }
                                                                                     )
                                                                                 },
                                                                                 legendLocation = LegendLocation.BOTTOM
                                                                             ) {
                                                                                 PolarGraph(
-                                                                                    radialAxisModel = rememberFloatRadialAxisModel(tickValues = chartData.radialAxisTicks),
-                                                                                    angularAxisModel = rememberCategoryAngularAxisModel(categories = chartData.angularAxisCategories),
+                                                                                    radialAxisModel = rememberFloatRadialAxisModel(tickValues = ticks),
+                                                                                    angularAxisModel = rememberCategoryAngularAxisModel(categories = sortedYears.map { years.firstOrNull { y -> y.id == it }?.name.orEmpty() }),
                                                                                     radialAxisLabels = { Text(it.toInt().toString()) },
-                                                                                    angularAxisLabels = { Text(it) },
-                                                                                    polarGraphProperties = PolarGraphDefaults.PolarGraphPropertyDefaults()
+                                                                                    angularAxisLabels = { Text(it) }
                                                                                 ) {
-                                                                                    chartData.data.forEachIndexed { index, seriesData ->
-                                                                                        val color = chartData.legendItems[index].second
+                                                                                    polarData.forEachIndexed { index, series ->
                                                                                         PolarPlotSeries(
-                                                                                            data = seriesData,
-                                                                                            lineStyle = LineStyle(SolidColor(color), strokeWidth = 2.dp),
-                                                                                            areaStyle = AreaStyle(SolidColor(color), alpha = 0.3f),
-                                                                                            symbols = { Symbol(shape = CircleShape, fillBrush = SolidColor(color)) }
+                                                                                            data = series,
+                                                                                            lineStyle = LineStyle(SolidColor(processedData["yearColors"]?.let { it as List<Color> }!![index]), strokeWidth = 2.dp),
+                                                                                            areaStyle = AreaStyle(SolidColor(processedData["yearColors"]?.let { it as List<Color> }!![index]), alpha = 0.3f),
+                                                                                            symbols = { Symbol(shape = CircleShape, fillBrush = SolidColor(processedData["yearColors"]?.let { it as List<Color> }!![index])) }
                                                                                         )
                                                                                     }
                                                                                 }
-                                                                            }
-                                                                        }
-                                                                    }
-
-
-                                                                    item {
-                                                                        Spacer(Modifier.height(20.dp))
-                                                                    }
-
-                                                                    item {
-                                                                        val chartData = remember(viewModel.gradeCollections, viewModel.years) {
-                                                                            val groupedData = viewModel.gradeCollections.asSequence()
-                                                                                .filter { it.interval?.yearId != null && !it.grades.isNullOrEmpty() }
-                                                                                .flatMap { gc -> gc.grades!!.map { grade -> gc.interval!!.yearId to normalizeGrade(grade.value) } }
-                                                                                .filter { it.second != "N/A" && it.second.toIntOrNull() != null }
-                                                                                .groupBy({ it.first }) { it.second }
-                                                                                .mapValues { entry -> entry.value.groupingBy { it }.eachCount() }
-
-                                                                            val averageGrades: Map<Int, Float> = groupedData.mapNotNull { (yearId, gradesMap) ->
-                                                                                val totalCount = gradesMap.values.sum()
-                                                                                if (totalCount == 0) {
-                                                                                    null
-                                                                                } else {
-                                                                                    val weightedSum = gradesMap.entries.sumOf { (grade, count) ->
-                                                                                        (grade.toIntOrNull() ?: 0) * count
-                                                                                    }
-                                                                                    val average = weightedSum.toFloat() / totalCount.toFloat()
-                                                                                    yearId to average
-                                                                                }
-                                                                            }.toMap()
-
-                                                                            val sortedYears = averageGrades.keys.sorted()
-
-                                                                            val plotData: List<Point<String, Float>> = sortedYears.map { yearId ->
-                                                                                val yearName = viewModel.years.firstOrNull { it.id == yearId }?.name ?: yearId.toString()
-                                                                                DefaultPoint(yearName, averageGrades[yearId]!!)
-                                                                            }
-
-                                                                            val yearNames = plotData.map { it.x }
-                                                                            val yAxisRange = 0.5f..6.5f
-
-                                                                            object {
-                                                                                val data = plotData
-                                                                                val yearCategories = yearNames
-                                                                                val yAxisRange = yAxisRange
-                                                                            }
-                                                                        }
-
-                                                                        if (chartData.data.isEmpty()) {
-                                                                            Text("Nicht genügend Daten für die Durchschnittsanzeige vorhanden.", modifier = Modifier.padding(16.dp))
-                                                                        }
-
-                                                                        ChartLayout(modifier = Modifier.padding(10.dp).fillMaxWidth().height(400.dp)) {
-                                                                            XYGraph(
-                                                                                xAxisModel = CategoryAxisModel(categories = chartData.yearCategories),
-                                                                                yAxisModel = FloatLinearAxisModel(range = chartData.yAxisRange),
-                                                                                xAxisLabels = { it },
-                                                                                yAxisLabels = { it.toString(0) },
-                                                                                xAxisTitle = "Jahr",
-                                                                                yAxisTitle = "Durchschnittsnote"
-                                                                            ) {
-                                                                                AreaPlot(
-                                                                                    data = chartData.data,
-                                                                                    lineStyle = LineStyle(brush = SolidColor(colorScheme.primary), strokeWidth = 3.dp),
-                                                                                    areaStyle = AreaStyle(
-                                                                                        brush = SolidColor(colorScheme.primary.copy(0.5f)),
-                                                                                        alpha = 0.5f,
-                                                                                    ),
-                                                                                    areaBaseline = AreaBaseline.ConstantLine(chartData.yAxisRange.start)
-                                                                                )
                                                                             }
                                                                         }
                                                                     }
@@ -1344,7 +1291,7 @@ fun Grades(
                                                                 }
                                                             }
                                                         },
-                                                        enabled = !isLoading
+                                                        enabled = !isLoading && viewModel.years.size > 1
                                                     )
                                                     Text(
                                                         text = "Jahre analysieren/vergleichen",
