@@ -368,7 +368,8 @@ fun Grades(
                                                                         text = title ?: "Kein Fach",
                                                                         modifier = Modifier
                                                                             .align(Alignment.CenterStart)
-                                                                            .padding(start = 16.dp)
+                                                                            .padding(start = 16.dp),
+                                                                        style = typography.titleMedium
                                                                     )
                                                                 }
                                                                 HorizontalDivider(thickness = 1.dp)
@@ -775,7 +776,7 @@ fun Grades(
                                                         )
                                                         Text(
                                                             text = "${year.name} (${formateDate(year.from)} - ${formateDate(year.to)})",
-                                                            fontSize = 18.sp
+                                                            style = typography.bodyLarge
                                                         )
                                                     }
                                                 }
@@ -1313,7 +1314,7 @@ fun Grades(
                                                     )
                                                     Text(
                                                         text = "Jahre analysieren/vergleichen",
-                                                        fontSize = 18.sp
+                                                        style = typography.bodyLarge
                                                     )
                                                 }
                                             }

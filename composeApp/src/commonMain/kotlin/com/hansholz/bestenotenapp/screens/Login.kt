@@ -2,6 +2,7 @@ package com.hansholz.bestenotenapp.screens
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -31,6 +32,7 @@ import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -38,14 +40,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
 import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.logo
@@ -73,6 +78,7 @@ fun Login(
     val scope = viewModel.viewModelScope
     @Suppress("DEPRECATION")
     val clipboard = LocalClipboardManager.current
+    val hapticFeedback = LocalHapticFeedback.current
     val animationsEnabled by LocalAnimationsEnabled.current
 
     var isLoading by remember { mutableStateOf(false) }
@@ -100,7 +106,7 @@ fun Login(
                             modifier = Modifier.padding(vertical = 20.dp).padding(innerPadding).consumeWindowInsets(innerPadding).imePadding(),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            var stayLoggedIn by remember { mutableStateOf(false) }
+                            var stayLoggedIn by rememberSaveable { mutableStateOf(false) }
 
                             Box(contentAlignment = Alignment.Center) {
                                 Image(
@@ -112,8 +118,7 @@ fun Login(
                                     text = "Willkommen bei der Beste-Noten-App",
                                     radius = 100.dp,
                                     modifier = Modifier.size(225.dp).rotateForever(10000, false, animationsEnabled),
-                                    fontSize = 30.sp,
-                                    fontFamily = FontFamilies.KeaniaOne(),
+                                    textStyle = typography.headlineLarge,
                                     startAngle = 110f,
                                     sweepAngle = 315f
                                 )
@@ -196,11 +201,24 @@ fun Login(
                             }
                             HorizontalDivider(modifier.padding(top = 10.dp))
                             Row(
-                                modifier = modifier,
+                                modifier = modifier.clip(shapes.medium).clickable {
+                                    val newValue = !stayLoggedIn
+                                    stayLoggedIn = newValue
+                                    hapticFeedback.performHapticFeedback(
+                                        if (newValue) {
+                                            HapticFeedbackType.ToggleOn
+                                        } else {
+                                            HapticFeedbackType.ToggleOff
+                                        }
+                                    )
+                                }.padding(start = 10.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Angemeldet bleiben")
+                                Text(
+                                    text = "Angemeldet bleiben",
+                                    style = typography.bodyLarge
+                                )
                                 EnhancedCheckbox(
                                     checked = stayLoggedIn,
                                     onCheckedChange = { stayLoggedIn = it },

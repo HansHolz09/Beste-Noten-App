@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -20,7 +21,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
-import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
 import com.hansholz.bestenotenapp.utils.topAppBarEndPadding
 import com.hansholz.bestenotenapp.utils.topAppBarStartPadding
@@ -48,9 +48,9 @@ fun TopAppBarScaffold(
                     Text(
                         text = title,
                         modifier = titleModifier,
-                        fontFamily = FontFamilies.KeaniaOne(),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        style = typography.headlineSmall,
                     )
                 },
                 modifier = LocalTitleBarModifier.current.customTitleBarMouseEventHandler(),

@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
@@ -47,13 +48,12 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
 import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.grades
 import bestenotenapp.composeapp.generated.resources.subjectsAndTeachers
-import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.repeatingBackground
 import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
@@ -138,8 +138,8 @@ fun Home(
                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                                 },
                                 textAlign = TextAlign.Center,
-                                fontSize = 22.sp,
-                                fontFamily = FontFamilies.Schoolbell()
+                                fontFamily = FontFamilies.Schoolbell(),
+                                style = typography.titleLarge
                             )
                         }
                     }
@@ -181,8 +181,7 @@ fun Home(
                                             animatedVisibilityScope = animatedVisibilityScope
                                         )
                                         .skipToLookaheadSize(),
-                                    fontFamily = FontFamilies.KeaniaOne(),
-                                    fontSize = 22.sp
+                                    style = typography.headlineSmall
                                 )
                             }
                             if (showNewestGrades) {
@@ -265,7 +264,7 @@ fun Home(
                                         )
                                         .skipToLookaheadSize(),
                                     fontFamily = FontFamilies.KeaniaOne(),
-                                    fontSize = 22.sp
+                                    style = typography.headlineSmall
                                 )
                             }
                             Text(
