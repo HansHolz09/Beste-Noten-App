@@ -16,13 +16,13 @@ import com.dokar.sonner.ToastType
 import com.dokar.sonner.ToasterState
 import com.hansholz.bestenotenapp.api.AuthTokenManager
 import com.hansholz.bestenotenapp.api.BesteSchuleApi
+import com.hansholz.bestenotenapp.api.codeAuthFlowFactory
+import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.models.Finalgrade
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.api.models.Subject
 import com.hansholz.bestenotenapp.api.models.User
 import com.hansholz.bestenotenapp.api.models.Year
-import com.hansholz.bestenotenapp.api.codeAuthFlowFactory
-import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.oidcClient
 import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.launch
@@ -101,16 +101,27 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
         try {
             handleToken()
             val user = init()
-            if (stayLoggedIn) {
-                authTokenManager.saveToken(authToken.value!!)
-            }
-            onNavigateHome()
-            toaster.show(
-                Toast(
-                    message = "Angemeldet als ${user?.username}",
-                    type = ToastType.Success
+            if (user?.role != "student") {
+                toaster.show(
+                    Toast(
+                        message = "Es sind ausschließlich Schüler-Accounts zulässig",
+                        icon = Icons.Outlined.Error,
+                        type = ToastType.Error
+                    )
                 )
-            )
+                isLoading(false)
+            } else {
+                if (stayLoggedIn) {
+                    authTokenManager.saveToken(authToken.value!!)
+                }
+                onNavigateHome()
+                toaster.show(
+                    Toast(
+                        message = "Angemeldet als ${user.username}",
+                        type = ToastType.Success
+                    )
+                )
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             toaster.show(
