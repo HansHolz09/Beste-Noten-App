@@ -50,10 +50,10 @@ import androidx.lifecycle.viewModelScope
 import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.logo
 import com.hansholz.bestenotenapp.components.CurvedText
+import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
-import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.rotateForever
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
@@ -93,7 +93,7 @@ fun Login(
                 contentAlignment = Alignment.Center
             ) { targetState ->
                 if (targetState) {
-                    ContainedLoadingIndicator()
+                    ContainedLoadingIndicator(Modifier.padding(innerPadding))
                 } else {
                     Box(Modifier.verticalScroll(rememberScrollState())) {
                         Column(
