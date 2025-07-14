@@ -6,6 +6,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -130,13 +131,17 @@ fun Home(
                         AnimatedContent(greeting) {
                             TextWithNotoAnimatedEmoji(
                                 text = it,
-                                modifier = Modifier.padding(20.dp).clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-                                    greeting = getGreeting(viewModel.user.value?.students?.firstOrNull()?.forename ?: "du")
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                },
+                                modifier = Modifier
+                                    .animateItem()
+                                    .animateContentSize()
+                                    .padding(20.dp)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) {
+                                        greeting = getGreeting(viewModel.user.value?.students?.firstOrNull()?.forename ?: "du")
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                    },
                                 textAlign = TextAlign.Center,
                                 fontFamily = FontFamilies.Schoolbell(),
                                 style = typography.titleLarge
@@ -147,6 +152,8 @@ fun Home(
                 item {
                     val imageBitmap = imageResource(Res.drawable.grades)
                     Box(Modifier
+                        .animateItem()
+                        .animateContentSize()
                         .fillMaxWidth()
                         .padding(10.dp)
                         .clip(RoundedCornerShape(12.dp))
@@ -186,34 +193,34 @@ fun Home(
                             }
                             if (showNewestGrades) {
                                 AnimatedContent(isGradesLoading) { targetState ->
-                                    Box(Modifier.fillMaxWidth().sizeIn(minHeight = 100.dp)) {
-                                        if (targetState) {
+                                    if (targetState) {
+                                        Box(Modifier.fillMaxWidth().sizeIn(minHeight = 100.dp)) {
                                             ContainedLoadingIndicator(Modifier.align(Alignment.Center))
-                                        } else {
-                                            Column {
-                                                viewModel
-                                                    .startGradeCollections
-                                                    .filter { it.grades?.size != 0 }
-                                                    .sortedByDescending { it.givenAt }
-                                                    .take(5)
-                                                    .forEach {
-                                                        ListItem(
-                                                            headlineContent = {
-                                                                Text("${it.subject?.name}: ${it.name}")
-                                                            },
-                                                            supportingContent = {
-                                                                Column {
-                                                                    Text("${it.type} vom ${formateDate(it.givenAt)}")
-                                                                }
-                                                            },
-                                                            leadingContent = {
-                                                                Text(it.grades?.getOrNull(0)?.value ?: "🚫", textAlign = TextAlign.Center, modifier = Modifier.width(30.dp))
-                                                            },
-                                                            colors = ListItemDefaults.colors(Color.Transparent),
-                                                            modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2)
-                                                        )
-                                                    }
-                                            }
+                                        }
+                                    } else {
+                                        Column {
+                                            viewModel
+                                                .startGradeCollections
+                                                .filter { it.grades?.size != 0 }
+                                                .sortedByDescending { it.givenAt }
+                                                .take(5)
+                                                .forEach {
+                                                    ListItem(
+                                                        headlineContent = {
+                                                            Text("${it.subject?.name}: ${it.name}")
+                                                        },
+                                                        supportingContent = {
+                                                            Column {
+                                                                Text("${it.type} vom ${formateDate(it.givenAt)}")
+                                                            }
+                                                        },
+                                                        leadingContent = {
+                                                            Text(it.grades?.getOrNull(0)?.value ?: "🚫", textAlign = TextAlign.Center, modifier = Modifier.width(30.dp))
+                                                        },
+                                                        colors = ListItemDefaults.colors(Color.Transparent),
+                                                        modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2)
+                                                    )
+                                                }
                                         }
                                     }
                                 }
@@ -229,6 +236,8 @@ fun Home(
                 item {
                     val imageBitmap = imageResource(Res.drawable.subjectsAndTeachers)
                     Box(Modifier
+                        .animateItem()
+                        .animateContentSize()
                         .fillMaxWidth()
                         .padding(10.dp)
                         .clip(RoundedCornerShape(12.dp))
