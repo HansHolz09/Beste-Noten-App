@@ -11,6 +11,8 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 
 fun LazyListScope.settingsToggleItem(
@@ -32,9 +34,19 @@ fun LazyListScope.settingsToggleItem(
             icon = icon,
             position = position,
         ) {
+            val hapticFeedback = LocalHapticFeedback.current
             Switch(
                 checked = checked,
-                onCheckedChange = onCheckedChange,
+                onCheckedChange = {
+                    onCheckedChange(it)
+                    hapticFeedback.performHapticFeedback(
+                        if (it) {
+                            HapticFeedbackType.ToggleOn
+                        } else {
+                            HapticFeedbackType.ToggleOff
+                        }
+                    )
+                },
                 thumbContent =
                     if (checked) {
                         {

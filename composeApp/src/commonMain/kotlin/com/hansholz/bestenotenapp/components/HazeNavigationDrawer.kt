@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.launch
 

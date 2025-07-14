@@ -27,13 +27,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Login
 import androidx.compose.material.icons.outlined.ContentPaste
-import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -53,6 +50,9 @@ import androidx.lifecycle.viewModelScope
 import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.logo
 import com.hansholz.bestenotenapp.components.CurvedText
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.rotateForever
 import com.hansholz.bestenotenapp.main.Platform
@@ -132,7 +132,7 @@ fun Login(
                                 state = textFieldState,
                                 modifier = modifier.widthIn(max = 500.dp),
                                 leadingIcon = {
-                                    IconButton(
+                                    EnhancedIconButton(
                                         onClick = {
                                             scope.launch {
                                                 textFieldState.setTextAndPlaceCursorAtEnd(clipboard.getText()?.text ?: "")
@@ -143,7 +143,7 @@ fun Login(
                                     }
                                 },
                                 trailingIcon = {
-                                    IconButton(
+                                    EnhancedIconButton(
                                         onClick = {
                                             scope.launch {
                                                 viewModel.login(
@@ -176,7 +176,7 @@ fun Login(
                                 lineLimits = TextFieldLineLimits.SingleLine
                             )
                             Text("oder")
-                            Button(
+                            EnhancedButton(
                                 onClick = {
                                     scope.launch {
                                         viewModel.login(
@@ -201,7 +201,7 @@ fun Login(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text("Angemeldet bleiben")
-                                Checkbox(
+                                EnhancedCheckbox(
                                     checked = stayLoggedIn,
                                     onCheckedChange = { stayLoggedIn = it },
                                     enabled = viewModel.authTokenManager.isAvailable

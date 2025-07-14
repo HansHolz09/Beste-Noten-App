@@ -29,16 +29,17 @@ object FontFamilies {
 @Composable
 fun AppTypography() = Typography().run {
     val fontFamily = FontFamilies.Sniglet()
+    val alternativeFontFamily = FontFamilies.KeaniaOne()
     copy(
-        displayLarge = displayLarge.copy(fontFamily = fontFamily),
-        displayMedium = displayMedium.copy(fontFamily = fontFamily),
-        displaySmall = displaySmall.copy(fontFamily = fontFamily),
-        headlineLarge = headlineLarge.copy(fontFamily = fontFamily),
-        headlineMedium = headlineMedium.copy(fontFamily = fontFamily),
-        headlineSmall = headlineSmall.copy(fontFamily = fontFamily),
-        titleLarge = titleLarge.copy(fontFamily = fontFamily),
-        titleMedium = titleMedium.copy(fontFamily = fontFamily),
-        titleSmall = titleSmall.copy(fontFamily = fontFamily),
+        displayLarge = displayLarge.copy(fontFamily = alternativeFontFamily),
+        displayMedium = displayMedium.copy(fontFamily = alternativeFontFamily),
+        displaySmall = displaySmall.copy(fontFamily = alternativeFontFamily),
+        headlineLarge = headlineLarge.copy(fontFamily = alternativeFontFamily),
+        headlineMedium = headlineMedium.copy(fontFamily = alternativeFontFamily),
+        headlineSmall = headlineSmall.copy(fontFamily = alternativeFontFamily),
+        titleLarge = titleLarge.copy(fontFamily = alternativeFontFamily),
+        titleMedium = titleMedium.copy(fontFamily = alternativeFontFamily),
+        titleSmall = titleSmall.copy(fontFamily = alternativeFontFamily),
         bodyLarge = bodyLarge.copy(fontFamily =  fontFamily),
         bodyMedium = bodyMedium.copy(fontFamily = fontFamily),
         bodySmall = bodySmall.copy(fontFamily = fontFamily),

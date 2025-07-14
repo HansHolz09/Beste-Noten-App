@@ -1,4 +1,4 @@
-package com.hansholz.bestenotenapp.components
+package com.hansholz.bestenotenapp.components.enhanced
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier

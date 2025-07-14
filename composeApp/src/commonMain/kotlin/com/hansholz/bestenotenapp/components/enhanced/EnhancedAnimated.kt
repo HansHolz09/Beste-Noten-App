@@ -1,4 +1,4 @@
-package com.hansholz.bestenotenapp.components
+package com.hansholz.bestenotenapp.components.enhanced
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -17,7 +17,7 @@ fun EnhancedAnimated(
     repeat: Boolean = false,
     animateOnEnter: Boolean = true,
     state: AnimatedState = rememberAnimatedState(),
-    content: @Composable () -> Unit
+    content: @Composable (isAnimated: Boolean) -> Unit
 ) {
     if (LocalAnimationsEnabled.current.value) {
         Animated(
@@ -28,9 +28,10 @@ fun EnhancedAnimated(
             repeat = repeat,
             animateOnEnter = animateOnEnter,
             state = state,
-            content = content
-        )
+        ) {
+            content(true)
+        }
     } else {
-        content()
+        content(false)
     }
 }

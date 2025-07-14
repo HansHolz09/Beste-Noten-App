@@ -18,7 +18,7 @@ import com.dokar.sonner.Toaster
 import com.dokar.sonner.rememberToasterState
 import com.hansholz.bestenotenapp.components.ProvideCupertinoOverscrollEffect
 import com.hansholz.bestenotenapp.components.RepeatingBackground
-import com.hansholz.bestenotenapp.components.enhancedHazeEffect
+import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.navigation.AppNavigation
 import com.hansholz.bestenotenapp.theme.AppTheme
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled

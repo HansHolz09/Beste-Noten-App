@@ -41,7 +41,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -56,19 +55,16 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Title
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -102,8 +98,10 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -111,10 +109,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hansholz.bestenotenapp.api.models.Year
-import com.hansholz.bestenotenapp.components.EnhancedAnimated
 import com.hansholz.bestenotenapp.components.PreferencePosition
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
-import com.hansholz.bestenotenapp.components.enhancedHazeEffect
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
+import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
 import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
@@ -181,6 +183,7 @@ fun Grades(
     with(sharedTransitionScope) {
         val scope = rememberCoroutineScope()
         val density = LocalDensity.current
+        val hapticFeedback = LocalHapticFeedback.current
         val layoutDirection = LocalLayoutDirection.current
         val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
@@ -221,7 +224,7 @@ fun Grades(
                 animatedVisibilityScope = animatedVisibilityScope
             ).skipToLookaheadSize(),
             navigationIcon = {
-                IconButton(
+                EnhancedIconButton(
                     onClick = {
                         scope.launch {
                             viewModel.closeOrOpenDrawer(windowWithSizeClass)
@@ -241,7 +244,7 @@ fun Grades(
                 val contentPadding = PaddingValues(top = topPadding, bottom = innerPadding.calculateBottomPadding() + toolbarPadding)
                 val verticalPadding = PaddingValues(start = innerPadding.calculateStartPadding(layoutDirection), end = innerPadding.calculateEndPadding(layoutDirection))
 
-                val pagerState = rememberPagerState { 2 }
+                val pagerState = rememberEnhancedPagerState(2)
                 var userScrollEnabled by remember { mutableStateOf(true) }
                 var contentBlurred by remember { mutableStateOf(false) }
                 val contentBlurRadius = animateDpAsState(if (contentBlurred) 10.dp else 0.dp)
@@ -283,7 +286,12 @@ fun Grades(
                                                     modifier = Modifier.padding(verticalPadding),
                                                     preset = ZoomIn(),
                                                     durationMillis = 200,
-                                                ) {
+                                                ) { isAnimated ->
+                                                    LaunchedEffect(Unit) {
+                                                        if (firstLazyListState.isScrollInProgress && isAnimated) {
+                                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                                        }
+                                                    }
                                                     ListItem(
                                                         headlineContent = {
                                                             Text("${it.subject?.name}: ${it.name}")
@@ -333,7 +341,12 @@ fun Grades(
                                                         EnhancedAnimated(
                                                             preset = ZoomIn(),
                                                             durationMillis = 200,
-                                                        ) {
+                                                        ) { isAnimated ->
+                                                            LaunchedEffect(Unit) {
+                                                                if (secondLazyListState.isScrollInProgress && isAnimated) {
+                                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                                                }
+                                                            }
                                                             Column(
                                                                 Modifier
                                                                     .fillMaxWidth()
@@ -367,7 +380,12 @@ fun Grades(
                                                             modifier = Modifier.padding(verticalPadding),
                                                             preset = ZoomIn(),
                                                             durationMillis = 200,
-                                                        ) {
+                                                        ) { isAnimated ->
+                                                            LaunchedEffect(Unit) {
+                                                                if (secondLazyListState.isScrollInProgress && isAnimated) {
+                                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                                                }
+                                                            }
                                                             ListItem(
                                                                 headlineContent = {
                                                                     Text("${it.name} - ${it.type}")
@@ -529,7 +547,7 @@ fun Grades(
                                             .clip(FloatingToolbarDefaults.ContainerShape).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
                                         colors = FloatingToolbarDefaults.standardFloatingToolbarColors(Color.Transparent),
                                         leadingContent = {
-                                            IconButton(
+                                            EnhancedIconButton(
                                                 onClick = {
                                                     state = 1
                                                     isBackInProgress = false
@@ -543,7 +561,7 @@ fun Grades(
                                                     tint = colorScheme.onPrimaryContainer
                                                 )
                                             }
-                                            IconButton(
+                                            EnhancedIconButton(
                                                 onClick = {
                                                     state = 2
                                                     isBackInProgress = false
@@ -561,7 +579,7 @@ fun Grades(
                                             }
                                         },
                                         trailingContent = {
-                                            IconButton(
+                                            EnhancedIconButton(
                                                 onClick = {
                                                     scope.launch {
                                                         isLoading = true
@@ -587,7 +605,7 @@ fun Grades(
                                                     tint = colorScheme.onPrimaryContainer
                                                 )
                                             }
-                                            IconButton(
+                                            EnhancedIconButton(
                                                 onClick = {
                                                     state = 3
                                                     isBackInProgress = false
@@ -607,7 +625,7 @@ fun Grades(
                                         collapsedShadowElevation = 0.dp,
                                         expandedShadowElevation = 0.dp
                                     ) {
-                                        FilledIconButton(
+                                        EnhancedIconButton(
                                             onClick = {
                                                 state = 4
                                                 isBackInProgress = false
@@ -659,7 +677,7 @@ fun Grades(
                                             LaunchedEffect(Unit) {
                                                 focusRequester.requestFocus()
                                             }
-                                            IconButton(
+                                            EnhancedIconButton(
                                                 onClick = {},
                                                 enabled = false
                                             ) {
@@ -677,7 +695,7 @@ fun Grades(
                                                 textStyle = TextStyle.Default.copy(colorScheme.onPrimaryContainer, 20.sp),
                                                 cursorBrush = SolidColor(colorScheme.onPrimaryContainer)
                                             )
-                                            IconButton(
+                                            EnhancedIconButton(
                                                 onClick = {
                                                     scope.launch {
                                                         searchQuery = ""
@@ -763,7 +781,7 @@ fun Grades(
                                                 }
                                             }
                                         }
-                                        Button(
+                                        EnhancedButton(
                                             onClick = {
                                                 scope.launch {
                                                     state = 0
@@ -852,7 +870,7 @@ fun Grades(
                                                 )
                                             }
                                         }
-                                        Button(
+                                        EnhancedButton(
                                             onClick = {
                                                 scope.launch {
                                                     state = 0
@@ -1273,7 +1291,7 @@ fun Grades(
                                                     modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
                                                     verticalAlignment = Alignment.CenterVertically,
                                                 ) {
-                                                    Checkbox(
+                                                    EnhancedCheckbox(
                                                         checked = analyzeYears,
                                                         onCheckedChange = {
                                                             scope.launch {
@@ -1311,7 +1329,7 @@ fun Grades(
                                                     closeBarHeight = with(density) { it.size.height.toDp() }
                                                 }
                                             ) {
-                                                Button(
+                                                EnhancedButton(
                                                     onClick = {
                                                         scope.launch {
                                                             state = 0

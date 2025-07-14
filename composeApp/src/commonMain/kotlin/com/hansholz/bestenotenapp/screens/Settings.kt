@@ -27,7 +27,6 @@ import androidx.compose.material.icons.outlined.WavingHand
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
@@ -35,7 +34,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.PreferenceCategory
 import com.hansholz.bestenotenapp.components.PreferenceItem
 import com.hansholz.bestenotenapp.components.PreferencePosition
@@ -66,12 +68,13 @@ fun Settings(
     onNavigateToLogin: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val hapticFeedback = LocalHapticFeedback.current
     val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
     TopAppBarScaffold(
         title = "Einstellungen",
         navigationIcon = {
-            IconButton(
+            EnhancedIconButton(
                 onClick = {
                     scope.launch {
                         viewModel.closeOrOpenDrawer(windowWithSizeClass)
@@ -120,6 +123,7 @@ fun Settings(
                             onCheckedChange = {
                                 useSystemIsDark = it
                                 settings["useSystemIsDark"] = it
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
                             },
                             shapes = IconButtonDefaults.toggleableShapes()
                         ) {
@@ -132,6 +136,7 @@ fun Settings(
                                 settings["useSystemIsDark"] = !it
                                 isDark = !it
                                 settings["isDark"] = !it
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
                             },
                             shapes = IconButtonDefaults.toggleableShapes()
                         ) {
@@ -144,6 +149,7 @@ fun Settings(
                                 settings["useSystemIsDark"] = !it
                                 isDark = it
                                 settings["isDark"] = it
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
                             },
                             shapes = IconButtonDefaults.toggleableShapes()
                         ) {
@@ -263,6 +269,7 @@ fun Settings(
                     onClick = {
                         viewModel.logout()
                         onNavigateToLogin()
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                     },
                 )
             }

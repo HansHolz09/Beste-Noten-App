@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler

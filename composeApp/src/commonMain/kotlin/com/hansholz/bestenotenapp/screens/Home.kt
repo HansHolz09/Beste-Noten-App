@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -44,6 +43,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,6 +52,7 @@ import androidx.lifecycle.viewModelScope
 import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.grades
 import bestenotenapp.composeapp.generated.resources.subjectsAndTeachers
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.repeatingBackground
 import com.hansholz.bestenotenapp.main.LocalShowGreetings
@@ -61,10 +63,10 @@ import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.getGreeting
 import dev.chrisbanes.haze.hazeSource
+import kotlin.random.Random
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.imageResource
 import org.kodein.emoji.compose.m3.TextWithNotoAnimatedEmoji
-import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
@@ -76,6 +78,7 @@ fun Home(
 ) {
     with(sharedTransitionScope) {
         val scope = rememberCoroutineScope()
+        val hapticFeedback = LocalHapticFeedback.current
         val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
         val showGreetings by LocalShowGreetings.current
@@ -98,7 +101,7 @@ fun Home(
         TopAppBarScaffold(
             title = "Startseite",
             navigationIcon = {
-                IconButton(
+                EnhancedIconButton(
                     onClick = {
                         scope.launch {
                             viewModel.closeOrOpenDrawer(windowWithSizeClass)
@@ -132,6 +135,7 @@ fun Home(
                                     indication = null
                                 ) {
                                     greeting = getGreeting(viewModel.user.value?.students?.firstOrNull()?.forename ?: "du")
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                                 },
                                 textAlign = TextAlign.Center,
                                 fontSize = 22.sp,
@@ -156,6 +160,7 @@ fun Home(
                         .border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
                         .clickable {
                             onNavigateToScreen(Fragment.Grades)
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                         }
                         .sharedBounds(
                             sharedContentState = rememberSharedContentState(key = "grades-card"),
@@ -238,6 +243,7 @@ fun Home(
                         .border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
                         .clickable {
                             onNavigateToScreen(Fragment.SubjectsAndTeachers)
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                         }
                         .sharedBounds(
                             sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-card"),

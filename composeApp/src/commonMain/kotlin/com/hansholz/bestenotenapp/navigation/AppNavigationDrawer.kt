@@ -31,14 +31,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.window.core.layout.WindowWidthSizeClass
-import com.hansholz.bestenotenapp.components.EnhancedAnimated
 import com.hansholz.bestenotenapp.components.NavigationDrawer
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.theme.FontFamilies
@@ -57,6 +59,7 @@ fun AppNavigationDrawer(
     onNavigateToLogin: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val hapticFeedback = LocalHapticFeedback.current
     val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
     val navController = rememberNavController()
@@ -119,6 +122,7 @@ fun AppNavigationDrawer(
                                     navController.navigate(screen.route)
                                     if (windowWithSizeClass == WindowWidthSizeClass.COMPACT) viewModel.closeOrOpenDrawer(windowWithSizeClass)
                                 }
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                             },
                             modifier = Modifier.padding(10.dp).then(
                                 if (isCurrentScreen) Modifier.border(2.dp, colorScheme.onSurface, shapes.extraExtraLarge) else Modifier
@@ -146,6 +150,7 @@ fun AppNavigationDrawer(
                                 navController.navigate(Fragment.Settings.route)
                                 if (windowWithSizeClass == WindowWidthSizeClass.COMPACT) viewModel.closeOrOpenDrawer(windowWithSizeClass)
                             }
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                         },
                         modifier = Modifier.padding(10.dp).then(
                             if (isCurrentScreen) Modifier.border(2.dp, colorScheme.onSurface, shapes.extraExtraLarge) else Modifier

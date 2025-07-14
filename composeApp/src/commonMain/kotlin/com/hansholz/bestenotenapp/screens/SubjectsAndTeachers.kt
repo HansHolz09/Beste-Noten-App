@@ -15,8 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -25,7 +25,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -44,14 +43,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.hansholz.bestenotenapp.components.EnhancedAnimated
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
-import com.hansholz.bestenotenapp.components.enhancedHazeEffect
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
+import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.nomanr.animate.compose.presets.zoomingextrances.ZoomIn
@@ -68,6 +71,7 @@ fun SubjectsAndTeachers(
     with(sharedTransitionScope) {
         val scope = rememberCoroutineScope()
         val density = LocalDensity.current
+        val hapticFeedback = LocalHapticFeedback.current
         val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
         val showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
@@ -96,7 +100,7 @@ fun SubjectsAndTeachers(
                 animatedVisibilityScope = animatedVisibilityScope
             ).skipToLookaheadSize(),
             navigationIcon = {
-                IconButton(
+                EnhancedIconButton(
                     onClick = {
                         scope.launch {
                             viewModel.closeOrOpenDrawer(windowWithSizeClass)
@@ -112,7 +116,7 @@ fun SubjectsAndTeachers(
             var topPadding by remember { mutableStateOf(0.dp) }
             val contentPadding = PaddingValues(top = topPadding, bottom = innerPadding.calculateBottomPadding())
 
-            val pagerState = rememberPagerState { 2 }
+            val pagerState = rememberEnhancedPagerState(2)
             HorizontalPager(pagerState, Modifier.hazeSource(viewModel.hazeBackgroundState)) {
                 AnimatedContent(isLoading) { targetState ->
                     Box(Modifier.fillMaxSize()) {
@@ -121,13 +125,22 @@ fun SubjectsAndTeachers(
                         } else {
                             when(it) {
                                 0 -> {
-                                    LazyColumn(contentPadding = contentPadding) {
+                                    val lazyListState = rememberLazyListState()
+                                    LazyColumn(
+                                        state = lazyListState,
+                                        contentPadding = contentPadding
+                                    ) {
                                         items(
                                             viewModel.subjects) { subject ->
                                             EnhancedAnimated(
                                                 preset = ZoomIn(),
                                                 durationMillis = 200,
-                                            ) {
+                                            ) { isAnimated ->
+                                                LaunchedEffect(Unit) {
+                                                    if (lazyListState.isScrollInProgress && isAnimated) {
+                                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                                    }
+                                                }
                                                 ListItem(
                                                     headlineContent = {
                                                         Text(
@@ -152,12 +165,21 @@ fun SubjectsAndTeachers(
                                     }
                                 }
                                 1 -> {
-                                    LazyColumn(contentPadding = contentPadding) {
+                                    val lazyListState = rememberLazyListState()
+                                    LazyColumn(
+                                        state = lazyListState,
+                                        contentPadding = contentPadding
+                                    ) {
                                         items(viewModel.finalGrades.groupBy { it.teacher }.map { it.key to it.value.map { it.subject?.name }.toSet().joinToString() }) {
                                             EnhancedAnimated(
                                                 preset = ZoomIn(),
                                                 durationMillis = 200,
-                                            ) {
+                                            ) { isAnimated ->
+                                                LaunchedEffect(Unit) {
+                                                    if (lazyListState.isScrollInProgress && isAnimated) {
+                                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                                    }
+                                                }
                                                 ListItem(
                                                     headlineContent = {
                                                         Text((if (showTeachersWithFirstname) it.first?.forename else it.first?.forename?.take(1) + ".") + " " + it.first?.name + " (" + it.second + ")")
