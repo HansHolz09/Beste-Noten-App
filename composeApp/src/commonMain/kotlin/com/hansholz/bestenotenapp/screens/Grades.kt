@@ -640,11 +640,11 @@ fun Grades(
                                                 containerColor = colorScheme.primary.copy(0.5f),
                                                 disabledContainerColor = Color.Transparent
                                             )
-                                        ) {
+                                        ) { enabled ->
                                             Icon(
                                                 imageVector = Icons.Outlined.BarChart,
                                                 contentDescription = null,
-                                                tint = colorScheme.onPrimary
+                                                tint = if (enabled) colorScheme.onPrimary else colorScheme.onPrimaryContainer
                                             )
                                         }
                                     }

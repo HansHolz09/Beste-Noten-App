@@ -18,7 +18,7 @@ fun EnhancedIconButton(
     isFilled: Boolean = false,
     colors: IconButtonColors = if (isFilled) IconButtonDefaults.filledIconButtonColors() else IconButtonDefaults.iconButtonColors(),
     interactionSource: MutableInteractionSource? = null,
-    content: @Composable () -> Unit,
+    content: @Composable (enabled: Boolean) -> Unit,
 ) {
     val hapticFeedback = LocalHapticFeedback.current
 
@@ -33,6 +33,6 @@ fun EnhancedIconButton(
         enabled = enabled,
         colors = colors,
         interactionSource = interactionSource,
-        content = content
+        content = { content(enabled) }
     )
 }
