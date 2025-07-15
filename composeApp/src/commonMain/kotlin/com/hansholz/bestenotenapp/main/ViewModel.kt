@@ -2,8 +2,6 @@
 
 package com.hansholz.bestenotenapp.main
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Error
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.runtime.mutableStateListOf
@@ -61,11 +59,12 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
     val years = mutableStateListOf<Year>()
 
 
+    val isBesteSchuleNotReachable = mutableStateOf(false)
     private fun couldNotReachBesteSchule() {
+        isBesteSchuleNotReachable.value = true
         toaster.show(
             Toast(
                 message = "beste.schule konnte nicht erreicht werden",
-                icon = Icons.Outlined.Error,
                 type = ToastType.Error
             )
         )
@@ -105,7 +104,6 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
                 toaster.show(
                     Toast(
                         message = "Es sind ausschließlich Schüler-Accounts zulässig",
-                        icon = Icons.Outlined.Error,
                         type = ToastType.Error
                     )
                 )
@@ -127,7 +125,6 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
             toaster.show(
                 Toast(
                     message = "Anmeldung fehlgeschlagen",
-                    icon = Icons.Outlined.Error,
                     type = ToastType.Error
                 )
             )
@@ -237,7 +234,6 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
                 toaster.show(
                     Toast(
                         message = "Fehler bei der Initialisierung",
-                        icon = Icons.Outlined.Error,
                         type = ToastType.Error
                     )
                 )
