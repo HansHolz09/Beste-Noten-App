@@ -59,7 +59,6 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -776,7 +775,7 @@ fun Grades(
                                                         modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
                                                         verticalAlignment = Alignment.CenterVertically,
                                                     ) {
-                                                        Checkbox(
+                                                        EnhancedCheckbox(
                                                             checked = selectedYears.contains(year),
                                                             onCheckedChange = {
                                                                 if (selectedYears.contains(year)) {
