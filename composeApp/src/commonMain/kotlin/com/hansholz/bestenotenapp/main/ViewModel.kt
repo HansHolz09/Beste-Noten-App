@@ -135,6 +135,7 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
     fun logout() {
         authToken.value = null
         authTokenManager.deleteToken()
+        onCleared()
     }
 
 
@@ -239,6 +240,17 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
                 )
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        user.value = null
+        finalGrades.clear()
+        subjects.clear()
+        startGradeCollections.clear()
+        gradeCollections.clear()
+        allGradeCollectionsLoaded.value = false
+        years.clear()
     }
 }
 
