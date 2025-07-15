@@ -50,6 +50,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
@@ -125,70 +126,90 @@ fun SubjectsAndTeachers(
                         } else {
                             when(it) {
                                 0 -> {
-                                    val lazyListState = rememberLazyListState()
-                                    LazyColumn(
-                                        state = lazyListState,
-                                        contentPadding = contentPadding
-                                    ) {
-                                        items(
-                                            viewModel.subjects) { subject ->
-                                            EnhancedAnimated(
-                                                preset = ZoomIn(),
-                                                durationMillis = 200,
-                                            ) { isAnimated ->
-                                                LaunchedEffect(Unit) {
-                                                    if (lazyListState.isScrollInProgress && isAnimated) {
-                                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                    val items = remember(viewModel.subjects) { viewModel.subjects }
+                                    if (items.isEmpty()) {
+                                        EmptyStateMessage(
+                                            title = "Keine Fächer vorhanden",
+                                            modifier = Modifier.padding(contentPadding)
+                                        )
+                                    } else {
+                                        val lazyListState = rememberLazyListState()
+                                        LazyColumn(
+                                            state = lazyListState,
+                                            contentPadding = contentPadding
+                                        ) {
+                                            items(items) { subject ->
+                                                EnhancedAnimated(
+                                                    preset = ZoomIn(),
+                                                    durationMillis = 200,
+                                                ) { isAnimated ->
+                                                    LaunchedEffect(Unit) {
+                                                        if (lazyListState.isScrollInProgress && isAnimated) {
+                                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                                        }
                                                     }
+                                                    ListItem(
+                                                        headlineContent = {
+                                                            Text(
+                                                                text = "${subject.name} " +
+                                                                        "(${viewModel.finalGrades
+                                                                            .groupBy { it.subject }.map {
+                                                                                it.key to it.value.map { it.teacher }.toSet()
+                                                                            }
+                                                                            .firstOrNull { it.first?.localId == subject.localId }
+                                                                            ?.second
+                                                                            ?.joinToString { (if (showTeachersWithFirstname) it?.forename else it?.forename?.take(1) + ".") + " " + it?.name }
+                                                                            ?: "Kein Lehrer"})"
+                                                            )
+                                                        },
+                                                        leadingContent = {
+                                                            Text(subject.localId, textAlign = TextAlign.Center, modifier = Modifier.width(50.dp))
+                                                        },
+                                                        colors = ListItemDefaults.colors(Color.Transparent)
+                                                    )
                                                 }
-                                                ListItem(
-                                                    headlineContent = {
-                                                        Text(
-                                                            text = "${subject.name} " +
-                                                                    "(${viewModel.finalGrades
-                                                                        .groupBy { it.subject }.map {
-                                                                            it.key to it.value.map { it.teacher }.toSet()
-                                                                        }
-                                                                        .firstOrNull { it.first?.localId == subject.localId }
-                                                                        ?.second
-                                                                        ?.joinToString { (if (showTeachersWithFirstname) it?.forename else it?.forename?.take(1) + ".") + " " + it?.name }
-                                                                        ?: "Kein Lehrer"})"
-                                                        )
-                                                    },
-                                                    leadingContent = {
-                                                        Text(subject.localId, textAlign = TextAlign.Center, modifier = Modifier.width(50.dp))
-                                                    },
-                                                    colors = ListItemDefaults.colors(Color.Transparent)
-                                                )
                                             }
                                         }
                                     }
                                 }
                                 1 -> {
-                                    val lazyListState = rememberLazyListState()
-                                    LazyColumn(
-                                        state = lazyListState,
-                                        contentPadding = contentPadding
-                                    ) {
-                                        items(viewModel.finalGrades.groupBy { it.teacher }.map { it.key to it.value.map { it.subject?.name }.toSet().joinToString() }) {
-                                            EnhancedAnimated(
-                                                preset = ZoomIn(),
-                                                durationMillis = 200,
-                                            ) { isAnimated ->
-                                                LaunchedEffect(Unit) {
-                                                    if (lazyListState.isScrollInProgress && isAnimated) {
-                                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                    val items = remember(viewModel.finalGrades) {
+                                        viewModel
+                                            .finalGrades
+                                            .groupBy { it.teacher }
+                                            .map { it.key to it.value.map { it.subject?.name }.toSet().joinToString() }
+                                    }
+                                    if (items.isEmpty()) {
+                                        EmptyStateMessage(
+                                            title = "Keine Lehrer vorhanden",
+                                            modifier = Modifier.padding(contentPadding)
+                                        )
+                                    } else {
+                                        val lazyListState = rememberLazyListState()
+                                        LazyColumn(
+                                            state = lazyListState,
+                                            contentPadding = contentPadding
+                                        ) {
+                                            items(items) {
+                                                EnhancedAnimated(
+                                                    preset = ZoomIn(),
+                                                    durationMillis = 200,
+                                                ) { isAnimated ->
+                                                    LaunchedEffect(Unit) {
+                                                        if (lazyListState.isScrollInProgress && isAnimated) {
+                                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                                        }
                                                     }
+                                                    ListItem(
+                                                        headlineContent = {
+                                                            Text((if (showTeachersWithFirstname) it.first?.forename else it.first?.forename?.take(1) + ".") + " " + it.first?.name + " (" + it.second + ")")
+                                                        },
+                                                        leadingContent = {
+                                                            Text(it.first?.localId ?: "", textAlign = TextAlign.Center, modifier = Modifier.width(50.dp))
+                                                        },
+                                                        colors = ListItemDefaults.colors(Color.Transparent)
+                                                    )
                                                 }
-                                                ListItem(
-                                                    headlineContent = {
-                                                        Text((if (showTeachersWithFirstname) it.first?.forename else it.first?.forename?.take(1) + ".") + " " + it.first?.name + " (" + it.second + ")")
-                                                    },
-                                                    leadingContent = {
-                                                        Text(it.first?.localId ?: "", textAlign = TextAlign.Center, modifier = Modifier.width(50.dp))
-                                                    },
-                                                    colors = ListItemDefaults.colors(Color.Transparent)
-                                                )
                                             }
                                         }
                                     }

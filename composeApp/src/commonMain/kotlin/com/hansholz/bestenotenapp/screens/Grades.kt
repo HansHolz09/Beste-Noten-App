@@ -51,8 +51,10 @@ import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.DisabledVisible
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.PlaylistRemove
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material3.Card
@@ -109,6 +111,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hansholz.bestenotenapp.api.models.Year
+import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.PreferencePosition
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
@@ -255,33 +258,47 @@ fun Grades(
                     1 -> secondLazyListState
                     else -> rememberLazyListState()
                 }
+                val items = remember(viewModel.gradeCollections, selectedYears.size, showCollectionsWithoutGrades, searchQuery) {
+                     viewModel
+                        .gradeCollections
+                        .toSet()
+                        .filter { selectedYears.map { it.id }.contains(it.interval?.yearId) }
+                        .filter { if (showCollectionsWithoutGrades) true else it.grades?.size != 0 }
+                        .filter { (it.name ?: "").contains(searchQuery, true) }
+                }
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.hazeSource(viewModel.hazeBackgroundState).enhancedHazeEffect(blurRadius = contentBlurRadius.value),
                     userScrollEnabled = userScrollEnabled
-                ) {
-                    AnimatedContent(isLoading) { targetState ->
+                ) { currentPage ->
+                    AnimatedContent(isLoading || items.isEmpty()) { targetState ->
                         Box(Modifier.fillMaxSize()) {
                             if (targetState) {
-                                ContainedLoadingIndicator(Modifier.padding(contentPadding).align(Alignment.Center))
+                                AnimatedContent(isLoading) { isLoading ->
+                                    if (isLoading) {
+                                        Box(
+                                            modifier = Modifier.padding(contentPadding).fillMaxSize(),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            ContainedLoadingIndicator()
+                                        }
+                                    } else {
+                                        EmptyStateMessage(
+                                            title = if (searchQuery.isEmpty()) "Keine Noten vorhanden" else "Keine Noten gefunden",
+                                            icon = if (searchQuery.isEmpty()) Icons.Outlined.PlaylistRemove else Icons.Outlined.SearchOff,
+                                            modifier = Modifier.padding(contentPadding).consumeWindowInsets(contentPadding).imePadding()
+                                        )
+                                    }
+                                }
                             } else {
-                                when(it) {
+                                when(currentPage) {
                                     0 -> {
                                         LazyColumn(
                                             state = firstLazyListState,
                                             contentPadding = contentPadding,
                                             userScrollEnabled = userScrollEnabled
                                         ) {
-                                            items(
-                                                viewModel
-                                                    .gradeCollections
-                                                    .toSet()
-                                                    .filter { selectedYears.map { it.id }.contains(it.interval?.yearId) }
-                                                    .filter { if (showCollectionsWithoutGrades) true else it.grades?.size != 0 }
-                                                    .filter { (it.name ?: "").contains(searchQuery, true) }
-                                                    .sortedByDescending { it.givenAt }
-                                                    .toList()
-                                            ) {
+                                            items(items.sortedByDescending { it.givenAt }.toList()) {
                                                 EnhancedAnimated(
                                                     modifier = Modifier.padding(verticalPadding),
                                                     preset = ZoomIn(),
@@ -328,11 +345,7 @@ fun Grades(
                                             contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
                                             userScrollEnabled = userScrollEnabled
                                         ) {
-                                            viewModel.gradeCollections
-                                                .toSet()
-                                                .filter { selectedYears.map { it.id }.contains(it.interval?.yearId) }
-                                                .filter { if (showCollectionsWithoutGrades) true else it.grades?.size != 0 }
-                                                .filter { (it.name ?: "").contains(searchQuery, true) }
+                                            items
                                                 .sortedWith(compareBy({ it.subject?.name }, { it.givenAt }))
                                                 .groupBy { it.subject?.name }
                                                 .toList()
