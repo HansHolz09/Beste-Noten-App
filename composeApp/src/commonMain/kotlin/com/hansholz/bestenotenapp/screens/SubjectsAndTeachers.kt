@@ -126,7 +126,7 @@ fun SubjectsAndTeachers(
                         } else {
                             when(it) {
                                 0 -> {
-                                    val items = remember(viewModel.subjects) { viewModel.subjects }
+                                    val items = remember(viewModel.subjects) { viewModel.subjects.sortedBy { it.name } }
                                     if (items.isEmpty()) {
                                         EmptyStateMessage(
                                             title = "Keine Fächer vorhanden",
@@ -178,6 +178,7 @@ fun SubjectsAndTeachers(
                                             .finalGrades
                                             .groupBy { it.teacher }
                                             .map { it.key to it.value.map { it.subject?.name }.toSet().joinToString() }
+                                            .sortedBy { (teacher, _) -> teacher?.localId }
                                     }
                                     if (items.isEmpty()) {
                                         EmptyStateMessage(
