@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Animation
 import androidx.compose.material.icons.outlined.BlurOn
 import androidx.compose.material.icons.outlined.Brightness4
@@ -300,6 +301,15 @@ fun Settings(
             item {
                 PreferenceItem(
                     modifier = Modifier.padding(horizontal = 16.dp),
+                    title = "Angemeldet als ${viewModel.user.value?.username ?: "Unbekannt"}",
+                    subtitle = remember { if (viewModel.authTokenManager.getToken().isNullOrEmpty()) "(Temporär angemeldet)" else "(Anmeldung gespeichert)" },
+                    icon = Icons.Outlined.AccountCircle,
+                    position = PreferencePosition.Top,
+                )
+            }
+            item {
+                PreferenceItem(
+                    modifier = Modifier.padding(horizontal = 16.dp),
                     title = "Abmelden",
                     icon = Icons.AutoMirrored.Outlined.Logout,
                     onClick = {
@@ -307,6 +317,7 @@ fun Settings(
                         onNavigateToLogin()
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                     },
+                    position = PreferencePosition.Bottom,
                 )
             }
             item {
