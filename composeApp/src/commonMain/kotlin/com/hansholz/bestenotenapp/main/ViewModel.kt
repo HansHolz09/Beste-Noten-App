@@ -12,7 +12,7 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.dokar.sonner.Toast
 import com.dokar.sonner.ToastType
 import com.dokar.sonner.ToasterState
-import com.hansholz.bestenotenapp.api.AuthTokenManager
+import com.hansholz.bestenotenapp.security.AuthTokenManager
 import com.hansholz.bestenotenapp.api.BesteSchuleApi
 import com.hansholz.bestenotenapp.api.codeAuthFlowFactory
 import com.hansholz.bestenotenapp.api.createHttpClient

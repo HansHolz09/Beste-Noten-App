@@ -1,4 +1,4 @@
-package com.hansholz.bestenotenapp.utils
+package com.hansholz.bestenotenapp.security
 
 import com.microsoft.credentialstorage.SecretStore
 import com.microsoft.credentialstorage.StorageProvider

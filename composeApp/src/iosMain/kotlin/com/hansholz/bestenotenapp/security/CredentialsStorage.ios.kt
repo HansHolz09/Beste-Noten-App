@@ -1,4 +1,4 @@
-package com.hansholz.bestenotenapp.utils
+package com.hansholz.bestenotenapp.security
 
 import com.russhwolf.settings.ExperimentalSettingsImplementation
 import com.russhwolf.settings.KeychainSettings

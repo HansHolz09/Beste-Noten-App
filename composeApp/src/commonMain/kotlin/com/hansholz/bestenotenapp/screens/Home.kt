@@ -223,7 +223,6 @@ fun Home(
                                                             Text(it.grades?.getOrNull(0)?.value ?: "🚫", textAlign = TextAlign.Center, modifier = Modifier.width(30.dp))
                                                         },
                                                         colors = ListItemDefaults.colors(Color.Transparent),
-                                                        modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2)
                                                     )
                                                 }
                                         }

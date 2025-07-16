@@ -4,6 +4,7 @@ adaptive = "1.2.0-alpha03"
 androidx-activity = "1.10.1"
 androidx-lifecycle = "2.9.1"
 androidx-crypto = "1.1.0-beta01"
+androidx-biometric = "1.4.0-alpha02"
 animateCompose = "0.0.1"
 credential-storage = "1.0.0"
 composeHotReload = "1.0.0-beta03"
@@ -44,6 +45,7 @@ kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotl
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 androidx-security-crypto = { module = "androidx.security:security-crypto-ktx", version.ref = "androidx-crypto" }
+androidx-biometric = { module = "androidx.biometric:biometric-ktx", version.ref = "androidx-biometric" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }

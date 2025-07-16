@@ -80,8 +80,9 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
-            implementation(libs.ktor.client.cio)
             implementation(libs.androidx.security.crypto)
+            implementation(libs.androidx.biometric)
+            implementation(libs.ktor.client.cio)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

@@ -60,11 +60,16 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.rotateForever
+import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getPlatform
+import com.hansholz.bestenotenapp.security.BindBiometryAuthenticatorEffect
+import com.hansholz.bestenotenapp.security.BiometryAuthenticator
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
+import com.russhwolf.settings.Settings
+import com.russhwolf.settings.set
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -80,6 +85,11 @@ fun Login(
     val clipboard = LocalClipboardManager.current
     val hapticFeedback = LocalHapticFeedback.current
     val animationsEnabled by LocalAnimationsEnabled.current
+    var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
+    val settings = Settings()
+
+    val biometryAuthenticator = remember { BiometryAuthenticator() }
+    BindBiometryAuthenticatorEffect(biometryAuthenticator)
 
     var isLoading by remember { mutableStateOf(false) }
 
@@ -201,22 +211,26 @@ fun Login(
                             }
                             HorizontalDivider(modifier.padding(top = 10.dp))
                             Row(
-                                modifier = modifier.clip(shapes.medium).clickable {
-                                    val newValue = !stayLoggedIn
-                                    stayLoggedIn = newValue
-                                    hapticFeedback.performHapticFeedback(
-                                        if (newValue) {
-                                            HapticFeedbackType.ToggleOn
-                                        } else {
-                                            HapticFeedbackType.ToggleOff
-                                        }
-                                    )
-                                }.padding(start = 10.dp),
+                                modifier = modifier
+                                    .clip(shapes.medium)
+                                    .clickable(viewModel.authTokenManager.isAvailable) {
+                                        val newValue = !stayLoggedIn
+                                        stayLoggedIn = newValue
+                                        hapticFeedback.performHapticFeedback(
+                                            if (newValue) {
+                                                HapticFeedbackType.ToggleOn
+                                            } else {
+                                                HapticFeedbackType.ToggleOff
+                                            }
+                                        )
+                                    }
+                                    .padding(start = 10.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
                                     text = "Angemeldet bleiben",
+                                    modifier = Modifier.weight(1f),
                                     style = typography.bodyLarge
                                 )
                                 EnhancedCheckbox(
@@ -224,6 +238,66 @@ fun Login(
                                     onCheckedChange = { stayLoggedIn = it },
                                     enabled = viewModel.authTokenManager.isAvailable
                                 )
+                            }
+                            if (biometryAuthenticator.isBiometricAvailable()) {
+                                Row(
+                                    modifier = modifier
+                                        .clip(shapes.medium)
+                                        .clickable {
+                                            val newValue = !requireBiometricAuthentification
+                                            if (newValue) {
+                                                biometryAuthenticator.checkBiometryAuthentication(
+                                                    requestTitle = "Bestätigen",
+                                                    requestReason = "Bestätige, um die biometrische Authentifizierung beim Start zu aktiven",
+                                                    scope = scope,
+                                                ) { isSuccessful ->
+                                                    if (isSuccessful) {
+                                                        requireBiometricAuthentification = newValue
+                                                        settings["requireBiometricAuthentification"] = newValue
+                                                    }
+                                                }
+                                            } else {
+                                                requireBiometricAuthentification = newValue
+                                                settings["requireBiometricAuthentification"] = newValue
+                                            }
+                                            hapticFeedback.performHapticFeedback(
+                                                if (newValue) {
+                                                    HapticFeedbackType.ToggleOn
+                                                } else {
+                                                    HapticFeedbackType.ToggleOff
+                                                }
+                                            )
+                                        }
+                                        .padding(start = 10.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Biometrische Authentifizierung erforderlich",
+                                        modifier = Modifier.weight(1f),
+                                        style = typography.bodyLarge
+                                    )
+                                    EnhancedCheckbox(
+                                        checked = requireBiometricAuthentification,
+                                        onCheckedChange = {
+                                            if (it) {
+                                                biometryAuthenticator.checkBiometryAuthentication(
+                                                    requestTitle = "Bestätigen",
+                                                    requestReason = "Bestätige, um die biometrische Authentifizierung beim Start zu aktiven",
+                                                    scope = scope,
+                                                ) { isSuccessful ->
+                                                    if (isSuccessful) {
+                                                        requireBiometricAuthentification = it
+                                                        settings["requireBiometricAuthentification"] = it
+                                                    }
+                                                }
+                                            } else {
+                                                requireBiometricAuthentification = it
+                                                settings["requireBiometricAuthentification"] = it
+                                            }
+                                        },
+                                    )
+                                }
                             }
                         }
                     }

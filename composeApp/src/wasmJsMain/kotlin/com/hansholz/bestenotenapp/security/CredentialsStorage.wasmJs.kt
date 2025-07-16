@@ -1,4 +1,4 @@
-package com.hansholz.bestenotenapp.utils
+package com.hansholz.bestenotenapp.security
 
 import kotlinx.browser.localStorage
 

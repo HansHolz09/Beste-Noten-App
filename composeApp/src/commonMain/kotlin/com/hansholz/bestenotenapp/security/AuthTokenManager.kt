@@ -1,8 +1,7 @@
-package com.hansholz.bestenotenapp.api
+package com.hansholz.bestenotenapp.security
 
 import com.hansholz.bestenotenapp.main.ExactPlatform
 import com.hansholz.bestenotenapp.main.getExactPlatform
-import com.hansholz.bestenotenapp.utils.CredentialsStorageFactory
 
 class AuthTokenManager() {
     private val credentialsStorage = try {

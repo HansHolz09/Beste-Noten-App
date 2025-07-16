@@ -1,6 +1,10 @@
 package com.hansholz.bestenotenapp.main
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import com.russhwolf.settings.Settings
@@ -11,6 +15,8 @@ internal val LocalShowNewestGrades = compositionLocalOf { mutableStateOf(false) 
 internal val LocalShowGradeHistory = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowCollectionsWithoutGrades = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowTeachersWithFirstname = compositionLocalOf { mutableStateOf(false) }
+
+internal val LocalRequireBiometricAuthentification = compositionLocalOf { mutableStateOf(false) }
 
 internal val LocalTitleBarModifier = compositionLocalOf<Modifier> { Modifier }
 internal val LocalNavigationDrawerTopPadding = compositionLocalOf<Dp?> { null }
@@ -25,13 +31,15 @@ fun SettingsProvider(content: @Composable () -> Unit) {
     val showGradeHistoryState = remember { mutableStateOf(settings.getBoolean("showGradeHistory", false)) }
     val showCollectionsWithoutGradesState = remember { mutableStateOf(settings.getBoolean("showCollectionsWithoutGrades", false)) }
     val showTeachersWithFirstnameState = remember { mutableStateOf(settings.getBoolean("showTeachersWithFirstname", false)) }
+    val requireBiometricAuthentificationState = remember { mutableStateOf(settings.getBoolean("requireBiometricAuthentification", false)) }
     CompositionLocalProvider(
         LocalBackgroundEnabled provides backgroundEnabledState,
         LocalShowGreetings provides showGreetingsState,
         LocalShowNewestGrades provides showNewestGradesState,
         LocalShowGradeHistory provides showGradeHistoryState,
         LocalShowCollectionsWithoutGrades provides showCollectionsWithoutGradesState,
-        LocalShowTeachersWithFirstname provides showTeachersWithFirstnameState
+        LocalShowTeachersWithFirstname provides showTeachersWithFirstnameState,
+        LocalRequireBiometricAuthentification provides requireBiometricAuthentificationState
     ) {
         content()
     }

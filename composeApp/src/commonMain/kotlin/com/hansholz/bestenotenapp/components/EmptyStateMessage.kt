@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 fun EmptyStateMessage(
     title: String,
     description: String? = null,
+    button: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier,
     icon: ImageVector? = Icons.Outlined.PlaylistRemove,
 ) {
@@ -78,6 +79,10 @@ fun EmptyStateMessage(
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(horizontal = 24.dp)
                 )
+            }
+
+            button?.let {
+                it()
             }
         }
     }

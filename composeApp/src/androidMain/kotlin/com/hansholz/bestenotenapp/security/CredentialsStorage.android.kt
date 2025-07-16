@@ -1,12 +1,13 @@
 @file:Suppress("DEPRECATION")
 
-package com.hansholz.bestenotenapp.utils
+package com.hansholz.bestenotenapp.security
 
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import com.hansholz.bestenotenapp.utils.AndroidContext
 
 class AndroidEncryptedPrefsCredentials(context: Context) : CredentialsStorage {
 

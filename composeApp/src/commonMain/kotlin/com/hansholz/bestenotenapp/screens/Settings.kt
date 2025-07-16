@@ -21,6 +21,7 @@ import androidx.compose.material.icons.outlined.FiberNew
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.InvertColors
 import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Texture
 import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material.icons.outlined.WavingHand
@@ -31,25 +32,29 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
-import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.PreferenceCategory
 import com.hansholz.bestenotenapp.components.PreferenceItem
 import com.hansholz.bestenotenapp.components.PreferencePosition
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
+import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
 import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
 import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.security.BindBiometryAuthenticatorEffect
+import com.hansholz.bestenotenapp.security.BiometryAuthenticator
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalIsDark
@@ -100,7 +105,11 @@ fun Settings(
         var showGradeHistory by LocalShowGradeHistory.current
         var showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
         var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
+        var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
         val settings = Settings()
+
+        val biometryAuthenticator = remember { BiometryAuthenticator() }
+        BindBiometryAuthenticatorEffect(biometryAuthenticator)
 
         LazyColumn(
             modifier = Modifier.hazeSource(viewModel.hazeBackgroundState),
@@ -258,6 +267,33 @@ fun Settings(
                 text = "Lehrer mit Vornamen anzeigen",
                 icon = Icons.Outlined.Title,
             )
+            if (biometryAuthenticator.isBiometricAvailable()) {
+                item {
+                    PreferenceCategory("Sicherheit", Modifier.padding(horizontal = 15.dp))
+                }
+                settingsToggleItem(
+                    checked = requireBiometricAuthentification,
+                    onCheckedChange = {
+                        if (it) {
+                            biometryAuthenticator.checkBiometryAuthentication(
+                                requestTitle = "Bestätigen",
+                                requestReason = "Bestätige, um die biometrische Authentifizierung beim Start zu aktiven",
+                                scope = scope,
+                            ) { isSuccessful ->
+                                if (isSuccessful) {
+                                    requireBiometricAuthentification = it
+                                    settings["requireBiometricAuthentification"] = it
+                                }
+                            }
+                        } else {
+                            requireBiometricAuthentification = it
+                            settings["requireBiometricAuthentification"] = it
+                        }
+                    },
+                    text = "Biometrische Authentifizierung erforderlich",
+                    icon = Icons.Outlined.Lock,
+                )
+            }
             item {
                 PreferenceCategory("Account", Modifier.padding(horizontal = 15.dp))
             }
