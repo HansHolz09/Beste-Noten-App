@@ -12,6 +12,12 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.serialization)
+    alias(libs.plugins.buildConfig)
+}
+
+buildConfig {
+    buildConfigField("VERSION_NAME", provider { libs.versions.appVersion.get() })
+    buildConfigField("VERSION_CODE", provider { libs.versions.appVersionCode.get() })
 }
 
 kotlin {

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.DisabledVisible
 import androidx.compose.material.icons.outlined.FiberNew
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.InvertColors
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Lock
@@ -40,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
+import bestenotenapp.composeApp.BuildConfig
 import com.hansholz.bestenotenapp.components.PreferenceCategory
 import com.hansholz.bestenotenapp.components.PreferenceItem
 import com.hansholz.bestenotenapp.components.PreferencePosition
@@ -318,6 +320,17 @@ fun Settings(
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                     },
                     position = PreferencePosition.Bottom,
+                )
+            }
+            item {
+                PreferenceCategory("Über", Modifier.padding(horizontal = 15.dp))
+            }
+            item {
+                PreferenceItem(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    title = "Beste-Noten-App",
+                    subtitle = "Version ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+                    icon = Icons.Outlined.Info,
                 )
             }
             item {

@@ -6,6 +6,7 @@ androidx-lifecycle = "2.9.1"
 androidx-crypto = "1.1.0-beta01"
 androidx-biometric = "1.4.0-alpha02"
 animateCompose = "0.0.1"
+buildconfig = "5.6.7"
 credential-storage = "1.0.0"
 composeHotReload = "1.0.0-beta03"
 composeMultiplatform = "1.9.0-alpha03"
@@ -71,6 +72,7 @@ sonner = { module = "io.github.dokar3:sonner", version.ref = "sonner" }
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
+buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildconfig" }
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
