@@ -46,6 +46,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+    <key>CFBundleLocalizations</key>
+    <array>
+        <string>de</string>
+        <string>en</string>
+    </array>
     <key>NSFaceIDUsageDescription</key>
     <string>$(PRODUCT_NAME) Authentication with TouchId or FaceID</string>
 </dict>
