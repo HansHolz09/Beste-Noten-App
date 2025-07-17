@@ -179,23 +179,20 @@ fun Home(
                             animatedVisibilityScope = animatedVisibilityScope
                         )
                     ) {
-                        Column {
-                            Box(Modifier
-                                .padding(10.dp)
-                                .padding(top = 10.dp)
-                                .align(Alignment.CenterHorizontally)
-                            ) {
-                                Text(
-                                    text = "Noten",
-                                    modifier = Modifier
-                                        .sharedElement(
-                                            sharedContentState = rememberSharedContentState(key = "grades-title"),
-                                            animatedVisibilityScope = animatedVisibilityScope
-                                        )
-                                        .skipToLookaheadSize(),
-                                    style = typography.headlineSmall
-                                )
-                            }
+                        Column(Modifier.fillMaxWidth()) {
+                            Text(
+                                text = "Noten",
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .padding(top = 10.dp)
+                                    .align(Alignment.CenterHorizontally)
+                                    .sharedElement(
+                                        sharedContentState = rememberSharedContentState(key = "grades-title"),
+                                        animatedVisibilityScope = animatedVisibilityScope
+                                    )
+                                    .skipToLookaheadSize(),
+                                style = typography.headlineSmall
+                            )
                             if (showNewestGrades) {
                                 AnimatedContent(isGradesLoading) { targetState ->
                                     if (targetState) {
@@ -262,24 +259,21 @@ fun Home(
                             animatedVisibilityScope = animatedVisibilityScope
                         )
                     ) {
-                        Column {
-                            Box(Modifier
-                                .padding(10.dp)
-                                .padding(top = 10.dp)
-                                .align(Alignment.CenterHorizontally)
-                            ) {
-                                Text(
-                                    text = "Fächer und Lehrer",
-                                    modifier = Modifier
-                                        .sharedElement(
-                                            sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-title"),
-                                            animatedVisibilityScope = animatedVisibilityScope
-                                        )
-                                        .skipToLookaheadSize(),
-                                    fontFamily = FontFamilies.KeaniaOne(),
-                                    style = typography.headlineSmall
-                                )
-                            }
+                        Column(Modifier.fillMaxWidth()) {
+                            Text(
+                                text = "Fächer und Lehrer",
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .padding(top = 10.dp)
+                                    .align(Alignment.CenterHorizontally)
+                                    .sharedElement(
+                                        sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-title"),
+                                        animatedVisibilityScope = animatedVisibilityScope
+                                    )
+                                    .skipToLookaheadSize(),
+                                fontFamily = FontFamilies.KeaniaOne(),
+                                style = typography.headlineSmall
+                            )
                             Text(
                                 text = "Tippen, um einen Überblick über Fächer und Lehrer zu bekommen",
                                 modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
