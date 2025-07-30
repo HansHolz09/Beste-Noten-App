@@ -8,8 +8,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,7 +30,10 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -48,6 +53,8 @@ import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
 import com.nomanr.animate.compose.animated.rememberAnimatedState
 import com.nomanr.animate.compose.presets.attentionseekers.Jello
 import com.nomanr.animate.compose.presets.attentionseekers.RubberBand
+import components.ConfettiPresets
+import io.github.vinceglb.confettikit.compose.ConfettiKit
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -61,6 +68,8 @@ fun AppNavigationDrawer(
     val scope = rememberCoroutineScope()
     val hapticFeedback = LocalHapticFeedback.current
     val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+
+    var showConfetti by remember { mutableStateOf(false) }
 
     val navController = rememberNavController()
     val currentRoute by navController.currentBackStackEntryAsState()
@@ -84,7 +93,12 @@ fun AppNavigationDrawer(
                 ) {
                     Text(
                         text = "Beste-Noten-App",
-                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 40.dp),
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(horizontal = 40.dp)
+                            .clickable(null, null) {
+                                showConfetti = true
+                            },
                         color = colorScheme.onSurface,
                         autoSize = TextAutoSize.StepBased(10.sp),
                         fontFamily = FontFamilies.KeaniaOne(),
@@ -98,7 +112,12 @@ fun AppNavigationDrawer(
                 ) {
                     Text(
                         text = "für beste.schule",
-                        modifier = Modifier.align(Alignment.CenterHorizontally).padding(horizontal = 80.dp),
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(horizontal = 80.dp)
+                            .clickable(null, null) {
+                                showConfetti = true
+                            },
                         color = colorScheme.onSurface,
                         autoSize = TextAutoSize.StepBased(5.sp),
                         fontFamily = FontFamilies.Schoolbell(),
@@ -173,5 +192,15 @@ fun AppNavigationDrawer(
     }
     LaunchedEffect(navController) {
         onNavHostReady(navController)
+    }
+
+    if (showConfetti) {
+        ConfettiKit(
+            modifier = Modifier.fillMaxSize(),
+            parties = ConfettiPresets.rain(),
+            onParticleSystemEnded = { _, activeSystems ->
+                if (activeSystems == 0) showConfetti = false
+            }
+        )
     }
 }

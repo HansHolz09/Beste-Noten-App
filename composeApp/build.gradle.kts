@@ -80,6 +80,7 @@ kotlin {
             implementation(libs.material.kolor)
             implementation(libs.platformtools.darkmodedetector)
             implementation(libs.animate.compose)
+            implementation(libs.confettikit)
             implementation(libs.emoji.compose.m3)
             implementation(libs.sonner)
         }

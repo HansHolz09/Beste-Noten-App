@@ -5,6 +5,7 @@ package com.hansholz.bestenotenapp.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,7 +34,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -66,7 +69,10 @@ import com.hansholz.bestenotenapp.theme.LocalUseCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseSystemIsDark
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
+import components.ConfettiPresets
 import dev.chrisbanes.haze.hazeSource
+import io.github.vinceglb.confettikit.compose.ConfettiKit
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -78,6 +84,8 @@ fun Settings(
     val scope = rememberCoroutineScope()
     val hapticFeedback = LocalHapticFeedback.current
     val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+
+    var showConfetti by remember { mutableStateOf(false) }
 
     TopAppBarScaffold(
         title = "Einstellungen",
@@ -326,11 +334,22 @@ fun Settings(
                 PreferenceCategory("Über", Modifier.padding(horizontal = 15.dp))
             }
             item {
+                var tapCount by remember { mutableStateOf(0) }
+                val func = {
+                    tapCount++
+                    if (tapCount % 7 == 0) {
+                        showConfetti = true
+                    } else {
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                    }
+                }
+                val onClick: (() -> Unit)? = if (!showConfetti) func else null
                 PreferenceItem(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     title = "Beste-Noten-App",
                     subtitle = "Version ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
                     icon = Icons.Outlined.Info,
+                    onClick = onClick
                 )
             }
             item {
@@ -338,5 +357,25 @@ fun Settings(
             }
         }
         topAppBarBackground(innerPadding.calculateTopPadding())
+    }
+
+    if (showConfetti) {
+        val parties = ConfettiPresets.randomFirework(20)
+        LaunchedEffect(Unit) {
+            var delay = 0
+            parties.forEach {
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.VirtualKey)
+                delay((it.delay - delay).toLong())
+                delay = it.delay
+            }
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.VirtualKey)
+        }
+        ConfettiKit(
+            modifier = Modifier.fillMaxSize(),
+            parties = parties,
+            onParticleSystemEnded = { _, activeSystems ->
+                if (activeSystems == 0) showConfetti = false
+            }
+        )
     }
 }
