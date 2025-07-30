@@ -3,6 +3,7 @@
 package com.hansholz.bestenotenapp.screens
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -19,6 +20,7 @@ import androidx.compose.animation.with
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -41,11 +43,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Close
@@ -53,6 +58,7 @@ import androidx.compose.material.icons.outlined.DisabledVisible
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.PlaylistRemove
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.outlined.Settings
@@ -62,10 +68,12 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -922,9 +930,18 @@ fun Grades(
                                     ) {
                                         Box {
                                             var analyzeYears by remember { mutableStateOf(false) }
+                                            var filterSubjects by remember { mutableStateOf(false) }
+                                            var filterShown by remember { mutableStateOf(true) }
+                                            val deselectedSubjects = remember { mutableStateListOf<String>() }
                                             var titleHeight by remember { mutableStateOf(0.dp) }
                                             var closeBarHeight by remember { mutableStateOf(0.dp) }
                                             val lazyListState = rememberLazyListState()
+
+                                            val filteredGrades = viewModel.gradeCollections
+                                                .toSet().filter { selectedYears.map { it.id }.contains(it.interval?.yearId) }
+                                                .filter { !it.grades.isNullOrEmpty() && it.grades.firstOrNull()?.value?.take(1)?.toIntOrNull() != null }
+                                            val allFilteredGrades = viewModel.gradeCollections
+                                                .asSequence().filter { it.interval?.yearId != null && !it.grades.isNullOrEmpty() }
 
                                             AnimatedContent(analyzeYears) { analyzeYears ->
                                                 if (!analyzeYears) {
@@ -935,9 +952,8 @@ fun Grades(
                                                         verticalArrangement = Arrangement.spacedBy(8.dp)
                                                     ) {
                                                         item {
-                                                            val grades = viewModel.gradeCollections
-                                                                .toSet().filter { selectedYears.map { it.id }.contains(it.interval?.yearId) }
-                                                                .filter { !it.grades.isNullOrEmpty() && it.grades.firstOrNull()?.value?.take(1)?.toIntOrNull() != null }
+                                                            val grades = filteredGrades
+                                                                .filter { !filterSubjects || !deselectedSubjects.contains(it.subject?.name) }
                                                                 .map { it.grades!![0].value.take(1).toIntOrNull() ?: 0 }.sortedBy { it }.groupBy { it }.toList()
                                                             val barChartEntries = buildList {
                                                                 grades.map { (int, grade) ->
@@ -1003,10 +1019,9 @@ fun Grades(
                                                             } else {
                                                                 val gradeCollections = viewModel.gradeCollections
                                                                 val years = viewModel.years
-                                                                val processedData = remember(gradeCollections, years) {
-                                                                    val allGradesByYear = gradeCollections
-                                                                        .asSequence()
-                                                                        .filter { it.interval?.yearId != null && !it.grades.isNullOrEmpty() }
+                                                                val processedData = remember(gradeCollections, years, filterSubjects, deselectedSubjects.size) {
+                                                                    val allGradesByYear = allFilteredGrades
+                                                                        .filter { !filterSubjects || !deselectedSubjects.contains(it.subject?.name) }
                                                                         .flatMap { gc -> gc.grades!!.map { gc.interval!!.yearId to normalizeGrade(it.value) } }
                                                                         .filter { it.second != "N/A" }
                                                                         .toList()
@@ -1280,6 +1295,7 @@ fun Grades(
 
                                             Column(Modifier
                                                 .fillMaxWidth()
+                                                .verticalScroll(rememberScrollState())
                                                 .align(Alignment.TopCenter)
                                                 .enhancedHazeEffect(hazeState, colorScheme.surfaceContainerHighest) {
                                                     if (!lazyListState.canScrollForward && !lazyListState.canScrollBackward) blurEnabled = false
@@ -1328,6 +1344,59 @@ fun Grades(
                                                         text = "Jahre analysieren/vergleichen",
                                                         style = typography.bodyLarge
                                                     )
+                                                }
+
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                ) {
+                                                    EnhancedCheckbox(
+                                                        checked = filterSubjects,
+                                                        onCheckedChange = { filterSubjects = it },
+                                                        enabled = !isLoading && viewModel.years.size > 1
+                                                    )
+                                                    Text(
+                                                        text = "Fächer filtern",
+                                                        modifier = Modifier.weight(1f),
+                                                        style = typography.bodyLarge
+                                                    )
+                                                    AnimatedVisibility(filterSubjects) {
+                                                        IconButton(
+                                                            onClick = {
+                                                                filterShown = !filterShown
+                                                            }
+                                                        ) {
+                                                            AnimatedContent(filterShown) {
+                                                                if (it) {
+                                                                    Icon(Icons.Outlined.Remove, null)
+                                                                } else {
+                                                                    Icon(Icons.Outlined.Add, null)
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+
+                                                AnimatedVisibility(filterSubjects && filterShown) {
+                                                    FlowRow(
+                                                        modifier = Modifier.padding(horizontal = 15.dp),
+                                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                                    ) {
+                                                        (if (analyzeYears) allFilteredGrades.toList() else filteredGrades)
+                                                            .map { it.subject?.name ?: "" }.toSet().forEach { subject ->
+                                                            FilterChip(
+                                                                selected = !deselectedSubjects.contains(subject),
+                                                                onClick = {
+                                                                    if (deselectedSubjects.contains(subject)) {
+                                                                        deselectedSubjects.remove(subject)
+                                                                    } else {
+                                                                        deselectedSubjects.add(subject)
+                                                                    }
+                                                                },
+                                                                label = { Text(subject) }
+                                                            )
+                                                        }
+                                                    }
                                                 }
                                             }
 
