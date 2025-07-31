@@ -12,17 +12,19 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.dokar.sonner.Toast
 import com.dokar.sonner.ToastType
 import com.dokar.sonner.ToasterState
-import com.hansholz.bestenotenapp.security.AuthTokenManager
 import com.hansholz.bestenotenapp.api.BesteSchuleApi
 import com.hansholz.bestenotenapp.api.codeAuthFlowFactory
 import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.models.Finalgrade
 import com.hansholz.bestenotenapp.api.models.GradeCollection
+import com.hansholz.bestenotenapp.api.models.JournalWeek
 import com.hansholz.bestenotenapp.api.models.Subject
 import com.hansholz.bestenotenapp.api.models.User
 import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.api.oidcClient
+import com.hansholz.bestenotenapp.security.AuthTokenManager
 import dev.chrisbanes.haze.HazeState
+import io.ktor.utils.io.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -50,6 +52,7 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
     val mediumExpandedDrawerState = mutableStateOf(DrawerState(DrawerValue.Open))
 
     val user = mutableStateOf<User?>(null)
+    val journalWeeks = mutableStateListOf<Pair<String, JournalWeek>>()
     val finalGrades = mutableStateListOf<Finalgrade>()
     val subjects = mutableStateListOf<Subject>()
 
@@ -198,6 +201,22 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
                 }
             }
             return collections
+        } catch (e: Exception) {
+            e.printStackTrace()
+            couldNotReachBesteSchule()
+            return null
+        }
+    }
+
+    suspend fun getJournalWeek(nr: String): JournalWeek? {
+        try {
+            val cachedWeek = journalWeeks.firstOrNull { it.first == nr }?.second
+            val week = cachedWeek ?: api.journalWeekShow(nr, true, "days.lessons").data
+            if (cachedWeek == null) journalWeeks.add(nr to week)
+            return week
+        } catch (e: CancellationException) {
+            e.printStackTrace()
+            return null
         } catch (e: Exception) {
             e.printStackTrace()
             couldNotReachBesteSchule()

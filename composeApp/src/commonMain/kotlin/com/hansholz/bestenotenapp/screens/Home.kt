@@ -235,6 +235,54 @@ fun Home(
                     }
                 }
                 item {
+                    val imageBitmap = imageResource(Res.drawable.grades)
+                    Box(Modifier
+                        .animateItem()
+                        .animateContentSize()
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(colorScheme.surfaceContainerHighest.copy(0.7f))
+                        .repeatingBackground(
+                            imageBitmap = imageBitmap,
+                            alpha = 0.2f,
+                            scale = 0.75f,
+                            offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = 0f) }
+                        )
+                        .border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
+                        .clickable {
+                            onNavigateToScreen(Fragment.Timetable)
+                            hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                        }
+                        .sharedBounds(
+                            sharedContentState = rememberSharedContentState(key = "timetable-card"),
+                            animatedVisibilityScope = animatedVisibilityScope
+                        )
+                    ) {
+                        Column(Modifier.fillMaxWidth()) {
+                            Text(
+                                text = "Stundenplan",
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .padding(top = 10.dp)
+                                    .align(Alignment.CenterHorizontally)
+                                    .sharedElement(
+                                        sharedContentState = rememberSharedContentState(key = "timetable-title"),
+                                        animatedVisibilityScope = animatedVisibilityScope
+                                    )
+                                    .skipToLookaheadSize(),
+                                style = typography.headlineSmall
+                            )
+                            // TODO
+                            Text(
+                                text = "Tippen, um deinen wöchentlichen Stundenplan zu sehen",
+                                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+                item {
                     val imageBitmap = imageResource(Res.drawable.subjectsAndTeachers)
                     Box(Modifier
                         .animateItem()

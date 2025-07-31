@@ -17,6 +17,7 @@ fun EnhancedIconButton(
     enabled: Boolean = true,
     isFilled: Boolean = false,
     colors: IconButtonColors = if (isFilled) IconButtonDefaults.filledIconButtonColors() else IconButtonDefaults.iconButtonColors(),
+    hapticEnabled: Boolean = true,
     interactionSource: MutableInteractionSource? = null,
     content: @Composable (enabled: Boolean) -> Unit,
 ) {
@@ -26,7 +27,9 @@ fun EnhancedIconButton(
     IconButton(
         onClick = {
             onClick()
-            hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+            if (hapticEnabled) {
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+            }
         },
         shapes = IconButtonDefaults.shapes(),
         modifier = modifier,

@@ -17,6 +17,7 @@ import com.hansholz.bestenotenapp.screens.Home
 import com.hansholz.bestenotenapp.screens.Settings
 import com.hansholz.bestenotenapp.screens.Stats
 import com.hansholz.bestenotenapp.screens.SubjectsAndTeachers
+import com.hansholz.bestenotenapp.screens.Timetable
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -59,6 +60,14 @@ fun FragmentNavigation(
 
             composable(route = Fragment.Grades.route) {
                 Grades(
+                    viewModel = viewModel,
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedVisibilityScope = this,
+                )
+            }
+
+            composable(route = Fragment.Timetable.route) {
+                Timetable(
                     viewModel = viewModel,
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedVisibilityScope = this,

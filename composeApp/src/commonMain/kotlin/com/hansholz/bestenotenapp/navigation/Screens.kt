@@ -24,6 +24,9 @@ sealed class Fragment(val label: String, val route: String) {
     data object Grades : Fragment("Noten", "grades")
 
     @Serializable
+    data object Timetable : Fragment("Stundenplan", "timetable")
+
+    @Serializable
     data object SubjectsAndTeachers : Fragment("Fächer und Lehrer", "subjects_and_teachers")
 
     @Serializable
@@ -37,6 +40,7 @@ sealed class Fragment(val label: String, val route: String) {
             listOfNotNull(
                 Home,
                 Grades,
+                Timetable,
                 SubjectsAndTeachers,
                 Stats
             )

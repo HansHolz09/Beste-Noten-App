@@ -154,12 +154,24 @@ import com.hansholz.bestenotenapp.api.models.UpdateYearRequest
 import com.hansholz.bestenotenapp.api.models.User
 import com.hansholz.bestenotenapp.api.models.VerifyTwoFactorUserRequest
 import com.hansholz.bestenotenapp.api.models.Year
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.plugins.*
-import io.ktor.client.request.*
-import io.ktor.client.request.forms.*
-import io.ktor.http.*
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.delete
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.request.parameter
+import io.ktor.client.request.post
+import io.ktor.client.request.put
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
+import io.ktor.http.append
+import io.ktor.http.contentType
 import kotlinx.serialization.json.JsonObject
 
 class BesteSchuleApi(httpClient: HttpClient, authToken: MutableState<String?>) {
@@ -1184,8 +1196,13 @@ class BesteSchuleApi(httpClient: HttpClient, authToken: MutableState<String?>) {
         client.delete("$baseUrl/journal/weeks/$nr")
     }
 
-    suspend fun journalWeekShow(nr: String, include: String? = null): DataWrapper<JournalWeek> {
+    suspend fun journalWeekShow(
+        nr: String,
+        interpolate: Boolean? = null,
+        include: String? = null
+    ): DataWrapper<JournalWeek> {
         return client.get("$baseUrl/journal/weeks/$nr") {
+            interpolate?.let { parameter("interpolate", interpolate) }
             parameter("include", include)
         }.body()
     }

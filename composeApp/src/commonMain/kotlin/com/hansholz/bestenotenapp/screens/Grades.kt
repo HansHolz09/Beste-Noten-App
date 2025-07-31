@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.hansholz.bestenotenapp.screens
 
 import androidx.compose.animation.AnimatedContent
@@ -16,7 +14,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.with
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -195,6 +193,7 @@ fun Grades(
         val density = LocalDensity.current
         val hapticFeedback = LocalHapticFeedback.current
         val layoutDirection = LocalLayoutDirection.current
+        @Suppress("DEPRECATION")
         val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
         var showGradeHistory by LocalShowGradeHistory.current
@@ -539,7 +538,7 @@ fun Grades(
                         },
                         contentAlignment = Alignment.BottomCenter,
                         transitionSpec = {
-                            fadeIn(animationSpec = tween(250)) with
+                            fadeIn(animationSpec = tween(250)) togetherWith
                                     fadeOut(animationSpec = tween(250)) using
                                     SizeTransform(
                                         clip = false,

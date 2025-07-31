@@ -163,7 +163,7 @@ fun SubjectsAndTeachers(
                                                             )
                                                         },
                                                         leadingContent = {
-                                                            Text(subject.localId, textAlign = TextAlign.Center, modifier = Modifier.width(50.dp))
+                                                            Text(subject.localId ?: "?", textAlign = TextAlign.Center, modifier = Modifier.width(50.dp))
                                                         },
                                                         colors = ListItemDefaults.colors(Color.Transparent)
                                                     )

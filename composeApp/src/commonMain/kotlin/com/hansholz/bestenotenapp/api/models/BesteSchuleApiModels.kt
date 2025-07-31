@@ -479,7 +479,7 @@ data class Interval(
 data class JournalDay(
     val id: String,
     val date: String,
-    @SerialName("time_name") val timeName: String,
+    @SerialName("time_name") val timeName: String? = null,
     val lessons: List<JournalLesson>? = null,
     val notes: List<JournalNote>? = null,
     val week: JournalWeek? = null
@@ -502,7 +502,7 @@ data class JournalDayStudent(
 
 @Serializable
 data class JournalLesson(
-    val id: String,
+    val id: String? = null,
     val nr: String,
     val status: String,
     val ids: String? = null,
@@ -523,10 +523,10 @@ data class JournalLesson(
 
 @Serializable
 data class JournalLessonStudent(
-    val id: String,
+    val id: String? = null,
     val student: Student? = null,
     val ids: String? = null,
-    val present: Int,
+    val present: Int? = null,
     @SerialName("too_early") val tooEarly: Int? = null,
     @SerialName("too_late") val tooLate: Int? = null,
     @SerialName("missing_homework") val missingHomework: Int? = null,
@@ -540,26 +540,26 @@ data class JournalLessonStudent(
 
 @Serializable
 data class JournalNote(
-    val id: String,
+    val id: String? = null,
     val ids: String? = null,
-    val description: String,
-    @SerialName("for") val for_: String,
+    val description: String? = null,
+    @SerialName("for") val for_: String? = null,
     val type: JournalNoteType? = null,
     val group: Group? = null,
     val source: String? = null,
     val notable: JournalLessonStudent? = null,
     val teacher: Teacher? = null,
-    @SerialName("notable_type") val notableType: String
+    @SerialName("notable_type") val notableType: String? = null
 )
 
 @Serializable
 data class JournalNoteType(
-    val id: Int,
+    val id: Int? = null,
     val name: String,
     val color: String? = null,
-    val default: Int,
-    @SerialName("default_for") val defaultFor: String,
-    @SerialName("journal_notable_type") val journalNotableType: String
+    val default: Int? = null,
+    @SerialName("default_for") val defaultFor: String? = null,
+    @SerialName("journal_notable_type") val journalNotableType: String? = null
 )
 
 @Serializable
@@ -567,7 +567,7 @@ data class JournalWeek(
     val id: String,
     @SerialName("calendar_year") val calendarYear: Int,
     val nr: Int,
-    @SerialName("year_id") val yearId: String,
+    @SerialName("year_id") val yearId: String? = null,
     val days: List<JournalDay>? = null,
     val notes: List<JournalNote>? = null
 )
@@ -1301,10 +1301,10 @@ data class Student(
 
 @Serializable
 data class Subject(
-    val id: Int,
-    @SerialName("local_id") val localId: String,
-    val name: String,
-    @SerialName("for") val for_: String,
+    val id: Int? = null,
+    @SerialName("local_id") val localId: String? = null,
+    val name: String? = null,
+    @SerialName("for") val for_: String? = null,
     val collections: List<GradeCollection>? = null,
     val groups: List<GradeCollection>? = null,
     val finalgrades: List<Finalgrade>? = null,
@@ -1360,7 +1360,7 @@ data class Tag(
 
 @Serializable
 data class Teacher(
-    val id: Int,
+    val id: Int? = null,
     @SerialName("local_id") val localId: String? = null,
     val forename: String? = null,
     val name: String? = null,
