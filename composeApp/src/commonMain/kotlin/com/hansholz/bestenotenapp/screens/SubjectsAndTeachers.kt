@@ -55,6 +55,8 @@ import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
+import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
+import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
@@ -91,12 +93,14 @@ fun SubjectsAndTeachers(
         }
 
         TopAppBarScaffold(
-            modifier = Modifier.sharedBounds(
+            modifier = Modifier.enhancedSharedBounds(
+                sharedTransitionScope = sharedTransitionScope,
                 sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-card"),
                 animatedVisibilityScope = animatedVisibilityScope
             ),
             title = "Fächer und Lehrer",
-            titleModifier = Modifier.sharedElement(
+            titleModifier = Modifier.enhancedSharedElement(
+                sharedTransitionScope = sharedTransitionScope,
                 sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-title"),
                 animatedVisibilityScope = animatedVisibilityScope
             ).skipToLookaheadSize(),

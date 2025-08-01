@@ -108,6 +108,8 @@ import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
+import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
+import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
@@ -150,12 +152,14 @@ fun Timetable(
         val lessonPopupShown = remember { mutableStateOf(false) }
 
         TopAppBarScaffold(
-            modifier = Modifier.sharedBounds(
+            modifier = Modifier.enhancedSharedBounds(
+                sharedTransitionScope = sharedTransitionScope,
                 sharedContentState = rememberSharedContentState(key = "timetable-card"),
                 animatedVisibilityScope = animatedVisibilityScope
             ),
             title = "Stundenplan",
-            titleModifier = Modifier.sharedElement(
+            titleModifier = Modifier.enhancedSharedElement(
+                sharedTransitionScope = sharedTransitionScope,
                 sharedContentState = rememberSharedContentState(key = "timetable-title"),
                 animatedVisibilityScope = animatedVisibilityScope
             ).skipToLookaheadSize(),
@@ -297,7 +301,8 @@ fun Timetable(
                                             .onGloballyPositioned {
                                                 toolbarPadding = with(density) { ime.getBottom(density).toDp() + it.size.height.toDp() + 12.dp }
                                             }
-                                            .sharedBounds(
+                                            .enhancedSharedBounds(
+                                                sharedTransitionScope = sharedTransitionScope,
                                                 sharedContentState = sharedContentState,
                                                 animatedVisibilityScope = this@AnimatedContent,
                                                 boundsTransform = { _, _ ->
@@ -375,7 +380,8 @@ fun Timetable(
                                 ) {
                                     Card(
                                         modifier = Modifier
-                                            .sharedBounds(
+                                            .enhancedSharedBounds(
+                                                sharedTransitionScope = sharedTransitionScope,
                                                 sharedContentState = sharedContentState,
                                                 animatedVisibilityScope = this@AnimatedContent,
                                                 boundsTransform = { _, _ ->
@@ -587,7 +593,8 @@ fun WeekScheduleView(
                     OutlinedCard(
                         modifier = backHandlingModifier
                             .verticalScroll(rememberScrollState())
-                            .sharedBounds(
+                            .enhancedSharedBounds(
+                                sharedTransitionScope = this@SharedTransitionLayout,
                                 sharedContentState = rememberSharedContentState(selectedLesson ?: ""),
                                 animatedVisibilityScope = this@AnimatedContent,
                                 boundsTransform = { _, _ ->
@@ -748,7 +755,8 @@ private fun DailyScheduleLayout(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .padding(horizontal = 4.dp)
-                                    .sharedBounds(
+                                    .enhancedSharedBounds(
+                                        sharedTransitionScope = sharedTransitionScope,
                                         sharedContentState = rememberSharedContentState(lesson),
                                         animatedVisibilityScope = animatedContentScope,
                                         enter = fadeIn(initialAlpha = if (selectedLesson == lesson) 0f else 1f),

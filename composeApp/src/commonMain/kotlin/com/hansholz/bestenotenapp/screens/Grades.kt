@@ -124,6 +124,8 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
+import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
+import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
@@ -223,12 +225,14 @@ fun Grades(
         }
 
         TopAppBarScaffold(
-            modifier = Modifier.sharedBounds(
+            modifier = Modifier.enhancedSharedBounds(
+                sharedTransitionScope = sharedTransitionScope,
                 sharedContentState = rememberSharedContentState(key = "grades-card"),
                 animatedVisibilityScope = animatedVisibilityScope
             ),
             title = "Noten",
-            titleModifier = Modifier.sharedElement(
+            titleModifier = Modifier.enhancedSharedElement(
+                sharedTransitionScope = sharedTransitionScope,
                 sharedContentState = rememberSharedContentState(key = "grades-title"),
                 animatedVisibilityScope = animatedVisibilityScope
             ).skipToLookaheadSize(),
@@ -556,7 +560,8 @@ fun Grades(
                                     HorizontalFloatingToolbar(
                                         expanded = currentLazyListState.isScrollingUp(),
                                         modifier = Modifier
-                                            .sharedBounds(
+                                            .enhancedSharedBounds(
+                                                sharedTransitionScope = sharedTransitionScope,
                                                 sharedContentState = sharedContentState,
                                                 animatedVisibilityScope = this@AnimatedContent,
                                                 boundsTransform = { _, _ ->
@@ -675,7 +680,8 @@ fun Grades(
                                 ) {
                                     Card(
                                         modifier = Modifier
-                                            .sharedBounds(
+                                            .enhancedSharedBounds(
+                                                sharedTransitionScope = sharedTransitionScope,
                                                 sharedContentState = sharedContentState,
                                                 animatedVisibilityScope = this@AnimatedContent,
                                                 boundsTransform = { _, _ ->
@@ -742,7 +748,8 @@ fun Grades(
                                 ) {
                                     Card(
                                         modifier = Modifier
-                                            .sharedBounds(
+                                            .enhancedSharedBounds(
+                                                sharedTransitionScope = sharedTransitionScope,
                                                 sharedContentState = sharedContentState,
                                                 animatedVisibilityScope = this@AnimatedContent,
                                                 boundsTransform = { _, _ ->
@@ -830,7 +837,8 @@ fun Grades(
                                 ) {
                                     Card(
                                         modifier = Modifier
-                                            .sharedBounds(
+                                            .enhancedSharedBounds(
+                                                sharedTransitionScope = sharedTransitionScope,
                                                 sharedContentState = sharedContentState,
                                                 animatedVisibilityScope = this@AnimatedContent,
                                                 boundsTransform = { _, _ ->
@@ -913,7 +921,8 @@ fun Grades(
                                     val hazeState = rememberHazeState()
                                     Card(
                                         modifier = Modifier
-                                            .sharedBounds(
+                                            .enhancedSharedBounds(
+                                                sharedTransitionScope = sharedTransitionScope,
                                                 sharedContentState = sharedContentState,
                                                 animatedVisibilityScope = this@AnimatedContent,
                                                 boundsTransform = { _, _ ->

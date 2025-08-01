@@ -7,6 +7,8 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -58,7 +60,10 @@ import bestenotenapp.composeapp.generated.resources.subjectsAndTeachers
 import bestenotenapp.composeapp.generated.resources.timetable
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
+import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
+import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.repeatingBackground
+import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalShowCurrentLesson
 import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
@@ -100,6 +105,8 @@ fun Home(
         val isDark = LocalThemeIsDark.current
         val hapticFeedback = LocalHapticFeedback.current
         val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+
+        val backgroundAlpha = animateFloatAsState(if (LocalBackgroundEnabled.current.value) 0.2f else 0f, tween(750))
 
         val showGreetings by LocalShowGreetings.current
         val showNewestGrades by LocalShowNewestGrades.current
@@ -202,7 +209,7 @@ fun Home(
                         .background(colorScheme.surfaceContainerHighest.copy(0.7f))
                         .repeatingBackground(
                             imageBitmap = imageBitmap,
-                            alpha = 0.2f,
+                            alpha = backgroundAlpha.value,
                             scale = 0.75f,
                             offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = 0f) }
                         )
@@ -211,7 +218,8 @@ fun Home(
                             onNavigateToScreen(Fragment.Grades)
                             hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                         }
-                        .sharedBounds(
+                        .enhancedSharedBounds(
+                            sharedTransitionScope = sharedTransitionScope,
                             sharedContentState = rememberSharedContentState(key = "grades-card"),
                             animatedVisibilityScope = animatedVisibilityScope
                         )
@@ -223,7 +231,8 @@ fun Home(
                                     .padding(10.dp)
                                     .padding(top = 10.dp)
                                     .align(Alignment.CenterHorizontally)
-                                    .sharedElement(
+                                    .enhancedSharedElement(
+                                        sharedTransitionScope = sharedTransitionScope,
                                         sharedContentState = rememberSharedContentState(key = "grades-title"),
                                         animatedVisibilityScope = animatedVisibilityScope
                                     )
@@ -282,7 +291,7 @@ fun Home(
                         .background(colorScheme.surfaceContainerHighest.copy(0.7f))
                         .repeatingBackground(
                             imageBitmap = imageBitmap,
-                            alpha = 0.2f,
+                            alpha = backgroundAlpha.value,
                             scale = 0.6f,
                             offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = -50f) }
                         )
@@ -291,7 +300,8 @@ fun Home(
                             onNavigateToScreen(Fragment.Timetable)
                             hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                         }
-                        .sharedBounds(
+                        .enhancedSharedBounds(
+                            sharedTransitionScope = sharedTransitionScope,
                             sharedContentState = rememberSharedContentState(key = "timetable-card"),
                             animatedVisibilityScope = animatedVisibilityScope
                         )
@@ -303,7 +313,8 @@ fun Home(
                                     .padding(10.dp)
                                     .padding(top = 10.dp)
                                     .align(Alignment.CenterHorizontally)
-                                    .sharedElement(
+                                    .enhancedSharedElement(
+                                        sharedTransitionScope = sharedTransitionScope,
                                         sharedContentState = rememberSharedContentState(key = "timetable-title"),
                                         animatedVisibilityScope = animatedVisibilityScope
                                     )
@@ -396,7 +407,7 @@ fun Home(
                         .background(colorScheme.surfaceContainerHighest.copy(0.7f))
                         .repeatingBackground(
                             imageBitmap = imageBitmap,
-                            alpha = 0.2f,
+                            alpha = backgroundAlpha.value,
                             scale = 0.6f,
                             offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = -100f) }
                         )
@@ -405,7 +416,8 @@ fun Home(
                             onNavigateToScreen(Fragment.SubjectsAndTeachers)
                             hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                         }
-                        .sharedBounds(
+                        .enhancedSharedBounds(
+                            sharedTransitionScope = sharedTransitionScope,
                             sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-card"),
                             animatedVisibilityScope = animatedVisibilityScope
                         )
@@ -417,7 +429,8 @@ fun Home(
                                     .padding(10.dp)
                                     .padding(top = 10.dp)
                                     .align(Alignment.CenterHorizontally)
-                                    .sharedElement(
+                                    .enhancedSharedElement(
+                                        sharedTransitionScope = sharedTransitionScope,
                                         sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-title"),
                                         animatedVisibilityScope = animatedVisibilityScope
                                     )
