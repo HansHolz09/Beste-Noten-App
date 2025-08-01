@@ -19,4 +19,6 @@ val oidcClient = OpenIdConnectClient {
     codeChallengeMethod = CodeChallengeMethod.S256
     redirectUri = if (getPlatform() == Platform.DESKTOP) "http://127.0.0.1:8080/callback" else if (getPlatform() == Platform.WEB) "" else "bestenotenapp://callback"
     postLogoutRedirectUri = null
+
+    disableNonce = true
 }

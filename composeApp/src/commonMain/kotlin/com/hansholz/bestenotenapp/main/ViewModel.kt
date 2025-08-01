@@ -32,6 +32,7 @@ import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.publicvalue.multiplatform.oidc.DefaultOpenIdConnectClient
@@ -88,10 +89,10 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
         } catch (e: OpenIdConnectException.UnsuccessfulTokenRequest) {
             try {
                 @Serializable
-                data class TokenResponse(val access_token: String)
+                data class TokenResponse(@SerialName("access_token") val accessToken: String)
 
                 val withUnknownKeys = Json { ignoreUnknownKeys = true }
-                authToken.value = withUnknownKeys.decodeFromString<TokenResponse>(e.body ?: "").access_token
+                authToken.value = withUnknownKeys.decodeFromString<TokenResponse>(e.body ?: "").accessToken
                 return !authToken.value.isNullOrEmpty()
             } catch (e: Exception) {
                 e.printStackTrace()
