@@ -2,6 +2,7 @@ package com.hansholz.bestenotenapp.components.enhanced
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -20,7 +21,7 @@ import dev.chrisbanes.haze.hazeEffect
 fun Modifier.enhancedHazeEffect(hazeState: HazeState? = null, color: Color? = null, blurRadius: Dp? = null, block: (HazeEffectScope.() -> Unit)? = null): Modifier {
     val blurEnabled = LocalBlurEnabled.current.value
     val blurScale = if (getPlatform() == Platform.ANDROID) 3 else 1
-    return this.hazeEffect(hazeState) {
+    return if (hazeState != null) this.hazeEffect(hazeState) {
         this.blurEnabled = blurEnabled
         this.blurRadius = (blurRadius ?: 10.dp) * blurScale
         color?.let {
@@ -30,5 +31,5 @@ fun Modifier.enhancedHazeEffect(hazeState: HazeState? = null, color: Color? = nu
         inputScale = HazeInputScale.Auto
         noiseFactor = 0f
         block?.invoke(this)
-    }
+    } else this.blur((blurRadius ?: 10.dp) * 2)
 }
