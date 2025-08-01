@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Animation
 import androidx.compose.material.icons.outlined.BlurOn
@@ -54,6 +55,7 @@ import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
+import com.hansholz.bestenotenapp.main.LocalShowCurrentLesson
 import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
 import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
@@ -114,6 +116,7 @@ fun Settings(
         var backgroundEnabled by LocalBackgroundEnabled.current
         var showGreetings by LocalShowGreetings.current
         var showNewestGrades by LocalShowNewestGrades.current
+        var showCurrentLesson by LocalShowCurrentLesson.current
         var showGradeHistory by LocalShowGradeHistory.current
         var showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
         var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
@@ -244,6 +247,16 @@ fun Settings(
                 },
                 text = "Neuste Noten anzeigen",
                 icon = Icons.Outlined.FiberNew,
+                position = PreferencePosition.Middle,
+            )
+            settingsToggleItem(
+                checked = showCurrentLesson,
+                onCheckedChange = {
+                    showCurrentLesson = it
+                    settings["showCurrentLesson"] = it
+                },
+                text = "Aktuelle Schulstunde anzeigen",
+                icon = Icons.Outlined.AccessTime,
                 position = PreferencePosition.Bottom,
             )
             item {

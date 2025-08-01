@@ -12,6 +12,7 @@ import com.russhwolf.settings.Settings
 internal val LocalBackgroundEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowGreetings = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowNewestGrades = compositionLocalOf { mutableStateOf(false) }
+internal val LocalShowCurrentLesson = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowGradeHistory = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowCollectionsWithoutGrades = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowTeachersWithFirstname = compositionLocalOf { mutableStateOf(false) }
@@ -28,6 +29,7 @@ fun SettingsProvider(content: @Composable () -> Unit) {
     val backgroundEnabledState = remember { mutableStateOf(settings.getBoolean("backgroundEnabled", true)) }
     val showGreetingsState = remember { mutableStateOf(settings.getBoolean("showGreetings", true)) }
     val showNewestGradesState = remember { mutableStateOf(settings.getBoolean("showNewestGrades", true)) }
+    val showCurrentLessonState = remember { mutableStateOf(settings.getBoolean("showCurrentLesson", true)) }
     val showGradeHistoryState = remember { mutableStateOf(settings.getBoolean("showGradeHistory", false)) }
     val showCollectionsWithoutGradesState = remember { mutableStateOf(settings.getBoolean("showCollectionsWithoutGrades", false)) }
     val showTeachersWithFirstnameState = remember { mutableStateOf(settings.getBoolean("showTeachersWithFirstname", false)) }
@@ -36,6 +38,7 @@ fun SettingsProvider(content: @Composable () -> Unit) {
         LocalBackgroundEnabled provides backgroundEnabledState,
         LocalShowGreetings provides showGreetingsState,
         LocalShowNewestGrades provides showNewestGradesState,
+        LocalShowCurrentLesson provides showCurrentLessonState,
         LocalShowGradeHistory provides showGradeHistoryState,
         LocalShowCollectionsWithoutGrades provides showCollectionsWithoutGradesState,
         LocalShowTeachersWithFirstname provides showTeachersWithFirstnameState,

@@ -33,6 +33,8 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,19 +55,35 @@ import androidx.lifecycle.viewModelScope
 import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.grades
 import bestenotenapp.composeapp.generated.resources.subjectsAndTeachers
+import bestenotenapp.composeapp.generated.resources.timetable
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.repeatingBackground
+import com.hansholz.bestenotenapp.main.LocalShowCurrentLesson
 import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.navigation.Fragment
 import com.hansholz.bestenotenapp.theme.FontFamilies
+import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
+import com.hansholz.bestenotenapp.utils.SimpleTime
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.getGreeting
+import com.pushpal.jetlime.Arrangement.VERTICAL
+import com.pushpal.jetlime.EventPointType
+import com.pushpal.jetlime.EventPosition
+import com.pushpal.jetlime.JetLimeDefaults
+import com.pushpal.jetlime.JetLimeEventDefaults
+import com.pushpal.jetlime.JetLimeExtendedEvent
+import com.pushpal.jetlime.LocalJetLimeStyle
 import dev.chrisbanes.haze.hazeSource
 import kotlin.random.Random
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.launch
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.imageResource
 import org.kodein.emoji.compose.m3.TextWithNotoAnimatedEmoji
 
@@ -79,13 +97,16 @@ fun Home(
 ) {
     with(sharedTransitionScope) {
         val scope = rememberCoroutineScope()
+        val isDark = LocalThemeIsDark.current
         val hapticFeedback = LocalHapticFeedback.current
         val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
         val showGreetings by LocalShowGreetings.current
         val showNewestGrades by LocalShowNewestGrades.current
+        val showCurrentLesson by LocalShowCurrentLesson.current
 
         var isGradesLoading by remember { mutableStateOf(false) }
+        var isTimetableLoading by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
             viewModel.viewModelScope.launch {
@@ -95,6 +116,22 @@ fun Home(
                         viewModel.getCollections()?.let { viewModel.startGradeCollections.addAll(it) }
                     }
                     isGradesLoading = false
+                }
+            }
+            viewModel.viewModelScope.launch {
+                if (showCurrentLesson) {
+                    isTimetableLoading = true
+                    if (viewModel.currentJournalDay.value == null) {
+                        @OptIn(ExperimentalTime::class)
+                        val currentDate = Clock.System.now()
+                            .toLocalDateTime(TimeZone.currentSystemDefault()).date
+                            .let {
+                                "${it.year}-${it.month.number.toString().padStart(2, '0')}" +
+                                        "-${it.day.toString().padStart(2, '0')}"
+                            }
+                        viewModel.currentJournalDay.value = viewModel.getJournalWeek()?.days?.find { it.date == currentDate }
+                    }
+                    isTimetableLoading = false
                 }
             }
         }
@@ -235,7 +272,7 @@ fun Home(
                     }
                 }
                 item {
-                    val imageBitmap = imageResource(Res.drawable.grades)
+                    val imageBitmap = imageResource(Res.drawable.timetable)
                     Box(Modifier
                         .animateItem()
                         .animateContentSize()
@@ -246,8 +283,8 @@ fun Home(
                         .repeatingBackground(
                             imageBitmap = imageBitmap,
                             alpha = 0.2f,
-                            scale = 0.75f,
-                            offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = 0f) }
+                            scale = 0.6f,
+                            offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = -50f) }
                         )
                         .border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
                         .clickable {
@@ -273,7 +310,73 @@ fun Home(
                                     .skipToLookaheadSize(),
                                 style = typography.headlineSmall
                             )
-                            // TODO
+                            if (showCurrentLesson) {
+                                AnimatedContent(isTimetableLoading) { targetState ->
+                                    if (targetState) {
+                                        Box(Modifier.fillMaxWidth().sizeIn(minHeight = 100.dp)) {
+                                            ContainedLoadingIndicator(Modifier.align(Alignment.Center))
+                                        }
+                                    } else {
+                                        if (!viewModel.currentJournalDay.value?.lessons.isNullOrEmpty()) {
+                                            val lessons = viewModel.currentJournalDay.value!!.lessons!!
+                                            Column(Modifier.padding(10.dp).padding(start = 5.dp)) {
+                                                CompositionLocalProvider(
+                                                    LocalJetLimeStyle provides JetLimeDefaults
+                                                        .columnStyle(
+                                                            lineBrush = JetLimeDefaults.lineSolidBrush(colorScheme.primary.copy(0.7f))
+                                                        )
+                                                        .alignment(VERTICAL)
+                                                ) {
+                                                    lessons.sortedBy { SimpleTime.parse(it.time?.from ?: "00:00") }.forEachIndexed { index, lesson ->
+                                                        val position = EventPosition.dynamic(index, lessons.size)
+                                                        val lessonTimeStart = SimpleTime.parse(lesson.time?.from ?: "00:00")
+                                                        val lessonTimeEnd = SimpleTime.parse(lesson.time?.to ?: "00:00")
+                                                        val currentTime = SimpleTime.now()
+                                                        @OptIn(ExperimentalComposeApi::class)
+                                                        JetLimeExtendedEvent(
+                                                            style = JetLimeEventDefaults.eventStyle(
+                                                                position = position,
+                                                                pointAnimation = if (lessonTimeStart <= currentTime && lessonTimeEnd >= currentTime) JetLimeEventDefaults.pointAnimation(targetValue = 1.4f) else null,
+                                                                pointType = if (lessonTimeStart <= currentTime) EventPointType.Default else EventPointType.EMPTY,
+                                                                pointColor = when(lesson.status) {
+                                                                    "hold" -> if (isDark) Color(48, 99, 57) else Color(226, 251, 232)
+                                                                    "canceled" -> colorScheme.errorContainer
+                                                                    "initial" -> if (isDark) Color.DarkGray else Color.LightGray
+                                                                    "planned" -> if (isDark) Color(38, 63, 168) else Color(222, 233, 252)
+                                                                    else -> colorScheme.surface
+                                                                },
+                                                            ),
+                                                            additionalContent = {
+                                                                Text(
+                                                                    text = lesson.rooms?.joinToString { it.localId } ?: "?",
+                                                                    modifier = Modifier.width(60.dp),
+                                                                    color = if (lessonTimeStart <= currentTime && lessonTimeEnd >= currentTime) colorScheme.primary else colorScheme.onSurfaceVariant,
+                                                                    textAlign = TextAlign.Center
+                                                                )
+                                                            }
+                                                        ) {
+                                                            Column(Modifier.padding(start = 5.dp)) {
+                                                                Text(
+                                                                    text = lesson.subject?.name ?: "?",
+                                                                    color = if (lessonTimeStart <= currentTime && lessonTimeEnd >= currentTime) colorScheme.primary else Color.Unspecified,
+                                                                )
+                                                                lesson.notes?.forEach {
+                                                                    Text(
+                                                                        text = "${it.type?.name ?: "?"}: ${it.description ?: "Keine Beschreibung"}",
+                                                                        modifier = Modifier.padding(vertical = 5.dp),
+                                                                        color = if (lessonTimeStart <= currentTime && lessonTimeEnd >= currentTime) colorScheme.primary else Color.Unspecified,
+                                                                        style = typography.bodyMedium
+                                                                    )
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                             Text(
                                 text = "Tippen, um deinen wöchentlichen Stundenplan zu sehen",
                                 modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),

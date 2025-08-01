@@ -113,6 +113,7 @@ import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
+import com.hansholz.bestenotenapp.utils.SimpleTime
 import com.hansholz.bestenotenapp.utils.weekOfYear
 import dev.chrisbanes.haze.hazeSource
 import kotlin.time.Clock
@@ -433,7 +434,6 @@ fun Timetable(
                                                     contentBlurred = false
                                                     val selectedDate = Instant.fromEpochMilliseconds(datePickerState.selectedDateMillis!!)
                                                         .toLocalDateTime(TimeZone.currentSystemDefault()).date
-                                                    println("${selectedDate.year}-${selectedDate.weekOfYear}")
                                                     startPageDate = selectedDate
                                                     pagerState.scrollToPage((Int.MAX_VALUE / 2) - 1)
                                                     pagerState.scrollToPage(Int.MAX_VALUE / 2)
@@ -454,33 +454,6 @@ fun Timetable(
                 }
             }
         }
-    }
-}
-
-
-private data class SimpleTime(val hour: Int, val minute: Int) : Comparable<SimpleTime> {
-    companion object {
-        fun parse(timeString: String): SimpleTime {
-            return try {
-                val parts = timeString.split(":")
-                SimpleTime(parts[0].toInt(), parts[1].toInt())
-            } catch (_: Exception) {
-                SimpleTime(0, 0)
-            }
-        }
-    }
-
-    override fun compareTo(other: SimpleTime): Int {
-        if (this.hour != other.hour) {
-            return this.hour.compareTo(other.hour)
-        }
-        return this.minute.compareTo(other.minute)
-    }
-
-    fun minutesUntil(other: SimpleTime): Long {
-        val thisTotalMinutes = this.hour * 60 + this.minute
-        val otherTotalMinutes = other.hour * 60 + other.minute
-        return (otherTotalMinutes - thisTotalMinutes).toLong()
     }
 }
 

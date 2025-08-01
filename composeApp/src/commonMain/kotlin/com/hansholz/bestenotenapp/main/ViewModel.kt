@@ -17,15 +17,21 @@ import com.hansholz.bestenotenapp.api.codeAuthFlowFactory
 import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.models.Finalgrade
 import com.hansholz.bestenotenapp.api.models.GradeCollection
+import com.hansholz.bestenotenapp.api.models.JournalDay
 import com.hansholz.bestenotenapp.api.models.JournalWeek
 import com.hansholz.bestenotenapp.api.models.Subject
 import com.hansholz.bestenotenapp.api.models.User
 import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.api.oidcClient
 import com.hansholz.bestenotenapp.security.AuthTokenManager
+import com.hansholz.bestenotenapp.utils.weekOfYear
 import dev.chrisbanes.haze.HazeState
 import io.ktor.utils.io.CancellationException
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.launch
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.publicvalue.multiplatform.oidc.DefaultOpenIdConnectClient
@@ -52,6 +58,7 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
     val mediumExpandedDrawerState = mutableStateOf(DrawerState(DrawerValue.Open))
 
     val user = mutableStateOf<User?>(null)
+    val currentJournalDay = mutableStateOf<JournalDay?>(null)
     val journalWeeks = mutableStateListOf<Pair<String, JournalWeek>>()
     val finalGrades = mutableStateListOf<Finalgrade>()
     val subjects = mutableStateListOf<Subject>()
@@ -208,8 +215,11 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
         }
     }
 
-    suspend fun getJournalWeek(nr: String): JournalWeek? {
+    suspend fun getJournalWeek(nr: String? = null): JournalWeek? {
         try {
+            @OptIn(ExperimentalTime::class)
+            val currentNr = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.let { "${it.year}-${it.weekOfYear}" }
+            val nr = nr ?: currentNr
             val cachedWeek = journalWeeks.firstOrNull { it.first == nr }?.second
             val week = cachedWeek ?: api.journalWeekShow(nr, true, "days.lessons").data
             if (cachedWeek == null) journalWeeks.add(nr to week)
