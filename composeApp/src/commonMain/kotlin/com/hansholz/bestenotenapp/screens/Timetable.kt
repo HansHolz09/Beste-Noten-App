@@ -37,10 +37,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
@@ -108,6 +111,7 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.utils.weekOfYear
 import dev.chrisbanes.haze.hazeSource
@@ -216,7 +220,8 @@ fun Timetable(
                                     week = week,
                                     lessonPopupShown = lessonPopupShown,
                                     isCurrentPage = currentPage == pagerState.currentPage,
-                                    modifier = Modifier.padding(contentPadding).padding(bottom = 10.dp).padding(horizontal = 6.dp)
+                                    contentPadding = contentPadding,
+                                    modifier = Modifier.padding(bottom = 10.dp).padding(horizontal = 6.dp)
                                 )
                             }
                         }
@@ -380,7 +385,8 @@ fun Timetable(
                                             .then(backHandlingModifier)
                                             .padding(horizontal = 12.dp)
                                             .sizeIn(maxWidth = 500.dp)
-                                            .clip(RoundedCornerShape(16.dp)),
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .verticalScroll(rememberScrollState()),
                                         colors = CardDefaults.cardColors(colorScheme.primaryContainer)
                                     ) {
                                         Text(
@@ -486,10 +492,12 @@ fun WeekScheduleView(
     week: JournalWeek?,
     lessonPopupShown: MutableState<Boolean>,
     isCurrentPage: Boolean,
+    contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
     val isDark = LocalThemeIsDark.current
+    val blurEnabled = LocalBlurEnabled.current
     val hapticFeedback = LocalHapticFeedback.current
     val showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
 
@@ -526,7 +534,7 @@ fun WeekScheduleView(
                         )
             },
         ) { targetLessonPopupShown ->
-            Row(modifier = Modifier.fillMaxHeight().enhancedHazeEffect(blurRadius = contentBlurRadius.value).then(modifier)) {
+            Row(modifier = Modifier.fillMaxHeight().enhancedHazeEffect(blurRadius = contentBlurRadius.value).padding(contentPadding).then(modifier)) {
                 week.days.forEachIndexed { dayIndex, day ->
                     if (!day.lessons.isNullOrEmpty()) {
                         val currentDate = LocalDate.parse(week.days.firstOrNull()?.date ?: "01.01.2000").plus(dayIndex, DateTimeUnit.DAY)
@@ -581,7 +589,6 @@ fun WeekScheduleView(
                         scope.launch {
                             lessonPopupShown.value = false
                             contentBlurred = false
-                            delay(250)
                             isBackInProgress = false
                             backProgress = 0f
                         }
@@ -606,16 +613,18 @@ fun WeekScheduleView(
                     )
                     OutlinedCard(
                         modifier = backHandlingModifier
-                            .sizeIn(maxWidth = 300.dp, maxHeight = 600.dp)
-                            .align(Alignment.Center)
+                            .verticalScroll(rememberScrollState())
                             .sharedBounds(
                                 sharedContentState = rememberSharedContentState(selectedLesson ?: ""),
                                 animatedVisibilityScope = this@AnimatedContent,
                                 boundsTransform = { _, _ ->
                                     spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
                                 },
-                                resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
-                            ),
+                            )
+                            .widthIn(max = 350.dp)
+                            .align(Alignment.Center)
+                            .padding(contentPadding)
+                            .padding(10.dp),
                         colors = CardDefaults.outlinedCardColors(
                             containerColor = when(selectedLesson?.status) {
                                 "hold" -> if (isDark) Color(48, 99, 57) else Color(226, 251, 232)
@@ -623,7 +632,7 @@ fun WeekScheduleView(
                                 "initial" -> if (isDark) Color.DarkGray else Color.LightGray
                                 "planned" -> if (isDark) Color(38, 63, 168) else Color(222, 233, 252)
                                 else -> colorScheme.surface
-                            }.copy(0.7f)
+                            }.copy(if (blurEnabled.value) 0.7f else 1f)
                         ),
                         border = BorderStroke(2.dp, colorScheme.outline)
                     ) {
@@ -638,7 +647,7 @@ fun WeekScheduleView(
                             }
                             Text(
                                 text = selectedLesson?.subject?.localId ?: "?",
-                                modifier = Modifier.align(Alignment.Center),
+                                modifier = Modifier.align(Alignment.Center).skipToLookaheadSize(),
                                 style = typography.headlineLarge
                             )
                         }
@@ -666,24 +675,28 @@ fun WeekScheduleView(
                                     }
                                 )
                             },
+                            modifier = Modifier.skipToLookaheadSize(),
                             colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f))
                         )
                         HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
                         ListItem(
                             headlineContent = { Text(selectedLesson?.group?.name?.ifEmpty { "Unbekannt" } ?: "Unbekannt") },
                             overlineContent = { Text("Klasse/Gruppe") },
+                            modifier = Modifier.skipToLookaheadSize(),
                             colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f))
                         )
                         HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
                         ListItem(
                             headlineContent = { Text(selectedLesson?.teachers?.joinToString { ((if (showTeachersWithFirstname) it.forename else it.forename?.take(1) + ".") + " " + it.name) }?.ifEmpty { "Unbekannt" } ?: "Unbekannt" ) },
                             overlineContent = { Text("Lehrer/-in(nen)") },
+                            modifier = Modifier.skipToLookaheadSize(),
                             colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f))
                         )
                         HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
                         ListItem(
                             headlineContent = { Text(selectedLesson?.rooms?.joinToString { it.localId }?.ifEmpty { "Unbekannt" } ?: "Unbekannt") },
                             overlineContent = { Text("Raum/Räume") },
+                            modifier = Modifier.skipToLookaheadSize(),
                             colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f))
                         )
                         selectedLesson?.notes?.forEach { note ->
@@ -692,6 +705,7 @@ fun WeekScheduleView(
                                 headlineContent = { Text(note.description ?: "Leer") },
                                 overlineContent = { Text(note.type?.name ?: "Unbenannte Notiz") },
                                 trailingContent = { note.type?.color?.let { Box(Modifier.size(15.dp).clip(CircleShape).background(Color(it.removePrefix("#").toLong(16) or 0x00000000FF000000))) } },
+                                modifier = Modifier.skipToLookaheadSize(),
                                 colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f))
                             )
                         }
@@ -800,7 +814,8 @@ private fun DailyScheduleLayout(
                                         text = lesson.subject?.localId ?: "?",
                                         modifier = Modifier
                                             .rotate(if (flip) -90f else 0f)
-                                            .padding(3.dp, 6.dp),
+                                            .padding(3.dp, 6.dp)
+                                            .skipToLookaheadSize(),
                                         autoSize = TextAutoSize.StepBased(minFontSize = 7.5.sp, maxFontSize = 50.sp, 5.sp),
                                         maxLines = 1
                                     )
