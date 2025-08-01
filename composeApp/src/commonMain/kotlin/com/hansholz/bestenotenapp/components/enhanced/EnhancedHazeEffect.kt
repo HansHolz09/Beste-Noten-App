@@ -21,15 +21,19 @@ import dev.chrisbanes.haze.hazeEffect
 fun Modifier.enhancedHazeEffect(hazeState: HazeState? = null, color: Color? = null, blurRadius: Dp? = null, block: (HazeEffectScope.() -> Unit)? = null): Modifier {
     val blurEnabled = LocalBlurEnabled.current.value
     val blurScale = if (getPlatform() == Platform.ANDROID) 3 else 1
-    return if (hazeState != null) this.hazeEffect(hazeState) {
-        this.blurEnabled = blurEnabled
-        this.blurRadius = (blurRadius ?: 10.dp) * blurScale
-        color?.let {
-            backgroundColor = it
-            fallbackTint = HazeTint(it)
+    return if (hazeState != null) {
+        this.hazeEffect(hazeState) {
+            this.blurEnabled = blurEnabled
+            this.blurRadius = (blurRadius ?: 10.dp) * blurScale
+            color?.let {
+                backgroundColor = it
+                fallbackTint = HazeTint(it)
+            }
+            inputScale = HazeInputScale.Auto
+            noiseFactor = 0f
+            block?.invoke(this)
         }
-        inputScale = HazeInputScale.Auto
-        noiseFactor = 0f
-        block?.invoke(this)
-    } else this.blur((blurRadius ?: 10.dp) * 2)
+    } else if (blurEnabled) {
+        this.blur((blurRadius ?: 10.dp) * 2)
+    } else this
 }
