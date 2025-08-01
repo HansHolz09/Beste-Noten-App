@@ -70,6 +70,7 @@ import com.hansholz.bestenotenapp.theme.LocalUseSystemIsDark
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
 import components.ConfettiPresets
+import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.hazeSource
 import io.github.vinceglb.confettikit.compose.ConfettiKit
 import kotlinx.coroutines.delay
@@ -200,16 +201,18 @@ fun Settings(
                 icon = Icons.Outlined.Animation,
                 position = PreferencePosition.Middle,
             )
-            settingsToggleItem(
-                checked = blurEnabled,
-                onCheckedChange = {
-                    blurEnabled = it
-                    settings["blurEnabled"] = it
-                },
-                text = "Unschärfe-Effekt",
-                icon = Icons.Outlined.BlurOn,
-                position = PreferencePosition.Middle,
-            )
+            if (HazeDefaults.blurEnabled()) {
+                settingsToggleItem(
+                    checked = blurEnabled,
+                    onCheckedChange = {
+                        blurEnabled = it
+                        settings["blurEnabled"] = it
+                    },
+                    text = "Unschärfe-Effekt",
+                    icon = Icons.Outlined.BlurOn,
+                    position = PreferencePosition.Middle,
+                )
+            }
             settingsToggleItem(
                 checked = backgroundEnabled,
                 onCheckedChange = {
