@@ -621,15 +621,11 @@ fun WeekScheduleView(
                 } else {
                     Modifier
                 }
-                Box(Modifier.fillMaxSize()) {
-                    Box(Modifier
-                        .fillMaxSize()
-                        .clickable(null, null) {
-                            lessonPopupShown.value = false
-                            contentBlurred = false
-                            hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                        }
-                    )
+                Box(Modifier.fillMaxSize().clickable(null, null) {
+                    lessonPopupShown.value = false
+                    contentBlurred = false
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                }) {
                     OutlinedCard(
                         modifier = backHandlingModifier
                             .verticalScroll(rememberScrollState())
@@ -644,7 +640,8 @@ fun WeekScheduleView(
                             .widthIn(max = 350.dp)
                             .align(Alignment.Center)
                             .padding(contentPadding)
-                            .padding(10.dp),
+                            .padding(10.dp)
+                            .clickable(null, null) {},
                         colors = CardDefaults.outlinedCardColors(
                             containerColor = when(selectedLesson?.status) {
                                 "hold" -> if (isDark) Color(48, 99, 57) else Color(226, 251, 232)
