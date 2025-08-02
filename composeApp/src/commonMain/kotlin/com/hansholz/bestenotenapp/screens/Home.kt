@@ -3,12 +3,15 @@
 package com.hansholz.bestenotenapp.screens
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,6 +28,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -225,20 +229,41 @@ fun Home(
                         )
                     ) {
                         Column(Modifier.fillMaxWidth()) {
-                            Text(
-                                text = "Noten",
-                                modifier = Modifier
-                                    .padding(10.dp)
-                                    .padding(top = 10.dp)
-                                    .align(Alignment.CenterHorizontally)
-                                    .enhancedSharedElement(
-                                        sharedTransitionScope = sharedTransitionScope,
-                                        sharedContentState = rememberSharedContentState(key = "grades-title"),
-                                        animatedVisibilityScope = animatedVisibilityScope
-                                    )
-                                    .skipToLookaheadSize(),
-                                style = typography.headlineSmall
-                            )
+                            Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
+                                Text(
+                                    text = "Noten",
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .enhancedSharedElement(
+                                            sharedTransitionScope = sharedTransitionScope,
+                                            sharedContentState = rememberSharedContentState(key = "grades-title"),
+                                            animatedVisibilityScope = animatedVisibilityScope
+                                        )
+                                        .skipToLookaheadSize(),
+                                    style = typography.headlineSmall
+                                )
+                                this@Column.AnimatedVisibility(
+                                    visible = !isGradesLoading && showNewestGrades,
+                                    modifier = Modifier.align(Alignment.CenterEnd),
+                                    enter = scaleIn(),
+                                    exit = scaleOut(),
+                                ) {
+                                    EnhancedIconButton(
+                                        onClick = {
+                                            viewModel.viewModelScope.launch {
+                                                isGradesLoading = true
+                                                viewModel.getCollections()?.let {
+                                                    viewModel.startGradeCollections.clear()
+                                                    viewModel.startGradeCollections.addAll(it)
+                                                }
+                                                isGradesLoading = false
+                                            }
+                                        },
+                                    ) {
+                                        Icon(Icons.Outlined.Refresh, null)
+                                    }
+                                }
+                            }
                             if (showNewestGrades) {
                                 AnimatedContent(isGradesLoading) { targetState ->
                                     if (targetState) {
@@ -307,20 +332,45 @@ fun Home(
                         )
                     ) {
                         Column(Modifier.fillMaxWidth()) {
-                            Text(
-                                text = "Stundenplan",
-                                modifier = Modifier
-                                    .padding(10.dp)
-                                    .padding(top = 10.dp)
-                                    .align(Alignment.CenterHorizontally)
-                                    .enhancedSharedElement(
-                                        sharedTransitionScope = sharedTransitionScope,
-                                        sharedContentState = rememberSharedContentState(key = "timetable-title"),
-                                        animatedVisibilityScope = animatedVisibilityScope
-                                    )
-                                    .skipToLookaheadSize(),
-                                style = typography.headlineSmall
-                            )
+                            Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
+                                Text(
+                                    text = "Stundenplan",
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .enhancedSharedElement(
+                                            sharedTransitionScope = sharedTransitionScope,
+                                            sharedContentState = rememberSharedContentState(key = "timetable-title"),
+                                            animatedVisibilityScope = animatedVisibilityScope
+                                        )
+                                        .skipToLookaheadSize(),
+                                    style = typography.headlineSmall
+                                )
+                                this@Column.AnimatedVisibility(
+                                    visible = !isTimetableLoading && showCurrentLesson,
+                                    modifier = Modifier.align(Alignment.CenterEnd),
+                                    enter = scaleIn(),
+                                    exit = scaleOut(),
+                                ) {
+                                    EnhancedIconButton(
+                                        onClick = {
+                                            viewModel.viewModelScope.launch {
+                                                isTimetableLoading = true
+                                                @OptIn(ExperimentalTime::class)
+                                                val currentDate = Clock.System.now()
+                                                    .toLocalDateTime(TimeZone.currentSystemDefault()).date
+                                                    .let {
+                                                        "${it.year}-${it.month.number.toString().padStart(2, '0')}" +
+                                                                "-${it.day.toString().padStart(2, '0')}"
+                                                    }
+                                                viewModel.currentJournalDay.value = viewModel.getJournalWeek(useCached = false)?.days?.find { it.date == currentDate }
+                                                isTimetableLoading = false
+                                            }
+                                        },
+                                    ) {
+                                        Icon(Icons.Outlined.Refresh, null)
+                                    }
+                                }
+                            }
                             if (showCurrentLesson) {
                                 AnimatedContent(isTimetableLoading) { targetState ->
                                     if (targetState) {

@@ -38,6 +38,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -72,6 +73,9 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -146,6 +150,7 @@ fun Timetable(
         val scope = rememberCoroutineScope()
         val density = LocalDensity.current
         val layoutDirection = LocalLayoutDirection.current
+        val hapticFeedback = LocalHapticFeedback.current
         @Suppress("DEPRECATION")
         val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
@@ -195,39 +200,74 @@ fun Timetable(
                     userScrollEnabled = userScrollEnabled && !lessonPopupShown.value
                 ) { currentPage ->
                     var isLoading by remember { mutableStateOf(false) }
+                    val weekNr = remember { startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK).let { "${it.year}-${it.weekOfYear}" } }
                     var week by remember { mutableStateOf<JournalWeek?>(null) }
                     LaunchedEffect(Unit) {
                         isLoading = true
-                        week = viewModel.getJournalWeek(startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK).let { "${it.year}-${it.weekOfYear}" })
+                        week = viewModel.getJournalWeek(weekNr)
                         isLoading = false
                     }
-                    AnimatedContent(isLoading || week?.days?.all { it.lessons.isNullOrEmpty() } ?: true) { targetState ->
-                        Box(Modifier.fillMaxSize()) {
-                            if (targetState) {
-                                AnimatedContent(isLoading) { isLoading ->
-                                    if (isLoading) {
-                                        Box(
-                                            modifier = Modifier.padding(contentPadding).fillMaxSize(),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            ContainedLoadingIndicator()
+                    var isRefreshLoading by remember { mutableStateOf(false) }
+                    val pullToRefreshState = rememberPullToRefreshState()
+                    PullToRefreshBox(
+                        isRefreshing = isRefreshLoading,
+                        onRefresh = {
+                            scope.launch {
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                                isRefreshLoading = true
+                                week = viewModel.getJournalWeek(weekNr, false)
+                                isRefreshLoading = false
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                            }
+                        },
+                        state = pullToRefreshState,
+                        indicator = {
+                            PullToRefreshDefaults.LoadingIndicator(
+                                modifier = Modifier.align(Alignment.TopCenter).padding(topPadding),
+                                isRefreshing = isRefreshLoading,
+                                state = pullToRefreshState,
+                            )
+                        }
+                    ) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            item {
+                                Box(
+                                    modifier = Modifier.fillParentMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    AnimatedContent(isLoading || week?.days?.all { it.lessons.isNullOrEmpty() } ?: true) { targetState ->
+                                        Box(Modifier.fillMaxSize()) {
+                                            if (targetState) {
+                                                AnimatedContent(isLoading) { isLoading ->
+                                                    if (isLoading) {
+                                                        Box(
+                                                            modifier = Modifier.padding(contentPadding).fillMaxSize(),
+                                                            contentAlignment = Alignment.Center
+                                                        ) {
+                                                            ContainedLoadingIndicator()
+                                                        }
+                                                    } else {
+                                                        EmptyStateMessage(
+                                                            title = "Keine Stunden für diese Woche gefunden",
+                                                            icon = Icons.Outlined.EventBusy,
+                                                            modifier = Modifier.padding(contentPadding).consumeWindowInsets(contentPadding).imePadding()
+                                                        )
+                                                    }
+                                                }
+                                            } else {
+                                                WeekScheduleView(
+                                                    week = week,
+                                                    lessonPopupShown = lessonPopupShown,
+                                                    isCurrentPage = currentPage == pagerState.currentPage,
+                                                    contentPadding = contentPadding,
+                                                    modifier = Modifier.padding(bottom = 10.dp).padding(horizontal = 6.dp)
+                                                )
+                                            }
                                         }
-                                    } else {
-                                        EmptyStateMessage(
-                                            title = "Keine Stunden für diese Woche gefunden",
-                                            icon = Icons.Outlined.EventBusy,
-                                            modifier = Modifier.padding(contentPadding).consumeWindowInsets(contentPadding).imePadding()
-                                        )
                                     }
                                 }
-                            } else {
-                                WeekScheduleView(
-                                    week = week,
-                                    lessonPopupShown = lessonPopupShown,
-                                    isCurrentPage = currentPage == pagerState.currentPage,
-                                    contentPadding = contentPadding,
-                                    modifier = Modifier.padding(bottom = 10.dp).padding(horizontal = 6.dp)
-                                )
                             }
                         }
                     }

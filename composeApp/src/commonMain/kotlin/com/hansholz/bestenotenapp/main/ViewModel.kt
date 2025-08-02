@@ -216,14 +216,17 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
         }
     }
 
-    suspend fun getJournalWeek(nr: String? = null): JournalWeek? {
+    suspend fun getJournalWeek(nr: String? = null, useCached: Boolean = true): JournalWeek? {
         try {
             @OptIn(ExperimentalTime::class)
             val currentNr = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.let { "${it.year}-${it.weekOfYear}" }
             val nr = nr ?: currentNr
-            val cachedWeek = journalWeeks.firstOrNull { it.first == nr }?.second
+            val cachedWeek = if (useCached) journalWeeks.firstOrNull { it.first == nr }?.second else null
             val week = cachedWeek ?: api.journalWeekShow(nr, true, "days.lessons").data
-            if (cachedWeek == null) journalWeeks.add(nr to week)
+            if (cachedWeek == null) {
+                if (!useCached) journalWeeks.remove(nr to week)
+                journalWeeks.add(nr to week)
+            }
             return week
         } catch (e: CancellationException) {
             e.printStackTrace()
