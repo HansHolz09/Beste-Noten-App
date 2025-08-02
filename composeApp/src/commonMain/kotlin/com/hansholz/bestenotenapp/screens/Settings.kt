@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Animation
 import androidx.compose.material.icons.outlined.BlurOn
@@ -21,6 +20,7 @@ import androidx.compose.material.icons.outlined.BrightnessAuto
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.DisabledVisible
 import androidx.compose.material.icons.outlined.FiberNew
+import androidx.compose.material.icons.outlined.FormatListBulleted
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.InvertColors
@@ -255,8 +255,8 @@ fun Settings(
                     showCurrentLesson = it
                     settings["showCurrentLesson"] = it
                 },
-                text = "Aktuelle Schulstunde anzeigen",
-                icon = Icons.Outlined.AccessTime,
+                text = "Aktuellen Schultag anzeigen",
+                icon = Icons.Outlined.FormatListBulleted,
                 position = PreferencePosition.Bottom,
             )
             item {
