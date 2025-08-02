@@ -15,7 +15,7 @@ actual class BiometryAuthenticator {
         requestTitle: String,
         requestReason: String,
         scope: CoroutineScope,
-        result: (Boolean) -> Unit
+        result: (successful: Boolean) -> Unit
     ) {
         scope.launch {
             if (isBiometricAvailable()) {
