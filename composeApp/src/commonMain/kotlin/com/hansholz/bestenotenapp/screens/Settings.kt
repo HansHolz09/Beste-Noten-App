@@ -35,7 +35,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +45,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import bestenotenapp.composeApp.BuildConfig
+import com.hansholz.bestenotenapp.components.ConfettiPresets
 import com.hansholz.bestenotenapp.components.PreferenceCategory
 import com.hansholz.bestenotenapp.components.PreferenceItem
 import com.hansholz.bestenotenapp.components.PreferencePosition
@@ -71,11 +71,9 @@ import com.hansholz.bestenotenapp.theme.LocalUseCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseSystemIsDark
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
-import components.ConfettiPresets
 import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.hazeSource
 import io.github.vinceglb.confettikit.compose.ConfettiKit
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -376,19 +374,12 @@ fun Settings(
     }
 
     if (showConfetti) {
-        val parties = ConfettiPresets.randomFirework(20)
-        LaunchedEffect(Unit) {
-            var delay = 0
-            parties.forEach {
-                hapticFeedback.performHapticFeedback(HapticFeedbackType.VirtualKey)
-                delay((it.delay - delay).toLong())
-                delay = it.delay
-            }
-            hapticFeedback.performHapticFeedback(HapticFeedbackType.VirtualKey)
-        }
         ConfettiKit(
             modifier = Modifier.fillMaxSize(),
-            parties = parties,
+            parties = ConfettiPresets.randomFirework(20),
+            onParticleSystemStarted = { _, _ ->
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.VirtualKey)
+            },
             onParticleSystemEnded = { _, activeSystems ->
                 if (activeSystems == 0) showConfetti = false
             }

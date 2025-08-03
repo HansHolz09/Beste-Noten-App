@@ -1,18 +1,68 @@
-package components
+package com.hansholz.bestenotenapp.components
 
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialShapes
+import androidx.compose.material3.toShape
+import androidx.compose.runtime.Composable
+import bestenotenapp.composeapp.generated.resources.Res
+import bestenotenapp.composeapp.generated.resources.logo
 import io.github.vinceglb.confettikit.core.Angle
 import io.github.vinceglb.confettikit.core.Party
 import io.github.vinceglb.confettikit.core.Position
+import io.github.vinceglb.confettikit.core.Rotation
 import io.github.vinceglb.confettikit.core.Spread
 import io.github.vinceglb.confettikit.core.emitter.Emitter
+import io.github.vinceglb.confettikit.core.models.Shape
+import io.github.vinceglb.confettikit.core.models.Size
 import kotlin.random.Random
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import org.jetbrains.compose.resources.imageResource
 
 class ConfettiPresets {
     companion object {
+        @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+        @Composable
         fun randomFirework(rockets: Int): List<Party> {
+            val shapes = with(MaterialShapes) {
+                listOf(
+                    Circle,
+                    Square,
+                    Slanted,
+                    Arch,
+                    Fan,
+                    Arrow,
+                    SemiCircle,
+                    Oval,
+                    Pill,
+                    Triangle,
+                    Diamond,
+                    ClamShell,
+                    Pentagon,
+                    Gem,
+                    VerySunny,
+                    Sunny,
+                    Cookie4Sided,
+                    Cookie6Sided,
+                    Cookie7Sided,
+                    Cookie9Sided,
+                    Cookie12Sided,
+                    Ghostish,
+                    Clover4Leaf,
+                    Clover8Leaf,
+                    Burst,
+                    SoftBurst,
+                    Boom,
+                    SoftBoom,
+                    Flower,
+                    Puffy,
+                    PuffyDiamond,
+                    PixelCircle,
+                    PixelTriangle,
+                    Bun,
+                    Heart
+                ).map { Shape.CustomShape(it.toShape()) }
+            }
             val parties = mutableListOf<Party>()
             val colors =
                 listOf(
@@ -43,15 +93,17 @@ class ConfettiPresets {
                     0x4c2f27,
                 )
             var delay = 0
-            for (i in 0 until rockets) {
+            (0 until rockets).forEach { _ ->
                 delay += (200..400).random()
                 parties.add(
                     Party(
                         speed = 0f,
                         maxSpeed = 30f,
                         damping = 0.9f,
+                        size = listOf(Size(5), Size(10), Size(15), Size(20)),
                         spread = (200..500).random(),
                         colors = listOf(colors.random(), colors.random(), colors.random(), colors.random()),
+                        shapes = shapes,
                         emitter = Emitter(duration = 100.milliseconds).max(100),
                         position = Position.Relative((0.1f..0.9f).random().toDouble(), (0.1f..0.9f).random().toDouble()),
                         delay = delay,
@@ -61,16 +113,21 @@ class ConfettiPresets {
             return parties
         }
 
-        fun rain(duration: Duration = 5.seconds): List<Party> {
+        @Composable
+        fun logos(): List<Party> {
+            val logo = imageResource(Res.drawable.logo)
             return listOf(
                 Party(
-                    speed = 0f,
-                    maxSpeed = 15f,
-                    damping = 0.9f,
+                    speed = 5f,
+                    maxSpeed = 30f,
+                    damping = 0.95f,
+                    size = listOf(Size(40), Size(60), Size(80)),
                     angle = Angle.BOTTOM,
-                    spread = Spread.ROUND,
-                    colors = listOf(0xfce18a, 0xff726d, 0xf4306d, 0xb48def),
-                    emitter = Emitter(duration = duration).perSecond(100),
+                    spread = Spread.SMALL,
+                    shapes = listOf(Shape.Image(logo)),
+                    timeToLive = 4000,
+                    rotation = Rotation.disabled(),
+                    emitter = Emitter(duration = 5.seconds).perSecond(20),
                     position = Position.Relative(0.0, 0.0).between(Position.Relative(1.0, 0.0)),
                 ),
             )

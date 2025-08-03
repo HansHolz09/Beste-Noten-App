@@ -44,6 +44,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.window.core.layout.WindowWidthSizeClass
+import com.hansholz.bestenotenapp.components.ConfettiPresets
 import com.hansholz.bestenotenapp.components.NavigationDrawer
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
@@ -53,7 +54,6 @@ import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
 import com.nomanr.animate.compose.animated.rememberAnimatedState
 import com.nomanr.animate.compose.presets.attentionseekers.Jello
 import com.nomanr.animate.compose.presets.attentionseekers.RubberBand
-import components.ConfettiPresets
 import io.github.vinceglb.confettikit.compose.ConfettiKit
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -197,7 +197,7 @@ fun AppNavigationDrawer(
     if (showConfetti) {
         ConfettiKit(
             modifier = Modifier.fillMaxSize(),
-            parties = ConfettiPresets.rain(),
+            parties = ConfettiPresets.logos(),
             onParticleSystemEnded = { _, activeSystems ->
                 if (activeSystems == 0) showConfetti = false
             }
