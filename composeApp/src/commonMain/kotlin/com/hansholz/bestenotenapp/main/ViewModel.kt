@@ -30,6 +30,7 @@ import io.ktor.utils.io.CancellationException
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.SerialName
@@ -216,13 +217,20 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
         }
     }
 
-    suspend fun getJournalWeek(nr: String? = null, useCached: Boolean = true): JournalWeek? {
+    suspend fun getJournalWeek(date: LocalDate? = null, useCached: Boolean = true): JournalWeek? {
         try {
             @OptIn(ExperimentalTime::class)
             val currentNr = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.let { "${it.year}-${it.weekOfYear}" }
-            val nr = nr ?: currentNr
+            val nr = date?.let { "${it.year}-${it.weekOfYear}" } ?: currentNr
+            val year = date?.let {
+                years.firstOrNull { schoolYear ->
+                    val fromDate = LocalDate.parse(schoolYear.from)
+                    val toDate = LocalDate.parse(schoolYear.to)
+                    date >= fromDate && date <= toDate
+                }?.id.toString()
+            }
             val cachedWeek = if (useCached) journalWeeks.firstOrNull { it.first == nr }?.second else null
-            val week = cachedWeek ?: api.journalWeekShow(nr, true, "days.lessons").data
+            val week = cachedWeek ?: api.journalWeekShow(nr, year, true, "days.lessons").data
             if (cachedWeek == null) {
                 if (!useCached) journalWeeks.remove(nr to week)
                 journalWeeks.add(nr to week)

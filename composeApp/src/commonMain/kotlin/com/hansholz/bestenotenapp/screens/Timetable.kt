@@ -120,7 +120,6 @@ import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.utils.SimpleTime
-import com.hansholz.bestenotenapp.utils.weekOfYear
 import dev.chrisbanes.haze.hazeSource
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -200,12 +199,15 @@ fun Timetable(
                     userScrollEnabled = userScrollEnabled && !lessonPopupShown.value
                 ) { currentPage ->
                     var isLoading by remember { mutableStateOf(false) }
-                    val weekNr = remember { startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK).let { "${it.year}-${it.weekOfYear}" } }
+                    val weekDate = remember { startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK) }
                     var week by remember { mutableStateOf<JournalWeek?>(null) }
                     LaunchedEffect(Unit) {
                         isLoading = true
-                        week = viewModel.getJournalWeek(weekNr)
+                        week = viewModel.getJournalWeek(weekDate)
                         isLoading = false
+                        if (viewModel.years.isEmpty()) {
+                            viewModel.getYears()?.let { viewModel.years.addAll(it) }
+                        }
                     }
                     var isRefreshLoading by remember { mutableStateOf(false) }
                     val pullToRefreshState = rememberPullToRefreshState()
@@ -215,7 +217,7 @@ fun Timetable(
                             scope.launch {
                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureEnd)
                                 isRefreshLoading = true
-                                week = viewModel.getJournalWeek(weekNr, false)
+                                week = viewModel.getJournalWeek(weekDate, false)
                                 isRefreshLoading = false
                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
                             }

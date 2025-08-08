@@ -1198,10 +1198,12 @@ class BesteSchuleApi(httpClient: HttpClient, authToken: MutableState<String?>) {
 
     suspend fun journalWeekShow(
         nr: String,
+        filterYear: String? = null,
         interpolate: Boolean? = null,
-        include: String? = null
+        include: String? = null,
     ): DataWrapper<JournalWeek> {
         return client.get("$baseUrl/journal/weeks/$nr") {
+            filterYear?.let { parameter("filter[year]", filterYear) }
             interpolate?.let { parameter("interpolate", interpolate) }
             parameter("include", include)
         }.body()
