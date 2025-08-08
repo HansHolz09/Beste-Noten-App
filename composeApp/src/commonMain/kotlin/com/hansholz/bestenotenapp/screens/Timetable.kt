@@ -735,6 +735,7 @@ fun WeekScheduleView(
     }
 }
 
+@OptIn(ExperimentalTime::class)
 @Composable
 private fun DayHeader(date: LocalDate) {
     fun getDayAbbreviation(dayOfWeek: DayOfWeek): String {
@@ -749,6 +750,9 @@ private fun DayHeader(date: LocalDate) {
         }
     }
 
+    val isCurrentDate = (date == Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date)
+    val color = if (isCurrentDate) colorScheme.primary else null
+
     val dayAbbreviation = getDayAbbreviation(date.dayOfWeek)
     val formattedDate = "${date.day.toString().padStart(2, '0')}.${date.month.number.toString().padStart(2, '0')}."
 
@@ -757,8 +761,8 @@ private fun DayHeader(date: LocalDate) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = dayAbbreviation, fontWeight = FontWeight.Bold)
-        Text(text = formattedDate, color = Color.Gray)
+        Text(text = dayAbbreviation, color = color ?: Color.Unspecified, fontWeight = FontWeight.Bold)
+        Text(text = formattedDate, color = color ?: Color.Gray)
     }
 }
 
