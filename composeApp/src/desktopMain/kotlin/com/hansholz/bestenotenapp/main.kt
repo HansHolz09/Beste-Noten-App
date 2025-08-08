@@ -28,15 +28,13 @@ import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
 import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.jetbrains.JBR
-import io.github.kdroidfilter.platformtools.darkmodedetector.mac.setMacOsAdaptiveTitleBar
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.skiko.hostOs
 import java.awt.Color
 import java.awt.Dimension
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.skiko.hostOs
 
 @OptIn(ExperimentalMaterial3ComponentOverrideApi::class, ExperimentalMaterial3Api::class)
-fun main() {
-    setMacOsAdaptiveTitleBar()
+fun main() =
     application {
         DecoratedWindow(
             onCloseRequest = ::exitApplication,
@@ -67,4 +65,3 @@ fun main() {
             TitleBar(isDark = isDark, titleBarHeight = titleBarHeight)
         }
     }
-}

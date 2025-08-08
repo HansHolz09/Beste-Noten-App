@@ -197,6 +197,7 @@ compose.desktop {
                 iconFile = project.file("src/commonMain/composeResources/drawable/icon.icns")
                 dockName = libs.versions.appName.get()
                 packageBuildVersion = libs.versions.appVersionCode.get()
+                jvmArgs("-Dapple.awt.application.appearance=system")
                 infoPlist {
                     extraKeysRawXml =
                         """
