@@ -96,10 +96,6 @@ kotlin {
             implementation(libs.multiplatform.settings)
         }
         desktopMain.dependencies {
-            if (System.getProperty("os.name").startsWith("Win")) {
-                implementation(compose.desktop.windows_arm64)
-                implementation(compose.desktop.windows_x64)
-            }
             implementation(compose.desktop.currentOs)
             implementation(libs.jbr.api)
             implementation(libs.kotlinx.coroutinesSwing)
