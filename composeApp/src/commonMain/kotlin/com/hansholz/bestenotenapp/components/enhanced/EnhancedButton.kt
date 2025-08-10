@@ -11,6 +11,7 @@ import androidx.compose.material3.ButtonElevation
 import androidx.compose.material3.ButtonShapes
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme.shapes
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -33,6 +34,42 @@ fun EnhancedButton(
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     Button(
+        onClick = {
+            onClick()
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+        },
+        shapes = ButtonShapes(
+            shape = shapes.extraExtraLarge,
+            pressedShape = shapes.small,
+        ),
+        modifier = modifier,
+        enabled = enabled,
+        colors = colors,
+        elevation = elevation,
+        border = border,
+        contentPadding = contentPadding,
+        interactionSource = interactionSource,
+        content = content
+    )
+}
+
+@Composable
+fun EnhancedOutlinedButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    colors: ButtonColors = ButtonDefaults.outlinedButtonColors(),
+    elevation: ButtonElevation? = null,
+    border: BorderStroke? = ButtonDefaults.outlinedButtonBorder(enabled),
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    contentPadding: PaddingValues = ButtonDefaults.contentPaddingFor(ButtonDefaults.MinHeight),
+    interactionSource: MutableInteractionSource? = null,
+    content: @Composable RowScope.() -> Unit,
+) {
+    val hapticFeedback = LocalHapticFeedback.current
+
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    OutlinedButton(
         onClick = {
             onClick()
             hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)

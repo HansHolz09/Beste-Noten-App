@@ -90,6 +90,7 @@ kotlin {
             implementation(libs.androidx.security.crypto)
             implementation(libs.androidx.biometric)
             implementation(libs.ktor.client.cio)
+            implementation(libs.smartspacer.sdk)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

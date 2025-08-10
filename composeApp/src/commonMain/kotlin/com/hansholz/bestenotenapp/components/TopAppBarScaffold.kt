@@ -1,5 +1,6 @@
 package com.hansholz.bestenotenapp.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -33,7 +34,7 @@ fun TopAppBarScaffold(
     titleModifier: Modifier = Modifier,
     navigationIcon: @Composable () -> Unit = {},
     sideMenuExpanded: Boolean? = null,
-    hazeState: HazeState,
+    hazeState: HazeState? = null,
     content: @Composable ((
         innerPadding: PaddingValues,
         topAppBarBackground: @Composable (height: Dp) -> Unit
@@ -70,7 +71,11 @@ fun TopAppBarScaffold(
                 Box(Modifier
                     .fillMaxWidth()
                     .height(height)
-                    .enhancedHazeEffect(hazeState, colorScheme.secondaryContainer)
+                    .then(
+                        hazeState?.let {
+                            Modifier.enhancedHazeEffect(hazeState, colorScheme.secondaryContainer)
+                        } ?: Modifier.background(colorScheme.secondaryContainer)
+                    )
                 )
             }
         }

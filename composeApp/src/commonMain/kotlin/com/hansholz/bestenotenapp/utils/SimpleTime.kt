@@ -39,4 +39,26 @@ data class SimpleTime(val hour: Int, val minute: Int) : Comparable<SimpleTime> {
         val otherTotalMinutes = other.hour * 60 + other.minute
         return (otherTotalMinutes - thisTotalMinutes).toLong()
     }
+
+    private fun toTotalMinutes(): Long = hour.toLong() * 60L + minute.toLong()
+
+    private fun fromTotalMinutes(total: Long): SimpleTime {
+        val minutesInDay = 24L * 60L
+        val m = ((total % minutesInDay) + minutesInDay) % minutesInDay
+        val h = (m / 60L).toInt()
+        val min = (m % 60L).toInt()
+        return SimpleTime(h, min)
+    }
+
+    fun plusMinutes(minutes: Long): SimpleTime =
+        fromTotalMinutes(toTotalMinutes() + minutes)
+
+    fun minusMinutes(minutes: Long): SimpleTime =
+        plusMinutes(-minutes)
+
+    operator fun plus(minutes: Int): SimpleTime =
+        plusMinutes(minutes.toLong())
+
+    operator fun minus(minutes: Int): SimpleTime =
+        minusMinutes(minutes.toLong())
 }
