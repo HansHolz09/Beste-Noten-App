@@ -6,6 +6,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,11 +28,13 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialShapes.Companion.ClamShell
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -167,7 +170,14 @@ fun SubjectsAndTeachers(
                                                             )
                                                         },
                                                         leadingContent = {
-                                                            Text(subject.localId ?: "?", textAlign = TextAlign.Center, modifier = Modifier.width(50.dp))
+                                                            Box(Modifier.clip(ClamShell.toShape()).background(colorScheme.primaryContainer)) {
+                                                                Text(
+                                                                    text = subject.localId ?: "?",
+                                                                    color = colorScheme.onPrimaryContainer,
+                                                                    textAlign = TextAlign.Center,
+                                                                    modifier = Modifier.width(50.dp).padding(vertical = 5.dp)
+                                                                )
+                                                            }
                                                         },
                                                         colors = ListItemDefaults.colors(Color.Transparent)
                                                     )
@@ -210,7 +220,14 @@ fun SubjectsAndTeachers(
                                                             Text((if (showTeachersWithFirstname) it.first?.forename else it.first?.forename?.take(1) + ".") + " " + it.first?.name + " (" + it.second + ")")
                                                         },
                                                         leadingContent = {
-                                                            Text(it.first?.localId ?: "", textAlign = TextAlign.Center, modifier = Modifier.width(50.dp))
+                                                            Box(Modifier.clip(ClamShell.toShape()).background(colorScheme.primaryContainer)) {
+                                                                Text(
+                                                                    text = it.first?.localId ?: "",
+                                                                    color = colorScheme.onPrimaryContainer,
+                                                                    textAlign = TextAlign.Center,
+                                                                    modifier = Modifier.width(50.dp).padding(vertical = 5.dp)
+                                                                )
+                                                            }
                                                         },
                                                         colors = ListItemDefaults.colors(Color.Transparent)
                                                     )

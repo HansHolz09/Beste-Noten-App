@@ -116,6 +116,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.components.EmptyStateMessage
+import com.hansholz.bestenotenapp.components.GradeValueBox
 import com.hansholz.bestenotenapp.components.PreferencePosition
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
@@ -178,7 +179,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kodein.emoji.compose.m3.TextWithNotoImageEmoji
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class,
     ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class, ExperimentalKoalaPlotApi::class
@@ -338,7 +338,7 @@ fun Grades(
                                                             }
                                                         },
                                                         leadingContent = {
-                                                            TextWithNotoImageEmoji(it.grades?.getOrNull(0)?.value ?: "🚫", textAlign = TextAlign.Center, modifier = Modifier.width(30.dp))
+                                                            GradeValueBox(it.grades?.getOrNull(0)?.value)
                                                         },
                                                         colors = ListItemDefaults.colors(Color.Transparent),
                                                         modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2)
@@ -429,7 +429,7 @@ fun Grades(
                                                                     }
                                                                 },
                                                                 leadingContent = {
-                                                                    TextWithNotoImageEmoji(it.grades?.getOrNull(0)?.value ?: "🚫", textAlign = TextAlign.Center, modifier = Modifier.width(30.dp))
+                                                                    GradeValueBox(it.grades?.getOrNull(0)?.value)
                                                                 },
                                                                 colors = ListItemDefaults.colors(Color.Transparent),
                                                                 modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2)

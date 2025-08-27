@@ -34,10 +34,12 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialShapes.Companion.ClamShell
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ExperimentalComposeApi
@@ -62,6 +64,7 @@ import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.grades
 import bestenotenapp.composeapp.generated.resources.subjectsAndTeachers
 import bestenotenapp.composeapp.generated.resources.timetable
+import com.hansholz.bestenotenapp.components.GradeValueBox
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
@@ -300,7 +303,7 @@ fun Home(
                                                             }
                                                         },
                                                         leadingContent = {
-                                                            Text(it.grades?.getOrNull(0)?.value ?: "🚫", textAlign = TextAlign.Center, modifier = Modifier.width(30.dp))
+                                                            GradeValueBox(it.grades?.getOrNull(0)?.value)
                                                         },
                                                         colors = ListItemDefaults.colors(Color.Transparent),
                                                     )
@@ -424,12 +427,14 @@ fun Home(
                                                                 },
                                                             ),
                                                             additionalContent = {
-                                                                Text(
-                                                                    text = groupLessons.value.flatMap { it.rooms.orEmpty() }.map { it.localId }.toSet().joinToString().ifEmpty { "?" },
-                                                                    modifier = Modifier.width(60.dp),
-                                                                    color = if (currentTime in lessonTimeStart..lessonTimeEnd) colorScheme.primary else colorScheme.onSurfaceVariant,
-                                                                    textAlign = TextAlign.Center
-                                                                )
+                                                                Box(Modifier.clip(ClamShell.toShape()).background(colorScheme.primaryContainer)) {
+                                                                    Text(
+                                                                        text = groupLessons.value.flatMap { it.rooms.orEmpty() }.map { it.localId }.toSet().joinToString().ifEmpty { "?" },
+                                                                        modifier = Modifier.width(60.dp).padding(vertical = 2.dp),
+                                                                        color = colorScheme.onPrimaryContainer,
+                                                                        textAlign = TextAlign.Center
+                                                                    )
+                                                                }
                                                             }
                                                         ) {
                                                             Column(Modifier.padding(start = 5.dp)) {
