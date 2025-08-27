@@ -226,13 +226,13 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
                 years.firstOrNull { schoolYear ->
                     val fromDate = LocalDate.parse(schoolYear.from)
                     val toDate = LocalDate.parse(schoolYear.to)
-                    date >= fromDate && date <= toDate
+                    date in fromDate..toDate
                 }?.id.toString()
             }
             val cachedWeek = if (useCached) journalWeeks.firstOrNull { it.first == nr }?.second else null
             val week = cachedWeek ?: api.journalWeekShow(nr, year, true, "days.lessons").data
             if (cachedWeek == null) {
-                if (!useCached) journalWeeks.remove(nr to week)
+                if (!useCached) journalWeeks.removeAll { it.first == nr }
                 journalWeeks.add(nr to week)
             }
             return week

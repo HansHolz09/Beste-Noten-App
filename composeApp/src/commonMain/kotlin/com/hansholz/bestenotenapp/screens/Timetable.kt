@@ -524,14 +524,23 @@ fun WeekScheduleView(
 
     if (week?.days == null) return
 
-    val allLessons = week.days.flatMap { it.lessons.orEmpty() }
+    val allLessons = week.days
+        .map {
+            it.copy(lessons = it.lessons?.mapIndexed { index, lesson ->
+                val startTime = SimpleTime.parse("07:30").plus(50 * index)
+                if (lesson.time?.from == null || lesson.time.to == null) {
+                    lesson.copy(time = lesson.time?.copy(from = startTime.toString(), to = startTime.plus(45).toString()))
+                } else lesson
+            })
+        }
+        .flatMap { it.lessons.orEmpty() }
+
     if (allLessons.isEmpty()) return
 
     val minTimeHour = allLessons.minOfOrNull { SimpleTime.parse(it.time?.from ?: "23:59") }
     val latestLessonEnd = allLessons.maxOfOrNull { SimpleTime.parse(it.time?.to ?: "00:00") }
 
     var selectedLesson by remember { mutableStateOf<JournalLesson?>(null) }
-    var selectedHour by remember { mutableStateOf(0) }
     var selectedDay by remember { mutableStateOf("") }
 
     var contentBlurred by remember { mutableStateOf(false) }
@@ -573,10 +582,9 @@ fun WeekScheduleView(
                                 animatedContentScope = this@AnimatedContent,
                                 selectedLesson = selectedLesson,
                                 shownLessonPopup = if (targetLessonPopupShown) selectedLesson else null,
-                            ) { lesson, i ->
+                            ) { lesson ->
                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                                 selectedLesson = lesson
-                                selectedHour = (i + 1)
                                 selectedDay = "${
                                     when(currentDate.dayOfWeek) {
                                         DayOfWeek.MONDAY -> "Montag"
@@ -631,6 +639,10 @@ fun WeekScheduleView(
                     OutlinedCard(
                         modifier = backHandlingModifier
                             .verticalScroll(rememberScrollState())
+                            .widthIn(max = 350.dp)
+                            .align(Alignment.Center)
+                            .padding(contentPadding)
+                            .padding(10.dp)
                             .enhancedSharedBounds(
                                 sharedTransitionScope = this@SharedTransitionLayout,
                                 sharedContentState = rememberSharedContentState(selectedLesson ?: ""),
@@ -639,10 +651,6 @@ fun WeekScheduleView(
                                     spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
                                 },
                             )
-                            .widthIn(max = 350.dp)
-                            .align(Alignment.Center)
-                            .padding(contentPadding)
-                            .padding(10.dp)
                             .clickable(null, null) {},
                         colors = CardDefaults.outlinedCardColors(
                             containerColor = when(selectedLesson?.status) {
@@ -680,7 +688,7 @@ fun WeekScheduleView(
                             },
                             overlineContent = {
                                 Text(
-                                    text = "${selectedDay}\n${selectedHour}. Stunde (${selectedLesson?.time?.from} - ${selectedLesson?.time?.to})",
+                                    text = "${selectedDay}\n${selectedLesson?.nr ?: "?"}. Stunde (${selectedLesson?.time?.from} - ${selectedLesson?.time?.to})",
                                 )
                             },
                             supportingContent = {
@@ -722,7 +730,7 @@ fun WeekScheduleView(
                             HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
                             ListItem(
                                 headlineContent = { Text(note.description ?: "Leer") },
-                                overlineContent = { Text(note.type?.name ?: "Unbenannte Notiz") },
+                                overlineContent = { Text(note.type?.name?.replace("Substitution Plan", "Vertretungsplan") ?: "Unbenannte Notiz") },
                                 trailingContent = { note.type?.color?.let { Box(Modifier.size(15.dp).clip(CircleShape).background(Color(it.removePrefix("#").toLong(16) or 0x00000000FF000000))) } },
                                 modifier = Modifier.skipToLookaheadSize(),
                                 colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f))
@@ -779,21 +787,28 @@ private fun DailyScheduleLayout(
     animatedContentScope: AnimatedContentScope,
     selectedLesson: JournalLesson?,
     shownLessonPopup: JournalLesson?,
-    onLessonPopupOpened: (JournalLesson, Int) -> Unit,
+    onLessonPopupOpened: (JournalLesson) -> Unit,
 ) {
-    val sortedLessons = lessons.sortedBy { SimpleTime.parse(it.time?.from ?: "00:00") }
+    val sortedLessons = lessons
+        .sortedBy { it.nr }
+        .mapIndexed { index, lesson ->
+            val startTime = SimpleTime.parse("07:30").plus(50 * index)
+            if (lesson.time?.from == null || lesson.time.to == null) {
+                lesson.copy(time = lesson.time?.copy(from = startTime.toString(), to = startTime.plus(45).toString()))
+            } else lesson
+        }
 
     with(sharedTransitionScope) {
         Layout(
             modifier = modifier,
             content = {
                 val isDark = LocalThemeIsDark.current
-                sortedLessons.forEachIndexed { index, lesson ->
+                sortedLessons.forEach { lesson ->
                     Box {
                         if (shownLessonPopup != lesson) {
                             OutlinedCard(
                                 onClick = {
-                                    onLessonPopupOpened(lesson, index)
+                                    onLessonPopupOpened(lesson)
                                 },
                                 modifier = Modifier
                                     .fillMaxSize()

@@ -1,7 +1,14 @@
 package com.hansholz.bestenotenapp.utils
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.produceState
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import kotlinx.coroutines.delay
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
@@ -34,6 +41,10 @@ data class SimpleTime(val hour: Int, val minute: Int) : Comparable<SimpleTime> {
         return this.minute.compareTo(other.minute)
     }
 
+    override fun toString(): String {
+        return "${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}"
+    }
+
     fun minutesUntil(other: SimpleTime): Long {
         val thisTotalMinutes = this.hour * 60 + this.minute
         val otherTotalMinutes = other.hour * 60 + other.minute
@@ -61,4 +72,33 @@ data class SimpleTime(val hour: Int, val minute: Int) : Comparable<SimpleTime> {
 
     operator fun minus(minutes: Int): SimpleTime =
         minusMinutes(minutes.toLong())
+}
+
+@OptIn(ExperimentalTime::class)
+@Composable
+fun rememberCurrentSimpleTime(): State<SimpleTime> {
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    return produceState(initialValue = SimpleTime.now(), key1 = lifecycleOwner) {
+        fun updateNow() { value = SimpleTime.now() }
+
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                updateNow()
+            }
+        }
+        val lifecycle = lifecycleOwner.lifecycle
+        lifecycle.addObserver(observer)
+
+        try {
+            while (true) {
+                val now = Clock.System.now().toEpochMilliseconds()
+                val untilNextMinute = 60_000 - (now % 60_000)
+                delay(untilNextMinute)
+                updateNow()
+            }
+        } finally {
+            lifecycle.removeObserver(observer)
+        }
+    }
 }

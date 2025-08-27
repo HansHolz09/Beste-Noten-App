@@ -71,7 +71,6 @@ import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -359,7 +358,7 @@ fun Grades(
                                                 .sortedWith(compareBy({ it.subject?.name }, { it.givenAt }))
                                                 .groupBy { it.subject?.name }
                                                 .toList()
-                                                .forEachIndexed { secIdx, (title, items) ->
+                                                .forEach { (title, items) ->
                                                     stickyHeader {
                                                         EnhancedAnimated(
                                                             preset = ZoomIn(),
@@ -943,7 +942,9 @@ fun Grades(
                                             val deselectedSubjects = remember { mutableStateListOf<String>() }
                                             var titleHeight by remember { mutableStateOf(0.dp) }
                                             var closeBarHeight by remember { mutableStateOf(0.dp) }
-                                            val lazyListState = rememberLazyListState()
+                                            val firstLazyListState = rememberLazyListState()
+                                            val secondLazyListState = rememberLazyListState()
+                                            val lazyListState = if (analyzeYears) secondLazyListState else firstLazyListState
 
                                             val filteredGrades = viewModel.gradeCollections
                                                 .toSet().filter { selectedYears.map { it.id }.contains(it.interval?.yearId) }
@@ -955,7 +956,7 @@ fun Grades(
                                                 if (!analyzeYears) {
                                                     LazyColumn(
                                                         modifier = Modifier.hazeSource(hazeState),
-                                                        state = lazyListState,
+                                                        state = firstLazyListState,
                                                         contentPadding = PaddingValues(top = titleHeight, bottom = closeBarHeight),
                                                         verticalArrangement = Arrangement.spacedBy(8.dp)
                                                     ) {
@@ -1114,7 +1115,7 @@ fun Grades(
                                                                 @Suppress("UNCHECKED_CAST")
                                                                 LazyColumn(
                                                                     modifier = Modifier.hazeSource(hazeState),
-                                                                    state = lazyListState,
+                                                                    state = secondLazyListState,
                                                                     contentPadding = PaddingValues(top = titleHeight, bottom = closeBarHeight),
                                                                     verticalArrangement = Arrangement.spacedBy(8.dp)
                                                                 ) {
@@ -1369,7 +1370,7 @@ fun Grades(
                                                         style = typography.bodyLarge
                                                     )
                                                     AnimatedVisibility(filterSubjects) {
-                                                        IconButton(
+                                                        EnhancedIconButton(
                                                             onClick = {
                                                                 filterShown = !filterShown
                                                             }
@@ -1387,7 +1388,7 @@ fun Grades(
 
                                                 AnimatedVisibility(filterSubjects && filterShown) {
                                                     FlowRow(
-                                                        modifier = Modifier.padding(horizontal = 15.dp),
+                                                        modifier = Modifier.padding(horizontal = 15.dp).padding(bottom = closeBarHeight),
                                                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                                                     ) {
                                                         (if (analyzeYears) allFilteredGrades.toList() else filteredGrades)

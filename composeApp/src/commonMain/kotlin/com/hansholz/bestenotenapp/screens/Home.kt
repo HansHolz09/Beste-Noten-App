@@ -78,6 +78,7 @@ import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.utils.SimpleTime
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.getGreeting
+import com.hansholz.bestenotenapp.utils.rememberCurrentSimpleTime
 import com.pushpal.jetlime.Arrangement.VERTICAL
 import com.pushpal.jetlime.EventPointType
 import com.pushpal.jetlime.EventPosition
@@ -388,18 +389,21 @@ fun Home(
                                                         )
                                                         .alignment(VERTICAL)
                                                 ) {
-                                                    lessons.sortedBy { SimpleTime.parse(it.time?.from ?: "00:00") }.forEachIndexed { index, lesson ->
-                                                        val position = EventPosition.dynamic(index, lessons.size)
-                                                        val lessonTimeStart = SimpleTime.parse(lesson.time?.from ?: "00:00")
-                                                        val lessonTimeEnd = SimpleTime.parse(lesson.time?.to ?: "00:00")
-                                                        val currentTime = SimpleTime.now()
+                                                    lessons.sortedBy { it.nr }.groupBy { it.nr }.forEach { groupLessons ->
+                                                        val firstLesson = groupLessons.value[0]
+                                                        val position = EventPosition.dynamic(firstLesson.nr.toInt() - 1, lessons.maxOf { it.nr.toInt() })
+                                                        val lessonTimeStart = SimpleTime.parse(firstLesson.time?.from ?: "00:00")
+                                                        val lessonTimeEnd = SimpleTime.parse(firstLesson.time?.to ?: "00:00")
+                                                        val currentTime by rememberCurrentSimpleTime()
                                                         @OptIn(ExperimentalComposeApi::class)
                                                         JetLimeExtendedEvent(
                                                             style = JetLimeEventDefaults.eventStyle(
                                                                 position = position,
-                                                                pointAnimation = if (lessonTimeStart <= currentTime && lessonTimeEnd >= currentTime) JetLimeEventDefaults.pointAnimation(targetValue = 1.4f) else null,
+                                                                pointAnimation = if (currentTime in lessonTimeStart..lessonTimeEnd) JetLimeEventDefaults.pointAnimation(targetValue = 1.4f) else null,
                                                                 pointType = if (lessonTimeStart <= currentTime) EventPointType.Default else EventPointType.EMPTY,
-                                                                pointColor = when(lesson.status) {
+                                                                pointColor = if (groupLessons.value.size > 1) {
+                                                                    colorScheme.surface
+                                                                } else when(firstLesson.status) {
                                                                     "hold" -> if (isDark) Color(48, 99, 57) else Color(226, 251, 232)
                                                                     "canceled" -> colorScheme.errorContainer
                                                                     "initial" -> if (isDark) Color.DarkGray else Color.LightGray
@@ -409,23 +413,24 @@ fun Home(
                                                             ),
                                                             additionalContent = {
                                                                 Text(
-                                                                    text = lesson.rooms?.joinToString { it.localId } ?: "?",
+                                                                    text = groupLessons.value.flatMap { it.rooms.orEmpty() }.map { it.localId }.toSet().joinToString().ifEmpty { "?" },
                                                                     modifier = Modifier.width(60.dp),
-                                                                    color = if (lessonTimeStart <= currentTime && lessonTimeEnd >= currentTime) colorScheme.primary else colorScheme.onSurfaceVariant,
+                                                                    color = if (currentTime in lessonTimeStart..lessonTimeEnd) colorScheme.primary else colorScheme.onSurfaceVariant,
                                                                     textAlign = TextAlign.Center
                                                                 )
                                                             }
                                                         ) {
                                                             Column(Modifier.padding(start = 5.dp)) {
                                                                 Text(
-                                                                    text = lesson.subject?.name ?: "?",
-                                                                    color = if (lessonTimeStart <= currentTime && lessonTimeEnd >= currentTime) colorScheme.primary else Color.Unspecified,
+                                                                    text = groupLessons.value.map { it.subject?.name ?: "?" }.toSet().joinToString(),
+                                                                    color = if (currentTime in lessonTimeStart..lessonTimeEnd) colorScheme.primary else Color.Unspecified,
                                                                 )
-                                                                lesson.notes?.forEach {
+                                                                groupLessons.value.flatMap { it.notes.orEmpty() }.forEach {
                                                                     Text(
-                                                                        text = "${it.type?.name ?: "?"}: ${it.description ?: "Keine Beschreibung"}",
+                                                                        text = (it.type?.name?.replace("Substitution Plan", "Vertretungsplan") ?: "?") +
+                                                                                ": ${it.description ?: "Keine Beschreibung"}",
                                                                         modifier = Modifier.padding(vertical = 5.dp),
-                                                                        color = if (lessonTimeStart <= currentTime && lessonTimeEnd >= currentTime) colorScheme.primary else Color.Unspecified,
+                                                                        color = if (currentTime in lessonTimeStart..lessonTimeEnd) colorScheme.primary else Color.Unspecified,
                                                                         style = typography.bodyMedium
                                                                     )
                                                                 }

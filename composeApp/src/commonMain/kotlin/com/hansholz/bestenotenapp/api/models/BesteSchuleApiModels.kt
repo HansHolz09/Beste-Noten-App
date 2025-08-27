@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package com.hansholz.bestenotenapp.api.models
 
 import kotlinx.serialization.SerialName
@@ -1413,8 +1415,8 @@ data class TimeTableTime(
 
 @Serializable
 data class TimeTableTimeLesson(
-    val id: String,
-    val nr: String,
+    val id: String? = null,
+    val nr: String? = null,
     val to: String? = null,
     val from: String? = null
 )
