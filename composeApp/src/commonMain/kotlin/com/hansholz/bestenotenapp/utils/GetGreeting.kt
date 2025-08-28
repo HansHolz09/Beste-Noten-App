@@ -153,14 +153,14 @@ fun getGreeting(name: String): String {
     val begruessung = StringBuilder(passendeBegruessungsListe.random())
 
     if (Random.nextInt(0, 4) == 0) {
-        begruessung.append("\n\n")
-
         if (istWochenende && hour > 11) {
+            begruessung.append("\n\n")
             when (Random.nextInt(0, 2)) {
                 0 -> begruessung.append(wochenendeTipps.random())
                 1 -> begruessung.append(motivationssprueche.random())
             }
         } else if (!istWochenende && hour in 9..22) {
+            begruessung.append("\n\n")
             when (Random.nextInt(0, 3)) {
                 0 -> begruessung.append(motivationssprueche.random())
                 1 -> begruessung.append(themenAnstupser.random())
