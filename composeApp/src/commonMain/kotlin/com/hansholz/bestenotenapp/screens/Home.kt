@@ -278,6 +278,7 @@ fun Home(
                                                 .filter { it.grades?.size != 0 }
                                                 .sortedByDescending { it.givenAt }
                                                 .take(5)
+                                                .toSet()
                                                 .forEach {
                                                     ListItem(
                                                         headlineContent = {
