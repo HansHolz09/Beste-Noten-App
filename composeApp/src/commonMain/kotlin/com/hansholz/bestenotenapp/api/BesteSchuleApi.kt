@@ -3,6 +3,7 @@
 package com.hansholz.bestenotenapp.api
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import com.hansholz.bestenotenapp.api.models.Absence
 import com.hansholz.bestenotenapp.api.models.AbsenceBatch
 import com.hansholz.bestenotenapp.api.models.AbsenceType
@@ -174,10 +175,11 @@ import io.ktor.http.append
 import io.ktor.http.contentType
 import kotlinx.serialization.json.JsonObject
 
-class BesteSchuleApi(httpClient: HttpClient, authToken: MutableState<String?>) {
+class BesteSchuleApi(httpClient: HttpClient, authToken: MutableState<String?>, studentId: MutableState<String?> = mutableStateOf(null)) {
     private val baseUrl = "https://beste.schule/api"
 
     private val client = httpClient.config {
+        install(studentFilterPlugin(studentId))
         defaultRequest {
             authToken.value?.let { bearerAuth(it) }
             header(HttpHeaders.Accept, ContentType.Application.Json)

@@ -18,7 +18,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.KeyboardActionHandler
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -28,6 +30,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Login
 import androidx.compose.material.icons.outlined.ContentPaste
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
@@ -35,6 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -54,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.logo
+import com.hansholz.bestenotenapp.api.models.Student
 import com.hansholz.bestenotenapp.components.CurvedText
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
@@ -71,6 +76,7 @@ import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
 import dev.chrisbanes.haze.hazeSource
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
@@ -92,6 +98,9 @@ fun Login(
     BindBiometryAuthenticatorEffect(biometryAuthenticator)
 
     var isLoading by remember { mutableStateOf(false) }
+
+    var chooseStudentDialog by remember { mutableStateOf<Pair<Boolean, List<Student>?>>(false to null) }
+    var chosenStudent by remember { mutableStateOf<String?>(null) }
 
     TopAppBarScaffold(
         title = "Login",
@@ -164,7 +173,14 @@ fun Login(
                                                 viewModel.login(
                                                     stayLoggedIn = stayLoggedIn,
                                                     isLoading = { isLoading = it },
-                                                    onNavigateHome = onNavigateHome
+                                                    onNavigateHome = onNavigateHome,
+                                                    chooseStudent = { students, callback ->
+                                                        chooseStudentDialog = true to students
+                                                        while (chosenStudent == null) {
+                                                            delay(100)
+                                                        }
+                                                        callback(chosenStudent!!)
+                                                    }
                                                 ) {
                                                     viewModel.authToken.value = textFieldState.text.toString()
                                                 }
@@ -182,7 +198,14 @@ fun Login(
                                         viewModel.login(
                                             stayLoggedIn = stayLoggedIn,
                                             isLoading = { isLoading = it },
-                                            onNavigateHome = onNavigateHome
+                                            onNavigateHome = onNavigateHome,
+                                            chooseStudent = { students, callback ->
+                                                chooseStudentDialog = true to students
+                                                while (chosenStudent == null) {
+                                                    delay(100)
+                                                }
+                                                callback(chosenStudent!!)
+                                            }
                                         ) {
                                             viewModel.authToken.value = textFieldState.text.toString()
                                         }
@@ -197,7 +220,14 @@ fun Login(
                                         viewModel.login(
                                             stayLoggedIn = stayLoggedIn,
                                             isLoading = { isLoading = it },
-                                            onNavigateHome = onNavigateHome
+                                            onNavigateHome = onNavigateHome,
+                                            chooseStudent = { students, callback ->
+                                                chooseStudentDialog = true to students
+                                                while (chosenStudent == null) {
+                                                    delay(100)
+                                                }
+                                                callback(chosenStudent!!)
+                                            }
                                         ) {
                                             val successful = viewModel.getAccessToken()
                                             if (!successful) error("Could not get Token")
@@ -306,5 +336,57 @@ fun Login(
         }
 
         topAppBarBackground(innerPadding.calculateTopPadding())
+    }
+
+    if (chooseStudentDialog.first && chooseStudentDialog.second != null) {
+        var selectedStudent by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = {},
+            confirmButton = {
+                EnhancedButton(
+                    onClick = {
+                        chosenStudent = selectedStudent
+                        chooseStudentDialog = false to null
+                    },
+                    enabled = selectedStudent.isNotEmpty()
+                ) {
+                    Text("Wählen")
+                }
+            },
+            title = {
+                Text(
+                    text = "Schüler wählen",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            },
+            text = {
+                LazyColumn {
+                    chooseStudentDialog.second?.forEach { student ->
+                        item {
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { selectedStudent = student.id.toString() }
+                                    .padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = student.id.toString() == selectedStudent,
+                                    onClick = null
+                                )
+                                Text(
+                                    text = "${student.forename} ${student.name}",
+                                    style = typography.bodyLarge,
+                                    modifier = Modifier.padding(start = 16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        )
     }
 }

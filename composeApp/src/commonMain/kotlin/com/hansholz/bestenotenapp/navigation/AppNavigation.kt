@@ -15,6 +15,7 @@ import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.screens.Biometry
 import com.hansholz.bestenotenapp.screens.Login
+import com.russhwolf.settings.Settings
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -22,12 +23,13 @@ fun AppNavigation(
     viewModel: ViewModel,
     onNavHostReady: suspend (NavController) -> Unit = {}
 ) {
+    val settings = Settings()
     val requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
     val token = rememberSaveable { viewModel.authTokenManager.getToken() ?: "" }
     val startDestination = rememberSaveable {
         when {
-            requireBiometricAuthentification && !token.isEmpty() -> Screen.Biometry.route
-            token.isEmpty() -> Screen.Login.route
+            token.isEmpty() || !settings.hasKey("studentId") -> Screen.Login.route
+            requireBiometricAuthentification -> Screen.Biometry.route
             else -> Screen.Main.route
         }
     }

@@ -19,12 +19,14 @@ import com.hansholz.bestenotenapp.api.models.Finalgrade
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.api.models.JournalDay
 import com.hansholz.bestenotenapp.api.models.JournalWeek
+import com.hansholz.bestenotenapp.api.models.Student
 import com.hansholz.bestenotenapp.api.models.Subject
 import com.hansholz.bestenotenapp.api.models.User
 import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.api.oidcClient
 import com.hansholz.bestenotenapp.security.AuthTokenManager
 import com.hansholz.bestenotenapp.utils.weekOfYear
+import com.russhwolf.settings.Settings
 import dev.chrisbanes.haze.HazeState
 import io.ktor.utils.io.CancellationException
 import kotlin.time.Clock
@@ -41,6 +43,7 @@ import org.publicvalue.multiplatform.oidc.OpenIdConnectException
 
 class ViewModel(toasterState: ToasterState) : ViewModel() {
     val toaster = toasterState
+    val settings = Settings()
 
     private val httpClient = createHttpClient()
 
@@ -49,7 +52,8 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
     private val authFlow = codeAuthFlowFactory.createAuthFlow(DefaultOpenIdConnectClient(httpClient, oidcClient.config))
 
 
-    private val api = BesteSchuleApi(httpClient, authToken)
+    val studentId = mutableStateOf<String?>(null)
+    private val api = BesteSchuleApi(httpClient, authToken, studentId)
 
     val hazeBackgroundState = HazeState()
     val hazeBackgroundState1 = HazeState()
@@ -106,6 +110,7 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
         stayLoggedIn: Boolean,
         isLoading: (Boolean) -> Unit,
         onNavigateHome: () -> Unit,
+        chooseStudent: suspend (List<Student>, (String) -> Unit) -> Unit,
         handleToken: suspend () -> Unit,
     ) {
         isLoading(true)
@@ -121,6 +126,17 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
                 )
                 isLoading(false)
             } else {
+                user.students?.size?.let {
+                    if (it > 0) {
+                        chooseStudent(user.students) {
+                            settings.putString("studentId", it)
+                            studentId.value = it
+                        }
+                    } else {
+                        settings.putString("studentId", user.students.first().id.toString())
+                        studentId.value = user.students.first().id.toString()
+                    }
+                }
                 if (stayLoggedIn) {
                     authTokenManager.saveToken(authToken.value!!)
                 }
@@ -145,6 +161,8 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
     }
 
     fun logout() {
+        studentId.value = null
+        settings.remove("studentId")
         authToken.value = null
         authTokenManager.deleteToken()
         onCleared()
@@ -193,8 +211,8 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
             if (years.isNullOrEmpty()) {
                 val collection = api.collectionsIndex(include = includes)
                 collections.addAll(collection.data)
-                if (collection.meta?.lastPage!! > 1) {
-                    for (i in 2..collection.meta.lastPage) {
+                if ((collection.meta?.lastPage ?: 0) > 1) {
+                    for (i in 2..(collection.meta?.lastPage ?: 0)) {
                         collections.addAll(api.collectionsIndex(include = includes, page = i).data)
                     }
                 }
@@ -202,8 +220,8 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
                 years.forEach {
                     val collection = api.collectionsIndex(include = includes, filterYear = it.id.toString())
                     collections.addAll(collection.data)
-                    if (collection.meta?.lastPage!! > 1) {
-                        for (i in 2..collection.meta.lastPage) {
+                    if ((collection.meta?.lastPage ?: 0) > 1) {
+                        for (i in 2..(collection.meta?.lastPage ?: 0)) {
                             collections.addAll(api.collectionsIndex(include = includes, filterYear = it.id.toString(), page = i).data)
                         }
                     }
@@ -269,6 +287,7 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
     init {
         viewModelScope.launch {
             try {
+                studentId.value = settings.getStringOrNull("studentId")
                 authToken.value = authTokenManager.getToken()
                 init()
             } catch (e: Exception) {
