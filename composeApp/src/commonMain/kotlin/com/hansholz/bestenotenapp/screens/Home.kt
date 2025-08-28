@@ -171,35 +171,44 @@ fun Home(
             ) {
                 if (showGreetings) {
                     item {
-                        var greeting by rememberSaveable { mutableStateOf("") }
-                        LaunchedEffect(viewModel.user.value, viewModel.isBesteSchuleNotReachable.value) {
-                            if (viewModel.user.value?.students?.firstOrNull() != null && greeting.isEmpty()) {
-                                greeting = getGreeting(viewModel.user.value?.students?.firstOrNull()?.forename ?: "du")
-                            } else if (viewModel.isBesteSchuleNotReachable.value) {
-                                greeting = "beste.schule konnte nicht erreicht werden, somit können deine Daten nicht geladen werden." +
+                        AnimatedContent(viewModel.isBesteSchuleNotReachable.value) { notReachable ->
+                            if (notReachable) {
+                                Text(
+                                    text = "beste.schule konnte nicht erreicht werden, somit können deine Daten momentan nicht geladen werden." +
                                         "\n\nBitte überprüfe deine Internetverbindung und den Status von beste.schule." +
-                                        "\nSollte es weiterhin nicht funktionieren, dann versuche dich erneut anzumelden."
-                            }
-                        }
-                        AnimatedContent(greeting) {
-                            TextWithNotoAnimatedEmoji(
-                                text = it,
-                                modifier = Modifier
-                                    .animateItem()
-                                    .animateContentSize()
-                                    .padding(20.dp)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null,
-                                        enabled = !viewModel.isBesteSchuleNotReachable.value
-                                    ) {
+                                        "\n\nSollte der Fehler weiterhin auftreten, versuche dich erneut anzumelden.",
+                                    modifier = Modifier.padding(20.dp),
+                                    textAlign = TextAlign.Center,
+                                    style = typography.bodyLarge
+                                )
+                            } else {
+                                var greeting by rememberSaveable { mutableStateOf("") }
+                                LaunchedEffect(viewModel.user.value) {
+                                    if (viewModel.user.value?.students?.firstOrNull() != null && greeting.isEmpty()) {
                                         greeting = getGreeting(viewModel.user.value?.students?.firstOrNull()?.forename ?: "du")
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                    },
-                                textAlign = TextAlign.Center,
-                                fontFamily = FontFamilies.Schoolbell(),
-                                style = typography.titleLarge
-                            )
+                                    }
+                                }
+                                AnimatedContent(greeting) {
+                                    TextWithNotoAnimatedEmoji(
+                                        text = it,
+                                        modifier = Modifier
+                                            .animateItem()
+                                            .animateContentSize()
+                                            .padding(20.dp)
+                                            .clickable(
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                indication = null,
+                                                enabled = !viewModel.isBesteSchuleNotReachable.value
+                                            ) {
+                                                greeting = getGreeting(viewModel.user.value?.students?.firstOrNull()?.forename ?: "du")
+                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                            },
+                                        textAlign = TextAlign.Center,
+                                        fontFamily = FontFamilies.Schoolbell(),
+                                        style = typography.titleLarge
+                                    )
+                                }
+                            }
                         }
                     }
                 }

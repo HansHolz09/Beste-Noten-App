@@ -76,6 +76,10 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
 
 
     val isBesteSchuleNotReachable = mutableStateOf(false)
+    private suspend fun couldReachBesteSchule() {
+        if (isBesteSchuleNotReachable.value) init()
+        isBesteSchuleNotReachable.value = false
+    }
     private fun couldNotReachBesteSchule() {
         isBesteSchuleNotReachable.value = true
         toaster.show(
@@ -195,7 +199,9 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
 
     suspend fun getYears(): List<Year>? {
         try {
-            return api.yearIndex().data
+            val data = api.yearIndex().data
+            couldReachBesteSchule()
+            return data
         } catch (e: Exception) {
             e.printStackTrace()
             couldNotReachBesteSchule()
@@ -227,6 +233,7 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
                     }
                 }
             }
+            couldReachBesteSchule()
             return collections
         } catch (e: Exception) {
             e.printStackTrace()
@@ -253,6 +260,7 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
                 if (!useCached) journalWeeks.removeAll { it.first == nr }
                 journalWeeks.add(nr to week)
             }
+            couldReachBesteSchule()
             return week
         } catch (e: CancellationException) {
             e.printStackTrace()
@@ -266,7 +274,9 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
 
     suspend fun getFinalGrades(): List<Finalgrade>? {
         try {
-            return api.finalgradesIndex().data
+            val data = api.finalgradesIndex().data
+            couldReachBesteSchule()
+            return data
         } catch (e: Exception) {
             e.printStackTrace()
             couldNotReachBesteSchule()
@@ -276,7 +286,9 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
 
     suspend fun getSubjects(): List<Subject>? {
         try {
-            return api.subjectsIndex().data
+            val data = api.subjectsIndex().data
+            couldReachBesteSchule()
+            return data
         } catch (e: Exception) {
             e.printStackTrace()
             couldNotReachBesteSchule()
