@@ -179,9 +179,10 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
             years.addAll(data.years)
             subjects.addAll(data.subjects)
             gradeCollections.addAll(data.gradeCollections)
+            finalGrades.addAll(data.finalGrades)
             demoWeekPlan = data.weekPlan
-            user.value = User(id = 0, username = "demo", role = "student")
-            studentId.value = "demo"
+            user.value = User(id = 0, username = "demo", role = "student", students = listOf(data.student))
+            studentId.value = data.student.id.toString()
             isDemoAccount.value = true
             onNavigateHome()
             toaster.show(
@@ -224,6 +225,9 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
 
 
     private suspend fun init(): User? {
+        if (isDemoAccount.value) {
+            return user.value
+        }
         if (!authToken.value.isNullOrEmpty()) {
             user.value = api.userMe().data
         }
@@ -327,6 +331,9 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
     }
 
     suspend fun getFinalGrades(): List<Finalgrade>? {
+        if (isDemoAccount.value) {
+            return finalGrades
+        }
         try {
             val data = api.finalgradesIndex().data
             couldReachBesteSchule()

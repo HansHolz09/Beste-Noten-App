@@ -1,11 +1,13 @@
 /** AI generated Generates random demo data for grades and timetable **/
 package com.hansholz.bestenotenapp.demo
 
+import com.hansholz.bestenotenapp.api.models.Finalgrade
 import com.hansholz.bestenotenapp.api.models.Grade
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.api.models.JournalDay
 import com.hansholz.bestenotenapp.api.models.JournalLesson
 import com.hansholz.bestenotenapp.api.models.JournalWeek
+import com.hansholz.bestenotenapp.api.models.Student
 import com.hansholz.bestenotenapp.api.models.Subject
 import com.hansholz.bestenotenapp.api.models.Teacher
 import com.hansholz.bestenotenapp.api.models.TimeTableTimeLesson
@@ -26,8 +28,10 @@ object DemoDataGenerator {
         val years: List<Year>,
         val subjects: List<Subject>,
         val gradeCollections: List<GradeCollection>,
+        val finalGrades: List<Finalgrade>,
         val currentGrade: Int,
-        val weekPlan: List<List<Subject>>
+        val weekPlan: List<List<Subject>>,
+        val student: Student
     )
 
     private val timeSlots = listOf(
@@ -61,11 +65,19 @@ object DemoDataGenerator {
         val years = mutableListOf<Year>()
         val subjects = mutableListOf<Subject>()
         val gradeCollections = mutableListOf<GradeCollection>()
+        val finalGrades = mutableListOf<Finalgrade>()
         val subjectMap = mutableMapOf<String, Subject>()
         var collectionId = 1
         var gradeId = 1
+        var finalGradeId = 1
         var subjectId = 1
         val weekPlan = mutableListOf<List<Subject>>()
+        val student = Student(
+            id = 1,
+            forename = firstNames.random(),
+            name = lastNames.random(),
+            isAdult = 0
+        )
 
         for (i in 0 until numYears) {
             val grade = startGrade + i
@@ -136,6 +148,31 @@ object DemoDataGenerator {
                     )
                 )
             }
+            gradeSubjects.forEach { (name, _) ->
+                val subject = subjectMap[name]!!
+                val teacher = subject.teachers?.first()
+                val value = when (Random.nextInt(100)) {
+                    in 0..4 -> "1"
+                    in 5..24 -> "2"
+                    in 25..74 -> "3"
+                    in 75..89 -> "4"
+                    in 90..97 -> "5"
+                    else -> "6"
+                }
+                finalGrades.add(
+                    Finalgrade(
+                        id = finalGradeId++,
+                        value = value,
+                        valueInt = value.toDouble(),
+                        calculationFor = "year",
+                        subjectId = subject.id ?: 0,
+                        intervalId = i + 1,
+                        teacherId = teacher?.id,
+                        teacher = teacher,
+                        subject = subject
+                    )
+                )
+            }
             if (i == numYears - 1) {
                 repeat(5) {
                     val lessonsCount = Random.nextInt(5, 9)
@@ -148,7 +185,7 @@ object DemoDataGenerator {
                 }
             }
         }
-        return DemoInitData(years, subjects, gradeCollections, startGrade + numYears - 1, weekPlan)
+        return DemoInitData(years, subjects, gradeCollections, finalGrades, startGrade + numYears - 1, weekPlan, student)
     }
 
     fun generateJournalWeek(date: LocalDate, weekPlan: List<List<Subject>>): JournalWeek {
@@ -160,11 +197,16 @@ object DemoDataGenerator {
             val lessons = plan.mapIndexed { lessonIndex, subject ->
                 val slot = timeSlots[lessonIndex]
                 val status = if (dayDate < nowDate) {
-                    if (Random.nextInt(100) < 80) "hold" else "canceled"
+                    if (Random.nextInt(100) < 90) "hold" else "canceled"
                 } else if (dayDate > nowDate) {
-                    if (Random.nextInt(100) < 80) "planned" else "canceled"
+                    if (Random.nextInt(100) < 90) "planned" else "canceled"
                 } else {
-                    if (Random.nextInt(100) < 50) "hold" else if (Random.nextInt(100) < 20) "canceled" else "planned"
+                    val rnd = Random.nextInt(100)
+                    when {
+                        rnd < 70 -> "hold"
+                        rnd < 80 -> "canceled"
+                        else -> "planned"
+                    }
                 }
                 JournalLesson(
                     id = "demo-${dayIndex}-${lessonIndex}",
