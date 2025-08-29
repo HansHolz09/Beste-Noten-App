@@ -131,7 +131,7 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
                 isLoading(false)
             } else {
                 user.students?.size?.let {
-                    if (it > 0) {
+                    if (it > 1) {
                         chooseStudent(user.students) {
                             settings.putString("studentId", it)
                             studentId.value = it
