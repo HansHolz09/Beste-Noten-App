@@ -252,23 +252,24 @@ fun Home(
                                         .skipToLookaheadSize(),
                                     style = typography.headlineSmall
                                 )
-                                this@Column.AnimatedVisibility(
-                                    visible = !isGradesLoading && showNewestGrades,
-                                    modifier = Modifier.align(Alignment.CenterEnd),
-                                    enter = scaleIn(),
-                                    exit = scaleOut(),
-                                ) {
-                                    EnhancedIconButton(
-                                        onClick = {
-                                            viewModel.viewModelScope.launch {
-                                                isGradesLoading = true
-                                                viewModel.getCollections()?.let {
-                                                    viewModel.startGradeCollections.clear()
-                                                    viewModel.startGradeCollections.addAll(it)
-                                                }
-                                                isGradesLoading = false
+                                EnhancedIconButton(
+                                    onClick = {
+                                        viewModel.viewModelScope.launch {
+                                            isGradesLoading = true
+                                            viewModel.getCollections()?.let {
+                                                viewModel.startGradeCollections.clear()
+                                                viewModel.startGradeCollections.addAll(it)
                                             }
-                                        },
+                                            isGradesLoading = false
+                                        }
+                                    },
+                                    modifier = Modifier.align(Alignment.CenterEnd),
+                                    enabled = !isGradesLoading && showNewestGrades
+                                ) {
+                                    this@Column.AnimatedVisibility(
+                                        visible = !isGradesLoading && showNewestGrades,
+                                        enter = scaleIn(),
+                                        exit = scaleOut(),
                                     ) {
                                         Icon(Icons.Outlined.Refresh, null)
                                     }
@@ -356,27 +357,28 @@ fun Home(
                                         .skipToLookaheadSize(),
                                     style = typography.headlineSmall
                                 )
-                                this@Column.AnimatedVisibility(
-                                    visible = !isTimetableLoading && showCurrentLesson,
+                                EnhancedIconButton(
+                                    onClick = {
+                                        viewModel.viewModelScope.launch {
+                                            isTimetableLoading = true
+                                            @OptIn(ExperimentalTime::class)
+                                            val currentDate = Clock.System.now()
+                                                .toLocalDateTime(TimeZone.currentSystemDefault()).date
+                                                .let {
+                                                    "${it.year}-${it.month.number.toString().padStart(2, '0')}" +
+                                                            "-${it.day.toString().padStart(2, '0')}"
+                                                }
+                                            viewModel.currentJournalDay.value = viewModel.getJournalWeek(useCached = false)?.days?.find { it.date == currentDate }
+                                            isTimetableLoading = false
+                                        }
+                                    },
                                     modifier = Modifier.align(Alignment.CenterEnd),
-                                    enter = scaleIn(),
-                                    exit = scaleOut(),
+                                    enabled = !isTimetableLoading && showCurrentLesson
                                 ) {
-                                    EnhancedIconButton(
-                                        onClick = {
-                                            viewModel.viewModelScope.launch {
-                                                isTimetableLoading = true
-                                                @OptIn(ExperimentalTime::class)
-                                                val currentDate = Clock.System.now()
-                                                    .toLocalDateTime(TimeZone.currentSystemDefault()).date
-                                                    .let {
-                                                        "${it.year}-${it.month.number.toString().padStart(2, '0')}" +
-                                                                "-${it.day.toString().padStart(2, '0')}"
-                                                    }
-                                                viewModel.currentJournalDay.value = viewModel.getJournalWeek(useCached = false)?.days?.find { it.date == currentDate }
-                                                isTimetableLoading = false
-                                            }
-                                        },
+                                    this@Column.AnimatedVisibility(
+                                        visible = !isTimetableLoading && showCurrentLesson,
+                                        enter = scaleIn(),
+                                        exit = scaleOut(),
                                     ) {
                                         Icon(Icons.Outlined.Refresh, null)
                                     }
@@ -488,21 +490,22 @@ fun Home(
                         )
                     ) {
                         Column(Modifier.fillMaxWidth()) {
-                            Text(
-                                text = "Fächer und Lehrer",
-                                modifier = Modifier
-                                    .padding(10.dp)
-                                    .padding(top = 10.dp)
-                                    .align(Alignment.CenterHorizontally)
-                                    .enhancedSharedElement(
-                                        sharedTransitionScope = sharedTransitionScope,
-                                        sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-title"),
-                                        animatedVisibilityScope = animatedVisibilityScope
-                                    )
-                                    .skipToLookaheadSize(),
-                                fontFamily = FontFamilies.KeaniaOne(),
-                                style = typography.headlineSmall
-                            )
+                            Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
+                                Text(
+                                    text = "Fächer und Lehrer",
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .enhancedSharedElement(
+                                            sharedTransitionScope = sharedTransitionScope,
+                                            sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-title"),
+                                            animatedVisibilityScope = animatedVisibilityScope
+                                        )
+                                        .skipToLookaheadSize(),
+                                    fontFamily = FontFamilies.KeaniaOne(),
+                                    style = typography.headlineSmall
+                                )
+                                EnhancedIconButton(onClick = {}, enabled = false) {}
+                            }
                             Text(
                                 text = "Tippen, um einen Überblick über Fächer und Lehrer zu bekommen",
                                 modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
