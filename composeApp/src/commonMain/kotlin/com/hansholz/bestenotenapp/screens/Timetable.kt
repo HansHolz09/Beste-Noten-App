@@ -688,7 +688,10 @@ fun WeekScheduleView(
                             },
                             overlineContent = {
                                 Text(
-                                    text = "${selectedDay}\n${selectedLesson?.nr ?: "?"}. Stunde (${selectedLesson?.time?.from} - ${selectedLesson?.time?.to})",
+                                    text = "${selectedDay}\n${selectedLesson?.nr ?: "?"}. Stunde" +
+                                            if (week.days.flatMap { it.lessons.orEmpty() }.find { it == selectedLesson }?.time?.from != null) {
+                                                " (${selectedLesson?.time?.from} - ${selectedLesson?.time?.to})"
+                                            } else "",
                                 )
                             },
                             supportingContent = {
