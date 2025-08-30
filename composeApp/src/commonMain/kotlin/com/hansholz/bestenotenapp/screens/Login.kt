@@ -239,6 +239,20 @@ fun Login(
                             ) {
                                 Text("Login über beste.schule")
                             }
+                            Text("oder")
+                            EnhancedButton(
+                                onClick = {
+                                    scope.launch {
+                                        viewModel.loginDemo(
+                                            isLoading = { isLoading = it },
+                                            onNavigateHome = onNavigateHome,
+                                        )
+                                    }
+                                },
+                                modifier = modifier
+                            ) {
+                                Text("Demo-Account nutzen")
+                            }
                             HorizontalDivider(modifier.padding(top = 10.dp))
                             Row(
                                 modifier = modifier

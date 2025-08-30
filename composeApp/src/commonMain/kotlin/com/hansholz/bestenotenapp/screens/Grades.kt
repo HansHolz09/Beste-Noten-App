@@ -1261,6 +1261,15 @@ fun Grades(
                                                                             val radialMaxRounded = ceil(radialMax / tick) * tick
                                                                             val ticks = (0..radialMaxRounded.toInt() step tick).map { it.toFloat() }
 
+                                                                            val gradeColors = listOf(
+                                                                                Color(0xFF4CAF50),
+                                                                                Color(0xFF8BC34A),
+                                                                                Color(0xFFCDDC39),
+                                                                                Color(0xFFFFEB3B),
+                                                                                Color(0xFFFF9800),
+                                                                                Color(0xFFF44336)
+                                                                            )
+
                                                                             ChartLayout(
                                                                                 modifier = Modifier.padding(10.dp).fillMaxWidth().aspectRatio(1f),
                                                                                 legend = {
@@ -1269,7 +1278,7 @@ fun Grades(
                                                                                         symbol = { i ->
                                                                                             Symbol(
                                                                                                 modifier = Modifier.size(12.dp).clip(CircleShape),
-                                                                                                fillBrush = SolidColor(processedData["yearColors"]?.let { it as List<Color> }!![i])
+                                                                                                fillBrush = SolidColor(gradeColors[i])
                                                                                             )
                                                                                         },
                                                                                         label = { Text("Note ${uniqueGrades[it]}") }
@@ -1286,9 +1295,9 @@ fun Grades(
                                                                                     polarData.forEachIndexed { index, series ->
                                                                                         PolarPlotSeries(
                                                                                             data = series,
-                                                                                            lineStyle = LineStyle(SolidColor(processedData["yearColors"]?.let { it as List<Color> }!![index]), strokeWidth = 2.dp),
-                                                                                            areaStyle = AreaStyle(SolidColor(processedData["yearColors"]?.let { it as List<Color> }!![index]), alpha = 0.3f),
-                                                                                            symbols = { Symbol(shape = CircleShape, fillBrush = SolidColor(processedData["yearColors"]?.let { it as List<Color> }!![index])) }
+                                                                                            lineStyle = LineStyle(SolidColor(gradeColors[index]), strokeWidth = 2.dp),
+                                                                                            areaStyle = AreaStyle(SolidColor(gradeColors[index]), alpha = 0.3f),
+                                                                                            symbols = { Symbol(shape = CircleShape, fillBrush = SolidColor(gradeColors[index])) }
                                                                                         )
                                                                                     }
                                                                                 }
