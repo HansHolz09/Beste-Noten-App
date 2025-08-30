@@ -23,8 +23,8 @@ import com.hansholz.bestenotenapp.api.models.Student
 import com.hansholz.bestenotenapp.api.models.Subject
 import com.hansholz.bestenotenapp.api.models.User
 import com.hansholz.bestenotenapp.api.models.Year
-import com.hansholz.bestenotenapp.demo.DemoDataGenerator
 import com.hansholz.bestenotenapp.api.oidcClient
+import com.hansholz.bestenotenapp.demo.DemoDataGenerator
 import com.hansholz.bestenotenapp.security.AuthTokenManager
 import com.hansholz.bestenotenapp.utils.weekOfYear
 import com.russhwolf.settings.Settings
@@ -168,7 +168,7 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
         }
     }
 
-    suspend fun loginDemo(
+    fun loginDemo(
         isLoading: (Boolean) -> Unit,
         onNavigateHome: () -> Unit,
     ) {
@@ -179,9 +179,10 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
             years.addAll(data.years)
             subjects.addAll(data.subjects)
             gradeCollections.addAll(data.gradeCollections)
+            allGradeCollectionsLoaded.value = true
             finalGrades.addAll(data.finalGrades)
             demoWeekPlan = data.weekPlan
-            user.value = User(id = 0, username = "demo", role = "student", students = listOf(data.student))
+            user.value = User(id = 0, username = "${data.student.forename} (Demo)", role = "student", students = listOf(data.student))
             studentId.value = data.student.id.toString()
             isDemoAccount.value = true
             onNavigateHome()
@@ -289,6 +290,7 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     suspend fun getJournalWeek(date: LocalDate? = null, useCached: Boolean = true): JournalWeek? {
         if (isDemoAccount.value) {
             val targetDate = date ?: Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date

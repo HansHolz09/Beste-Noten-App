@@ -1,28 +1,36 @@
-/** AI generated Generates random demo data for grades and timetable **/
 package com.hansholz.bestenotenapp.demo
 
+import com.hansholz.bestenotenapp.api.models.Conductor
 import com.hansholz.bestenotenapp.api.models.Finalgrade
 import com.hansholz.bestenotenapp.api.models.Grade
 import com.hansholz.bestenotenapp.api.models.GradeCollection
+import com.hansholz.bestenotenapp.api.models.History
+import com.hansholz.bestenotenapp.api.models.Interval
 import com.hansholz.bestenotenapp.api.models.JournalDay
 import com.hansholz.bestenotenapp.api.models.JournalLesson
+import com.hansholz.bestenotenapp.api.models.JournalNote
+import com.hansholz.bestenotenapp.api.models.JournalNoteType
 import com.hansholz.bestenotenapp.api.models.JournalWeek
+import com.hansholz.bestenotenapp.api.models.Room
 import com.hansholz.bestenotenapp.api.models.Student
 import com.hansholz.bestenotenapp.api.models.Subject
 import com.hansholz.bestenotenapp.api.models.Teacher
 import com.hansholz.bestenotenapp.api.models.TimeTableTimeLesson
 import com.hansholz.bestenotenapp.api.models.Year
-import kotlinx.datetime.Clock
+import com.hansholz.bestenotenapp.utils.weekOfYear
+import kotlin.random.Random
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.daysUntil
 import kotlinx.datetime.isoDayNumber
+import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
-import kotlin.random.Random
 
+/** AI generated: Generates random demo data for the App **/
 object DemoDataGenerator {
     data class DemoInitData(
         val years: List<Year>,
@@ -49,15 +57,16 @@ object DemoDataGenerator {
     private val lastNames = listOf("Müller", "Schmidt", "Schneider", "Fischer", "Weber", "Meyer")
 
     private val subjectsByGrade: Map<Int, List<Pair<String, String>>> = mapOf(
-        4 to listOf("Deutsch" to "DE", "Mathematik" to "MA", "Sachkunde" to "SU", "Englisch" to "EN", "Kunst" to "KU", "Musik" to "MU", "Sport" to "SP"),
-        5 to listOf("Deutsch" to "DE", "Mathematik" to "MA", "Englisch" to "EN", "Biologie" to "BI", "Erdkunde" to "EK", "Geschichte" to "GE", "Kunst" to "KU", "Musik" to "MU", "Sport" to "SP"),
-        6 to listOf("Deutsch" to "DE", "Mathematik" to "MA", "Englisch" to "EN", "Biologie" to "BI", "Erdkunde" to "EK", "Geschichte" to "GE", "Kunst" to "KU", "Musik" to "MU", "Sport" to "SP"),
-        7 to listOf("Deutsch" to "DE", "Mathematik" to "MA", "Englisch" to "EN", "Biologie" to "BI", "Chemie" to "CH", "Physik" to "PH", "Geschichte" to "GE", "Erdkunde" to "EK", "Kunst" to "KU", "Musik" to "MU", "Sport" to "SP"),
-        8 to listOf("Deutsch" to "DE", "Mathematik" to "MA", "Englisch" to "EN", "Biologie" to "BI", "Chemie" to "CH", "Physik" to "PH", "Geschichte" to "GE", "Erdkunde" to "EK", "Sozialkunde" to "SK", "Kunst" to "KU", "Musik" to "MU", "Sport" to "SP"),
-        9 to listOf("Deutsch" to "DE", "Mathematik" to "MA", "Englisch" to "EN", "Biologie" to "BI", "Chemie" to "CH", "Physik" to "PH", "Geschichte" to "GE", "Erdkunde" to "EK", "Sozialkunde" to "SK", "Kunst" to "KU", "Musik" to "MU", "Sport" to "SP"),
-        10 to listOf("Deutsch" to "DE", "Mathematik" to "MA", "Englisch" to "EN", "Biologie" to "BI", "Chemie" to "CH", "Physik" to "PH", "Geschichte" to "GE", "Erdkunde" to "EK", "Sozialkunde" to "SK", "Kunst" to "KU", "Musik" to "MU", "Sport" to "SP")
+        4 to listOf("Deutsch" to "DE", "Mathematik" to "MA", "Sachkunde" to "SU", "Englisch" to "EN", "Kunst" to "KU", "Musik" to "MU", "Sport" to "SPO"),
+        5 to listOf("Deutsch" to "DE", "Mathematik" to "MA", "Englisch" to "EN", "Biologie" to "BIO", "Geographie" to "GEO", "Geschichte" to "GE", "Kunst" to "KU", "Musik" to "MU", "Sport" to "SPO", "Technik/Computer" to "TC"),
+        6 to listOf("Deutsch" to "DE", "Mathematik" to "MA", "Englisch" to "EN", "Biologie" to "BIO", "Geographie" to "GEO", "Geschichte" to "GE", "Kunst" to "KU", "Musik" to "MU", "Sport" to "SPO", "Technik/Computer" to "TC"),
+        7 to listOf("Deutsch" to "DE", "Mathematik" to "MA", "Englisch" to "EN", "Biologie" to "BIO", "Chemie" to "CH", "Physik" to "PH", "Geschichte" to "GE", "Geographie" to "GEO", "Kunst" to "KU", "Musik" to "MU", "Sport" to "SPO", "Informatik" to "INF"),
+        8 to listOf("Deutsch" to "DE", "Mathematik" to "MA", "Englisch" to "EN", "Biologie" to "BIO", "Chemie" to "CH", "Physik" to "PH", "Geschichte" to "GE", "Geographie" to "GEO", "Gemeinschaftskunde/Rechtserziehung/Wirtschaft" to "GRW", "Kunst" to "KU", "Musik" to "MU", "Sport" to "SPO", "Informatik" to "INF"),
+        9 to listOf("Deutsch" to "DE", "Mathematik" to "MA", "Englisch" to "EN", "Biologie" to "BIO", "Chemie" to "CH", "Physik" to "PH", "Geschichte" to "GE", "Geographie" to "GEO", "Gemeinschaftskunde/Rechtserziehung/Wirtschaft" to "GRW", "Kunst" to "KU", "Musik" to "MU", "Sport" to "SPO", "Informatik" to "INF"),
+        10 to listOf("Deutsch" to "DE", "Mathematik" to "MA", "Englisch" to "EN", "Biologie" to "BIO", "Chemie" to "CH", "Physik" to "PH", "Geschichte" to "GE", "Geographie" to "GEO", "Gemeinschaftskunde/Rechtserziehung/Wirtschaft" to "GRW", "Kunst" to "KU", "Musik" to "MU", "Sport" to "SPO", "Informatik" to "INF")
     )
 
+    @OptIn(ExperimentalTime::class)
     fun generateInitialData(): DemoInitData {
         val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
         val numYears = Random.nextInt(3, 7)
@@ -84,23 +93,25 @@ object DemoDataGenerator {
             val startYear = now.year - (numYears - 1 - i)
             val from = LocalDate(startYear, 8, 1)
             val to = LocalDate(startYear + 1, 7, 31)
-            years.add(
-                Year(
-                    id = i + 1,
-                    ids = listOf((i + 1).toString()),
-                    name = "${startYear}/${startYear + 1}",
-                    from = from.toString(),
-                    to = to.toString(),
-                    intervals = null
-                )
+            val year = Year(
+                id = i + 1,
+                ids = listOf((i + 1).toString()),
+                name = "${startYear}/${startYear + 1}",
+                from = from.toString(),
+                to = to.toString(),
+                intervals = null
             )
+            years.add(year)
             val gradeSubjects = subjectsByGrade[grade] ?: subjectsByGrade[10]!!
             gradeSubjects.forEach { (name, local) ->
                 if (subjectMap[name] == null) {
+                    val firstName = firstNames.random()
+                    val lastName = lastNames.random()
                     val teacher = Teacher(
-                        id = subjectId,
-                        forename = firstNames.random(),
-                        name = lastNames.random()
+                        id = 0,
+                        localId = "${firstName.take(1)}${lastName.take(1)}",
+                        forename = firstName,
+                        name = lastName
                     )
                     val subject = Subject(
                         id = subjectId,
@@ -113,38 +124,56 @@ object DemoDataGenerator {
                     subjectId++
                 }
             }
-            val collectionsCount = Random.nextInt(30, 51)
+            val collectionsCount = Random.nextInt(30, 100)
             repeat(collectionsCount) {
                 val subject = gradeSubjects.random().let { subjectMap[it.first]!! }
                 val teacher = subject.teachers?.first()
                 val daysBetween = from.daysUntil(to)
                 val gradeDate = from.plus(Random.nextInt(daysBetween), DateTimeUnit.DAY)
                 val gradeValue = when (Random.nextInt(100)) {
-                    in 0..4 -> "1"
-                    in 5..24 -> "2"
-                    in 25..74 -> "3"
-                    in 75..89 -> "4"
-                    in 90..97 -> "5"
+                    in 0..15 -> "1"
+                    in 16..45 -> "2"
+                    in 46..80 -> "3"
+                    in 81..92 -> "4"
+                    in 93..98 -> "5"
                     else -> "6"
                 }
-                val grade = Grade(
-                    id = gradeId++,
-                    value = gradeValue,
-                    givenAt = gradeDate.toString()
-                )
+                val gradeType = listOf("Klassenarbeit", "Test", "Mündlich", "Sonstige").random()
+                val conductor = Conductor(teacher!!.id!!, teacher.localId, teacher.forename, teacher.name)
+                val gradHistory = mutableListOf(History(0, "grade", 0, "Created", conductorType = "teacher", conductor = conductor))
+                if (Random.nextInt(15) == 0) {
+                    val boy = when (gradeValue) {
+                        "1" -> "Updated Value ('2' -> '1')"
+                        "2" -> "Updated Value ('3' -> '2')"
+                        "3" -> "Updated Value ('4' -> '3')"
+                        "4" -> "Updated Value ('5' -> '4')"
+                        "5" -> "Updated Value ('6' -> '5')"
+                        else -> "Updated Value ('5' -> '6')"
+                    }
+                    gradHistory += History(0, "grade", 0, boy, conductorType = "teacher", conductor = conductor)
+                }
+
                 gradeCollections.add(
                     GradeCollection(
                         id = collectionId++,
-                        type = "exam",
-                        weighting = Random.nextInt(1, 4),
-                        name = "${subject.name} Test",
+                        type = gradeType,
+                        weighting = 0,
+                        name = "Name der Leistung",
                         givenAt = gradeDate.toString(),
-                        intervalId = i + 1,
-                        subjectId = subject.id ?: 0,
-                        teacherId = teacher?.id ?: 0,
+                        intervalId = year.id,
+                        subjectId = subject.id!!,
+                        teacherId = teacher.id,
                         subject = subject,
                         teacher = teacher,
-                        grades = listOf(grade)
+                        interval = Interval(year.id, year.name, "", year.from, year.to, "", null, emptyList(), year.id),
+                        grades = if (Random.nextInt(5) != 0) listOf(
+                            Grade(
+                                id = gradeId++,
+                                value = gradeValue,
+                                givenAt = gradeDate.toString(),
+                                histories = gradHistory
+                            )
+                        ) else emptyList()
                     )
                 )
             }
@@ -188,6 +217,7 @@ object DemoDataGenerator {
         return DemoInitData(years, subjects, gradeCollections, finalGrades, startGrade + numYears - 1, weekPlan, student)
     }
 
+    @OptIn(ExperimentalTime::class)
     fun generateJournalWeek(date: LocalDate, weekPlan: List<List<Subject>>): JournalWeek {
         val monday = date.minus(date.dayOfWeek.isoDayNumber - 1, DateTimeUnit.DAY)
         val nowDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -208,6 +238,23 @@ object DemoDataGenerator {
                         else -> "planned"
                     }
                 }
+                val rndNote = Random.nextInt(100)
+                val notes = when {
+                    rndNote < 5 -> listOf(JournalNote(
+                        description = "Thema des Tests",
+                        type = JournalNoteType(name = "Test", color = "#27F54D")
+                    ))
+                    rndNote < 8 -> listOf(JournalNote(
+                        description = "Thema der Klassenarbeit",
+                        type = JournalNoteType(name = "Klassenarbeit", color = "#F54927")
+                    ))
+                    rndNote < 10 -> listOf(JournalNote(
+                        description = "In dieser Stunde findet irgendein besonderes Ereignis statt",
+                        type = JournalNoteType(name = "Ereignis")
+                    ))
+                    else -> emptyList()
+                }
+
                 JournalLesson(
                     id = "demo-${dayIndex}-${lessonIndex}",
                     nr = (lessonIndex + 1).toString(),
@@ -227,7 +274,9 @@ object DemoDataGenerator {
                         to = slot.second
                     ),
                     subject = subject,
-                    teachers = subject.teachers
+                    teachers = subject.teachers,
+                    rooms = listOf(Room(id = lessonIndex, localId = "R${Random.nextInt(100, 300)}")),
+                    notes = notes,
                 )
             }
             days.add(
