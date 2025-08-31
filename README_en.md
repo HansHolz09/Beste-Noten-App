@@ -1,0 +1,1 @@
+English | [Deutsch](https://github.com/HansHolz09/Beste-Noten-App/blob/main/README.md)

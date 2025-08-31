@@ -1,13 +1,49 @@
-This is a Kotlin Multiplatform project targeting Android, iOS, Desktop.
+Deutsch | [English](https://github.com/HansHolz09/Beste-Noten-App/blob/main/README_en.md)
+___
+# ![Icon](https://github.com/HansHolz09/Beste-Noten-App/blob/5ca8b6602f3fb3446c2f594f6baf22aab3dbbcc1/composeApp/src/commonMain/composeResources/drawable/logo.png?raw=true) Beste-Noten-App
+> **_Hintergrund:_** Diese App ist im Rahmen des praktischen Teils meiner Facharbeit über Compose Multiplatform entstanden
 
-* `/composeApp` is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-    - `commonMain` is for code that’s common for all targets.
-    - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-      For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-      `iosMain` would be the right folder for such calls.
+[Beschreibung]
 
-* `/iosApp` contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+**Zur Web-Version:** [Link](Link-zu-Github-Pages)
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+**Native Apps:** [siehe Releases](Link-zu-Github-Releases) _(außer iOS)_
+> **_Hinweis:_** Die nativen Apps enthalten keine Entwickler-Zertifikate, weshalb wahrscheinlich Warnungen beim Installieren angezeigt werden. 
+> Die iOS/iPadOS Version müssen selber kompiliert und installiert werden ([siehe **Bauen der App**](#bauen-der-app)), da es aktuell noch keinen Weg gibt, 
+> Apps auf diesen Geräten ohne Apple Developer Account zu sideloaden. 
+
+---
+## Funktionen
+* ...
+* ...
+
+---
+## Plattformen/Screenshots
+
+### Android
+[Screenshot]
+
+### iOS/iPadOS
+[Screenshot]
+
+### MacOS
+[Screenshot]
+
+### Windows
+[Screenshot]
+
+### Linux
+[Screenshot]
+
+### Web
+[Screenshot]
+
+---
+## Genutzte Bibliotheken
+* ...
+* ...
+
+---
+## Bauen der App
+
+...
