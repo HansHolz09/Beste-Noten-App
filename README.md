@@ -1,6 +1,8 @@
 Deutsch | [English](https://github.com/HansHolz09/Beste-Noten-App/blob/main/README_en.md)
 ___
-# ![Icon](https://github.com/HansHolz09/Beste-Noten-App/blob/5ca8b6602f3fb3446c2f594f6baf22aab3dbbcc1/composeApp/src/commonMain/composeResources/drawable/logo.png?raw=true) Beste-Noten-App
+<img src="https://github.com/HansHolz09/Beste-Noten-App/blob/5ca8b6602f3fb3446c2f594f6baf22aab3dbbcc1/composeApp/src/commonMain/composeResources/drawable/logo.png?raw=true" width="100" />
+
+# Beste-Noten-App
 > **_Hintergrund:_** Diese App ist im Rahmen des praktischen Teils meiner Facharbeit über Compose Multiplatform entstanden
 
 [Beschreibung]
