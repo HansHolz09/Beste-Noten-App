@@ -77,6 +77,7 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.multiplatform.settings.no.arg)
             implementation(libs.koalaplot.core)
+            implementation(libs.jetlime)
             implementation(libs.haze)
             implementation(libs.material.kolor)
             implementation(libs.platformtools.darkmodedetector)

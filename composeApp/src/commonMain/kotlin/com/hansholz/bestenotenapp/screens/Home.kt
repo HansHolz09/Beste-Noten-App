@@ -82,7 +82,6 @@ import com.hansholz.bestenotenapp.utils.SimpleTime
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.getGreeting
 import com.hansholz.bestenotenapp.utils.rememberCurrentSimpleTime
-import com.pushpal.jetlime.Arrangement.VERTICAL
 import com.pushpal.jetlime.EventPointType
 import com.pushpal.jetlime.EventPosition
 import com.pushpal.jetlime.JetLimeDefaults
@@ -402,7 +401,6 @@ fun Home(
                                                         .columnStyle(
                                                             lineBrush = JetLimeDefaults.lineSolidBrush(colorScheme.primary.copy(0.7f))
                                                         )
-                                                        .alignment(VERTICAL)
                                                 ) {
                                                     lessons.sortedBy { it.nr }.groupBy { it.nr }.forEach { groupLessons ->
                                                         val firstLesson = groupLessons.value[0]

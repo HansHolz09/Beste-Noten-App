@@ -20,6 +20,7 @@ kotlinx-coroutines = "1.10.2"
 kotlinxSerializationJson = "1.9.0"
 ktorClientCore = "3.2.1"
 jbrApi = "1.5.1"
+jetlime = "4.0.0"
 jna = "5.17.0"
 platformtools = "0.4.0"
 navigationCompose = "2.9.0-beta03"
@@ -64,6 +65,7 @@ material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "m
 oidc-appsupport = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-appsupport", version.ref = "oidc" }
 platformtools-darkmodedetector = { module = "io.github.kdroidfilter:platformtools.darkmodedetector", version.ref = "platformtools" }
 jbr-api = { module = "org.jetbrains.runtime:jbr-api", version.ref = "jbrApi" }
+jetlime = { module = "io.github.pushpalroy:jetlime", version.ref = "jetlime" }
 jna-core = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 material3-adaptive-layout = { module = "org.jetbrains.compose.material3.adaptive:adaptive-layout", version.ref = "adaptive" }
 material3-adaptive-navigation = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation", version.ref = "adaptive" }
