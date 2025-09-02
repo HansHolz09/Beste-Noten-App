@@ -31,7 +31,7 @@ import org.kodein.emoji.compose.m3.TextWithNotoImageEmoji
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun GradeValueBox(gradeValue: String?) {
-    val color = when (gradeValue) {
+    val color = when (gradeValue?.take(1)) {
         "1" -> Color(0xFF4CAF50)
         "2" -> Color(0xFF8BC34A)
         "3" -> Color(0xFFCDDC39)
@@ -40,7 +40,7 @@ fun GradeValueBox(gradeValue: String?) {
         "6" -> Color(0xFFF44336)
         else -> colorScheme.errorContainer
     }
-    val shape = when (gradeValue) {
+    val shape = when (gradeValue?.take(1)) {
         "1" -> SoftBurst
         "2" -> Pill
         "3" -> Ghostish
