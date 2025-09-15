@@ -271,42 +271,44 @@ fun Settings(
                 },
                 text = "Noten-Historien anzeigen",
                 icon = Icons.Outlined.History,
-                position = PreferencePosition.Top,
+                position = if (viewModel.isDemoAccount.value) PreferencePosition.Single else PreferencePosition.Top,
             )
-            settingsToggleItem(
-                checked = showCollectionsWithoutGrades,
-                onCheckedChange = {
-                    showCollectionsWithoutGrades = it
-                    settings["showCollectionsWithoutGrades"] = it
-                },
-                text = "Leistungen ohne Noten anzeigen",
-                icon = Icons.Outlined.DisabledVisible,
-                position = PreferencePosition.Bottom,
-            )
-            item {
-                PreferenceCategory("Fächer und Lehrer", Modifier.padding(horizontal = 15.dp))
+            if (!viewModel.isDemoAccount.value) {
+                settingsToggleItem(
+                    checked = showCollectionsWithoutGrades,
+                    onCheckedChange = {
+                        showCollectionsWithoutGrades = it
+                        settings["showCollectionsWithoutGrades"] = it
+                    },
+                    text = "Leistungen ohne Noten anzeigen",
+                    icon = Icons.Outlined.DisabledVisible,
+                    position = PreferencePosition.Bottom,
+                )
+                item {
+                    PreferenceCategory("Fächer und Lehrer", Modifier.padding(horizontal = 15.dp))
+                }
+                settingsToggleItem(
+                    checked = showAllSubjects,
+                    onCheckedChange = {
+                        showAllSubjects = it
+                        settings["showAllSubjects"] = it
+                    },
+                    text = "Alle Fächer der Schule anzeigen",
+                    icon = Icons.Outlined.Subject,
+                )
+                item {
+                    PreferenceCategory("Allgemein", Modifier.padding(horizontal = 15.dp))
+                }
+                settingsToggleItem(
+                    checked = showTeachersWithFirstname,
+                    onCheckedChange = {
+                        showTeachersWithFirstname = it
+                        settings["showTeachersWithFirstname"] = it
+                    },
+                    text = "Lehrer mit Vornamen anzeigen",
+                    icon = Icons.Outlined.Title,
+                )
             }
-            settingsToggleItem(
-                checked = showAllSubjects,
-                onCheckedChange = {
-                    showAllSubjects = it
-                    settings["showAllSubjects"] = it
-                },
-                text = "Alle Fächer der Schule anzeigen",
-                icon = Icons.Outlined.Subject,
-            )
-            item {
-                PreferenceCategory("Allgemein", Modifier.padding(horizontal = 15.dp))
-            }
-            settingsToggleItem(
-                checked = showTeachersWithFirstname,
-                onCheckedChange = {
-                    showTeachersWithFirstname = it
-                    settings["showTeachersWithFirstname"] = it
-                },
-                text = "Lehrer mit Vornamen anzeigen",
-                icon = Icons.Outlined.Title,
-            )
             if (biometryAuthenticator.isBiometricAvailable()) {
                 item {
                     PreferenceCategory("Sicherheit", Modifier.padding(horizontal = 15.dp))

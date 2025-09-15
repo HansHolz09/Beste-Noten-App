@@ -871,30 +871,32 @@ fun Grades(
                                                     text = "Noten-Historien anzeigen",
                                                     icon = Icons.Outlined.History,
                                                     textModifier = Modifier.skipToLookaheadSize(),
-                                                    position = PreferencePosition.Top,
+                                                    position = if (viewModel.isDemoAccount.value) PreferencePosition.Single else PreferencePosition.Top,
                                                 )
-                                                settingsToggleItem(
-                                                    checked = showCollectionsWithoutGrades,
-                                                    onCheckedChange = {
-                                                        showCollectionsWithoutGrades = it
-                                                        settings["showCollectionsWithoutGrades"] = it
-                                                    },
-                                                    text = "Leistungen ohne Noten anzeigen",
-                                                    icon = Icons.Outlined.DisabledVisible,
-                                                    textModifier = Modifier.skipToLookaheadSize(),
-                                                    position = PreferencePosition.Middle,
-                                                )
-                                                settingsToggleItem(
-                                                    checked = showTeachersWithFirstname,
-                                                    onCheckedChange = {
-                                                        showTeachersWithFirstname = it
-                                                        settings["showTeachersWithFirstname"] = it
-                                                    },
-                                                    text = "Lehrer mit Vornamen anzeigen",
-                                                    icon = Icons.Outlined.Title,
-                                                    textModifier = Modifier.skipToLookaheadSize(),
-                                                    position = PreferencePosition.Bottom,
-                                                )
+                                                if (!viewModel.isDemoAccount.value) {
+                                                    settingsToggleItem(
+                                                        checked = showCollectionsWithoutGrades,
+                                                        onCheckedChange = {
+                                                            showCollectionsWithoutGrades = it
+                                                            settings["showCollectionsWithoutGrades"] = it
+                                                        },
+                                                        text = "Leistungen ohne Noten anzeigen",
+                                                        icon = Icons.Outlined.DisabledVisible,
+                                                        textModifier = Modifier.skipToLookaheadSize(),
+                                                        position = PreferencePosition.Middle,
+                                                    )
+                                                    settingsToggleItem(
+                                                        checked = showTeachersWithFirstname,
+                                                        onCheckedChange = {
+                                                            showTeachersWithFirstname = it
+                                                            settings["showTeachersWithFirstname"] = it
+                                                        },
+                                                        text = "Lehrer mit Vornamen anzeigen",
+                                                        icon = Icons.Outlined.Title,
+                                                        textModifier = Modifier.skipToLookaheadSize(),
+                                                        position = PreferencePosition.Bottom,
+                                                    )
+                                                }
                                             }
                                         }
                                         EnhancedButton(
