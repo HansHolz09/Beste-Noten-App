@@ -1,7 +1,6 @@
 package com.hansholz.bestenotenapp.demo
 
 import com.hansholz.bestenotenapp.api.models.Conductor
-import com.hansholz.bestenotenapp.api.models.Finalgrade
 import com.hansholz.bestenotenapp.api.models.Grade
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.api.models.History
@@ -15,6 +14,8 @@ import com.hansholz.bestenotenapp.api.models.Room
 import com.hansholz.bestenotenapp.api.models.Student
 import com.hansholz.bestenotenapp.api.models.Subject
 import com.hansholz.bestenotenapp.api.models.Teacher
+import com.hansholz.bestenotenapp.api.models.TimeTable
+import com.hansholz.bestenotenapp.api.models.TimeTableLesson
 import com.hansholz.bestenotenapp.api.models.TimeTableTimeLesson
 import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.utils.weekOfYear
@@ -36,7 +37,7 @@ object DemoDataGenerator {
         val years: List<Year>,
         val subjects: List<Subject>,
         val gradeCollections: List<GradeCollection>,
-        val finalGrades: List<Finalgrade>,
+        val timeTable: TimeTable,
         val currentGrade: Int,
         val weekPlan: List<List<Subject>>,
         val student: Student
@@ -74,11 +75,9 @@ object DemoDataGenerator {
         val years = mutableListOf<Year>()
         val subjects = mutableListOf<Subject>()
         val gradeCollections = mutableListOf<GradeCollection>()
-        val finalGrades = mutableListOf<Finalgrade>()
         val subjectMap = mutableMapOf<String, Subject>()
         var collectionId = 1
         var gradeId = 1
-        var finalGradeId = 1
         var subjectId = 1
         val weekPlan = mutableListOf<List<Subject>>()
         val student = Student(
@@ -177,31 +176,6 @@ object DemoDataGenerator {
                     )
                 )
             }
-            gradeSubjects.forEach { (name, _) ->
-                val subject = subjectMap[name]!!
-                val teacher = subject.teachers?.first()
-                val value = when (Random.nextInt(100)) {
-                    in 0..4 -> "1"
-                    in 5..24 -> "2"
-                    in 25..74 -> "3"
-                    in 75..89 -> "4"
-                    in 90..97 -> "5"
-                    else -> "6"
-                }
-                finalGrades.add(
-                    Finalgrade(
-                        id = finalGradeId++,
-                        value = value,
-                        valueInt = value.toDouble(),
-                        calculationFor = "year",
-                        subjectId = subject.id ?: 0,
-                        intervalId = i + 1,
-                        teacherId = teacher?.id,
-                        teacher = teacher,
-                        subject = subject
-                    )
-                )
-            }
             if (i == numYears - 1) {
                 repeat(5) {
                     val lessonsCount = Random.nextInt(5, 9)
@@ -214,7 +188,18 @@ object DemoDataGenerator {
                 }
             }
         }
-        return DemoInitData(years, subjects, gradeCollections, finalGrades, startGrade + numYears - 1, weekPlan, student)
+        val timeTable = TimeTable(
+            id = "0",
+            name = "name",
+            validFrom = "?",
+            validTo = "?",
+            weeks = null,
+            noSchoolDates = null,
+            lessons = generateJournalWeek(Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date, weekPlan).days?.flatMap { it.lessons.orEmpty() }?.map {
+                TimeTableLesson(0, 0, it.nr, it.subject, null, it.teachers, it.rooms)
+            }
+        )
+        return DemoInitData(years, subjects, gradeCollections, timeTable, startGrade + numYears - 1, weekPlan, student)
     }
 
     @OptIn(ExperimentalTime::class)

@@ -1385,15 +1385,21 @@ data class TimeTable(
     @SerialName("valid_from") val validFrom: String,
     @SerialName("valid_to") val validTo: String,
     val stundenplan24: String? = null,
-    val weeks: String,
-    @SerialName("no_school_dates") val noSchoolDates: String,
+    val weeks: List<TimeTableWeek>?,
+    @SerialName("no_school_dates") val noSchoolDates: List<String>?,
     val lessons: List<TimeTableLesson>? = null
+)
+
+@Serializable
+data class TimeTableWeek(
+    val nr: Int,
+    val year: String,
+    val types: List<String>,
 )
 
 @Serializable
 data class TimeTableLesson(
     val id: Int,
-    val weeks: List<JsonObject>,
     val weekday: Int,
     val nr: String,
     val subject: Subject? = null,

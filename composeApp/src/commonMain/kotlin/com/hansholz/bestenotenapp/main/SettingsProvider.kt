@@ -14,6 +14,7 @@ internal val LocalShowGreetings = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowNewestGrades = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowCurrentLesson = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowGradeHistory = compositionLocalOf { mutableStateOf(false) }
+internal val LocalShowAllSubjects = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowCollectionsWithoutGrades = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowTeachersWithFirstname = compositionLocalOf { mutableStateOf(false) }
 
@@ -31,6 +32,7 @@ fun SettingsProvider(content: @Composable () -> Unit) {
     val showNewestGradesState = remember { mutableStateOf(settings.getBoolean("showNewestGrades", true)) }
     val showCurrentLessonState = remember { mutableStateOf(settings.getBoolean("showCurrentLesson", true)) }
     val showGradeHistoryState = remember { mutableStateOf(settings.getBoolean("showGradeHistory", false)) }
+    val showAllSubjectsState = remember { mutableStateOf(settings.getBoolean("showAllSubjects", false)) }
     val showCollectionsWithoutGradesState = remember { mutableStateOf(settings.getBoolean("showCollectionsWithoutGrades", false)) }
     val showTeachersWithFirstnameState = remember { mutableStateOf(settings.getBoolean("showTeachersWithFirstname", false)) }
     val requireBiometricAuthentificationState = remember { mutableStateOf(settings.getBoolean("requireBiometricAuthentification", false)) }
@@ -40,6 +42,7 @@ fun SettingsProvider(content: @Composable () -> Unit) {
         LocalShowNewestGrades provides showNewestGradesState,
         LocalShowCurrentLesson provides showCurrentLessonState,
         LocalShowGradeHistory provides showGradeHistoryState,
+        LocalShowAllSubjects provides showAllSubjectsState,
         LocalShowCollectionsWithoutGrades provides showCollectionsWithoutGradesState,
         LocalShowTeachersWithFirstname provides showTeachersWithFirstnameState,
         LocalRequireBiometricAuthentification provides requireBiometricAuthentificationState

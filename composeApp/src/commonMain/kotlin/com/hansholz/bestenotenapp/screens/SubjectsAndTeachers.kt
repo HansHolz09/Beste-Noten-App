@@ -10,8 +10,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -38,6 +36,7 @@ import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,14 +52,16 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.hansholz.bestenotenapp.api.models.Subject
+import com.hansholz.bestenotenapp.api.models.Teacher
 import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
-import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
+import com.hansholz.bestenotenapp.main.LocalShowAllSubjects
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.nomanr.animate.compose.presets.zoomingextrances.ZoomIn
@@ -80,14 +81,18 @@ fun SubjectsAndTeachers(
         val hapticFeedback = LocalHapticFeedback.current
         val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
+        val showAllSubjects by LocalShowAllSubjects.current
         val showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
 
         var isLoading by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
             isLoading = true
-            if (viewModel.finalGrades.isEmpty()) {
-                viewModel.getFinalGrades()?.let { viewModel.finalGrades.addAll(it) }
+            if (viewModel.subjectsAndTeachers.isEmpty()) {
+                viewModel.getSubjectsAndTeachers()?.let { viewModel.subjectsAndTeachers.addAll(it) }
+            }
+            if (viewModel.teachersAndSubjects.isEmpty()) {
+                viewModel.getTeachersAndSubjects()?.let { viewModel.teachersAndSubjects.addAll(it) }
             }
             if (viewModel.subjects.isEmpty()) {
                 viewModel.getSubjects()?.let { viewModel.subjects.addAll(it) }
@@ -133,7 +138,14 @@ fun SubjectsAndTeachers(
                         } else {
                             when(it) {
                                 0 -> {
-                                    val items = remember(viewModel.subjects) { viewModel.subjects.sortedBy { it.name } }
+                                    val items = remember(viewModel.subjects, viewModel.subjectsAndTeachers, viewModel.isDemoAccount, showAllSubjects) {
+                                        val subjectsAndTeachers = mutableStateListOf<Pair<Subject?, List<Teacher>?>>()
+                                        subjectsAndTeachers.addAll(viewModel.subjectsAndTeachers)
+                                        if (showAllSubjects && !viewModel.isDemoAccount.value) {
+                                            subjectsAndTeachers.addAll(viewModel.subjects.filter { !subjectsAndTeachers.map { it.first }.contains(it) }.map { it to null })
+                                        }
+                                        subjectsAndTeachers.sortedBy { it.first?.name }
+                                    }
                                     if (items.isEmpty()) {
                                         EmptyStateMessage(
                                             title = "Keine Fächer vorhanden",
@@ -145,7 +157,7 @@ fun SubjectsAndTeachers(
                                             state = lazyListState,
                                             contentPadding = contentPadding
                                         ) {
-                                            items(items) { subject ->
+                                            items(items) { (subject, teachers) ->
                                                 EnhancedAnimated(
                                                     preset = ZoomIn(),
                                                     durationMillis = 200,
@@ -158,21 +170,15 @@ fun SubjectsAndTeachers(
                                                     ListItem(
                                                         headlineContent = {
                                                             Text(
-                                                                text = "${subject.name} " +
-                                                                        "(${viewModel.finalGrades
-                                                                            .groupBy { it.subject }.map {
-                                                                                it.key to it.value.map { it.teacher }.toSet()
-                                                                            }
-                                                                            .firstOrNull { it.first?.localId == subject.localId }
-                                                                            ?.second
-                                                                            ?.joinToString { (if (showTeachersWithFirstname) it?.forename else it?.forename?.take(1) + ".") + " " + it?.name }
+                                                                text = "${subject?.name ?: "Unbekanntes Fach"} " +
+                                                                        "(${teachers?.joinToString { (if (showTeachersWithFirstname) it.forename else it.forename?.take(1) + ".") + " " + it.name }
                                                                             ?: "Kein Lehrer"})"
                                                             )
                                                         },
                                                         leadingContent = {
                                                             Box(Modifier.clip(ClamShell.toShape()).background(colorScheme.primaryContainer)) {
                                                                 Text(
-                                                                    text = subject.localId ?: "?",
+                                                                    text = subject?.localId ?: "?",
                                                                     color = colorScheme.onPrimaryContainer,
                                                                     textAlign = TextAlign.Center,
                                                                     modifier = Modifier.width(50.dp).padding(vertical = 5.dp)
@@ -187,14 +193,7 @@ fun SubjectsAndTeachers(
                                     }
                                 }
                                 1 -> {
-                                    val items = remember(viewModel.finalGrades) {
-                                        viewModel
-                                            .finalGrades
-                                            .groupBy { it.teacher }
-                                            .map { it.key to it.value.map { it.subject?.name }.toSet().joinToString() }
-                                            .sortedBy { (teacher, _) -> teacher?.localId }
-                                    }
-                                    if (items.isEmpty()) {
+                                    if (viewModel.teachersAndSubjects.isEmpty()) {
                                         EmptyStateMessage(
                                             title = "Keine Lehrer vorhanden",
                                             modifier = Modifier.padding(contentPadding)
@@ -205,7 +204,7 @@ fun SubjectsAndTeachers(
                                             state = lazyListState,
                                             contentPadding = contentPadding
                                         ) {
-                                            items(items) {
+                                            items(viewModel.teachersAndSubjects) { (teacher, subjects) ->
                                                 EnhancedAnimated(
                                                     preset = ZoomIn(),
                                                     durationMillis = 200,
@@ -217,12 +216,13 @@ fun SubjectsAndTeachers(
                                                     }
                                                     ListItem(
                                                         headlineContent = {
-                                                            Text((if (showTeachersWithFirstname) it.first?.forename else it.first?.forename?.take(1) + ".") + " " + it.first?.name + " (" + it.second + ")")
+                                                            Text((if (showTeachersWithFirstname) teacher?.forename else teacher?.forename?.take(1) + ".") + " " +
+                                                                    teacher?.name + " (" + subjects.joinToString { it?.name ?: "unbekanntes Fach" } + ")")
                                                         },
                                                         leadingContent = {
                                                             Box(Modifier.clip(ClamShell.toShape()).background(colorScheme.primaryContainer)) {
                                                                 Text(
-                                                                    text = it.first?.localId ?: "",
+                                                                    text = teacher?.localId ?: "",
                                                                     color = colorScheme.onPrimaryContainer,
                                                                     textAlign = TextAlign.Center,
                                                                     modifier = Modifier.width(50.dp).padding(vertical = 5.dp)
@@ -241,11 +241,7 @@ fun SubjectsAndTeachers(
                     }
                 }
             }
-            Box(Modifier
-                .fillMaxWidth()
-                .height(topPadding)
-                .enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.secondaryContainer)
-            )
+            topAppBarBackground(topPadding)
             PrimaryTabRow(
                 selectedTabIndex = pagerState.currentPage,
                 modifier = Modifier

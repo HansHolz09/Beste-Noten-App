@@ -26,6 +26,7 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.InvertColors
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Subject
 import androidx.compose.material.icons.outlined.Texture
 import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material.icons.outlined.WavingHand
@@ -54,6 +55,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
+import com.hansholz.bestenotenapp.main.LocalShowAllSubjects
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
 import com.hansholz.bestenotenapp.main.LocalShowCurrentLesson
 import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
@@ -116,6 +118,7 @@ fun Settings(
         var showNewestGrades by LocalShowNewestGrades.current
         var showCurrentLesson by LocalShowCurrentLesson.current
         var showGradeHistory by LocalShowGradeHistory.current
+        var showAllSubjects by LocalShowAllSubjects.current
         var showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
         var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
         var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
@@ -279,6 +282,18 @@ fun Settings(
                 text = "Leistungen ohne Noten anzeigen",
                 icon = Icons.Outlined.DisabledVisible,
                 position = PreferencePosition.Bottom,
+            )
+            item {
+                PreferenceCategory("Fächer und Lehrer", Modifier.padding(horizontal = 15.dp))
+            }
+            settingsToggleItem(
+                checked = showAllSubjects,
+                onCheckedChange = {
+                    showAllSubjects = it
+                    settings["showAllSubjects"] = it
+                },
+                text = "Alle Fächer der Schule anzeigen",
+                icon = Icons.Outlined.Subject,
             )
             item {
                 PreferenceCategory("Allgemein", Modifier.padding(horizontal = 15.dp))

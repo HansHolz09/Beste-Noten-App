@@ -15,12 +15,13 @@ import com.dokar.sonner.ToasterState
 import com.hansholz.bestenotenapp.api.BesteSchuleApi
 import com.hansholz.bestenotenapp.api.codeAuthFlowFactory
 import com.hansholz.bestenotenapp.api.createHttpClient
-import com.hansholz.bestenotenapp.api.models.Finalgrade
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.api.models.JournalDay
 import com.hansholz.bestenotenapp.api.models.JournalWeek
 import com.hansholz.bestenotenapp.api.models.Student
 import com.hansholz.bestenotenapp.api.models.Subject
+import com.hansholz.bestenotenapp.api.models.Teacher
+import com.hansholz.bestenotenapp.api.models.TimeTable
 import com.hansholz.bestenotenapp.api.models.User
 import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.api.oidcClient
@@ -32,6 +33,7 @@ import dev.chrisbanes.haze.HazeState
 import io.ktor.utils.io.CancellationException
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -67,7 +69,9 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
     val user = mutableStateOf<User?>(null)
     val currentJournalDay = mutableStateOf<JournalDay?>(null)
     val journalWeeks = mutableStateListOf<Pair<String, JournalWeek>>()
-    val finalGrades = mutableStateListOf<Finalgrade>()
+    val currentTimetable = mutableStateOf<TimeTable?>(null)
+    val subjectsAndTeachers = mutableStateListOf<Pair<Subject?,List<Teacher>?>>()
+    val teachersAndSubjects = mutableStateListOf<Pair<Teacher?,List<Subject?>>>()
     val subjects = mutableStateListOf<Subject>()
 
     val startGradeCollections = mutableStateListOf<GradeCollection>()
@@ -180,7 +184,7 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
             subjects.addAll(data.subjects)
             gradeCollections.addAll(data.gradeCollections)
             allGradeCollectionsLoaded.value = true
-            finalGrades.addAll(data.finalGrades)
+            currentTimetable.value = data.timeTable
             demoWeekPlan = data.weekPlan
             user.value = User(id = 0, username = "${data.student.forename} (Demo)", role = "student", students = listOf(data.student))
             studentId.value = data.student.id.toString()
@@ -252,6 +256,7 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
 
     suspend fun getCollections(filterYears: List<Year>? = null): List<GradeCollection>? {
         if (isDemoAccount.value) {
+            delay(1000)
             return if (filterYears.isNullOrEmpty()) {
                 gradeCollections
             } else {
@@ -298,6 +303,7 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
             val cachedWeek = if (useCached) journalWeeks.firstOrNull { it.first == nr }?.second else null
             val week = cachedWeek ?: DemoDataGenerator.generateJournalWeek(targetDate, demoWeekPlan)
             if (cachedWeek == null) {
+                delay(1000)
                 if (!useCached) journalWeeks.removeAll { it.first == nr }
                 journalWeeks.add(nr to week)
             }
@@ -332,12 +338,33 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
         }
     }
 
-    suspend fun getFinalGrades(): List<Finalgrade>? {
-        if (isDemoAccount.value) {
-            return finalGrades
-        }
+    suspend fun getSubjectsAndTeachers(): List<Pair<Subject?,List<Teacher>?>>? {
+        if (isDemoAccount.value) delay(500)
         try {
-            val data = api.finalgradesIndex().data
+            if (currentTimetable.value == null) {
+                val index = api.timeTablesIndex().data
+                currentTimetable.value = api.timeTablesShow(index.last().id).data
+                println("Requested")
+            }
+            val data = currentTimetable.value?.lessons?.groupBy { it.subject }?.map { it.key to it.value.flatMap { it.teachers.orEmpty() }.toSet().toList() }
+            couldReachBesteSchule()
+            return data
+        } catch (e: Exception) {
+            e.printStackTrace()
+            couldNotReachBesteSchule()
+            return null
+        }
+    }
+
+    suspend fun getTeachersAndSubjects(): List<Pair<Teacher?,List<Subject?>>>? {
+        if (isDemoAccount.value) delay(500)
+        try {
+            if (currentTimetable.value == null) {
+                val index = api.timeTablesIndex().data
+                currentTimetable.value = api.timeTablesShow(index.last().id).data
+                println("Requested")
+            }
+            val data = currentTimetable.value?.lessons?.groupBy { it.teachers }?.map { it.key?.firstOrNull() to it.value.map { it.subject }.toSet().toList() }
             couldReachBesteSchule()
             return data
         } catch (e: Exception) {
@@ -349,6 +376,7 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
 
     suspend fun getSubjects(): List<Subject>? {
         if (isDemoAccount.value) {
+            delay(500)
             return subjects
         }
         try {
@@ -383,13 +411,15 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
     override fun onCleared() {
         super.onCleared()
         user.value = null
-        finalGrades.clear()
         subjects.clear()
         startGradeCollections.clear()
         gradeCollections.clear()
         allGradeCollectionsLoaded.value = false
         years.clear()
         journalWeeks.clear()
+        currentTimetable.value = null
+        subjectsAndTeachers.clear()
+        teachersAndSubjects.clear()
         currentJournalDay.value = null
     }
 }
