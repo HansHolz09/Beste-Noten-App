@@ -3,11 +3,10 @@ package com.hansholz.bestenotenapp
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
 import androidx.navigation.ExperimentalBrowserHistoryApi
-import androidx.navigation.bindToNavigation
+import androidx.navigation.bindToBrowserNavigation
 import com.hansholz.bestenotenapp.main.App
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import kotlinx.browser.document
-import kotlinx.browser.window
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.preloadFont
 
@@ -18,7 +17,7 @@ fun main() {
             preloadFont(it)
         }
         App {
-            window.bindToNavigation(it)
+            it.bindToBrowserNavigation()
         }
     }
 }

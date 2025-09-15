@@ -10,7 +10,6 @@ import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
 import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize.Companion.contentSize
 import androidx.compose.animation.SharedTransitionScope.ResizeMode
-import androidx.compose.animation.SharedTransitionScope.ResizeMode.Companion.ScaleToBounds
 import androidx.compose.animation.SharedTransitionScope.SharedContentState
 import androidx.compose.animation.core.Spring.StiffnessMediumLow
 import androidx.compose.animation.core.VisibilityThreshold
@@ -61,7 +60,7 @@ fun Modifier.enhancedSharedBounds(
     enter: EnterTransition = fadeIn(),
     exit: ExitTransition = fadeOut(),
     boundsTransform: BoundsTransform = BoundsTransform { _, _ -> spring(stiffness = StiffnessMediumLow, visibilityThreshold = Rect.VisibilityThreshold) },
-    resizeMode: ResizeMode = ScaleToBounds(ContentScale.FillWidth, Center),
+    resizeMode: ResizeMode = ResizeMode.scaleToBounds(ContentScale.FillWidth, Center),
     placeHolderSize: PlaceHolderSize = contentSize,
     renderInOverlayDuringTransition: Boolean = true,
     zIndexInOverlay: Float = 0f,
