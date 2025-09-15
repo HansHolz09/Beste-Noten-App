@@ -15,7 +15,6 @@ import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.screens.Grades
 import com.hansholz.bestenotenapp.screens.Home
 import com.hansholz.bestenotenapp.screens.Settings
-import com.hansholz.bestenotenapp.screens.Stats
 import com.hansholz.bestenotenapp.screens.SubjectsAndTeachers
 import com.hansholz.bestenotenapp.screens.Timetable
 
@@ -82,9 +81,9 @@ fun FragmentNavigation(
                 )
             }
 
-            composable(route = Fragment.Stats.route) {
-                Stats()
-            }
+//            composable(route = Fragment.Stats.route) {
+//                Stats()
+//            }
 
             composable(route = Fragment.Settings.route) {
                 Settings(
