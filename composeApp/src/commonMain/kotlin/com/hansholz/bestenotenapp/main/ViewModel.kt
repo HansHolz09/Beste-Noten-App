@@ -344,7 +344,6 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
             if (currentTimetable.value == null) {
                 val index = api.timeTablesIndex().data
                 currentTimetable.value = api.timeTablesShow(index.last().id).data
-                println("Requested")
             }
             val data = currentTimetable.value?.lessons?.groupBy { it.subject }?.map { it.key to it.value.flatMap { it.teachers.orEmpty() }.toSet().toList() }
             couldReachBesteSchule()
@@ -362,7 +361,6 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
             if (currentTimetable.value == null) {
                 val index = api.timeTablesIndex().data
                 currentTimetable.value = api.timeTablesShow(index.last().id).data
-                println("Requested")
             }
             val data = currentTimetable.value?.lessons?.groupBy { it.teachers }?.map { it.key?.firstOrNull() to it.value.map { it.subject }.toSet().toList() }
             couldReachBesteSchule()
