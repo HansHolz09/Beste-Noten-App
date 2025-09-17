@@ -566,7 +566,8 @@ fun Grades(
                                                 boundsTransform = { _, _ ->
                                                     spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
                                                 },
-                                                resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds
+                                                resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
+                                                renderInOverlayDuringTransition = false
                                             )
                                             .clip(FloatingToolbarDefaults.ContainerShape).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
                                         colors = FloatingToolbarDefaults.standardFloatingToolbarColors(Color.Transparent),
