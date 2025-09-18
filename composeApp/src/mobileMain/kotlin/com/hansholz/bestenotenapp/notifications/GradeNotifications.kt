@@ -27,8 +27,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.time.Duration.Companion.minutes
 
-actual typealias GradeNotificationsPlatformContext = AppContext
-
 actual object GradeNotifications {
     actual const val KEY_ENABLED = "gradeNotificationsEnabled"
     actual const val KEY_INTERVAL_MINUTES = "gradeNotificationsIntervalMinutes"
@@ -41,7 +39,11 @@ actual object GradeNotifications {
     private val settings = Settings()
     private var isInitialized = false
 
-    actual fun initialize(appContext: GradeNotificationsPlatformContext) {
+    actual fun initialize(platformContext: Any?) {
+        val appContext = when (platformContext) {
+            is AppContext -> platformContext
+            else -> platformContext as? AppContext
+        } ?: return
         if (!isInitialized) {
             Meeseeks.initialize(appContext) {
                 minBackoff(5.minutes)
