@@ -101,7 +101,13 @@ fun Settings(
 
     var showConfetti by remember { mutableStateOf(false) }
     var showIntervalDialog by remember { mutableStateOf(false) }
-    val permissionUtil = remember { NotifierManager.getPermissionUtil() }
+    val permissionUtil = remember(GradeNotifications.isSupported) {
+        if (GradeNotifications.isSupported) {
+            NotifierManager.getPermissionUtil()
+        } else {
+            null
+        }
+    }
     val intervalOptions = remember { listOf(15L, 30L, 60L, 120L) }
 
     TopAppBarScaffold(
@@ -243,41 +249,43 @@ fun Settings(
                 icon = Icons.Outlined.Texture,
                 position = PreferencePosition.Bottom,
             )
-            item {
-                PreferenceCategory("Benachrichtigungen", Modifier.padding(horizontal = 15.dp))
-            }
-            settingsToggleItem(
-                checked = notificationsEnabled,
-                onCheckedChange = {
-                    notificationsEnabled = it
-                    settings[GradeNotifications.KEY_ENABLED] = it
-                    if (it) {
-                        permissionUtil.askNotificationPermission {}
+            if (GradeNotifications.isSupported) {
+                item {
+                    PreferenceCategory("Benachrichtigungen", Modifier.padding(horizontal = 15.dp))
+                }
+                settingsToggleItem(
+                    checked = notificationsEnabled,
+                    onCheckedChange = {
+                        notificationsEnabled = it
+                        settings[GradeNotifications.KEY_ENABLED] = it
+                        if (it) {
+                            permissionUtil?.askNotificationPermission {}
+                        }
+                        GradeNotifications.onSettingsUpdated()
+                    },
+                    text = "Benachrichtigungen aktivieren",
+                    icon = Icons.Outlined.Notifications,
+                    position = PreferencePosition.Top,
+                )
+                item {
+                    PreferenceItem(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .alpha(if (notificationsEnabled) 1f else 0.5f),
+                        title = "Überprüfungsintervall",
+                        subtitle = "Aktuell: ${'$'}{formatInterval(notificationIntervalMinutes)}",
+                        icon = Icons.Outlined.History,
+                        onClick = if (notificationsEnabled) {
+                            { showIntervalDialog = true }
+                        } else null,
+                        position = PreferencePosition.Bottom,
+                    ) {
+                        Text(
+                            text = formatInterval(notificationIntervalMinutes),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
-                    GradeNotifications.onSettingsUpdated()
-                },
-                text = "Benachrichtigungen aktivieren",
-                icon = Icons.Outlined.Notifications,
-                position = PreferencePosition.Top,
-            )
-            item {
-                PreferenceItem(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .alpha(if (notificationsEnabled) 1f else 0.5f),
-                    title = "Überprüfungsintervall",
-                    subtitle = "Aktuell: ${'$'}{formatInterval(notificationIntervalMinutes)}",
-                    icon = Icons.Outlined.History,
-                    onClick = if (notificationsEnabled) {
-                        { showIntervalDialog = true }
-                    } else null,
-                    position = PreferencePosition.Bottom,
-                ) {
-                    Text(
-                        text = formatInterval(notificationIntervalMinutes),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
                 }
             }
             item {
@@ -443,7 +451,7 @@ fun Settings(
         topAppBarBackground(innerPadding.calculateTopPadding())
     }
 
-    if (showIntervalDialog) {
+    if (GradeNotifications.isSupported && showIntervalDialog) {
         AlertDialog(
             onDismissRequest = { showIntervalDialog = false },
             title = { Text("Überprüfungsintervall") },

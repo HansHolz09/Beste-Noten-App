@@ -52,7 +52,21 @@ kotlin {
     }
 
     sourceSets {
-        val desktopMain by getting
+        val commonMain = getByName("commonMain")
+        val androidMain = getByName("androidMain")
+        val desktopMain = getByName("desktopMain")
+        val iosX64Main = getByName("iosX64Main")
+        val iosArm64Main = getByName("iosArm64Main")
+        val iosSimulatorArm64Main = getByName("iosSimulatorArm64Main")
+
+        val mobileMain by creating {
+            dependsOn(commonMain)
+            dependencies {
+                implementation(libs.meeseeks.runtime)
+            }
+        }
+        androidMain.dependsOn(mobileMain)
+        listOf(iosX64Main, iosArm64Main, iosSimulatorArm64Main).forEach { it.dependsOn(mobileMain) }
 
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -85,7 +99,6 @@ kotlin {
             implementation(libs.confettikit)
             implementation(libs.emoji.compose.m3)
             implementation(libs.sonner)
-            implementation(libs.meeseeks.runtime)
             implementation(libs.kmpnotifier)
         }
         androidMain.dependencies {
@@ -96,9 +109,11 @@ kotlin {
             implementation(libs.ktor.client.cio)
             implementation(libs.smartspacer.sdk)
         }
-        iosMain.dependencies {
-            implementation(libs.ktor.client.darwin)
-            implementation(libs.multiplatform.settings)
+        listOf(iosX64Main, iosArm64Main, iosSimulatorArm64Main).forEach { target ->
+            target.dependencies {
+                implementation(libs.ktor.client.darwin)
+                implementation(libs.multiplatform.settings)
+            }
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
