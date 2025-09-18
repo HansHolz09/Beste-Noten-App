@@ -1,6 +1,6 @@
 package com.hansholz.bestenotenapp.notifications
 
-expect class GradeNotificationsPlatformContext
+expect abstract class GradeNotificationsPlatformContext
 
 expect object GradeNotifications {
     const val KEY_ENABLED: String

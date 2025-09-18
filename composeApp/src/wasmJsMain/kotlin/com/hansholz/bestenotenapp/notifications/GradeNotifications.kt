@@ -1,6 +1,6 @@
 package com.hansholz.bestenotenapp.notifications
 
-actual class GradeNotificationsPlatformContext
+actual abstract class GradeNotificationsPlatformContext
 
 actual object GradeNotifications {
     actual const val KEY_ENABLED: String = "gradeNotificationsEnabled"
