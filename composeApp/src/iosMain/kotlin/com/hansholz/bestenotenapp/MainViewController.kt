@@ -5,9 +5,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeUIViewController
 import com.hansholz.bestenotenapp.main.App
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
+import com.hansholz.bestenotenapp.notifications.ensureIosNotificationsInitialized
 import com.hansholz.bestenotenapp.utils.isInWindowMode
 
 fun MainViewController() = ComposeUIViewController {
+    ensureIosNotificationsInitialized()
     CompositionLocalProvider(
         LocalNavigationDrawerTopPadding provides if (isInWindowMode()) 50.dp else null
     ) {

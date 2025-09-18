@@ -85,6 +85,8 @@ kotlin {
             implementation(libs.confettikit)
             implementation(libs.emoji.compose.m3)
             implementation(libs.sonner)
+            implementation(libs.meeseeks.runtime)
+            implementation(libs.kmpnotifier)
         }
         androidMain.dependencies {
             implementation(compose.preview)

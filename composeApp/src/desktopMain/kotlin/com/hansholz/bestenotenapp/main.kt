@@ -27,6 +27,7 @@ import com.hansholz.bestenotenapp.main.ExactPlatform
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
 import com.hansholz.bestenotenapp.main.getExactPlatform
+import com.hansholz.bestenotenapp.notifications.ensureDesktopNotificationsInitialized
 import com.jetbrains.JBR
 import java.awt.Color
 import java.awt.Dimension
@@ -34,7 +35,8 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.skiko.hostOs
 
 @OptIn(ExperimentalMaterial3ComponentOverrideApi::class, ExperimentalMaterial3Api::class)
-fun main() =
+fun main() {
+    ensureDesktopNotificationsInitialized()
     application {
         DecoratedWindow(
             onCloseRequest = ::exitApplication,
@@ -65,3 +67,4 @@ fun main() =
             TitleBar(isDark = isDark, titleBarHeight = titleBarHeight)
         }
     }
+}

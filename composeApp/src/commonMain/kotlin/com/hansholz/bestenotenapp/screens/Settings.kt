@@ -3,6 +3,7 @@
 package com.hansholz.bestenotenapp.screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +27,7 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.InvertColors
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Subject
 import androidx.compose.material.icons.outlined.Texture
 import androidx.compose.material.icons.outlined.Title
@@ -34,6 +36,10 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import bestenotenapp.composeApp.BuildConfig
 import com.hansholz.bestenotenapp.components.ConfettiPresets
@@ -54,6 +61,8 @@ import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
+import com.hansholz.bestenotenapp.main.LocalGradeNotificationIntervalMinutes
+import com.hansholz.bestenotenapp.main.LocalGradeNotificationsEnabled
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.LocalShowAllSubjects
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
@@ -63,6 +72,7 @@ import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.security.BindBiometryAuthenticatorEffect
 import com.hansholz.bestenotenapp.security.BiometryAuthenticator
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
@@ -77,6 +87,7 @@ import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.hazeSource
 import io.github.vinceglb.confettikit.compose.ConfettiKit
 import kotlinx.coroutines.launch
+import com.mmk.kmpnotifier.notification.NotifierManager
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -89,6 +100,9 @@ fun Settings(
     val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
     var showConfetti by remember { mutableStateOf(false) }
+    var showIntervalDialog by remember { mutableStateOf(false) }
+    val permissionUtil = remember { NotifierManager.getPermissionUtil() }
+    val intervalOptions = remember { listOf(15L, 30L, 60L, 120L) }
 
     TopAppBarScaffold(
         title = "Einstellungen",
@@ -114,6 +128,8 @@ fun Settings(
         var animationsEnabled by LocalAnimationsEnabled.current
         var blurEnabled by LocalBlurEnabled.current
         var backgroundEnabled by LocalBackgroundEnabled.current
+        var notificationsEnabled by LocalGradeNotificationsEnabled.current
+        var notificationIntervalMinutes by LocalGradeNotificationIntervalMinutes.current
         var showGreetings by LocalShowGreetings.current
         var showNewestGrades by LocalShowNewestGrades.current
         var showCurrentLesson by LocalShowCurrentLesson.current
@@ -227,6 +243,43 @@ fun Settings(
                 icon = Icons.Outlined.Texture,
                 position = PreferencePosition.Bottom,
             )
+            item {
+                PreferenceCategory("Benachrichtigungen", Modifier.padding(horizontal = 15.dp))
+            }
+            settingsToggleItem(
+                checked = notificationsEnabled,
+                onCheckedChange = {
+                    notificationsEnabled = it
+                    settings[GradeNotifications.KEY_ENABLED] = it
+                    if (it) {
+                        permissionUtil.askNotificationPermission {}
+                    }
+                    GradeNotifications.onSettingsUpdated()
+                },
+                text = "Benachrichtigungen aktivieren",
+                icon = Icons.Outlined.Notifications,
+                position = PreferencePosition.Top,
+            )
+            item {
+                PreferenceItem(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .alpha(if (notificationsEnabled) 1f else 0.5f),
+                    title = "Überprüfungsintervall",
+                    subtitle = "Aktuell: ${'$'}{formatInterval(notificationIntervalMinutes)}",
+                    icon = Icons.Outlined.History,
+                    onClick = if (notificationsEnabled) {
+                        { showIntervalDialog = true }
+                    } else null,
+                    position = PreferencePosition.Bottom,
+                ) {
+                    Text(
+                        text = formatInterval(notificationIntervalMinutes),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
             item {
                 PreferenceCategory("Startseite", Modifier.padding(horizontal = 15.dp))
             }
@@ -390,6 +443,35 @@ fun Settings(
         topAppBarBackground(innerPadding.calculateTopPadding())
     }
 
+    if (showIntervalDialog) {
+        AlertDialog(
+            onDismissRequest = { showIntervalDialog = false },
+            title = { Text("Überprüfungsintervall") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    intervalOptions.forEach { option ->
+                        TextButton(
+                            enabled = notificationIntervalMinutes != option,
+                            onClick = {
+                                notificationIntervalMinutes = option
+                                settings.putLong(GradeNotifications.KEY_INTERVAL_MINUTES, option)
+                                GradeNotifications.onSettingsUpdated()
+                                showIntervalDialog = false
+                            }
+                        ) {
+                            Text(formatInterval(option))
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showIntervalDialog = false }) {
+                    Text("Schließen")
+                }
+            }
+        )
+    }
+
     if (showConfetti) {
         ConfettiKit(
             modifier = Modifier.fillMaxSize(),
@@ -401,5 +483,14 @@ fun Settings(
                 if (activeSystems == 0) showConfetti = false
             }
         )
+    }
+}
+
+private fun formatInterval(minutes: Long): String {
+    return if (minutes % 60L == 0L) {
+        val hours = minutes / 60L
+        if (hours == 1L) "1 Stunde" else "$hours Stunden"
+    } else {
+        "$minutes Minuten"
     }
 }
