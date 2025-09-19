@@ -6,9 +6,14 @@ actual object GradeNotifications {
     actual const val DEFAULT_INTERVAL_MINUTES: Long = 60L
     actual val isSupported: Boolean = false
 
-    actual fun initialize(platformContext: Any?) {}
+    actual fun initialize(platformContext: Any?) {
+        GradeNotificationNotifier.ensureInitialized(platformContext)
+    }
     actual fun refreshScheduling() {}
     actual fun onSettingsUpdated() {}
     actual fun onLogin() {}
     actual fun onLogout() {}
+    actual fun requestPermission(onResult: () -> Unit) {
+        onResult()
+    }
 }

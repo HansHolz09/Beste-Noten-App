@@ -6,7 +6,6 @@ import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.models.Grade
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.security.AuthTokenManager
-import com.mmk.kmpnotifier.notification.NotifierManager
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.getStringOrNull
 import io.ktor.client.plugins.ClientRequestException
@@ -111,8 +110,9 @@ internal object GradeNotificationEngine {
     }
 
     private fun notifyNewGrades(entries: List<Pair<Grade, GradeCollection>>) {
-        val notifier = NotifierManager.getLocalNotifier()
-        entries.forEach { (grade, collection) ->
+        if (entries.isEmpty()) return
+
+        val notifications = entries.map { (grade, collection) ->
             val title = collection.name?.takeIf { it.isNotBlank() } ?: "Neue Note"
             val subject = collection.subject?.name ?: grade.subject?.name ?: "Unbekanntes Fach"
             val body = buildString {
@@ -122,12 +122,15 @@ internal object GradeNotificationEngine {
                     append(grade.value)
                 }
             }
-            notifier.notify {
-                id = grade.id
-                this.title = title
-                this.body = body
-            }
+
+            GradeNotificationPayload(
+                id = grade.id.toString(),
+                title = title,
+                body = body
+            )
         }
+
+        GradeNotificationNotifier.notifyNewGrades(notifications)
     }
 
     private fun loadKnownGradeIds(): Set<Int> {

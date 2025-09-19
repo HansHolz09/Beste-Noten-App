@@ -11,4 +11,5 @@ expect object GradeNotifications {
     fun onSettingsUpdated()
     fun onLogin()
     fun onLogout()
+    fun requestPermission(onResult: () -> Unit)
 }

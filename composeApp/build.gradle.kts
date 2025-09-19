@@ -90,7 +90,6 @@ kotlin {
             implementation(libs.confettikit)
             implementation(libs.emoji.compose.m3)
             implementation(libs.sonner)
-            implementation(libs.kmpnotifier)
             implementation(libs.kotlinx.coroutines.core)
         }
         androidMain.dependencies {
@@ -101,11 +100,13 @@ kotlin {
             implementation(libs.ktor.client.cio)
             implementation(libs.smartspacer.sdk)
             implementation(libs.androidx.work.runtime.ktx)
+            implementation(libs.alarmee)
         }
         listOf(iosX64Main, iosArm64Main, iosSimulatorArm64Main).forEach { target ->
             target.dependencies {
                 implementation(libs.ktor.client.darwin)
                 implementation(libs.multiplatform.settings)
+                implementation(libs.alarmee)
             }
         }
         desktopMain.dependencies {

@@ -87,7 +87,6 @@ import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.hazeSource
 import io.github.vinceglb.confettikit.compose.ConfettiKit
 import kotlinx.coroutines.launch
-import com.mmk.kmpnotifier.notification.NotifierManager
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -101,13 +100,6 @@ fun Settings(
 
     var showConfetti by remember { mutableStateOf(false) }
     var showIntervalDialog by remember { mutableStateOf(false) }
-    val permissionUtil = remember(GradeNotifications.isSupported) {
-        if (GradeNotifications.isSupported) {
-            NotifierManager.getPermissionUtil()
-        } else {
-            null
-        }
-    }
     val intervalOptions = remember { listOf(15L, 30L, 60L, 120L) }
 
     TopAppBarScaffold(
@@ -259,7 +251,7 @@ fun Settings(
                         notificationsEnabled = it
                         settings[GradeNotifications.KEY_ENABLED] = it
                         if (it) {
-                            permissionUtil?.askNotificationPermission {}
+                            GradeNotifications.requestPermission {}
                         }
                         GradeNotifications.onSettingsUpdated()
                     },

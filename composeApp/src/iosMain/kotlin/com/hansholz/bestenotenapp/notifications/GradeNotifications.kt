@@ -1,12 +1,14 @@
 package com.hansholz.bestenotenapp.notifications
 
-import com.mmk.kmpnotifier.notification.NotificationPlatformConfiguration
-import com.mmk.kmpnotifier.notification.NotifierManager
 import kotlin.native.concurrent.ThreadLocal
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import platform.UserNotifications.UNAuthorizationOptionAlert
+import platform.UserNotifications.UNAuthorizationOptionBadge
+import platform.UserNotifications.UNAuthorizationOptionSound
+import platform.UserNotifications.UNUserNotificationCenter
 import platform.darwin.DISPATCH_QUEUE_PRIORITY_BACKGROUND
 import platform.darwin.DISPATCH_SOURCE_TYPE_TIMER
 import platform.darwin.DISPATCH_TIME_NOW
@@ -33,12 +35,8 @@ actual object GradeNotifications {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     actual fun initialize(platformContext: Any?) {
+        GradeNotificationNotifier.ensureInitialized(platformContext)
         if (!initialized) {
-            NotifierManager.initialize(
-                NotificationPlatformConfiguration.Ios(
-                    askNotificationPermissionOnStart = false
-                )
-            )
             initialized = true
         }
         refreshScheduling()
@@ -74,6 +72,15 @@ actual object GradeNotifications {
     actual fun onLogout() {
         stopTimer()
         GradeNotificationEngine.clearKnownGrades()
+    }
+
+    actual fun requestPermission(onResult: () -> Unit) {
+        val notificationCenter = UNUserNotificationCenter.currentNotificationCenter()
+        notificationCenter.requestAuthorizationWithOptions(
+            options = UNAuthorizationOptionAlert or UNAuthorizationOptionSound or UNAuthorizationOptionBadge
+        ) { _, _ ->
+            onResult()
+        }
     }
 
     private fun startTimer(intervalMinutes: Long) {
