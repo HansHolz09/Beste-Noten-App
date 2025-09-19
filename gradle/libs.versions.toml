@@ -24,7 +24,6 @@ ktorClientCore = "3.3.0"
 jbrApi = "1.7.0"
 jetlime = "4.0.0"
 jna = "5.17.0"
-meeseeks = "0.6.0-alpha01"
 platformtools = "0.6.1"
 navigationCompose = "2.9.0-rc02"
 #noinspection NewerVersionAvailable
@@ -33,6 +32,7 @@ multiplatformSettings = "1.3.0"
 oidc = "0.15.1"
 smartspacer-sdk = "1.1"
 sonner = "0.3.8"
+androidx-work = "2.9.1"
 
 # App configurations
 appName = "Beste-Noten-App"
@@ -74,13 +74,14 @@ jetlime = { module = "io.github.pushpalroy:jetlime", version.ref = "jetlime" }
 jna-core = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 material3-adaptive-layout = { module = "org.jetbrains.compose.material3.adaptive:adaptive-layout", version.ref = "adaptive" }
 material3-adaptive-navigation = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation", version.ref = "adaptive" }
-meeseeks-runtime = { module = "dev.mattramotar.meeseeks:runtime", version.ref = "meeseeks" }
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatformSettings" }
 multiplatform-settings-no-arg = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatformSettings" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "composeMultiplatform" }
 smartspacer-sdk = { module = "com.kieronquinn.smartspacer:sdk-plugin", version.ref = "smartspacer-sdk" }
 sonner = { module = "io.github.dokar3:sonner", version.ref = "sonner" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "androidx-work" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

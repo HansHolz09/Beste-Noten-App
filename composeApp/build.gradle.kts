@@ -59,15 +59,6 @@ kotlin {
         val iosArm64Main = getByName("iosArm64Main")
         val iosSimulatorArm64Main = getByName("iosSimulatorArm64Main")
 
-        val mobileMain by creating {
-            dependsOn(commonMain)
-            dependencies {
-                implementation(libs.meeseeks.runtime)
-            }
-        }
-        androidMain.dependsOn(mobileMain)
-        listOf(iosX64Main, iosArm64Main, iosSimulatorArm64Main).forEach { it.dependsOn(mobileMain) }
-
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -100,6 +91,7 @@ kotlin {
             implementation(libs.emoji.compose.m3)
             implementation(libs.sonner)
             implementation(libs.kmpnotifier)
+            implementation(libs.kotlinx.coroutines.core)
         }
         androidMain.dependencies {
             implementation(compose.preview)
@@ -108,6 +100,7 @@ kotlin {
             implementation(libs.androidx.biometric)
             implementation(libs.ktor.client.cio)
             implementation(libs.smartspacer.sdk)
+            implementation(libs.androidx.work.runtime.ktx)
         }
         listOf(iosX64Main, iosArm64Main, iosSimulatorArm64Main).forEach { target ->
             target.dependencies {
