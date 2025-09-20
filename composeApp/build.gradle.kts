@@ -99,7 +99,6 @@ kotlin {
             implementation(libs.androidx.biometric)
             implementation(libs.ktor.client.cio)
             implementation(libs.smartspacer.sdk)
-            implementation(libs.androidx.work.runtime.ktx)
             implementation(libs.alarmee)
         }
         listOf(iosX64Main, iosArm64Main, iosSimulatorArm64Main).forEach { target ->

@@ -32,6 +32,7 @@ import androidx.compose.material.icons.outlined.Subject
 import androidx.compose.material.icons.outlined.Texture
 import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material.icons.outlined.WavingHand
+import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
@@ -63,6 +64,7 @@ import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationIntervalMinutes
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationsEnabled
+import com.hansholz.bestenotenapp.main.LocalGradeNotificationsWifiOnly
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.LocalShowAllSubjects
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
@@ -128,6 +130,7 @@ fun Settings(
         var backgroundEnabled by LocalBackgroundEnabled.current
         var notificationsEnabled by LocalGradeNotificationsEnabled.current
         var notificationIntervalMinutes by LocalGradeNotificationIntervalMinutes.current
+        var notificationsWifiOnly by LocalGradeNotificationsWifiOnly.current
         var showGreetings by LocalShowGreetings.current
         var showNewestGrades by LocalShowNewestGrades.current
         var showCurrentLesson by LocalShowCurrentLesson.current
@@ -258,6 +261,21 @@ fun Settings(
                     text = "Benachrichtigungen aktivieren",
                     icon = Icons.Outlined.Notifications,
                     position = PreferencePosition.Top,
+                )
+                settingsToggleItem(
+                    modifier = Modifier.alpha(if (notificationsEnabled) 1f else 0.5f),
+                    checked = notificationsWifiOnly,
+                    onCheckedChange = { enabled ->
+                        if (!notificationsEnabled) {
+                            return@settingsToggleItem
+                        }
+                        notificationsWifiOnly = enabled
+                        settings[GradeNotifications.KEY_WIFI_ONLY] = enabled
+                        GradeNotifications.onSettingsUpdated()
+                    },
+                    text = "Nur mit WLAN überprüfen",
+                    icon = Icons.Outlined.Wifi,
+                    position = PreferencePosition.Middle,
                 )
                 item {
                     PreferenceItem(

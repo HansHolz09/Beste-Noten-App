@@ -36,6 +36,8 @@ internal object GradeNotificationEngine {
     fun getIntervalMinutes(): Long =
         settings.getLong(GradeNotifications.KEY_INTERVAL_MINUTES, GradeNotifications.DEFAULT_INTERVAL_MINUTES)
 
+    fun isWifiOnlyEnabled(): Boolean = settings.getBoolean(GradeNotifications.KEY_WIFI_ONLY, false)
+
     fun shouldSchedule(): Boolean = isEnabled() && hasCredentials()
 
     fun clearKnownGrades() {

@@ -51,6 +51,15 @@
         <string>de</string>
         <string>en</string>
     </array>
+    <key>BGTaskSchedulerPermittedIdentifiers</key>
+    <array>
+        <string>com.hansholz.bestenotenapp.notifications.refresh</string>
+    </array>
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>fetch</string>
+        <string>processing</string>
+    </array>
     <key>NSFaceIDUsageDescription</key>
     <string>$(PRODUCT_NAME) Authentication with TouchId or FaceID</string>
 </dict>

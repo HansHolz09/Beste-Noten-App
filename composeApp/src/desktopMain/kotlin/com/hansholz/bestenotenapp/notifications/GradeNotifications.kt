@@ -3,6 +3,7 @@ package com.hansholz.bestenotenapp.notifications
 actual object GradeNotifications {
     actual const val KEY_ENABLED: String = "gradeNotificationsEnabled"
     actual const val KEY_INTERVAL_MINUTES: String = "gradeNotificationsIntervalMinutes"
+    actual const val KEY_WIFI_ONLY: String = "gradeNotificationsWifiOnly"
     actual const val DEFAULT_INTERVAL_MINUTES: Long = 60L
     actual val isSupported: Boolean = false
 
