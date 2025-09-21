@@ -10,12 +10,13 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import java.lang.ref.WeakReference
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -57,7 +58,6 @@ actual object GradeNotifications {
         }
         ensureNotificationServiceInitialized(context)
         scheduleNextAlarm(context)
-        scope.launch { runCheckIfPermitted(context) }
     }
 
     actual fun onSettingsUpdated() {
@@ -147,11 +147,7 @@ actual object GradeNotifications {
         val pendingIntent = createPendingIntent(context)
         manager?.cancel(pendingIntent)
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                manager?.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
-            } else {
-                manager?.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
-            }
+            manager?.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
         } catch (_: SecurityException) {
             manager?.set(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
         }
@@ -184,16 +180,9 @@ actual object GradeNotifications {
     private fun isWifiRequiredAndUnavailable(context: Context): Boolean {
         if (!GradeNotificationEngine.isWifiOnlyEnabled()) return false
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return true
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val network = connectivityManager.activeNetwork ?: return true
-            val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return true
-            !capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
-        } else {
-            @Suppress("DEPRECATION")
-            val info = connectivityManager.activeNetworkInfo
-            @Suppress("DEPRECATION")
-            info?.type != ConnectivityManager.TYPE_WIFI
-        }
+        val network = connectivityManager.activeNetwork ?: return true
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return true
+        return !capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
     }
 
     private fun ensureNotificationServiceInitialized(platformContext: Any?) {
@@ -205,7 +194,7 @@ actual object GradeNotifications {
         val manager = activity.getSystemService(AlarmManager::class.java) ?: return
         if (!manager.canScheduleExactAlarms()) {
             val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-                data = Uri.parse("package:${'$'}{activity.packageName}")
+                data = "package:${'$'}{activity.packageName}".toUri()
             }
             activity.startActivity(intent)
         }
@@ -222,6 +211,7 @@ actual object GradeNotifications {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 private fun openNotificationSettings(context: Context) {
     val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
         putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)

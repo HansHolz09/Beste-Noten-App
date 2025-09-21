@@ -28,6 +28,14 @@ kotlin {
         }
     }
 
+    targets.configureEach {
+        compilations.configureEach {
+            compileTaskProvider.get().compilerOptions {
+                freeCompilerArgs.add("-Xexpect-actual-classes")
+            }
+        }
+    }
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -52,12 +60,7 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain = getByName("commonMain")
-        val androidMain = getByName("androidMain")
-        val desktopMain = getByName("desktopMain")
-        val iosX64Main = getByName("iosX64Main")
-        val iosArm64Main = getByName("iosArm64Main")
-        val iosSimulatorArm64Main = getByName("iosSimulatorArm64Main")
+        val desktopMain by getting
 
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -101,12 +104,10 @@ kotlin {
             implementation(libs.smartspacer.sdk)
             implementation(libs.alarmee)
         }
-        listOf(iosX64Main, iosArm64Main, iosSimulatorArm64Main).forEach { target ->
-            target.dependencies {
-                implementation(libs.ktor.client.darwin)
-                implementation(libs.multiplatform.settings)
-                implementation(libs.alarmee)
-            }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
+            implementation(libs.multiplatform.settings)
+            implementation(libs.alarmee)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

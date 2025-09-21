@@ -7,14 +7,11 @@ import com.hansholz.bestenotenapp.api.models.Grade
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.security.AuthTokenManager
 import com.russhwolf.settings.Settings
-import com.russhwolf.settings.getStringOrNull
 import io.ktor.client.plugins.ClientRequestException
+import kotlin.random.Random
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlin.time.Duration.Companion.minutes
 
 internal enum class GradeNotificationOutcome {
     Success,
@@ -45,6 +42,18 @@ internal object GradeNotificationEngine {
     }
 
     suspend fun runCheck(): GradeNotificationOutcome {
+
+        // TODO: Remove
+        GradeNotificationNotifier.notifyNewGrades(
+            listOf(
+                GradeNotificationPayload(
+                    id = Random.nextInt(10000).toString(),
+                    title = "Überprüfung gestartet...",
+                    body = "Beschreibung"
+                )
+            )
+        )
+
         if (!shouldSchedule()) return GradeNotificationOutcome.Success
 
         val studentId = settings.getStringOrNull("studentId") ?: return GradeNotificationOutcome.Success
@@ -53,10 +62,10 @@ internal object GradeNotificationEngine {
 
         val httpClient = createHttpClient()
         return try {
-            val authState = mutableStateOf(token)
-            val studentState = mutableStateOf(studentId)
+            val authState = mutableStateOf<String?>(token)
+            val studentState = mutableStateOf<String?>(studentId)
             val api = BesteSchuleApi(httpClient, authState, studentState)
-            val includes = listOf("grades", "interval", "subject", "grades.histories")
+            val includes = listOf("grades", "subject")
             val collections = fetchAllCollections(api, includes)
             val currentIds = collections.flatMap { it.grades.orEmpty() }.map { it.id }.toSet()
 
@@ -82,7 +91,7 @@ internal object GradeNotificationEngine {
             } else {
                 GradeNotificationOutcome.Retry
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             GradeNotificationOutcome.Retry
         } finally {
             httpClient.close()
@@ -115,16 +124,8 @@ internal object GradeNotificationEngine {
         if (entries.isEmpty()) return
 
         val notifications = entries.map { (grade, collection) ->
-            val title = collection.name?.takeIf { it.isNotBlank() } ?: "Neue Note"
-            val subject = collection.subject?.name ?: grade.subject?.name ?: "Unbekanntes Fach"
-            val body = buildString {
-                append(subject)
-                if (grade.value.isNotBlank()) {
-                    append(" – ")
-                    append(grade.value)
-                }
-            }
-
+            val title = collection.subject?.name?.let { "Neue Note in $it" } ?: "Neue Note"
+            val body = "Bei " + (collection.name ?: "einer unbekannten Leistung") + " hast du die Note " + grade.value + " erreicht"
             GradeNotificationPayload(
                 id = grade.id.toString(),
                 title = title,

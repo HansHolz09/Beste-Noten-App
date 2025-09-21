@@ -20,6 +20,7 @@ fun LazyListScope.settingsToggleItem(
     onCheckedChange: (Boolean) -> Unit,
     text: String,
     icon: ImageVector? = null,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier,
     textModifier: Modifier = Modifier,
     position: PreferencePosition = PreferencePosition.Single,
@@ -32,6 +33,7 @@ fun LazyListScope.settingsToggleItem(
             textModifier = textModifier,
             title = text,
             icon = icon,
+            enabled = enabled,
             position = position,
         ) {
             val hapticFeedback = LocalHapticFeedback.current
@@ -65,6 +67,7 @@ fun LazyListScope.settingsToggleItem(
                             )
                         }
                     },
+                enabled = enabled
             )
         }
     }
