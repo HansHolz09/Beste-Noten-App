@@ -25,21 +25,25 @@ import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.InvertColors
 import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.LocalLibrary
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Subject
 import androidx.compose.material.icons.outlined.Texture
 import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material.icons.outlined.WavingHand
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -47,11 +51,13 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import bestenotenapp.composeApp.BuildConfig
+import bestenotenapp.composeapp.generated.resources.Res
 import com.hansholz.bestenotenapp.components.ConfettiPresets
 import com.hansholz.bestenotenapp.components.PreferenceCategory
 import com.hansholz.bestenotenapp.components.PreferenceItem
 import com.hansholz.bestenotenapp.components.PreferencePosition
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.icons.Github
 import com.hansholz.bestenotenapp.components.settingsToggleItem
@@ -73,6 +79,8 @@ import com.hansholz.bestenotenapp.theme.LocalIsDark
 import com.hansholz.bestenotenapp.theme.LocalSupportsCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseSystemIsDark
+import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
+import com.mikepenz.aboutlibraries.ui.compose.rememberLibraries
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
 import dev.chrisbanes.haze.HazeDefaults
@@ -91,6 +99,7 @@ fun Settings(
     val hapticFeedback = LocalHapticFeedback.current
     val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
+    var showLicenseDialog by rememberSaveable { mutableStateOf(false) }
     var showConfetti by remember { mutableStateOf(false) }
 
     TopAppBarScaffold(
@@ -370,13 +379,26 @@ fun Settings(
             item {
                 PreferenceItem(
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    title = "Github",
+                    title = "Quellcode auf GitHub",
                     subtitle = "HansHolz09/Beste-Noten-App",
                     icon = Github,
                     onClick = {
                         uriHandler.openUri("https://github.com/HansHolz09/Beste-Noten-App")
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                     },
                     position = PreferencePosition.Top
+                )
+            }
+            item {
+                PreferenceItem(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    title = "Open-Source-Lizenzen",
+                    icon = Icons.Outlined.LocalLibrary,
+                    onClick = {
+                        showLicenseDialog = true
+                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                    },
+                    position = PreferencePosition.Middle
                 )
             }
             item {
@@ -404,6 +426,33 @@ fun Settings(
             }
         }
         topAppBarBackground(innerPadding.calculateTopPadding())
+    }
+
+    val libraries by rememberLibraries {
+        Res.readBytes("files/aboutlibraries.json").decodeToString()
+    }
+    if (showLicenseDialog) {
+        AlertDialog(
+            onDismissRequest = { showLicenseDialog = false },
+            confirmButton = {
+                EnhancedButton(
+                    onClick = {
+                        showLicenseDialog = false
+                    }
+                ) {
+                    Text("Schließen")
+                }
+            },
+            icon = { Icon(Icons.Outlined.LocalLibrary, null) },
+            title = { Text("Open-Source-Lizenzen") },
+            text = {
+                LibrariesContainer(
+                    libraries = libraries,
+                    showDescription = true,
+                    licenseDialogConfirmText = "Schließen"
+                )
+            }
+        )
     }
 
     if (showConfetti) {
