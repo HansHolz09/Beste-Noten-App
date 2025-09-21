@@ -215,6 +215,8 @@ compose.desktop {
                             <string>de</string>
                             <string>en</string>
                         </array>
+                        <key>CFBundleIconName</key>
+                        <string>Beste-Noten-App</string>
                         """.trimIndent()
                 }
             }
@@ -227,6 +229,18 @@ compose.desktop {
             configurationFiles.from(project.file("src/desktopMain/compose-desktop.pro"))
         }
     }
+}
+
+val copyAssetsCarToMacResources = tasks.register<Copy>("copyAssetsCarToMacResources") {
+    dependsOn("createReleaseDistributable")
+    from(layout.projectDirectory.file("src/desktopMain/assets/Assets.car"))
+    into(layout.buildDirectory.dir("compose/binaries/main-release/app/${libs.versions.appName.get()}.app/Contents").map { it.dir("Resources") })
+}
+tasks.register("createReleaseDmg") {
+    group = "packaging"
+    description = "Creates DMG for MacOS with MacOS 26 Icon"
+    dependsOn(copyAssetsCarToMacResources)
+    finalizedBy("packageReleaseDmg")
 }
 
 aboutLibraries {
