@@ -44,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import bestenotenapp.composeApp.BuildConfig
 import com.hansholz.bestenotenapp.components.ConfettiPresets
@@ -52,6 +53,7 @@ import com.hansholz.bestenotenapp.components.PreferenceItem
 import com.hansholz.bestenotenapp.components.PreferencePosition
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
+import com.hansholz.bestenotenapp.components.icons.Github
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
@@ -85,6 +87,7 @@ fun Settings(
     onNavigateToLogin: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val uriHandler = LocalUriHandler.current
     val hapticFeedback = LocalHapticFeedback.current
     val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
@@ -365,6 +368,18 @@ fun Settings(
                 PreferenceCategory("Über", Modifier.padding(horizontal = 15.dp))
             }
             item {
+                PreferenceItem(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    title = "Github",
+                    subtitle = "HansHolz09/Beste-Noten-App",
+                    icon = Github,
+                    onClick = {
+                        uriHandler.openUri("https://github.com/HansHolz09/Beste-Noten-App")
+                    },
+                    position = PreferencePosition.Top
+                )
+            }
+            item {
                 var tapCount by remember { mutableStateOf(0) }
                 val func = {
                     tapCount++
@@ -380,7 +395,8 @@ fun Settings(
                     title = "Beste-Noten-App",
                     subtitle = "Version ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
                     icon = Icons.Outlined.Info,
-                    onClick = onClick
+                    onClick = onClick,
+                    position = PreferencePosition.Bottom
                 )
             }
             item {
