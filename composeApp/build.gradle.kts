@@ -1,3 +1,5 @@
+import com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
+import com.mikepenz.aboutlibraries.plugin.DuplicateRule.GROUP
 import java.text.SimpleDateFormat
 import java.util.Date
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
@@ -13,6 +15,7 @@ plugins {
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.serialization)
     alias(libs.plugins.buildConfig)
+    alias(libs.plugins.aboutLibraries)
 }
 
 buildConfig {
@@ -84,6 +87,9 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
             implementation(libs.multiplatform.settings.no.arg)
+            implementation(libs.aboutlibraries.core)
+            implementation(libs.aboutlibraries.compose.core)
+            implementation(libs.aboutlibraries.compose.m3)
             implementation(libs.koalaplot.core)
             implementation(libs.jetlime)
             implementation(libs.haze)
@@ -220,6 +226,8 @@ compose.desktop {
                             <string>de</string>
                             <string>en</string>
                         </array>
+                        <key>CFBundleIconName</key>
+                        <string>Beste-Noten-App</string>
                         """.trimIndent()
                 }
             }
@@ -231,6 +239,31 @@ compose.desktop {
             optimize = true
             configurationFiles.from(project.file("src/desktopMain/compose-desktop.pro"))
         }
+    }
+}
+
+val copyAssetsCarToMacResources = tasks.register<Copy>("copyAssetsCarToMacResources") {
+    dependsOn("createReleaseDistributable")
+    from(layout.projectDirectory.file("src/desktopMain/assets/Assets.car"))
+    into(layout.buildDirectory.dir("compose/binaries/main-release/app/${libs.versions.appName.get()}.app/Contents").map { it.dir("Resources") })
+}
+tasks.register("createReleaseDmg") {
+    group = "packaging"
+    description = "Creates DMG for MacOS with MacOS 26 Icon"
+    dependsOn(copyAssetsCarToMacResources)
+    finalizedBy("packageReleaseDmg")
+}
+
+aboutLibraries {
+    android {
+        registerAndroidTasks = false
+    }
+    library {
+        duplicationMode = MERGE
+        duplicationRule = GROUP
+    }
+    export {
+        outputPath = project.file("src/commonMain/composeResources/files/aboutlibraries.json")
     }
 }
 
