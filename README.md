@@ -5,13 +5,13 @@ ___
 # Beste-Noten-App
 > **_Hintergrund:_** Diese App ist im Rahmen des praktischen Teils meiner Facharbeit über Compose Multiplatform entstanden
 
-[Beschreibung]
+Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher und ist eine einfachere, schönere und schnellere Alternative zur offiziellen beste.schule-App.
 
 **Zur Web-Version:** [Link](Link-zu-Github-Pages)
 
 **Native Apps:** [siehe Releases](Link-zu-Github-Releases) _(außer iOS)_
 > **_Hinweis:_** Die nativen Apps enthalten keine Entwickler-Zertifikate, weshalb wahrscheinlich Warnungen beim Installieren angezeigt werden. 
-> Die iOS/iPadOS Version müssen selber kompiliert und installiert werden ([siehe **Bauen der App**](#bauen-der-app)), da es aktuell noch keinen Weg gibt, 
+> Die iOS/iPadOS Version müssen selber kompiliert und installiert werden ([siehe **Bauen der App**](#bauenstarten-der-app)), da es aktuell noch keinen Weg gibt, 
 > Apps auf diesen Geräten ohne Apple Developer Account zu sideloaden. 
 
 
