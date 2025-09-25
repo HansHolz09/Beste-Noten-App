@@ -132,6 +132,7 @@ import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
 import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.utils.filterHistory
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.isScrollingUp
 import com.hansholz.bestenotenapp.utils.normalizeGrade
@@ -331,7 +332,7 @@ fun Grades(
                                                                 if (histories?.isEmpty() == false && showGradeHistory) {
                                                                     Spacer(Modifier.height(10.dp))
                                                                     Text("Historie deiner Note:")
-                                                                    histories.forEach {
+                                                                    histories.filterHistory().forEach {
                                                                         Text("${if (showTeachersWithFirstname) it.conductor?.forename else it.conductor?.forename?.take(1) + "."} ${it.conductor?.name}: ${translateHistoryBody(it.body)}")
                                                                     }
                                                                 }
@@ -422,7 +423,7 @@ fun Grades(
                                                                         if (histories?.isEmpty() == false && showGradeHistory) {
                                                                             Spacer(Modifier.height(10.dp))
                                                                             Text("Historie deiner Note:")
-                                                                            histories.forEach {
+                                                                            histories.filterHistory().forEach {
                                                                                 Text("${if (showTeachersWithFirstname) it.conductor?.forename else it.conductor?.forename?.take(1) + "."} ${it.conductor?.name}: ${translateHistoryBody(it.body)}")
                                                                             }
                                                                         }
