@@ -66,6 +66,7 @@ import bestenotenapp.composeapp.generated.resources.subjectsAndTeachers
 import bestenotenapp.composeapp.generated.resources.timetable
 import com.hansholz.bestenotenapp.components.GradeValueBox
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
+import com.hansholz.bestenotenapp.components.UpdateOnNewDay
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
@@ -148,6 +149,18 @@ fun Home(
                     isTimetableLoading = false
                 }
             }
+        }
+        UpdateOnNewDay {
+            isTimetableLoading = true
+            @OptIn(ExperimentalTime::class)
+            val currentDate = Clock.System.now()
+                .toLocalDateTime(TimeZone.currentSystemDefault()).date
+                .let {
+                    "${it.year}-${it.month.number.toString().padStart(2, '0')}" +
+                            "-${it.day.toString().padStart(2, '0')}"
+                }
+            viewModel.currentJournalDay.value = viewModel.getJournalWeek(useCached = false)?.days?.find { it.date == currentDate }
+            isTimetableLoading = false
         }
 
         TopAppBarScaffold(
