@@ -268,7 +268,7 @@ fun Grades(
                     1 -> secondLazyListState
                     else -> rememberLazyListState()
                 }
-                val items = remember(viewModel.gradeCollections, selectedYears.size, showCollectionsWithoutGrades, searchQuery) {
+                val items = remember(viewModel.gradeCollections, selectedYears.size, showCollectionsWithoutGrades, searchQuery, isLoading) {
                      viewModel
                         .gradeCollections
                         .toSet()
