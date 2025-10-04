@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import com.russhwolf.settings.Settings
+import dev.chrisbanes.haze.HazeState
 
 internal val LocalBackgroundEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowGreetings = compositionLocalOf { mutableStateOf(false) }
@@ -22,6 +23,8 @@ internal val LocalGradeNotificationIntervalMinutes = compositionLocalOf { mutabl
 internal val LocalGradeNotificationsWifiOnly = compositionLocalOf { mutableStateOf(false) }
 
 internal val LocalRequireBiometricAuthentification = compositionLocalOf { mutableStateOf(false) }
+
+internal val AppHazeState = compositionLocalOf { mutableStateOf(HazeState()) }
 
 internal val LocalTitleBarModifier = compositionLocalOf<Modifier> { Modifier }
 internal val LocalNavigationDrawerTopPadding = compositionLocalOf<Dp?> { null }

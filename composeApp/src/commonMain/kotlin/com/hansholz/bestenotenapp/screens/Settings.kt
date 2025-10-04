@@ -35,7 +35,6 @@ import androidx.compose.material.icons.outlined.Texture
 import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material.icons.outlined.WavingHand
 import androidx.compose.material.icons.outlined.Wifi
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
@@ -97,6 +96,7 @@ import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import com.mikepenz.aboutlibraries.ui.compose.rememberLibraries
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
+import components.dialogs.EnhancedAlertDialog
 import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.hazeSource
 import io.github.vinceglb.confettikit.compose.ConfettiKit
@@ -500,82 +500,80 @@ fun Settings(
         topAppBarBackground(innerPadding.calculateTopPadding())
     }
 
-    if (GradeNotifications.isSupported && showIntervalDialog) {
-        val intervalOptions = remember { listOf(15L, 30L, 60L, 120L, 360L, 720L, 1440L) }
-        AlertDialog(
-            onDismissRequest = { showIntervalDialog = false },
-            icon = { Icon(Icons.Outlined.History, null) },
-            title = { Text("Überprüfungsintervall") },
-            text = {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    intervalOptions.forEach { option ->
-                        item {
-                            Row(
-                                Modifier
-                                    .height(56.dp)
-                                    .fillParentMaxWidth()
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .selectable(
-                                        selected = (notificationIntervalMinutes == option),
-                                        onClick = {
-                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                            notificationIntervalMinutes = option
-                                            settings.putLong("gradeNotificationsIntervalMinutes", option)
-                                            GradeNotifications.onSettingsUpdated()
-                                            showIntervalDialog = false
-                                        },
-                                        role = Role.RadioButton,
-                                    ).padding(horizontal = 16.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                RadioButton(
+    val intervalOptions = remember { listOf(15L, 30L, 60L, 120L, 360L, 720L, 1440L) }
+    EnhancedAlertDialog(
+        visible = GradeNotifications.isSupported && showIntervalDialog,
+        onDismissRequest = { showIntervalDialog = false },
+        icon = { Icon(Icons.Outlined.History, null) },
+        title = { Text("Überprüfungsintervall") },
+        text = {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                intervalOptions.forEach { option ->
+                    item {
+                        Row(
+                            Modifier
+                                .height(56.dp)
+                                .fillParentMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .selectable(
                                     selected = (notificationIntervalMinutes == option),
-                                    onClick = null,
-                                )
-                                Text(
-                                    text = formateInterval(option),
-                                    style = typography.bodyLarge,
-                                    modifier = Modifier.padding(start = 16.dp),
-                                )
-                            }
+                                    onClick = {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                        notificationIntervalMinutes = option
+                                        settings.putLong("gradeNotificationsIntervalMinutes", option)
+                                        GradeNotifications.onSettingsUpdated()
+                                        showIntervalDialog = false
+                                    },
+                                    role = Role.RadioButton,
+                                ).padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(
+                                selected = (notificationIntervalMinutes == option),
+                                onClick = null,
+                            )
+                            Text(
+                                text = formateInterval(option),
+                                style = typography.bodyLarge,
+                                modifier = Modifier.padding(start = 16.dp),
+                            )
                         }
                     }
                 }
-            },
-            confirmButton = {
-                EnhancedButton(onClick = { showIntervalDialog = false }) {
-                    Text("Schließen")
-                }
             }
-        )
-    }
+        },
+        confirmButton = {
+            EnhancedButton(onClick = { showIntervalDialog = false }) {
+                Text("Schließen")
+            }
+        }
+    )
 
     val libraries by rememberLibraries {
         Res.readBytes("files/aboutlibraries.json").decodeToString()
     }
-    if (showLicenseDialog) {
-        AlertDialog(
-            onDismissRequest = { showLicenseDialog = false },
-            confirmButton = {
-                EnhancedButton(
-                    onClick = {
-                        showLicenseDialog = false
-                    }
-                ) {
-                    Text("Schließen")
+    EnhancedAlertDialog(
+        visible = showLicenseDialog,
+        onDismissRequest = { showLicenseDialog = false },
+        confirmButton = {
+            EnhancedButton(
+                onClick = {
+                    showLicenseDialog = false
                 }
-            },
-            icon = { Icon(Icons.Outlined.LocalLibrary, null) },
-            title = { Text("Open-Source-Lizenzen") },
-            text = {
-                LibrariesContainer(
-                    libraries = libraries,
-                    showDescription = true,
-                    licenseDialogConfirmText = "Schließen"
-                )
+            ) {
+                Text("Schließen")
             }
-        )
-    }
+        },
+        icon = { Icon(Icons.Outlined.LocalLibrary, null) },
+        title = { Text("Open-Source-Lizenzen") },
+        text = {
+            LibrariesContainer(
+                libraries = libraries,
+                showDescription = true,
+                licenseDialogConfirmText = "Schließen"
+            )
+        }
+    )
 
     if (showConfetti) {
         ConfettiKit(

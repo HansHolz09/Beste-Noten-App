@@ -30,7 +30,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Login
 import androidx.compose.material.icons.outlined.ContentPaste
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
@@ -75,6 +74,7 @@ import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
+import components.dialogs.EnhancedAlertDialog
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -352,55 +352,57 @@ fun Login(
         topAppBarBackground(innerPadding.calculateTopPadding())
     }
 
-    if (chooseStudentDialog.first && chooseStudentDialog.second != null) {
-        var selectedStudent by remember { mutableStateOf("") }
-        AlertDialog(
-            onDismissRequest = {},
-            confirmButton = {
-                EnhancedButton(
-                    onClick = {
-                        chosenStudent = selectedStudent
-                        chooseStudentDialog = false to null
-                    },
-                    enabled = selectedStudent.isNotEmpty()
-                ) {
-                    Text("Wählen")
-                }
-            },
-            title = {
-                Text(
-                    text = "Schüler wählen",
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
-            },
-            text = {
-                LazyColumn {
-                    chooseStudentDialog.second?.forEach { student ->
-                        item {
-                            Row(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(56.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .clickable { selectedStudent = student.id.toString() }
-                                    .padding(horizontal = 16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                RadioButton(
-                                    selected = student.id.toString() == selectedStudent,
-                                    onClick = null
-                                )
-                                Text(
-                                    text = "${student.forename} ${student.name}",
-                                    style = typography.bodyLarge,
-                                    modifier = Modifier.padding(start = 16.dp)
-                                )
-                            }
+    var selectedStudent by remember { mutableStateOf("") }
+    EnhancedAlertDialog(
+        visible = chooseStudentDialog.first && chooseStudentDialog.second != null,
+        onDismissRequest = {},
+        confirmButton = {
+            EnhancedButton(
+                onClick = {
+                    chosenStudent = selectedStudent
+                    chooseStudentDialog = false to null
+                },
+                enabled = selectedStudent.isNotEmpty()
+            ) {
+                Text("Wählen")
+            }
+        },
+        title = {
+            Text(
+                text = "Schüler wählen",
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+        },
+        text = {
+            LazyColumn {
+                chooseStudentDialog.second?.forEach { student ->
+                    item {
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable {
+                                    selectedStudent = student.id.toString()
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                }
+                                .padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = student.id.toString() == selectedStudent,
+                                onClick = null
+                            )
+                            Text(
+                                text = "${student.forename} ${student.name}",
+                                style = typography.bodyLarge,
+                                modifier = Modifier.padding(start = 16.dp)
+                            )
                         }
                     }
                 }
             }
-        )
-    }
+        }
+    )
 }

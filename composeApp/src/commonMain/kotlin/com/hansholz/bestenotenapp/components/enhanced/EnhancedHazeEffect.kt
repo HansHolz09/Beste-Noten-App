@@ -18,7 +18,7 @@ import dev.chrisbanes.haze.hazeEffect
 
 @OptIn(ExperimentalHazeApi::class)
 @Composable
-fun Modifier.enhancedHazeEffect(hazeState: HazeState? = null, color: Color? = null, blurRadius: Dp? = null, block: (HazeEffectScope.() -> Unit)? = null): Modifier {
+fun Modifier.enhancedHazeEffect(hazeState: HazeState? = null, color: Color? = null, blurRadius: Dp? = null, fallbackAlpha: Float = 1f, block: (HazeEffectScope.() -> Unit)? = null): Modifier {
     val blurEnabled = LocalBlurEnabled.current.value
     val blurScale = if (getPlatform() == Platform.ANDROID) 3 else 1
     return if (hazeState != null) {
@@ -27,7 +27,7 @@ fun Modifier.enhancedHazeEffect(hazeState: HazeState? = null, color: Color? = nu
             this.blurRadius = (blurRadius ?: 10.dp) * blurScale
             color?.let {
                 backgroundColor = it
-                fallbackTint = HazeTint(it)
+                fallbackTint = HazeTint(it.copy(fallbackAlpha))
             }
             inputScale = HazeInputScale.Auto
             noiseFactor = 0f

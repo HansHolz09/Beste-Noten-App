@@ -98,6 +98,7 @@ fun AppNavigationDrawer(
                             .padding(horizontal = 40.dp)
                             .clickable(null, null) {
                                 showConfetti = true
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                             },
                         color = colorScheme.onSurface,
                         autoSize = TextAutoSize.StepBased(10.sp),
@@ -117,6 +118,7 @@ fun AppNavigationDrawer(
                             .padding(horizontal = 80.dp)
                             .clickable(null, null) {
                                 showConfetti = true
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                             },
                         color = colorScheme.onSurface,
                         autoSize = TextAutoSize.StepBased(5.sp),

@@ -4,6 +4,7 @@ package com.hansholz.bestenotenapp.main
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -41,20 +42,23 @@ fun App(
             SettingsProvider {
                 val toasterState = rememberToasterState()
                 val viewModel = viewModel { ViewModel(toasterState) }
-                val blurEnabled = LocalBlurEnabled.current.value
-                val backgroundAlpha = animateFloatAsState(if (LocalBackgroundEnabled.current.value) (if (blurEnabled) 1f else 0.2f) else 0f, tween(750))
-                RepeatingBackground(
-                    imageBitmap = imageResource(Res.drawable.background),
-                    modifier = Modifier
-                        .hazeSource(viewModel.hazeBackgroundState)
-                        .hazeSource(viewModel.hazeBackgroundState1)
-                        .hazeSource(viewModel.hazeBackgroundState2)
-                        .hazeSource(viewModel.hazeBackgroundState3)
-                        .enhancedHazeEffect()
-                        .alpha(backgroundAlpha.value)
-                )
+                Box(Modifier.hazeSource(AppHazeState.current.value)) {
+                    val blurEnabled = LocalBlurEnabled.current.value
+                    val backgroundAlpha = animateFloatAsState(if (LocalBackgroundEnabled.current.value) (if (blurEnabled) 1f else 0.2f) else 0f, tween(750))
+                    RepeatingBackground(
+                        imageBitmap = imageResource(Res.drawable.background),
+                        modifier = Modifier
+                            .hazeSource(AppHazeState.current.value)
+                            .hazeSource(viewModel.hazeBackgroundState)
+                            .hazeSource(viewModel.hazeBackgroundState1)
+                            .hazeSource(viewModel.hazeBackgroundState2)
+                            .hazeSource(viewModel.hazeBackgroundState3)
+                            .enhancedHazeEffect()
+                            .alpha(backgroundAlpha.value)
+                    )
 
-                AppNavigation(viewModel, onNavHostReady)
+                    AppNavigation(viewModel, onNavHostReady)
+                }
 
                 Toaster(
                     state = toasterState,
