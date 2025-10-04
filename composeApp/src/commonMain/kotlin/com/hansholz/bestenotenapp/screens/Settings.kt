@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.Menu
@@ -27,15 +29,19 @@ import androidx.compose.material.icons.outlined.InvertColors
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.LocalLibrary
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Subject
 import androidx.compose.material.icons.outlined.Texture
 import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material.icons.outlined.WavingHand
+import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
@@ -45,10 +51,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import bestenotenapp.composeApp.BuildConfig
 import bestenotenapp.composeapp.generated.resources.Res
@@ -62,6 +71,9 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.icons.Github
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
+import com.hansholz.bestenotenapp.main.LocalGradeNotificationIntervalMinutes
+import com.hansholz.bestenotenapp.main.LocalGradeNotificationsEnabled
+import com.hansholz.bestenotenapp.main.LocalGradeNotificationsWifiOnly
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.LocalShowAllSubjects
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
@@ -71,6 +83,7 @@ import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.security.BindBiometryAuthenticatorEffect
 import com.hansholz.bestenotenapp.security.BiometryAuthenticator
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
@@ -79,6 +92,7 @@ import com.hansholz.bestenotenapp.theme.LocalIsDark
 import com.hansholz.bestenotenapp.theme.LocalSupportsCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseSystemIsDark
+import com.hansholz.bestenotenapp.utils.formateInterval
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import com.mikepenz.aboutlibraries.ui.compose.rememberLibraries
 import com.russhwolf.settings.Settings
@@ -99,8 +113,32 @@ fun Settings(
     val hapticFeedback = LocalHapticFeedback.current
     val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
+    var useSystemIsDark by LocalUseSystemIsDark.current
+    var isDark by LocalIsDark.current
+    var useCustomColorScheme by LocalUseCustomColorScheme.current
+    val supportsCustomColorScheme by LocalSupportsCustomColorScheme.current
+    var animationsEnabled by LocalAnimationsEnabled.current
+    var blurEnabled by LocalBlurEnabled.current
+    var backgroundEnabled by LocalBackgroundEnabled.current
+    var notificationsEnabled by LocalGradeNotificationsEnabled.current
+    var notificationIntervalMinutes by LocalGradeNotificationIntervalMinutes.current
+    var notificationsWifiOnly by LocalGradeNotificationsWifiOnly.current
+    var showGreetings by LocalShowGreetings.current
+    var showNewestGrades by LocalShowNewestGrades.current
+    var showCurrentLesson by LocalShowCurrentLesson.current
+    var showGradeHistory by LocalShowGradeHistory.current
+    var showAllSubjects by LocalShowAllSubjects.current
+    var showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
+    var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
+    var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
+    val settings = Settings()
+
+    val biometryAuthenticator = remember { BiometryAuthenticator() }
+    BindBiometryAuthenticatorEffect(biometryAuthenticator)
+
+    var showIntervalDialog by rememberSaveable { mutableStateOf(false) }
     var showLicenseDialog by rememberSaveable { mutableStateOf(false) }
-    var showConfetti by remember { mutableStateOf(false) }
+    var showConfetti by rememberSaveable { mutableStateOf(false) }
 
     TopAppBarScaffold(
         title = "Einstellungen",
@@ -118,27 +156,6 @@ fun Settings(
         sideMenuExpanded = viewModel.mediumExpandedDrawerState.value.isOpen,
         hazeState = viewModel.hazeBackgroundState
     ) { innerPadding, topAppBarBackground ->
-
-        var useSystemIsDark by LocalUseSystemIsDark.current
-        var isDark by LocalIsDark.current
-        var useCustomColorScheme by LocalUseCustomColorScheme.current
-        val supportsCustomColorScheme by LocalSupportsCustomColorScheme.current
-        var animationsEnabled by LocalAnimationsEnabled.current
-        var blurEnabled by LocalBlurEnabled.current
-        var backgroundEnabled by LocalBackgroundEnabled.current
-        var showGreetings by LocalShowGreetings.current
-        var showNewestGrades by LocalShowNewestGrades.current
-        var showCurrentLesson by LocalShowCurrentLesson.current
-        var showGradeHistory by LocalShowGradeHistory.current
-        var showAllSubjects by LocalShowAllSubjects.current
-        var showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
-        var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
-        var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
-        val settings = Settings()
-
-        val biometryAuthenticator = remember { BiometryAuthenticator() }
-        BindBiometryAuthenticatorEffect(biometryAuthenticator)
-
         LazyColumn(
             modifier = Modifier.hazeSource(viewModel.hazeBackgroundState),
             contentPadding = innerPadding,
@@ -239,6 +256,61 @@ fun Settings(
                 icon = Icons.Outlined.Texture,
                 position = PreferencePosition.Bottom,
             )
+            if (GradeNotifications.isSupported && !viewModel.isDemoAccount.value && !viewModel.authTokenManager.getToken().isNullOrEmpty()) {
+                item {
+                    PreferenceCategory("Benachrichtigungen", Modifier.padding(horizontal = 15.dp))
+                }
+                settingsToggleItem(
+                    checked = notificationsEnabled,
+                    onCheckedChange = {
+                        scope.launch {
+                            if (it) {
+                                val granted = GradeNotifications.requestPermission()
+                                notificationsEnabled = granted
+                                settings["gradeNotificationsEnabled"] = granted
+                            } else {
+                                notificationsEnabled = false
+                                settings["gradeNotificationsEnabled"] = false
+                            }
+                            GradeNotifications.onSettingsUpdated()
+                        }
+                    },
+                    text = "Benachrichtigungen über neue Noten",
+                    icon = Icons.Outlined.Notifications,
+                    position = PreferencePosition.Top,
+                )
+                settingsToggleItem(
+                    checked = notificationsWifiOnly,
+                    onCheckedChange = { enabled ->
+                        if (!notificationsEnabled) {
+                            return@settingsToggleItem
+                        }
+                        notificationsWifiOnly = enabled
+                        settings["gradeNotificationsWifiOnly"] = enabled
+                        GradeNotifications.onSettingsUpdated()
+                    },
+                    text = "Nur mit WLAN überprüfen",
+                    icon = Icons.Outlined.Wifi,
+                    enabled = notificationsEnabled,
+                    position = PreferencePosition.Middle,
+                )
+                item {
+                    PreferenceItem(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        title = "Überprüfungsintervall",
+                        subtitle = "Aktuell: ${formateInterval(notificationIntervalMinutes)}",
+                        icon = Icons.Outlined.History,
+                        enabled = notificationsEnabled,
+                        onClick = if (notificationsEnabled) {
+                            {
+                                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                showIntervalDialog = true
+                            }
+                        } else null,
+                        position = PreferencePosition.Bottom,
+                    )
+                }
+            }
             item {
                 PreferenceCategory("Startseite", Modifier.padding(horizontal = 15.dp))
             }
@@ -426,6 +498,56 @@ fun Settings(
             }
         }
         topAppBarBackground(innerPadding.calculateTopPadding())
+    }
+
+    if (GradeNotifications.isSupported && showIntervalDialog) {
+        val intervalOptions = remember { listOf(15L, 30L, 60L, 120L, 360L, 720L, 1440L) }
+        AlertDialog(
+            onDismissRequest = { showIntervalDialog = false },
+            icon = { Icon(Icons.Outlined.History, null) },
+            title = { Text("Überprüfungsintervall") },
+            text = {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    intervalOptions.forEach { option ->
+                        item {
+                            Row(
+                                Modifier
+                                    .height(56.dp)
+                                    .fillParentMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .selectable(
+                                        selected = (notificationIntervalMinutes == option),
+                                        onClick = {
+                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                            notificationIntervalMinutes = option
+                                            settings.putLong("gradeNotificationsIntervalMinutes", option)
+                                            GradeNotifications.onSettingsUpdated()
+                                            showIntervalDialog = false
+                                        },
+                                        role = Role.RadioButton,
+                                    ).padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                RadioButton(
+                                    selected = (notificationIntervalMinutes == option),
+                                    onClick = null,
+                                )
+                                Text(
+                                    text = formateInterval(option),
+                                    style = typography.bodyLarge,
+                                    modifier = Modifier.padding(start = 16.dp),
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                EnhancedButton(onClick = { showIntervalDialog = false }) {
+                    Text("Schließen")
+                }
+            }
+        )
     }
 
     val libraries by rememberLibraries {

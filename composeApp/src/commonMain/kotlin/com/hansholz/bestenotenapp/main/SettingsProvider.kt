@@ -17,6 +17,9 @@ internal val LocalShowGradeHistory = compositionLocalOf { mutableStateOf(false) 
 internal val LocalShowAllSubjects = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowCollectionsWithoutGrades = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowTeachersWithFirstname = compositionLocalOf { mutableStateOf(false) }
+internal val LocalGradeNotificationsEnabled = compositionLocalOf { mutableStateOf(false) }
+internal val LocalGradeNotificationIntervalMinutes = compositionLocalOf { mutableStateOf(60L) }
+internal val LocalGradeNotificationsWifiOnly = compositionLocalOf { mutableStateOf(false) }
 
 internal val LocalRequireBiometricAuthentification = compositionLocalOf { mutableStateOf(false) }
 
@@ -35,6 +38,9 @@ fun SettingsProvider(content: @Composable () -> Unit) {
     val showAllSubjectsState = remember { mutableStateOf(settings.getBoolean("showAllSubjects", false)) }
     val showCollectionsWithoutGradesState = remember { mutableStateOf(settings.getBoolean("showCollectionsWithoutGrades", false)) }
     val showTeachersWithFirstnameState = remember { mutableStateOf(settings.getBoolean("showTeachersWithFirstname", false)) }
+    val gradeNotificationsEnabledState = remember { mutableStateOf(settings.getBoolean("gradeNotificationsEnabled", false)) }
+    val gradeNotificationIntervalState = remember { mutableStateOf(settings.getLong("gradeNotificationsIntervalMinutes", 60L)) }
+    val gradeNotificationsWifiOnlyState = remember { mutableStateOf(settings.getBoolean("gradeNotificationsWifiOnly", false)) }
     val requireBiometricAuthentificationState = remember { mutableStateOf(settings.getBoolean("requireBiometricAuthentification", false)) }
     CompositionLocalProvider(
         LocalBackgroundEnabled provides backgroundEnabledState,
@@ -45,6 +51,9 @@ fun SettingsProvider(content: @Composable () -> Unit) {
         LocalShowAllSubjects provides showAllSubjectsState,
         LocalShowCollectionsWithoutGrades provides showCollectionsWithoutGradesState,
         LocalShowTeachersWithFirstname provides showTeachersWithFirstnameState,
+        LocalGradeNotificationsEnabled provides gradeNotificationsEnabledState,
+        LocalGradeNotificationIntervalMinutes provides gradeNotificationIntervalState,
+        LocalGradeNotificationsWifiOnly provides gradeNotificationsWifiOnlyState,
         LocalRequireBiometricAuthentification provides requireBiometricAuthentificationState
     ) {
         content()

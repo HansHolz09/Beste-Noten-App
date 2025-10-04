@@ -27,6 +27,7 @@ import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.api.oidcClient
 import com.hansholz.bestenotenapp.demo.DemoDataGenerator
 import com.hansholz.bestenotenapp.security.AuthTokenManager
+import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.utils.weekOfYear
 import com.russhwolf.settings.Settings
 import dev.chrisbanes.haze.HazeState
@@ -143,10 +144,12 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
                         chooseStudent(user.students) {
                             settings.putString("studentId", it)
                             studentId.value = it
+                            GradeNotifications.onLogin()
                         }
                     } else {
                         settings.putString("studentId", user.students.first().id.toString())
                         studentId.value = user.students.first().id.toString()
+                        GradeNotifications.onLogin()
                     }
                 }
                 if (stayLoggedIn) {
@@ -178,6 +181,7 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
     ) {
         isLoading(true)
         try {
+            GradeNotifications.onLogout()
             onCleared()
             val data = DemoDataGenerator.generateInitialData()
             years.addAll(data.years)
@@ -208,6 +212,7 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
         authTokenManager.deleteToken()
         isDemoAccount.value = false
         demoWeekPlan = emptyList()
+        GradeNotifications.onLogout()
         onCleared()
     }
 
@@ -394,6 +399,7 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
                 studentId.value = settings.getStringOrNull("studentId")
                 authToken.value = authTokenManager.getToken()
                 init()
+                GradeNotifications.onLogin()
             } catch (e: Exception) {
                 e.printStackTrace()
                 toaster.show(

@@ -27,7 +27,15 @@ kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
+
+    targets.configureEach {
+        compilations.configureEach {
+            compileTaskProvider.get().compilerOptions {
+                freeCompilerArgs.add("-Xexpect-actual-classes")
+            }
         }
     }
 
@@ -99,10 +107,14 @@ kotlin {
             implementation(libs.androidx.biometric)
             implementation(libs.ktor.client.cio)
             implementation(libs.smartspacer.sdk)
+            implementation(libs.permission)
+            implementation(libs.alarmee)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
             implementation(libs.multiplatform.settings)
+            implementation(libs.permission)
+            implementation(libs.alarmee)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
@@ -160,8 +172,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 

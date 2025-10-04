@@ -34,7 +34,7 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.skiko.hostOs
 
 @OptIn(ExperimentalMaterial3ComponentOverrideApi::class, ExperimentalMaterial3Api::class)
-fun main() =
+fun main() {
     application {
         DecoratedWindow(
             onCloseRequest = ::exitApplication,
@@ -65,3 +65,4 @@ fun main() =
             TitleBar(isDark = isDark, titleBarHeight = titleBarHeight)
         }
     }
+}

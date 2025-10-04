@@ -17,6 +17,7 @@ emoji = "2.2.0"
 haze = "1.6.10"
 koalaplotCore = "0.9.1"
 kotlin = "2.2.20"
+alarmee = "2.3.1"
 kotlinxDatetime = "0.7.1"
 kotlinx-coroutines = "1.10.2"
 kotlinxSerializationJson = "1.9.0"
@@ -24,6 +25,7 @@ ktorClientCore = "3.3.0"
 jbrApi = "1.7.0"
 jetlime = "4.0.0"
 jna = "5.17.0"
+permission = "0.13.0"
 platformtools = "0.6.1"
 navigationCompose = "2.9.0-rc02"
 #noinspection NewerVersionAvailable
@@ -53,6 +55,7 @@ emoji-compose-m3 = { module = "org.kodein.emoji:emoji-compose-m3", version.ref =
 haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 koalaplot-core = { module = "io.github.koalaplot:koalaplot-core", version.ref = "koalaplotCore" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+alarmee = { module = "io.github.tweener:alarmee", version.ref = "alarmee" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
@@ -69,6 +72,7 @@ ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktorClientC
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorClientCore" }
 material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 oidc-appsupport = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-appsupport", version.ref = "oidc" }
+permission = { module = "tech.kotlinlang:permission", version.ref = "permission" }
 platformtools-darkmodedetector = { module = "io.github.kdroidfilter:platformtools.darkmodedetector", version.ref = "platformtools" }
 jbr-api = { module = "org.jetbrains.runtime:jbr-api", version.ref = "jbrApi" }
 jetlime = { module = "io.github.pushpalroy:jetlime", version.ref = "jetlime" }
