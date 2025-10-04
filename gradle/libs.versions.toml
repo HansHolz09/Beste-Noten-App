@@ -11,7 +11,7 @@ buildconfig = "5.6.8"
 confettikit = "0.6.0"
 #noinspection NewerVersionAvailable
 credential-storage = "1.0.0"
-composeHotReload = "1.0.0-beta07"
+composeHotReload = "1.0.0-beta08"
 composeMultiplatform = "1.10.0-alpha01"
 emoji = "2.2.0"
 haze = "1.6.10"

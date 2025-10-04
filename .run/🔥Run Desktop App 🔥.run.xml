@@ -1,16 +1,16 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Run Desktop App" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="🔥Run Desktop App 🔥" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$/composeApp" />
       <option name="externalSystemIdString" value="GRADLE" />
-      <option name="scriptParameters" value="-DmainClass=com.hansholz.bestenotenapp.MainKt" />
+      <option name="scriptParameters" value="-DmainClass=com.hansholz.bestenotenapp.MainKt --quiet" />
       <option name="taskDescriptions">
         <list />
       </option>
       <option name="taskNames">
         <list>
-          <option value="run" />
+          <option value="desktopRun" />
         </list>
       </option>
       <option name="vmOptions" />
