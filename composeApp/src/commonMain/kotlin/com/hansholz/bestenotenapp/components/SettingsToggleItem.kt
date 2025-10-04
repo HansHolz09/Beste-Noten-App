@@ -46,7 +46,7 @@ fun LazyListScope.settingsToggleItem(
                             HapticFeedbackType.ToggleOn
                         } else {
                             HapticFeedbackType.ToggleOff
-                        }
+                        },
                     )
                 },
                 thumbContent =
@@ -67,7 +67,7 @@ fun LazyListScope.settingsToggleItem(
                             )
                         }
                     },
-                enabled = enabled
+                enabled = enabled,
             )
         }
     }

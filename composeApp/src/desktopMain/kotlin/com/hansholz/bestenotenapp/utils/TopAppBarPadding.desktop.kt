@@ -13,18 +13,27 @@ import org.jetbrains.skiko.hostOs
 
 @Composable
 actual fun topAppBarStartPadding(sideMenuExpanded: Boolean): Dp {
-    val startPadding = animateDpAsState(
-        if (getExactPlatform() == ExactPlatform.MACOS && !sideMenuExpanded && !LocalDecoratedWindowScope.current.state.isFullscreen) {
-            CustomTitleBarObject.customTitleBar?.leftInset?.dp?.minus(15.dp) ?: 90.dp
-        } else {
-            0.dp
-        },
-        tween(400)
-    )
+    val startPadding =
+        animateDpAsState(
+            if (getExactPlatform() == ExactPlatform.MACOS && !sideMenuExpanded && !LocalDecoratedWindowScope.current.state.isFullscreen) {
+                CustomTitleBarObject.customTitleBar
+                    ?.leftInset
+                    ?.dp
+                    ?.minus(15.dp) ?: 90.dp
+            } else {
+                0.dp
+            },
+            tween(400),
+        )
     return startPadding.value
 }
 
 @Composable
-actual fun topAppBarEndPadding(): Dp {
-    return if (hostOs.isWindows) CustomTitleBarObject.customTitleBar?.rightInset?.dp ?: 80.dp else if (hostOs.isLinux) 80.dp else 0.dp
-}
+actual fun topAppBarEndPadding(): Dp =
+    if (hostOs.isWindows) {
+        CustomTitleBarObject.customTitleBar?.rightInset?.dp ?: 80.dp
+    } else if (hostOs.isLinux) {
+        80.dp
+    } else {
+        0.dp
+    }

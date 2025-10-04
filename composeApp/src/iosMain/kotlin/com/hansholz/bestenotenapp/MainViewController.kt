@@ -8,11 +8,12 @@ import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.notifications.ensureIosNotificationsInitialized
 import com.hansholz.bestenotenapp.utils.isInWindowMode
 
-fun MainViewController() = ComposeUIViewController {
-    ensureIosNotificationsInitialized()
-    CompositionLocalProvider(
-        LocalNavigationDrawerTopPadding provides if (isInWindowMode()) 50.dp else null
-    ) {
-        App()
+fun mainViewController() =
+    ComposeUIViewController {
+        ensureIosNotificationsInitialized()
+        CompositionLocalProvider(
+            LocalNavigationDrawerTopPadding provides if (isInWindowMode()) 50.dp else null,
+        ) {
+            App()
+        }
     }
-}

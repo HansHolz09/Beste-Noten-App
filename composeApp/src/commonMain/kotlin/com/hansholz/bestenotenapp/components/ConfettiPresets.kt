@@ -14,55 +14,56 @@ import io.github.vinceglb.confettikit.core.Spread
 import io.github.vinceglb.confettikit.core.emitter.Emitter
 import io.github.vinceglb.confettikit.core.models.Shape
 import io.github.vinceglb.confettikit.core.models.Size
+import org.jetbrains.compose.resources.imageResource
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-import org.jetbrains.compose.resources.imageResource
 
 class ConfettiPresets {
     companion object {
         @OptIn(ExperimentalMaterial3ExpressiveApi::class)
         @Composable
         fun randomFirework(rockets: Int): List<Party> {
-            val shapes = with(MaterialShapes) {
-                listOf(
-                    Circle,
-                    Square,
-                    Slanted,
-                    Arch,
-                    Fan,
-                    Arrow,
-                    SemiCircle,
-                    Oval,
-                    Pill,
-                    Triangle,
-                    Diamond,
-                    ClamShell,
-                    Pentagon,
-                    Gem,
-                    VerySunny,
-                    Sunny,
-                    Cookie4Sided,
-                    Cookie6Sided,
-                    Cookie7Sided,
-                    Cookie9Sided,
-                    Cookie12Sided,
-                    Ghostish,
-                    Clover4Leaf,
-                    Clover8Leaf,
-                    Burst,
-                    SoftBurst,
-                    Boom,
-                    SoftBoom,
-                    Flower,
-                    Puffy,
-                    PuffyDiamond,
-                    PixelCircle,
-                    PixelTriangle,
-                    Bun,
-                    Heart
-                ).map { Shape.CustomShape(it.toShape()) }
-            }
+            val shapes =
+                with(MaterialShapes) {
+                    listOf(
+                        Circle,
+                        Square,
+                        Slanted,
+                        Arch,
+                        Fan,
+                        Arrow,
+                        SemiCircle,
+                        Oval,
+                        Pill,
+                        Triangle,
+                        Diamond,
+                        ClamShell,
+                        Pentagon,
+                        Gem,
+                        VerySunny,
+                        Sunny,
+                        Cookie4Sided,
+                        Cookie6Sided,
+                        Cookie7Sided,
+                        Cookie9Sided,
+                        Cookie12Sided,
+                        Ghostish,
+                        Clover4Leaf,
+                        Clover8Leaf,
+                        Burst,
+                        SoftBurst,
+                        Boom,
+                        SoftBoom,
+                        Flower,
+                        Puffy,
+                        PuffyDiamond,
+                        PixelCircle,
+                        PixelTriangle,
+                        Bun,
+                        Heart,
+                    ).map { Shape.CustomShape(it.toShape()) }
+                }
             val parties = mutableListOf<Party>()
             val colors =
                 listOf(

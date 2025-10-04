@@ -1,6 +1,5 @@
 package com.hansholz.bestenotenapp.smartspacer.requirement
 
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -34,16 +33,16 @@ import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerRequirementProvid
 import kotlin.math.roundToInt
 
 class SchooltimeRequirementConfigActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val smartspacerId = intent.getStringExtra(SmartspacerConstants.EXTRA_SMARTSPACER_ID)
-            ?: run {
-                setResult(RESULT_CANCELED)
-                finish()
-                return
-            }
+        val smartspacerId =
+            intent.getStringExtra(SmartspacerConstants.EXTRA_SMARTSPACER_ID)
+                ?: run {
+                    setResult(RESULT_CANCELED)
+                    finish()
+                    return
+                }
 
         setContent {
             AppTheme {
@@ -56,7 +55,7 @@ class SchooltimeRequirementConfigActivity : ComponentActivity() {
                         SmartspacerRequirementProvider.notifyChange(
                             this,
                             SchooltimeRequirement::class.java,
-                            smartspacerId
+                            smartspacerId,
                         )
                         setResult(RESULT_OK)
                         finish()
@@ -64,7 +63,7 @@ class SchooltimeRequirementConfigActivity : ComponentActivity() {
                     onCancel = {
                         setResult(RESULT_CANCELED)
                         finish()
-                    }
+                    },
                 )
             }
         }
@@ -76,7 +75,7 @@ private fun ConfigScreen(
     initialBefore: Int,
     initialAfter: Int,
     onSave: (before: Int, after: Int) -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
 ) {
     val hapticFeedback = LocalHapticFeedback.current
 
@@ -90,10 +89,11 @@ private fun ConfigScreen(
         Column(
             verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalAlignment = Alignment.Start,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(innerPadding)
-                .padding(20.dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(innerPadding)
+                    .padding(20.dp),
         ) {
             Text(
                 text = "Lege einen Puffer für vor bzw. nach der Schulzeit fest. Innerhalb dieser erweiterten Schulzeit gilt die Bedingung ebenfalls als erfüllt.",
@@ -109,7 +109,7 @@ private fun ConfigScreen(
                 },
                 valueRange = 0f..60f,
                 steps = 59,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
 
             Text("Puffer danach: ${after.toInt()} min", style = MaterialTheme.typography.titleMedium)
@@ -121,7 +121,7 @@ private fun ConfigScreen(
                 },
                 valueRange = 0f..60f,
                 steps = 59,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
 
             Row(

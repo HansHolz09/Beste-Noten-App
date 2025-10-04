@@ -34,30 +34,32 @@ fun EmptyStateMessage(
     icon: ImageVector? = Icons.Outlined.PlaylistRemove,
 ) {
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        contentAlignment = Alignment.Center
+        modifier =
+            modifier
+                .fillMaxSize()
+                .padding(32.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             AnimatedContent(
                 targetState = icon,
                 contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(Cookie9Sided.toShape())
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-                    .padding(24.dp)
+                modifier =
+                    Modifier
+                        .size(100.dp)
+                        .clip(Cookie9Sided.toShape())
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                        .padding(24.dp),
             ) {
                 it?.let { imageVector ->
                     Icon(
                         imageVector = imageVector,
                         contentDescription = null,
                         modifier = Modifier.size(50.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                 }
             }
@@ -67,7 +69,7 @@ fun EmptyStateMessage(
                     text = it,
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
                 )
             }
 
@@ -77,7 +79,7 @@ fun EmptyStateMessage(
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 24.dp)
+                    modifier = Modifier.padding(horizontal = 24.dp),
                 )
             }
 

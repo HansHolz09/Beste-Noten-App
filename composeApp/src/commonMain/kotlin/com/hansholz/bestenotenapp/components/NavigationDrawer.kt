@@ -31,7 +31,12 @@ import dev.chrisbanes.haze.hazeSource
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun NavigationDrawer(drawerState: DrawerState, hazeState: HazeState, drawerContent: @Composable () -> Unit, content: @Composable () -> Unit) {
+fun NavigationDrawer(
+    drawerState: DrawerState,
+    hazeState: HazeState,
+    drawerContent: @Composable () -> Unit,
+    content: @Composable () -> Unit,
+) {
     val windowWidthSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
     if (windowWidthSizeClass == WindowWidthSizeClass.COMPACT) {
         ModalNavigationDrawer(
@@ -46,7 +51,7 @@ fun NavigationDrawer(drawerState: DrawerState, hazeState: HazeState, drawerConte
                         drawerContent()
                     }
                 }
-            }
+            },
         ) {
             Box(Modifier.hazeSource(hazeState, 1f)) {
                 content()
@@ -57,14 +62,15 @@ fun NavigationDrawer(drawerState: DrawerState, hazeState: HazeState, drawerConte
         var width by remember { mutableStateOf(0.dp) }
         CloseableNavigationDrawer(
             drawerState = drawerState,
-            modifier = Modifier.onGloballyPositioned {
-                width = with(density) { it.size.width.toDp() }
-            },
+            modifier =
+                Modifier.onGloballyPositioned {
+                    width = with(density) { it.size.width.toDp() }
+                },
             drawerContent = {
                 Row {
                     PermanentDrawerSheet(
                         modifier = if (windowWidthSizeClass == WindowWidthSizeClass.MEDIUM) Modifier.width(width / 2.5f) else Modifier,
-                        drawerContainerColor = Color.Transparent
+                        drawerContainerColor = Color.Transparent,
                     ) {
                         Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                             drawerContent()
@@ -72,7 +78,7 @@ fun NavigationDrawer(drawerState: DrawerState, hazeState: HazeState, drawerConte
                     }
                     VerticalDivider(thickness = 2.dp, color = colorScheme.outline)
                 }
-            }
+            },
         ) {
             content()
         }

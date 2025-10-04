@@ -20,8 +20,8 @@ import java.awt.event.MouseEvent
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-actual fun Modifier.customTitleBarMouseEventHandler(): Modifier {
-    return if (hostOs.isLinux) {
+actual fun Modifier.customTitleBarMouseEventHandler(): Modifier =
+    if (hostOs.isLinux) {
         var lastPress = 0L
         val viewConfig = LocalViewConfiguration.current
         val window = LocalDecoratedWindowScope.current.window
@@ -69,4 +69,3 @@ actual fun Modifier.customTitleBarMouseEventHandler(): Modifier {
             }
         }
     }
-}

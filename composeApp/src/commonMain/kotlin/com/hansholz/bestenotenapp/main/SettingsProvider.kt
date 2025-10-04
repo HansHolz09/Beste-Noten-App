@@ -57,7 +57,7 @@ fun SettingsProvider(content: @Composable () -> Unit) {
         LocalGradeNotificationsEnabled provides gradeNotificationsEnabledState,
         LocalGradeNotificationIntervalMinutes provides gradeNotificationIntervalState,
         LocalGradeNotificationsWifiOnly provides gradeNotificationsWifiOnlyState,
-        LocalRequireBiometricAuthentification provides requireBiometricAuthentificationState
+        LocalRequireBiometricAuthentification provides requireBiometricAuthentificationState,
     ) {
         content()
     }

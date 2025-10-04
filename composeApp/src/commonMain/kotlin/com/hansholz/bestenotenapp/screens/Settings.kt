@@ -106,7 +106,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun Settings(
     viewModel: ViewModel,
-    onNavigateToLogin: () -> Unit
+    onNavigateToLogin: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val uriHandler = LocalUriHandler.current
@@ -148,18 +148,18 @@ fun Settings(
                     scope.launch {
                         viewModel.closeOrOpenDrawer(windowWithSizeClass)
                     }
-                }
+                },
             ) {
                 Icon(Icons.Filled.Menu, null)
             }
         },
         sideMenuExpanded = viewModel.mediumExpandedDrawerState.value.isOpen,
-        hazeState = viewModel.hazeBackgroundState
+        hazeState = viewModel.hazeBackgroundState,
     ) { innerPadding, topAppBarBackground ->
         LazyColumn(
             modifier = Modifier.hazeSource(viewModel.hazeBackgroundState),
             contentPadding = innerPadding,
-            verticalArrangement = Arrangement.spacedBy(2.dp)
+            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             item {
                 PreferenceCategory("Design", Modifier.padding(horizontal = 15.dp))
@@ -179,7 +179,7 @@ fun Settings(
                                 settings["useSystemIsDark"] = it
                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
                             },
-                            shapes = IconButtonDefaults.toggleableShapes()
+                            shapes = IconButtonDefaults.toggleableShapes(),
                         ) {
                             Icon(Icons.Outlined.BrightnessAuto, null)
                         }
@@ -192,7 +192,7 @@ fun Settings(
                                 settings["isDark"] = !it
                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
                             },
-                            shapes = IconButtonDefaults.toggleableShapes()
+                            shapes = IconButtonDefaults.toggleableShapes(),
                         ) {
                             Icon(Icons.Outlined.LightMode, null)
                         }
@@ -205,7 +205,7 @@ fun Settings(
                                 settings["isDark"] = it
                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
                             },
-                            shapes = IconButtonDefaults.toggleableShapes()
+                            shapes = IconButtonDefaults.toggleableShapes(),
                         ) {
                             Icon(Icons.Outlined.DarkMode, null)
                         }
@@ -301,12 +301,15 @@ fun Settings(
                         subtitle = "Aktuell: ${formateInterval(notificationIntervalMinutes)}",
                         icon = Icons.Outlined.History,
                         enabled = notificationsEnabled,
-                        onClick = if (notificationsEnabled) {
-                            {
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                showIntervalDialog = true
-                            }
-                        } else null,
+                        onClick =
+                            if (notificationsEnabled) {
+                                {
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                    showIntervalDialog = true
+                                }
+                            } else {
+                                null
+                            },
                         position = PreferencePosition.Bottom,
                     )
                 }
@@ -458,7 +461,7 @@ fun Settings(
                         uriHandler.openUri("https://github.com/HansHolz09/Beste-Noten-App")
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                     },
-                    position = PreferencePosition.Top
+                    position = PreferencePosition.Top,
                 )
             }
             item {
@@ -470,7 +473,7 @@ fun Settings(
                         showLicenseDialog = true
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                     },
-                    position = PreferencePosition.Middle
+                    position = PreferencePosition.Middle,
                 )
             }
             item {
@@ -490,7 +493,7 @@ fun Settings(
                     subtitle = "Version ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
                     icon = Icons.Outlined.Info,
                     onClick = onClick,
-                    position = PreferencePosition.Bottom
+                    position = PreferencePosition.Bottom,
                 )
             }
             item {
@@ -546,7 +549,7 @@ fun Settings(
             EnhancedButton(onClick = { showIntervalDialog = false }) {
                 Text("Schließen")
             }
-        }
+        },
     )
 
     val libraries by rememberLibraries {
@@ -559,7 +562,7 @@ fun Settings(
             EnhancedButton(
                 onClick = {
                     showLicenseDialog = false
-                }
+                },
             ) {
                 Text("Schließen")
             }
@@ -570,9 +573,9 @@ fun Settings(
             LibrariesContainer(
                 libraries = libraries,
                 showDescription = true,
-                licenseDialogConfirmText = "Schließen"
+                licenseDialogConfirmText = "Schließen",
             )
-        }
+        },
     )
 
     if (showConfetti) {
@@ -584,7 +587,7 @@ fun Settings(
             },
             onParticleSystemEnded = { _, activeSystems ->
                 if (activeSystems == 0) showConfetti = false
-            }
+            },
         )
     }
 }

@@ -87,6 +87,7 @@ fun Login(
     onNavigateHome: () -> Unit,
 ) {
     val scope = viewModel.viewModelScope
+
     @Suppress("DEPRECATION")
     val clipboard = LocalClipboardManager.current
     val hapticFeedback = LocalHapticFeedback.current
@@ -104,7 +105,7 @@ fun Login(
 
     TopAppBarScaffold(
         title = "Login",
-        hazeState = viewModel.hazeBackgroundState3
+        hazeState = viewModel.hazeBackgroundState3,
     ) { innerPadding, topAppBarBackground ->
         BoxWithConstraints(
             modifier = Modifier.fillMaxSize().hazeSource(viewModel.hazeBackgroundState3),
@@ -115,15 +116,20 @@ fun Login(
             AnimatedContent(
                 targetState = isLoading,
                 modifier = Modifier.align(Alignment.Center),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) { targetState ->
                 if (targetState) {
                     ContainedLoadingIndicator(Modifier.padding(innerPadding))
                 } else {
                     Box(Modifier.verticalScroll(rememberScrollState())) {
                         Column(
-                            modifier = Modifier.padding(vertical = 20.dp).padding(innerPadding).consumeWindowInsets(innerPadding).imePadding(),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            modifier =
+                                Modifier
+                                    .padding(vertical = 20.dp)
+                                    .padding(innerPadding)
+                                    .consumeWindowInsets(innerPadding)
+                                    .imePadding(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             var stayLoggedIn by rememberSaveable { mutableStateOf(false) }
 
@@ -131,7 +137,7 @@ fun Login(
                                 Image(
                                     painter = painterResource(Res.drawable.logo),
                                     contentDescription = null,
-                                    modifier = Modifier.size(150.dp)
+                                    modifier = Modifier.size(150.dp),
                                 )
                                 CurvedText(
                                     text = "Willkommen bei der Beste-Noten-App",
@@ -139,7 +145,7 @@ fun Login(
                                     modifier = Modifier.size(225.dp).rotateForever(10000, false, animationsEnabled),
                                     textStyle = typography.headlineLarge,
                                     startAngle = 110f,
-                                    sweepAngle = 315f
+                                    sweepAngle = 315f,
                                 )
                             }
                             Spacer(Modifier.height(30.dp))
@@ -148,7 +154,7 @@ fun Login(
                                 modifier = modifier,
                                 fontFamily = FontFamilies.Schoolbell(),
                                 textAlign = TextAlign.Center,
-                                style = typography.headlineMedium
+                                style = typography.headlineMedium,
                             )
                             Spacer(Modifier.height(30.dp))
                             val textFieldState = rememberTextFieldState()
@@ -161,7 +167,7 @@ fun Login(
                                             scope.launch {
                                                 textFieldState.setTextAndPlaceCursorAtEnd(clipboard.getText()?.text ?: "")
                                             }
-                                        }
+                                        },
                                     ) {
                                         Icon(Icons.Outlined.ContentPaste, null)
                                     }
@@ -180,38 +186,39 @@ fun Login(
                                                             delay(100)
                                                         }
                                                         callback(chosenStudent!!)
-                                                    }
+                                                    },
                                                 ) {
                                                     viewModel.authToken.value = textFieldState.text.toString()
                                                 }
                                             }
                                         },
-                                        enabled = textFieldState.text.isNotEmpty()
+                                        enabled = textFieldState.text.isNotEmpty(),
                                     ) {
                                         Icon(Icons.AutoMirrored.Outlined.Login, null)
                                     }
                                 },
                                 placeholder = { Text("Private-Access-Token") },
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                onKeyboardAction = KeyboardActionHandler {
-                                    scope.launch {
-                                        viewModel.login(
-                                            stayLoggedIn = stayLoggedIn,
-                                            isLoading = { isLoading = it },
-                                            onNavigateHome = onNavigateHome,
-                                            chooseStudent = { students, callback ->
-                                                chooseStudentDialog = true to students
-                                                while (chosenStudent == null) {
-                                                    delay(100)
-                                                }
-                                                callback(chosenStudent!!)
+                                onKeyboardAction =
+                                    KeyboardActionHandler {
+                                        scope.launch {
+                                            viewModel.login(
+                                                stayLoggedIn = stayLoggedIn,
+                                                isLoading = { isLoading = it },
+                                                onNavigateHome = onNavigateHome,
+                                                chooseStudent = { students, callback ->
+                                                    chooseStudentDialog = true to students
+                                                    while (chosenStudent == null) {
+                                                        delay(100)
+                                                    }
+                                                    callback(chosenStudent!!)
+                                                },
+                                            ) {
+                                                viewModel.authToken.value = textFieldState.text.toString()
                                             }
-                                        ) {
-                                            viewModel.authToken.value = textFieldState.text.toString()
                                         }
-                                    }
-                                },
-                                lineLimits = TextFieldLineLimits.SingleLine
+                                    },
+                                lineLimits = TextFieldLineLimits.SingleLine,
                             )
                             Text("oder")
                             EnhancedButton(
@@ -227,7 +234,7 @@ fun Login(
                                                     delay(100)
                                                 }
                                                 callback(chosenStudent!!)
-                                            }
+                                            },
                                         ) {
                                             val successful = viewModel.getAccessToken()
                                             if (!successful) error("Could not get Token")
@@ -235,7 +242,7 @@ fun Login(
                                     }
                                 },
                                 modifier = modifier,
-                                enabled = getPlatform() != Platform.WEB
+                                enabled = getPlatform() != Platform.WEB,
                             ) {
                                 Text("Login über beste.schule")
                             }
@@ -249,77 +256,77 @@ fun Login(
                                         )
                                     }
                                 },
-                                modifier = modifier
+                                modifier = modifier,
                             ) {
                                 Text("Demo-Account nutzen")
                             }
                             HorizontalDivider(modifier.padding(top = 10.dp))
                             Row(
-                                modifier = modifier
-                                    .clip(shapes.medium)
-                                    .clickable(viewModel.authTokenManager.isAvailable) {
-                                        val newValue = !stayLoggedIn
-                                        stayLoggedIn = newValue
-                                        hapticFeedback.performHapticFeedback(
-                                            if (newValue) {
-                                                HapticFeedbackType.ToggleOn
-                                            } else {
-                                                HapticFeedbackType.ToggleOff
-                                            }
-                                        )
-                                    }
-                                    .padding(start = 10.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "Angemeldet bleiben",
-                                    modifier = Modifier.weight(1f),
-                                    style = typography.bodyLarge
-                                )
-                                EnhancedCheckbox(
-                                    checked = stayLoggedIn,
-                                    onCheckedChange = { stayLoggedIn = it },
-                                    enabled = viewModel.authTokenManager.isAvailable
-                                )
-                            }
-                            if (biometryAuthenticator.isBiometricAvailable()) {
-                                Row(
-                                    modifier = modifier
+                                modifier =
+                                    modifier
                                         .clip(shapes.medium)
-                                        .clickable {
-                                            val newValue = !requireBiometricAuthentification
-                                            if (newValue) {
-                                                biometryAuthenticator.checkBiometryAuthentication(
-                                                    requestTitle = "Bestätigen",
-                                                    requestReason = "Bestätige, um die biometrische Authentifizierung beim Start zu aktiven",
-                                                    scope = scope,
-                                                ) { isSuccessful ->
-                                                    if (isSuccessful) {
-                                                        requireBiometricAuthentification = newValue
-                                                        settings["requireBiometricAuthentification"] = newValue
-                                                    }
-                                                }
-                                            } else {
-                                                requireBiometricAuthentification = newValue
-                                                settings["requireBiometricAuthentification"] = newValue
-                                            }
+                                        .clickable(viewModel.authTokenManager.isAvailable) {
+                                            val newValue = !stayLoggedIn
+                                            stayLoggedIn = newValue
                                             hapticFeedback.performHapticFeedback(
                                                 if (newValue) {
                                                     HapticFeedbackType.ToggleOn
                                                 } else {
                                                     HapticFeedbackType.ToggleOff
-                                                }
+                                                },
                                             )
-                                        }
-                                        .padding(start = 10.dp),
+                                        }.padding(start = 10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = "Angemeldet bleiben",
+                                    modifier = Modifier.weight(1f),
+                                    style = typography.bodyLarge,
+                                )
+                                EnhancedCheckbox(
+                                    checked = stayLoggedIn,
+                                    onCheckedChange = { stayLoggedIn = it },
+                                    enabled = viewModel.authTokenManager.isAvailable,
+                                )
+                            }
+                            if (biometryAuthenticator.isBiometricAvailable()) {
+                                Row(
+                                    modifier =
+                                        modifier
+                                            .clip(shapes.medium)
+                                            .clickable {
+                                                val newValue = !requireBiometricAuthentification
+                                                if (newValue) {
+                                                    biometryAuthenticator.checkBiometryAuthentication(
+                                                        requestTitle = "Bestätigen",
+                                                        requestReason = "Bestätige, um die biometrische Authentifizierung beim Start zu aktiven",
+                                                        scope = scope,
+                                                    ) { isSuccessful ->
+                                                        if (isSuccessful) {
+                                                            requireBiometricAuthentification = newValue
+                                                            settings["requireBiometricAuthentification"] = newValue
+                                                        }
+                                                    }
+                                                } else {
+                                                    requireBiometricAuthentification = newValue
+                                                    settings["requireBiometricAuthentification"] = newValue
+                                                }
+                                                hapticFeedback.performHapticFeedback(
+                                                    if (newValue) {
+                                                        HapticFeedbackType.ToggleOn
+                                                    } else {
+                                                        HapticFeedbackType.ToggleOff
+                                                    },
+                                                )
+                                            }.padding(start = 10.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     Text(
                                         text = "Biometrische Authentifizierung erforderlich",
                                         modifier = Modifier.weight(1f),
-                                        style = typography.bodyLarge
+                                        style = typography.bodyLarge,
                                     )
                                     EnhancedCheckbox(
                                         checked = requireBiometricAuthentification,
@@ -362,7 +369,7 @@ fun Login(
                     chosenStudent = selectedStudent
                     chooseStudentDialog = false to null
                 },
-                enabled = selectedStudent.isNotEmpty()
+                enabled = selectedStudent.isNotEmpty(),
             ) {
                 Text("Wählen")
             }
@@ -371,7 +378,7 @@ fun Login(
             Text(
                 text = "Schüler wählen",
                 modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
         },
         text = {
@@ -386,23 +393,22 @@ fun Login(
                                 .clickable {
                                     selectedStudent = student.id.toString()
                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                }
-                                .padding(horizontal = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                                }.padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             RadioButton(
                                 selected = student.id.toString() == selectedStudent,
-                                onClick = null
+                                onClick = null,
                             )
                             Text(
                                 text = "${student.forename} ${student.name}",
                                 style = typography.bodyLarge,
-                                modifier = Modifier.padding(start = 16.dp)
+                                modifier = Modifier.padding(start = 16.dp),
                             )
                         }
                     }
                 }
             }
-        }
+        },
     )
 }

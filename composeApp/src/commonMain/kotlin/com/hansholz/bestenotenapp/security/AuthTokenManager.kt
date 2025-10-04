@@ -3,17 +3,18 @@ package com.hansholz.bestenotenapp.security
 import com.hansholz.bestenotenapp.main.ExactPlatform
 import com.hansholz.bestenotenapp.main.getExactPlatform
 
-class AuthTokenManager() {
-    private val credentialsStorage = try {
-        if (getExactPlatform() != ExactPlatform.LINUX) {
-            CredentialsStorageFactory().create()
-        } else {
+class AuthTokenManager {
+    private val credentialsStorage =
+        try {
+            if (getExactPlatform() != ExactPlatform.LINUX) {
+                CredentialsStorageFactory().create()
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
             null
         }
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
-    }
 
     val isAvailable = credentialsStorage != null
 
@@ -22,6 +23,7 @@ class AuthTokenManager() {
             credentialsStorage?.setString(KEY, token)
         }
     }
+
     fun getToken(): String? {
         if (isAvailable) {
             val token = credentialsStorage?.getString(KEY)
@@ -30,6 +32,7 @@ class AuthTokenManager() {
             return null
         }
     }
+
     fun deleteToken() {
         if (isAvailable) {
             credentialsStorage?.setString(KEY, "null")

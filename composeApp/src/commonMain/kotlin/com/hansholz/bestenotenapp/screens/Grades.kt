@@ -174,15 +174,19 @@ import io.github.koalaplot.core.xygraph.DefaultPoint
 import io.github.koalaplot.core.xygraph.FloatLinearAxisModel
 import io.github.koalaplot.core.xygraph.Point
 import io.github.koalaplot.core.xygraph.XYGraph
-import kotlin.math.ceil
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.ceil
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class,
-    ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class, ExperimentalKoalaPlotApi::class
+@OptIn(
+    ExperimentalMaterial3ExpressiveApi::class,
+    ExperimentalSharedTransitionApi::class,
+    ExperimentalAnimationApi::class,
+    ExperimentalComposeUiApi::class,
+    ExperimentalKoalaPlotApi::class,
 )
 @Composable
 fun Grades(
@@ -195,6 +199,7 @@ fun Grades(
         val density = LocalDensity.current
         val hapticFeedback = LocalHapticFeedback.current
         val layoutDirection = LocalLayoutDirection.current
+
         @Suppress("DEPRECATION")
         val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
@@ -225,30 +230,33 @@ fun Grades(
         }
 
         TopAppBarScaffold(
-            modifier = Modifier.enhancedSharedBounds(
-                sharedTransitionScope = sharedTransitionScope,
-                sharedContentState = rememberSharedContentState(key = "grades-card"),
-                animatedVisibilityScope = animatedVisibilityScope
-            ),
+            modifier =
+                Modifier.enhancedSharedBounds(
+                    sharedTransitionScope = sharedTransitionScope,
+                    sharedContentState = rememberSharedContentState(key = "grades-card"),
+                    animatedVisibilityScope = animatedVisibilityScope,
+                ),
             title = "Noten",
-            titleModifier = Modifier.enhancedSharedElement(
-                sharedTransitionScope = sharedTransitionScope,
-                sharedContentState = rememberSharedContentState(key = "grades-title"),
-                animatedVisibilityScope = animatedVisibilityScope
-            ).skipToLookaheadSize(),
+            titleModifier =
+                Modifier
+                    .enhancedSharedElement(
+                        sharedTransitionScope = sharedTransitionScope,
+                        sharedContentState = rememberSharedContentState(key = "grades-title"),
+                        animatedVisibilityScope = animatedVisibilityScope,
+                    ).skipToLookaheadSize(),
             navigationIcon = {
                 EnhancedIconButton(
                     onClick = {
                         scope.launch {
                             viewModel.closeOrOpenDrawer(windowWithSizeClass)
                         }
-                    }
+                    },
                 ) {
                     Icon(Icons.Filled.Menu, null)
                 }
             },
             sideMenuExpanded = viewModel.mediumExpandedDrawerState.value.isOpen,
-            hazeState = viewModel.hazeBackgroundState
+            hazeState = viewModel.hazeBackgroundState,
         ) { innerPadding, topAppBarBackground ->
             Box(Modifier.fillMaxSize()) {
                 var topPadding by remember { mutableStateOf(0.dp) }
@@ -263,23 +271,25 @@ fun Grades(
                 val contentBlurRadius = animateDpAsState(if (contentBlurred) 10.dp else 0.dp)
                 val firstLazyListState = rememberLazyListState()
                 val secondLazyListState = rememberLazyListState()
-                val currentLazyListState = when(pagerState.currentPage) {
-                    0 -> firstLazyListState
-                    1 -> secondLazyListState
-                    else -> rememberLazyListState()
-                }
-                val items = remember(viewModel.gradeCollections, selectedYears.size, showCollectionsWithoutGrades, searchQuery, isLoading) {
-                     viewModel
-                        .gradeCollections
-                        .toSet()
-                        .filter { selectedYears.map { it.id }.contains(it.interval?.yearId) }
-                        .filter { if (showCollectionsWithoutGrades) true else it.grades?.size != 0 }
-                        .filter { (it.name ?: "").contains(searchQuery, true) }
-                }
+                val currentLazyListState =
+                    when (pagerState.currentPage) {
+                        0 -> firstLazyListState
+                        1 -> secondLazyListState
+                        else -> rememberLazyListState()
+                    }
+                val items =
+                    remember(viewModel.gradeCollections, selectedYears.size, showCollectionsWithoutGrades, searchQuery, isLoading) {
+                        viewModel
+                            .gradeCollections
+                            .toSet()
+                            .filter { selectedYears.map { it.id }.contains(it.interval?.yearId) }
+                            .filter { if (showCollectionsWithoutGrades) true else it.grades?.size != 0 }
+                            .filter { (it.name ?: "").contains(searchQuery, true) }
+                    }
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.hazeSource(viewModel.hazeBackgroundState).enhancedHazeEffect(blurRadius = contentBlurRadius.value),
-                    userScrollEnabled = userScrollEnabled
+                    userScrollEnabled = userScrollEnabled,
                 ) { currentPage ->
                     AnimatedContent(isLoading || items.isEmpty()) { targetState ->
                         Box(Modifier.fillMaxSize()) {
@@ -288,7 +298,7 @@ fun Grades(
                                     if (isLoading) {
                                         Box(
                                             modifier = Modifier.padding(contentPadding).fillMaxSize(),
-                                            contentAlignment = Alignment.Center
+                                            contentAlignment = Alignment.Center,
                                         ) {
                                             ContainedLoadingIndicator()
                                         }
@@ -296,17 +306,17 @@ fun Grades(
                                         EmptyStateMessage(
                                             title = if (searchQuery.isEmpty()) "Keine Noten vorhanden" else "Keine Noten gefunden",
                                             icon = if (searchQuery.isEmpty()) Icons.Outlined.PlaylistRemove else Icons.Outlined.SearchOff,
-                                            modifier = Modifier.padding(contentPadding).consumeWindowInsets(contentPadding).imePadding()
+                                            modifier = Modifier.padding(contentPadding).consumeWindowInsets(contentPadding).imePadding(),
                                         )
                                     }
                                 }
                             } else {
-                                when(currentPage) {
+                                when (currentPage) {
                                     0 -> {
                                         LazyColumn(
                                             state = firstLazyListState,
                                             contentPadding = contentPadding,
-                                            userScrollEnabled = userScrollEnabled
+                                            userScrollEnabled = userScrollEnabled,
                                         ) {
                                             items(items.sortedByDescending { it.givenAt }.toList()) {
                                                 EnhancedAnimated(
@@ -333,7 +343,15 @@ fun Grades(
                                                                     Spacer(Modifier.height(10.dp))
                                                                     Text("Historie deiner Note:")
                                                                     histories.filterHistory().forEach {
-                                                                        Text("${if (showTeachersWithFirstname) it.conductor?.forename else it.conductor?.forename?.take(1) + "."} ${it.conductor?.name}: ${translateHistoryBody(it.body)}")
+                                                                        Text(
+                                                                            "${if (showTeachersWithFirstname) {
+                                                                                it.conductor?.forename
+                                                                            } else {
+                                                                                it.conductor?.forename?.take(
+                                                                                    1,
+                                                                                ) + "."
+                                                                            }} ${it.conductor?.name}: ${translateHistoryBody(it.body)}",
+                                                                        )
                                                                     }
                                                                 }
                                                             }
@@ -342,7 +360,7 @@ fun Grades(
                                                             GradeValueBox(it.grades?.getOrNull(0)?.value)
                                                         },
                                                         colors = ListItemDefaults.colors(Color.Transparent),
-                                                        modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2)
+                                                        modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2),
                                                     )
                                                 }
                                             }
@@ -353,7 +371,7 @@ fun Grades(
                                             state = secondLazyListState,
                                             modifier = Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding()),
                                             contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
-                                            userScrollEnabled = userScrollEnabled
+                                            userScrollEnabled = userScrollEnabled,
                                         ) {
                                             items
                                                 .sortedWith(compareBy({ it.subject?.name }, { it.givenAt }))
@@ -373,7 +391,7 @@ fun Grades(
                                                             Column(
                                                                 Modifier
                                                                     .fillMaxWidth()
-                                                                    .height(56.dp)
+                                                                    .height(56.dp),
                                                             ) {
                                                                 HorizontalDivider(thickness = 1.dp)
                                                                 Box(Modifier.weight(1f)) {
@@ -382,17 +400,19 @@ fun Grades(
                                                                             .fillMaxSize()
                                                                             .enhancedHazeEffect(viewModel.hazeBackgroundState3, colorScheme.secondaryContainer)
                                                                             .enhancedHazeEffect(viewModel.hazeBackgroundState2, colorScheme.secondaryContainer) {
-                                                                                mask = Brush.verticalGradient(
-                                                                                    colors = listOf(Color.Transparent, Color.Red)
-                                                                                )
-                                                                            }
+                                                                                mask =
+                                                                                    Brush.verticalGradient(
+                                                                                        colors = listOf(Color.Transparent, Color.Red),
+                                                                                    )
+                                                                            },
                                                                     )
                                                                     Text(
                                                                         text = title ?: "Kein Fach",
-                                                                        modifier = Modifier
-                                                                            .align(Alignment.CenterStart)
-                                                                            .padding(start = 16.dp),
-                                                                        style = typography.titleMedium
+                                                                        modifier =
+                                                                            Modifier
+                                                                                .align(Alignment.CenterStart)
+                                                                                .padding(start = 16.dp),
+                                                                        style = typography.titleMedium,
                                                                     )
                                                                 }
                                                                 HorizontalDivider(thickness = 1.dp)
@@ -424,7 +444,15 @@ fun Grades(
                                                                             Spacer(Modifier.height(10.dp))
                                                                             Text("Historie deiner Note:")
                                                                             histories.filterHistory().forEach {
-                                                                                Text("${if (showTeachersWithFirstname) it.conductor?.forename else it.conductor?.forename?.take(1) + "."} ${it.conductor?.name}: ${translateHistoryBody(it.body)}")
+                                                                                Text(
+                                                                                    "${if (showTeachersWithFirstname) {
+                                                                                        it.conductor?.forename
+                                                                                    } else {
+                                                                                        it.conductor?.forename?.take(
+                                                                                            1,
+                                                                                        ) + "."
+                                                                                    }} ${it.conductor?.name}: ${translateHistoryBody(it.body)}",
+                                                                                )
                                                                             }
                                                                         }
                                                                     }
@@ -433,7 +461,7 @@ fun Grades(
                                                                     GradeValueBox(it.grades?.getOrNull(0)?.value)
                                                                 },
                                                                 colors = ListItemDefaults.colors(Color.Transparent),
-                                                                modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2)
+                                                                modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2),
                                                             )
                                                         }
                                                     }
@@ -448,16 +476,17 @@ fun Grades(
                 topAppBarBackground(topPadding)
                 PrimaryTabRow(
                     selectedTabIndex = pagerState.currentPage,
-                    modifier = Modifier
-                        .padding(verticalPadding)
-                        .padding(top = innerPadding.calculateTopPadding())
-                        .onGloballyPositioned {
-                            topPadding = with(density) { it.size.height.toDp() } + innerPadding.calculateTopPadding()
-                        },
+                    modifier =
+                        Modifier
+                            .padding(verticalPadding)
+                            .padding(top = innerPadding.calculateTopPadding())
+                            .onGloballyPositioned {
+                                topPadding = with(density) { it.size.height.toDp() } + innerPadding.calculateTopPadding()
+                            },
                     containerColor = Color.Transparent,
                     divider = {
                         HorizontalDivider(thickness = if (pagerState.currentPage == 0) 2.dp else 1.dp)
-                    }
+                    },
                 ) {
                     Tab(
                         selected = pagerState.currentPage == 0,
@@ -471,9 +500,9 @@ fun Grades(
                             Text(
                                 text = "Nach Datum",
                                 maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
+                                overflow = TextOverflow.Ellipsis,
                             )
-                        }
+                        },
                     )
                     Tab(
                         selected = pagerState.currentPage == 1,
@@ -487,19 +516,20 @@ fun Grades(
                             Text(
                                 text = "Nach Fächern",
                                 maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
+                                overflow = TextOverflow.Ellipsis,
                             )
-                        }
+                        },
                     )
                 }
 
                 SharedTransitionLayout(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .offset(y = -(toolbarContentPadding.calculateBottomPadding() + 12.dp))
-                        .padding(verticalPadding)
-                        .consumeWindowInsets(toolbarContentPadding)
-                        .imePadding()
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .offset(y = -(toolbarContentPadding.calculateBottomPadding() + 12.dp))
+                            .padding(verticalPadding)
+                            .consumeWindowInsets(toolbarContentPadding)
+                            .imePadding(),
                 ) {
                     var state by remember { mutableStateOf(0) }
                     val sharedContentState = rememberSharedContentState(key = "toolbar-card")
@@ -529,48 +559,51 @@ fun Grades(
                             backProgress = 0f
                         }
                     }
-                    val backHandlingModifier = if (isBackInProgress) {
-                        Modifier.scale(1f - (backProgress * 0.2f))
-                    } else {
-                        Modifier
-                    }
+                    val backHandlingModifier =
+                        if (isBackInProgress) {
+                            Modifier.scale(1f - (backProgress * 0.2f))
+                        } else {
+                            Modifier
+                        }
 
                     AnimatedContent(
                         targetState = state,
-                        modifier = Modifier.padding(top = topPadding + 24.dp + innerPadding.calculateBottomPadding()).onGloballyPositioned {
-                            toolbarPadding = with(density) { ime.getBottom(density).toDp() + it.size.height.toDp() + 12.dp }
-                        },
+                        modifier =
+                            Modifier.padding(top = topPadding + 24.dp + innerPadding.calculateBottomPadding()).onGloballyPositioned {
+                                toolbarPadding = with(density) { ime.getBottom(density).toDp() + it.size.height.toDp() + 12.dp }
+                            },
                         contentAlignment = Alignment.BottomCenter,
                         transitionSpec = {
                             fadeIn(animationSpec = tween(250)) togetherWith
-                                    fadeOut(animationSpec = tween(250)) using
-                                    SizeTransform(
-                                        clip = false,
-                                        sizeAnimationSpec = { _, _ ->
-                                            spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
-                                        }
-                                    )
+                                fadeOut(animationSpec = tween(250)) using
+                                SizeTransform(
+                                    clip = false,
+                                    sizeAnimationSpec = { _, _ ->
+                                        spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
+                                    },
+                                )
                         },
                     ) { targetState ->
                         when (targetState) {
                             0 -> {
                                 Box(
-                                    contentAlignment = Alignment.BottomCenter
+                                    contentAlignment = Alignment.BottomCenter,
                                 ) {
                                     HorizontalFloatingToolbar(
                                         expanded = currentLazyListState.isScrollingUp(),
-                                        modifier = Modifier
-                                            .enhancedSharedBounds(
-                                                sharedTransitionScope = sharedTransitionScope,
-                                                sharedContentState = sharedContentState,
-                                                animatedVisibilityScope = this@AnimatedContent,
-                                                boundsTransform = { _, _ ->
-                                                    spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
-                                                },
-                                                resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
-                                                renderInOverlayDuringTransition = false
-                                            )
-                                            .clip(FloatingToolbarDefaults.ContainerShape).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
+                                        modifier =
+                                            Modifier
+                                                .enhancedSharedBounds(
+                                                    sharedTransitionScope = sharedTransitionScope,
+                                                    sharedContentState = sharedContentState,
+                                                    animatedVisibilityScope = this@AnimatedContent,
+                                                    boundsTransform = { _, _ ->
+                                                        spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
+                                                    },
+                                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
+                                                    renderInOverlayDuringTransition = false,
+                                                ).clip(FloatingToolbarDefaults.ContainerShape)
+                                                .enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
                                         colors = FloatingToolbarDefaults.standardFloatingToolbarColors(Color.Transparent),
                                         leadingContent = {
                                             EnhancedIconButton(
@@ -579,12 +612,12 @@ fun Grades(
                                                     isBackInProgress = false
                                                     backProgress = 0f
                                                 },
-                                                enabled = !isLoading
+                                                enabled = !isLoading,
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Outlined.Search,
                                                     contentDescription = null,
-                                                    tint = colorScheme.onPrimaryContainer
+                                                    tint = colorScheme.onPrimaryContainer,
                                                 )
                                             }
                                             EnhancedIconButton(
@@ -595,12 +628,12 @@ fun Grades(
                                                     userScrollEnabled = false
                                                     contentBlurred = true
                                                 },
-                                                enabled = viewModel.years.isNotEmpty() && !isLoading
+                                                enabled = viewModel.years.isNotEmpty() && !isLoading,
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Outlined.CalendarMonth,
                                                     contentDescription = null,
-                                                    tint = colorScheme.onPrimaryContainer
+                                                    tint = colorScheme.onPrimaryContainer,
                                                 )
                                             }
                                         },
@@ -623,12 +656,12 @@ fun Grades(
                                                         }
                                                     }
                                                 },
-                                                enabled = viewModel.years.isNotEmpty() && !isLoading
+                                                enabled = viewModel.years.isNotEmpty() && !isLoading,
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Outlined.Refresh,
                                                     contentDescription = null,
-                                                    tint = colorScheme.onPrimaryContainer
+                                                    tint = colorScheme.onPrimaryContainer,
                                                 )
                                             }
                                             EnhancedIconButton(
@@ -639,17 +672,17 @@ fun Grades(
                                                     userScrollEnabled = false
                                                     contentBlurred = true
                                                 },
-                                                enabled = !isLoading
+                                                enabled = !isLoading,
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Outlined.Settings,
                                                     contentDescription = null,
-                                                    tint = colorScheme.onPrimaryContainer
+                                                    tint = colorScheme.onPrimaryContainer,
                                                 )
                                             }
                                         },
                                         collapsedShadowElevation = 0.dp,
-                                        expandedShadowElevation = 0.dp
+                                        expandedShadowElevation = 0.dp,
                                     ) {
                                         EnhancedIconButton(
                                             onClick = {
@@ -661,15 +694,16 @@ fun Grades(
                                             },
                                             enabled = !isLoading,
                                             modifier = Modifier.width(64.dp),
-                                            colors = IconButtonDefaults.filledIconButtonColors(
-                                                containerColor = colorScheme.primary.copy(0.5f),
-                                                disabledContainerColor = Color.Transparent
-                                            )
+                                            colors =
+                                                IconButtonDefaults.filledIconButtonColors(
+                                                    containerColor = colorScheme.primary.copy(0.5f),
+                                                    disabledContainerColor = Color.Transparent,
+                                                ),
                                         ) { enabled ->
                                             Icon(
                                                 imageVector = Icons.Outlined.BarChart,
                                                 contentDescription = null,
-                                                tint = if (enabled) colorScheme.onPrimary else colorScheme.onPrimaryContainer
+                                                tint = if (enabled) colorScheme.onPrimary else colorScheme.onPrimaryContainer,
                                             )
                                         }
                                     }
@@ -677,28 +711,29 @@ fun Grades(
                             }
                             1 -> {
                                 Box(
-                                    contentAlignment = Alignment.BottomCenter
+                                    contentAlignment = Alignment.BottomCenter,
                                 ) {
                                     Card(
-                                        modifier = Modifier
-                                            .enhancedSharedBounds(
-                                                sharedTransitionScope = sharedTransitionScope,
-                                                sharedContentState = sharedContentState,
-                                                animatedVisibilityScope = this@AnimatedContent,
-                                                boundsTransform = { _, _ ->
-                                                    spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
-                                                },
-                                                resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds
-                                            )
-                                            .then(backHandlingModifier)
-                                            .padding(horizontal = 12.dp)
-                                            .sizeIn(maxWidth = 500.dp)
-                                            .clip(RoundedCornerShape(16.dp)).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
-                                        colors = CardDefaults.cardColors(Color.Transparent)
+                                        modifier =
+                                            Modifier
+                                                .enhancedSharedBounds(
+                                                    sharedTransitionScope = sharedTransitionScope,
+                                                    sharedContentState = sharedContentState,
+                                                    animatedVisibilityScope = this@AnimatedContent,
+                                                    boundsTransform = { _, _ ->
+                                                        spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
+                                                    },
+                                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
+                                                ).then(backHandlingModifier)
+                                                .padding(horizontal = 12.dp)
+                                                .sizeIn(maxWidth = 500.dp)
+                                                .clip(RoundedCornerShape(16.dp))
+                                                .enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
+                                        colors = CardDefaults.cardColors(Color.Transparent),
                                     ) {
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
-                                            verticalAlignment = Alignment.CenterVertically
+                                            verticalAlignment = Alignment.CenterVertically,
                                         ) {
                                             val focusRequester = remember { FocusRequester() }
                                             LaunchedEffect(Unit) {
@@ -706,12 +741,12 @@ fun Grades(
                                             }
                                             EnhancedIconButton(
                                                 onClick = {},
-                                                enabled = false
+                                                enabled = false,
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Outlined.Search,
                                                     contentDescription = null,
-                                                    tint = colorScheme.onPrimaryContainer
+                                                    tint = colorScheme.onPrimaryContainer,
                                                 )
                                             }
                                             BasicTextField(
@@ -720,7 +755,7 @@ fun Grades(
                                                 modifier = Modifier.weight(1f).padding(vertical = 15.dp).focusRequester(focusRequester),
                                                 singleLine = true,
                                                 textStyle = TextStyle.Default.copy(colorScheme.onPrimaryContainer, 20.sp),
-                                                cursorBrush = SolidColor(colorScheme.onPrimaryContainer)
+                                                cursorBrush = SolidColor(colorScheme.onPrimaryContainer),
                                             )
                                             EnhancedIconButton(
                                                 onClick = {
@@ -731,12 +766,12 @@ fun Grades(
                                                         delay(250)
                                                         if (state == 0) userScrollEnabled = true
                                                     }
-                                                }
+                                                },
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Outlined.Close,
                                                     contentDescription = null,
-                                                    tint = colorScheme.onPrimaryContainer
+                                                    tint = colorScheme.onPrimaryContainer,
                                                 )
                                             }
                                         }
@@ -745,24 +780,25 @@ fun Grades(
                             }
                             2 -> {
                                 Box(
-                                    contentAlignment = Alignment.BottomCenter
+                                    contentAlignment = Alignment.BottomCenter,
                                 ) {
                                     Card(
-                                        modifier = Modifier
-                                            .enhancedSharedBounds(
-                                                sharedTransitionScope = sharedTransitionScope,
-                                                sharedContentState = sharedContentState,
-                                                animatedVisibilityScope = this@AnimatedContent,
-                                                boundsTransform = { _, _ ->
-                                                    spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
-                                                },
-                                                resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds
-                                            )
-                                            .then(backHandlingModifier)
-                                            .padding(horizontal = 12.dp)
-                                            .sizeIn(maxWidth = 500.dp)
-                                            .clip(RoundedCornerShape(16.dp)).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
-                                        colors = CardDefaults.cardColors(Color.Transparent)
+                                        modifier =
+                                            Modifier
+                                                .enhancedSharedBounds(
+                                                    sharedTransitionScope = sharedTransitionScope,
+                                                    sharedContentState = sharedContentState,
+                                                    animatedVisibilityScope = this@AnimatedContent,
+                                                    boundsTransform = { _, _ ->
+                                                        spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
+                                                    },
+                                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
+                                                ).then(backHandlingModifier)
+                                                .padding(horizontal = 12.dp)
+                                                .sizeIn(maxWidth = 500.dp)
+                                                .clip(RoundedCornerShape(16.dp))
+                                                .enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
+                                        colors = CardDefaults.cardColors(Color.Transparent),
                                     ) {
                                         LaunchedEffect(Unit) {
                                             if (!viewModel.allGradeCollectionsLoaded.value) {
@@ -783,7 +819,7 @@ fun Grades(
                                         )
                                         ProvideTextStyle(LocalTextStyle.current.copy(colorScheme.onPrimaryContainer)) {
                                             LazyColumn(
-                                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                                                verticalArrangement = Arrangement.spacedBy(8.dp),
                                             ) {
                                                 items(viewModel.years) { year ->
                                                     Row(
@@ -799,11 +835,11 @@ fun Grades(
                                                                     selectedYears.add(year)
                                                                 }
                                                             },
-                                                            enabled = !isLoading
+                                                            enabled = !isLoading,
                                                         )
                                                         Text(
                                                             text = "${year.name} (${formateDate(year.from)} - ${formateDate(year.to)})",
-                                                            style = typography.bodyLarge
+                                                            style = typography.bodyLarge,
                                                         )
                                                     }
                                                 }
@@ -819,7 +855,7 @@ fun Grades(
                                                 }
                                             },
                                             enabled = !isLoading,
-                                            modifier = Modifier.padding(10.dp).align(Alignment.End)
+                                            modifier = Modifier.padding(10.dp).align(Alignment.End),
                                         ) {
                                             AnimatedContent(isLoading) {
                                                 if (it) {
@@ -834,24 +870,25 @@ fun Grades(
                             }
                             3 -> {
                                 Box(
-                                    contentAlignment = Alignment.BottomCenter
+                                    contentAlignment = Alignment.BottomCenter,
                                 ) {
                                     Card(
-                                        modifier = Modifier
-                                            .enhancedSharedBounds(
-                                                sharedTransitionScope = sharedTransitionScope,
-                                                sharedContentState = sharedContentState,
-                                                animatedVisibilityScope = this@AnimatedContent,
-                                                boundsTransform = { _, _ ->
-                                                    spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
-                                                },
-                                                resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds
-                                            )
-                                            .then(backHandlingModifier)
-                                            .padding(horizontal = 12.dp)
-                                            .sizeIn(maxWidth = 500.dp)
-                                            .clip(RoundedCornerShape(16.dp)).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
-                                        colors = CardDefaults.cardColors(Color.Transparent)
+                                        modifier =
+                                            Modifier
+                                                .enhancedSharedBounds(
+                                                    sharedTransitionScope = sharedTransitionScope,
+                                                    sharedContentState = sharedContentState,
+                                                    animatedVisibilityScope = this@AnimatedContent,
+                                                    boundsTransform = { _, _ ->
+                                                        spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
+                                                    },
+                                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
+                                                ).then(backHandlingModifier)
+                                                .padding(horizontal = 12.dp)
+                                                .sizeIn(maxWidth = 500.dp)
+                                                .clip(RoundedCornerShape(16.dp))
+                                                .enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
+                                        colors = CardDefaults.cardColors(Color.Transparent),
                                     ) {
                                         Text(
                                             text = "Einstellungen",
@@ -862,7 +899,7 @@ fun Grades(
                                         ProvideTextStyle(LocalTextStyle.current.copy(colorScheme.onPrimaryContainer)) {
                                             LazyColumn(
                                                 modifier = Modifier.weight(1f, false),
-                                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                                                verticalArrangement = Arrangement.spacedBy(2.dp),
                                             ) {
                                                 settingsToggleItem(
                                                     checked = showGradeHistory,
@@ -910,7 +947,7 @@ fun Grades(
                                                     if (state == 0) userScrollEnabled = true
                                                 }
                                             },
-                                            modifier = Modifier.padding(10.dp).align(Alignment.End)
+                                            modifier = Modifier.padding(10.dp).align(Alignment.End),
                                         ) {
                                             Text("Schließen")
                                         }
@@ -919,25 +956,26 @@ fun Grades(
                             }
                             4 -> {
                                 Box(
-                                    contentAlignment = Alignment.BottomCenter
+                                    contentAlignment = Alignment.BottomCenter,
                                 ) {
                                     val hazeState = rememberHazeState()
                                     Card(
-                                        modifier = Modifier
-                                            .enhancedSharedBounds(
-                                                sharedTransitionScope = sharedTransitionScope,
-                                                sharedContentState = sharedContentState,
-                                                animatedVisibilityScope = this@AnimatedContent,
-                                                boundsTransform = { _, _ ->
-                                                    spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
-                                                },
-                                                resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds
-                                            )
-                                            .then(backHandlingModifier)
-                                            .padding(horizontal = 12.dp)
-                                            .sizeIn(maxWidth = 600.dp)
-                                            .clip(RoundedCornerShape(16.dp)).enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.surfaceContainerHighest),
-                                        colors = CardDefaults.cardColors(Color.Transparent)
+                                        modifier =
+                                            Modifier
+                                                .enhancedSharedBounds(
+                                                    sharedTransitionScope = sharedTransitionScope,
+                                                    sharedContentState = sharedContentState,
+                                                    animatedVisibilityScope = this@AnimatedContent,
+                                                    boundsTransform = { _, _ ->
+                                                        spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
+                                                    },
+                                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
+                                                ).then(backHandlingModifier)
+                                                .padding(horizontal = 12.dp)
+                                                .sizeIn(maxWidth = 600.dp)
+                                                .clip(RoundedCornerShape(16.dp))
+                                                .enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.surfaceContainerHighest),
+                                        colors = CardDefaults.cardColors(Color.Transparent),
                                     ) {
                                         Box {
                                             var analyzeYears by remember { mutableStateOf(false) }
@@ -950,11 +988,22 @@ fun Grades(
                                             val secondLazyListState = rememberLazyListState()
                                             val lazyListState = if (analyzeYears) secondLazyListState else firstLazyListState
 
-                                            val filteredGrades = viewModel.gradeCollections
-                                                .toSet().filter { selectedYears.map { it.id }.contains(it.interval?.yearId) }
-                                                .filter { !it.grades.isNullOrEmpty() && it.grades.firstOrNull()?.value?.take(1)?.toIntOrNull() != null }
-                                            val allFilteredGrades = viewModel.gradeCollections
-                                                .asSequence().filter { it.interval?.yearId != null && !it.grades.isNullOrEmpty() }
+                                            val filteredGrades =
+                                                viewModel.gradeCollections
+                                                    .toSet()
+                                                    .filter { selectedYears.map { it.id }.contains(it.interval?.yearId) }
+                                                    .filter {
+                                                        !it.grades.isNullOrEmpty() &&
+                                                            it.grades
+                                                                .firstOrNull()
+                                                                ?.value
+                                                                ?.take(1)
+                                                                ?.toIntOrNull() != null
+                                                    }
+                                            val allFilteredGrades =
+                                                viewModel.gradeCollections
+                                                    .asSequence()
+                                                    .filter { it.interval?.yearId != null && !it.grades.isNullOrEmpty() }
 
                                             AnimatedContent(analyzeYears) { analyzeYears ->
                                                 if (!analyzeYears) {
@@ -962,12 +1011,18 @@ fun Grades(
                                                         modifier = Modifier.hazeSource(hazeState),
                                                         state = firstLazyListState,
                                                         contentPadding = PaddingValues(top = titleHeight, bottom = closeBarHeight),
-                                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                                        verticalArrangement = Arrangement.spacedBy(8.dp),
                                                     ) {
                                                         item {
-                                                            val grades = filteredGrades
-                                                                .filter { !filterSubjects || !deselectedSubjects.contains(it.subject?.name) }
-                                                                .map { it.grades!![0].value.take(1).toIntOrNull() ?: 0 }.sorted()
+                                                            val grades =
+                                                                filteredGrades
+                                                                    .filter { !filterSubjects || !deselectedSubjects.contains(it.subject?.name) }
+                                                                    .map {
+                                                                        it.grades!![0]
+                                                                            .value
+                                                                            .take(1)
+                                                                            .toIntOrNull() ?: 0
+                                                                    }.sorted()
 
                                                             if (grades.isNotEmpty()) {
                                                                 val counts: Map<Int, Int> = grades.groupingBy { it }.eachCount()
@@ -977,31 +1032,34 @@ fun Grades(
 
                                                                 val completeGrades: List<Pair<Int, Int>> = (minX..maxX).map { x -> x to (counts[x] ?: 0) }
 
-                                                                val barChartEntries = buildList {
-                                                                    completeGrades.forEach { (x, c) ->
-                                                                        add(
-                                                                            DefaultVerticalBarPlotEntry(
-                                                                                x.toFloat(),
-                                                                                DefaultVerticalBarPosition(0f, c.toFloat())
+                                                                val barChartEntries =
+                                                                    buildList {
+                                                                        completeGrades.forEach { (x, c) ->
+                                                                            add(
+                                                                                DefaultVerticalBarPlotEntry(
+                                                                                    x.toFloat(),
+                                                                                    DefaultVerticalBarPosition(0f, c.toFloat()),
+                                                                                ),
                                                                             )
-                                                                        )
+                                                                        }
                                                                     }
-                                                                }
 
                                                                 val yMax = maxOf(1, completeGrades.maxOf { it.second })
 
                                                                 XYGraph(
-                                                                    xAxisModel = FloatLinearAxisModel(
-                                                                        (minX - 1).toFloat()..(maxX + 1).toFloat(),
-                                                                        minimumMajorTickIncrement = 1f,
-                                                                        minimumMajorTickSpacing = 10.dp,
-                                                                        minorTickCount = 0
-                                                                    ),
-                                                                    yAxisModel = FloatLinearAxisModel(
-                                                                        0f..yMax.toFloat(),
-                                                                        minimumMajorTickIncrement = 1f,
-                                                                        minorTickCount = 0
-                                                                    ),
+                                                                    xAxisModel =
+                                                                        FloatLinearAxisModel(
+                                                                            (minX - 1).toFloat()..(maxX + 1).toFloat(),
+                                                                            minimumMajorTickIncrement = 1f,
+                                                                            minimumMajorTickSpacing = 10.dp,
+                                                                            minorTickCount = 0,
+                                                                        ),
+                                                                    yAxisModel =
+                                                                        FloatLinearAxisModel(
+                                                                            0f..yMax.toFloat(),
+                                                                            minimumMajorTickIncrement = 1f,
+                                                                            minorTickCount = 0,
+                                                                        ),
                                                                     modifier = Modifier.padding(10.dp).height(400.dp),
                                                                     xAxisLabels = {
                                                                         try {
@@ -1020,7 +1078,7 @@ fun Grades(
                                                                             DefaultVerticalBar(
                                                                                 brush = SolidColor(colorScheme.primary),
                                                                                 modifier = Modifier.fillMaxWidth(),
-                                                                                shape = RoundedCornerShape(8.dp)
+                                                                                shape = RoundedCornerShape(8.dp),
                                                                             ) {
                                                                                 Surface(
                                                                                     shadowElevation = 2.dp,
@@ -1039,13 +1097,13 @@ fun Grades(
                                                                 Text(
                                                                     "Noch keine Noten vorhanden",
                                                                     modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                                                    textAlign = TextAlign.Center
+                                                                    textAlign = TextAlign.Center,
                                                                 )
                                                             }
                                                         }
                                                     }
                                                 } else {
-                                                    /* Pre-generated by AI */
+                                                    // Pre-generated by AI
                                                     AnimatedContent(isLoading) { targetState ->
                                                         Box(Modifier.fillMaxWidth().sizeIn(minHeight = 300.dp)) {
                                                             if (targetState) {
@@ -1053,96 +1111,123 @@ fun Grades(
                                                             } else {
                                                                 val gradeCollections = viewModel.gradeCollections
                                                                 val years = viewModel.years
-                                                                val processedData = remember(gradeCollections, years, filterSubjects, deselectedSubjects.size) {
-                                                                    val allGradesByYear = allFilteredGrades
-                                                                        .filter { !filterSubjects || !deselectedSubjects.contains(it.subject?.name) }
-                                                                        .flatMap { gc -> gc.grades!!.map { gc.interval!!.yearId to normalizeGrade(it.value) } }
-                                                                        .filter { it.second != "N/A" }
-                                                                        .toList()
+                                                                val processedData =
+                                                                    remember(gradeCollections, years, filterSubjects, deselectedSubjects.size) {
+                                                                        val allGradesByYear =
+                                                                            allFilteredGrades
+                                                                                .filter { !filterSubjects || !deselectedSubjects.contains(it.subject?.name) }
+                                                                                .flatMap { gc -> gc.grades!!.map { gc.interval!!.yearId to normalizeGrade(it.value) } }
+                                                                                .filter { it.second != "N/A" }
+                                                                                .toList()
 
-                                                                    val groupedByYear = allGradesByYear
-                                                                        .groupBy({ it.first }, { it.second })
-                                                                        .mapValues { it.value.groupingBy { grade -> grade }.eachCount() }
+                                                                        val groupedByYear =
+                                                                            allGradesByYear
+                                                                                .groupBy({ it.first }, { it.second })
+                                                                                .mapValues { it.value.groupingBy { grade -> grade }.eachCount() }
 
-                                                                    val sortedYears = groupedByYear.keys.sorted()
-                                                                    val uniqueGrades = groupedByYear.values
-                                                                        .flatMap { it.keys }
-                                                                        .distinct()
-                                                                        .sortedBy { it.toIntOrNull() ?: Int.MAX_VALUE }
+                                                                        val sortedYears = groupedByYear.keys.sorted()
+                                                                        val uniqueGrades =
+                                                                            groupedByYear.values
+                                                                                .flatMap { it.keys }
+                                                                                .distinct()
+                                                                                .sortedBy { it.toIntOrNull() ?: Int.MAX_VALUE }
 
-                                                                    val barChartEntries = sortedYears.map { yearId ->
-                                                                        val yearName = years.firstOrNull { it.id == yearId }?.name.orEmpty().removeRange(0,2).removeRange(3,5)
-                                                                        val counts = groupedByYear[yearId] ?: emptyMap()
-                                                                        object : VerticalBarPlotGroupedPointEntry<String, Float> {
-                                                                            override val x = yearName.ifEmpty { yearId.toString() }
-                                                                            override val y = uniqueGrades.map { grade ->
-                                                                                DefaultVerticalBarPosition(0f, counts[grade]?.toFloat() ?: 0f)
+                                                                        val barChartEntries =
+                                                                            sortedYears.map { yearId ->
+                                                                                val yearName =
+                                                                                    years
+                                                                                        .firstOrNull { it.id == yearId }
+                                                                                        ?.name
+                                                                                        .orEmpty()
+                                                                                        .removeRange(0, 2)
+                                                                                        .removeRange(3, 5)
+                                                                                val counts = groupedByYear[yearId] ?: emptyMap()
+                                                                                object : VerticalBarPlotGroupedPointEntry<String, Float> {
+                                                                                    override val x = yearName.ifEmpty { yearId.toString() }
+                                                                                    override val y =
+                                                                                        uniqueGrades.map { grade ->
+                                                                                            DefaultVerticalBarPosition(0f, counts[grade]?.toFloat() ?: 0f)
+                                                                                        }
+                                                                                }
+                                                                            }
+
+                                                                        val pivotedData = mutableMapOf<String, MutableMap<Int, Int>>()
+                                                                        groupedByYear.forEach { (yearId, grades) ->
+                                                                            grades.forEach { (grade, count) ->
+                                                                                pivotedData.getOrPut(grade) { mutableMapOf() }[yearId] = count
                                                                             }
                                                                         }
-                                                                    }
+                                                                        val sortedGrades = uniqueGrades
+                                                                        val yearColors = generateHueColorPalette(sortedYears.size)
 
-                                                                    val pivotedData = mutableMapOf<String, MutableMap<Int, Int>>()
-                                                                    groupedByYear.forEach { (yearId, grades) ->
-                                                                        grades.forEach { (grade, count) ->
-                                                                            pivotedData.getOrPut(grade) { mutableMapOf() }[yearId] = count
-                                                                        }
-                                                                    }
-                                                                    val sortedGrades = uniqueGrades
-                                                                    val yearColors = generateHueColorPalette(sortedYears.size)
-
-                                                                    val stackedEntries = sortedGrades.map { grade ->
-                                                                        object : VerticalBarPlotStackedPointEntry<String, Float> {
-                                                                            override val x = grade
-                                                                            override val yOrigin = 0f
-                                                                            override val y = pivotedData[grade]
-                                                                                ?.let { counts ->
-                                                                                    sortedYears.map { counts[it]?.toFloat() ?: 0f }
-                                                                                        .scan(0f) { acc, v -> acc + v }
-                                                                                        .drop(1)
+                                                                        val stackedEntries =
+                                                                            sortedGrades.map { grade ->
+                                                                                object : VerticalBarPlotStackedPointEntry<String, Float> {
+                                                                                    override val x = grade
+                                                                                    override val yOrigin = 0f
+                                                                                    override val y =
+                                                                                        pivotedData[grade]
+                                                                                            ?.let { counts ->
+                                                                                                sortedYears
+                                                                                                    .map { counts[it]?.toFloat() ?: 0f }
+                                                                                                    .scan(0f) { acc, v -> acc + v }
+                                                                                                    .drop(1)
+                                                                                            }
+                                                                                            ?: emptyList()
                                                                                 }
-                                                                                ?: emptyList()
-                                                                        }
+                                                                            }
+
+                                                                        val averageGrades =
+                                                                            groupedByYear
+                                                                                .mapNotNull { (yearId, counts) ->
+                                                                                    val total = counts.values.sum()
+                                                                                    if (total > 0) {
+                                                                                        val sum = counts.entries.sumOf { (g, c) -> (g.toIntOrNull() ?: 0) * c }
+                                                                                        yearId to (sum.toFloat() / total)
+                                                                                    } else {
+                                                                                        null
+                                                                                    }
+                                                                                }.toMap()
+
+                                                                        val avgPlot =
+                                                                            averageGrades.keys.sorted().map { yearId ->
+                                                                                val yearName =
+                                                                                    years
+                                                                                        .firstOrNull { it.id == yearId }
+                                                                                        ?.name
+                                                                                        .orEmpty()
+                                                                                        .removeRange(0, 2)
+                                                                                        .removeRange(3, 5)
+                                                                                DefaultPoint(yearName.ifEmpty { yearId.toString() }, averageGrades[yearId]!!)
+                                                                            }
+
+                                                                        val polarData =
+                                                                            uniqueGrades.map { grade ->
+                                                                                sortedYears.map { yearId ->
+                                                                                    val count = groupedByYear[yearId]?.get(grade)?.toFloat() ?: 0f
+                                                                                    val yearName = years.firstOrNull { it.id == yearId }?.name.orEmpty()
+                                                                                    DefaultPolarPoint(count, yearName.ifEmpty { yearId.toString() })
+                                                                                }
+                                                                            }
+
+                                                                        mapOf(
+                                                                            "grouped" to groupedByYear,
+                                                                            "sortedYears" to sortedYears,
+                                                                            "uniqueGrades" to uniqueGrades,
+                                                                            "barEntries" to barChartEntries,
+                                                                            "stackedEntries" to stackedEntries,
+                                                                            "avgPlot" to avgPlot,
+                                                                            "polarData" to polarData,
+                                                                            "yearColors" to yearColors,
+                                                                        )
                                                                     }
-
-                                                                    val averageGrades = groupedByYear.mapNotNull { (yearId, counts) ->
-                                                                        val total = counts.values.sum()
-                                                                        if (total > 0) {
-                                                                            val sum = counts.entries.sumOf { (g, c) -> (g.toIntOrNull() ?: 0) * c }
-                                                                            yearId to (sum.toFloat() / total)
-                                                                        } else null
-                                                                    }.toMap()
-
-                                                                    val avgPlot = averageGrades.keys.sorted().map { yearId ->
-                                                                        val yearName = years.firstOrNull { it.id == yearId }?.name.orEmpty().removeRange(0,2).removeRange(3,5)
-                                                                        DefaultPoint(yearName.ifEmpty { yearId.toString() }, averageGrades[yearId]!!)
-                                                                    }
-
-                                                                    val polarData = uniqueGrades.map { grade ->
-                                                                        sortedYears.map { yearId ->
-                                                                            val count = groupedByYear[yearId]?.get(grade)?.toFloat() ?: 0f
-                                                                            val yearName = years.firstOrNull { it.id == yearId }?.name.orEmpty()
-                                                                            DefaultPolarPoint(count, yearName.ifEmpty { yearId.toString() })
-                                                                        }
-                                                                    }
-
-                                                                    mapOf(
-                                                                        "grouped" to groupedByYear,
-                                                                        "sortedYears" to sortedYears,
-                                                                        "uniqueGrades" to uniqueGrades,
-                                                                        "barEntries" to barChartEntries,
-                                                                        "stackedEntries" to stackedEntries,
-                                                                        "avgPlot" to avgPlot,
-                                                                        "polarData" to polarData,
-                                                                        "yearColors" to yearColors
-                                                                    )
-                                                                }
 
                                                                 @Suppress("UNCHECKED_CAST")
                                                                 LazyColumn(
                                                                     modifier = Modifier.hazeSource(hazeState),
                                                                     state = secondLazyListState,
                                                                     contentPadding = PaddingValues(top = titleHeight, bottom = closeBarHeight),
-                                                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                                                    verticalArrangement = Arrangement.spacedBy(8.dp),
                                                                 ) {
                                                                     item {
                                                                         val grouped = processedData["grouped"] as Map<Int, Map<String, Int>>
@@ -1150,14 +1235,15 @@ fun Grades(
                                                                         val barEntries = processedData["barEntries"] as List<VerticalBarPlotGroupedPointEntry<String, Float>>
                                                                         val maxCount = grouped.values.maxOfOrNull { it.values.maxOrNull() ?: 0 }?.toFloat() ?: 1f
 
-                                                                        val gradeColors = listOf(
-                                                                            Color(0xFF4CAF50),
-                                                                            Color(0xFF8BC34A),
-                                                                            Color(0xFFCDDC39),
-                                                                            Color(0xFFFFEB3B),
-                                                                            Color(0xFFFF9800),
-                                                                            Color(0xFFF44336)
-                                                                        )
+                                                                        val gradeColors =
+                                                                            listOf(
+                                                                                Color(0xFF4CAF50),
+                                                                                Color(0xFF8BC34A),
+                                                                                Color(0xFFCDDC39),
+                                                                                Color(0xFFFFEB3B),
+                                                                                Color(0xFFFF9800),
+                                                                                Color(0xFFF44336),
+                                                                            )
 
                                                                         ChartLayout(
                                                                             modifier = Modifier.padding(10.dp).height(400.dp),
@@ -1165,35 +1251,45 @@ fun Grades(
                                                                                 FlowLegend(
                                                                                     itemCount = uniqueGrades.size,
                                                                                     symbol = { i ->
-                                                                                        Symbol(modifier = Modifier.size(12.dp).clip(CircleShape), fillBrush = SolidColor(gradeColors[i % gradeColors.size]))
+                                                                                        Symbol(
+                                                                                            modifier = Modifier.size(12.dp).clip(CircleShape),
+                                                                                            fillBrush =
+                                                                                                SolidColor(
+                                                                                                    gradeColors[
+                                                                                                        i %
+                                                                                                            gradeColors.size,
+                                                                                                    ],
+                                                                                                ),
+                                                                                        )
                                                                                     },
                                                                                     label = { i -> Text("Note ${uniqueGrades[i]}") },
-                                                                                    modifier = Modifier.padding(top = 16.dp)
+                                                                                    modifier = Modifier.padding(top = 16.dp),
                                                                                 )
                                                                             },
-                                                                            legendLocation = LegendLocation.BOTTOM
+                                                                            legendLocation = LegendLocation.BOTTOM,
                                                                         ) {
                                                                             XYGraph(
                                                                                 xAxisModel = CategoryAxisModel(categories = barEntries.map { it.x }),
-                                                                                yAxisModel = FloatLinearAxisModel(
-                                                                                    range = 0f..maxCount,
-                                                                                    minimumMajorTickIncrement = 1f,
-                                                                                    minorTickCount = 0
-                                                                                ),
+                                                                                yAxisModel =
+                                                                                    FloatLinearAxisModel(
+                                                                                        range = 0f..maxCount,
+                                                                                        minimumMajorTickIncrement = 1f,
+                                                                                        minorTickCount = 0,
+                                                                                    ),
                                                                                 xAxisLabels = { it },
                                                                                 yAxisLabels = { it.toInt().toString() },
                                                                                 xAxisTitle = "Jahr",
-                                                                                yAxisTitle = "Anzahl"
+                                                                                yAxisTitle = "Anzahl",
                                                                             ) {
                                                                                 GroupedVerticalBarPlot(
                                                                                     data = barEntries,
                                                                                     bar = { _, groupIndex, _ ->
                                                                                         DefaultVerticalBar(
                                                                                             brush = SolidColor(gradeColors[groupIndex % gradeColors.size]),
-                                                                                            shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
+                                                                                            shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
                                                                                         )
                                                                                     },
-                                                                                    animationSpec = KoalaPlotTheme.animationSpec
+                                                                                    animationSpec = KoalaPlotTheme.animationSpec,
                                                                                 )
                                                                             }
                                                                         }
@@ -1214,14 +1310,14 @@ fun Grades(
                                                                                     symbol = { i ->
                                                                                         Symbol(
                                                                                             modifier = Modifier.size(12.dp).clip(CircleShape),
-                                                                                            fillBrush = SolidColor(yearColors[i])
+                                                                                            fillBrush = SolidColor(yearColors[i]),
                                                                                         )
                                                                                     },
                                                                                     label = { i -> Text(years.firstOrNull { it.id == sortedYears[i] }?.name.orEmpty()) },
-                                                                                    modifier = Modifier.padding(top = 16.dp)
+                                                                                    modifier = Modifier.padding(top = 16.dp),
                                                                                 )
                                                                             },
-                                                                            legendLocation = LegendLocation.BOTTOM
+                                                                            legendLocation = LegendLocation.BOTTOM,
                                                                         ) {
                                                                             XYGraph(
                                                                                 xAxisModel = CategoryAxisModel(categories = sortedGrades),
@@ -1229,16 +1325,16 @@ fun Grades(
                                                                                 xAxisLabels = { it },
                                                                                 yAxisLabels = { it.toInt().toString() },
                                                                                 xAxisTitle = "Note",
-                                                                                yAxisTitle = "Anzahl"
+                                                                                yAxisTitle = "Anzahl",
                                                                             ) {
                                                                                 StackedVerticalBarPlot(
                                                                                     data = stacked,
                                                                                     bar = { _, barIndex ->
                                                                                         DefaultVerticalBar(
                                                                                             brush = SolidColor(yearColors[barIndex % yearColors.size]),
-                                                                                            shape = RoundedCornerShape(8.dp)
+                                                                                            shape = RoundedCornerShape(8.dp),
                                                                                         )
-                                                                                    }
+                                                                                    },
                                                                                 )
                                                                             }
                                                                         }
@@ -1247,7 +1343,11 @@ fun Grades(
                                                                     item {
                                                                         val avgPlot = processedData["avgPlot"] as List<Point<String, Float>>
                                                                         if (avgPlot.isEmpty()) {
-                                                                            Text("Nicht genügend Daten für die Durchschnittsanzeige vorhanden", modifier = Modifier.fillMaxWidth().padding(16.dp), textAlign = TextAlign.Center)
+                                                                            Text(
+                                                                                "Nicht genügend Daten für die Durchschnittsanzeige vorhanden",
+                                                                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                                                                textAlign = TextAlign.Center,
+                                                                            )
                                                                         } else {
                                                                             ChartLayout(modifier = Modifier.padding(10.dp).fillMaxWidth().height(400.dp)) {
                                                                                 XYGraph(
@@ -1256,16 +1356,17 @@ fun Grades(
                                                                                     xAxisLabels = { it },
                                                                                     yAxisLabels = { it.toString(0) },
                                                                                     xAxisTitle = "Jahr",
-                                                                                    yAxisTitle = "Durchschnittsnote"
+                                                                                    yAxisTitle = "Durchschnittsnote",
                                                                                 ) {
                                                                                     AreaPlot(
                                                                                         data = avgPlot,
                                                                                         lineStyle = LineStyle(brush = SolidColor(colorScheme.primary), strokeWidth = 3.dp),
-                                                                                        areaStyle = AreaStyle(
-                                                                                            brush = SolidColor(colorScheme.primary.copy(alpha = 0.5f)),
-                                                                                            alpha = 0.5f
-                                                                                        ),
-                                                                                        areaBaseline = AreaBaseline.ConstantLine(0.5f)
+                                                                                        areaStyle =
+                                                                                            AreaStyle(
+                                                                                                brush = SolidColor(colorScheme.primary.copy(alpha = 0.5f)),
+                                                                                                alpha = 0.5f,
+                                                                                            ),
+                                                                                        areaBaseline = AreaBaseline.ConstantLine(0.5f),
                                                                                     )
                                                                                 }
                                                                             }
@@ -1277,23 +1378,25 @@ fun Grades(
                                                                             val sortedYears = processedData["sortedYears"] as List<Int>
                                                                             val uniqueGrades = processedData["uniqueGrades"] as List<String>
                                                                             val radialMax = polarData.flatten().maxOfOrNull { it.r } ?: 0f
-                                                                            val tick = when {
-                                                                                radialMax <= 20f -> 5
-                                                                                radialMax <= 50f -> 10
-                                                                                radialMax <= 100f -> 20
-                                                                                else -> 25
-                                                                            }
+                                                                            val tick =
+                                                                                when {
+                                                                                    radialMax <= 20f -> 5
+                                                                                    radialMax <= 50f -> 10
+                                                                                    radialMax <= 100f -> 20
+                                                                                    else -> 25
+                                                                                }
                                                                             val radialMaxRounded = ceil(radialMax / tick) * tick
                                                                             val ticks = (0..radialMaxRounded.toInt() step tick).map { it.toFloat() }
 
-                                                                            val gradeColors = listOf(
-                                                                                Color(0xFF4CAF50),
-                                                                                Color(0xFF8BC34A),
-                                                                                Color(0xFFCDDC39),
-                                                                                Color(0xFFFFEB3B),
-                                                                                Color(0xFFFF9800),
-                                                                                Color(0xFFF44336)
-                                                                            )
+                                                                            val gradeColors =
+                                                                                listOf(
+                                                                                    Color(0xFF4CAF50),
+                                                                                    Color(0xFF8BC34A),
+                                                                                    Color(0xFFCDDC39),
+                                                                                    Color(0xFFFFEB3B),
+                                                                                    Color(0xFFFF9800),
+                                                                                    Color(0xFFF44336),
+                                                                                )
 
                                                                             ChartLayout(
                                                                                 modifier = Modifier.padding(10.dp).fillMaxWidth().aspectRatio(1f),
@@ -1303,26 +1406,37 @@ fun Grades(
                                                                                         symbol = { i ->
                                                                                             Symbol(
                                                                                                 modifier = Modifier.size(12.dp).clip(CircleShape),
-                                                                                                fillBrush = SolidColor(gradeColors[i])
+                                                                                                fillBrush = SolidColor(gradeColors[i]),
                                                                                             )
                                                                                         },
-                                                                                        label = { Text("Note ${uniqueGrades[it]}") }
+                                                                                        label = { Text("Note ${uniqueGrades[it]}") },
                                                                                     )
                                                                                 },
-                                                                                legendLocation = LegendLocation.BOTTOM
+                                                                                legendLocation = LegendLocation.BOTTOM,
                                                                             ) {
                                                                                 PolarGraph(
                                                                                     radialAxisModel = rememberFloatRadialAxisModel(tickValues = ticks),
-                                                                                    angularAxisModel = rememberCategoryAngularAxisModel(categories = sortedYears.map { years.firstOrNull { y -> y.id == it }?.name.orEmpty() }),
+                                                                                    angularAxisModel =
+                                                                                        rememberCategoryAngularAxisModel(
+                                                                                            categories =
+                                                                                                sortedYears.map {
+                                                                                                    years
+                                                                                                        .firstOrNull { y ->
+                                                                                                            y.id ==
+                                                                                                                it
+                                                                                                        }?.name
+                                                                                                        .orEmpty()
+                                                                                                },
+                                                                                        ),
                                                                                     radialAxisLabels = { Text(it.toInt().toString()) },
-                                                                                    angularAxisLabels = { Text(it) }
+                                                                                    angularAxisLabels = { Text(it) },
                                                                                 ) {
                                                                                     polarData.forEachIndexed { index, series ->
                                                                                         PolarPlotSeries(
                                                                                             data = series,
                                                                                             lineStyle = LineStyle(SolidColor(gradeColors[index]), strokeWidth = 2.dp),
                                                                                             areaStyle = AreaStyle(SolidColor(gradeColors[index]), alpha = 0.3f),
-                                                                                            symbols = { Symbol(shape = CircleShape, fillBrush = SolidColor(gradeColors[index])) }
+                                                                                            symbols = { Symbol(shape = CircleShape, fillBrush = SolidColor(gradeColors[index])) },
                                                                                         )
                                                                                     }
                                                                                 }
@@ -1336,27 +1450,28 @@ fun Grades(
                                                 }
                                             }
 
-                                            Column(Modifier
-                                                .fillMaxWidth()
-                                                .verticalScroll(rememberScrollState())
-                                                .align(Alignment.TopCenter)
-                                                .enhancedHazeEffect(hazeState, colorScheme.surfaceContainerHighest) {
-                                                    if (!lazyListState.canScrollForward && !lazyListState.canScrollBackward) blurEnabled = false
-                                                    progressive = HazeProgressive.verticalGradient(startIntensity = 1f, endIntensity = 0f)
-                                                }
-                                                .onGloballyPositioned {
-                                                    titleHeight = with(density) { it.size.height.toDp() }
-                                                }
+                                            Column(
+                                                Modifier
+                                                    .fillMaxWidth()
+                                                    .verticalScroll(rememberScrollState())
+                                                    .align(Alignment.TopCenter)
+                                                    .enhancedHazeEffect(hazeState, colorScheme.surfaceContainerHighest) {
+                                                        if (!lazyListState.canScrollForward && !lazyListState.canScrollBackward) blurEnabled = false
+                                                        progressive = HazeProgressive.verticalGradient(startIntensity = 1f, endIntensity = 0f)
+                                                    }.onGloballyPositioned {
+                                                        titleHeight = with(density) { it.size.height.toDp() }
+                                                    },
                                             ) {
                                                 Text(
                                                     text = "Noten analysieren/vergleichen",
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .padding(15.dp)
-                                                        .align(Alignment.CenterHorizontally),
+                                                    modifier =
+                                                        Modifier
+                                                            .fillMaxWidth()
+                                                            .padding(15.dp)
+                                                            .align(Alignment.CenterHorizontally),
                                                     color = colorScheme.onSurface,
                                                     style = typography.headlineSmall,
-                                                    textAlign = TextAlign.Center
+                                                    textAlign = TextAlign.Center,
                                                 )
 
                                                 Row(
@@ -1381,11 +1496,11 @@ fun Grades(
                                                                 }
                                                             }
                                                         },
-                                                        enabled = !isLoading && viewModel.years.size > 1
+                                                        enabled = !isLoading && viewModel.years.size > 1,
                                                     )
                                                     Text(
                                                         text = "Jahre analysieren/vergleichen",
-                                                        style = typography.bodyLarge
+                                                        style = typography.bodyLarge,
                                                     )
                                                 }
 
@@ -1396,18 +1511,18 @@ fun Grades(
                                                     EnhancedCheckbox(
                                                         checked = filterSubjects,
                                                         onCheckedChange = { filterSubjects = it },
-                                                        enabled = !isLoading && viewModel.years.size > 1
+                                                        enabled = !isLoading && viewModel.years.size > 1,
                                                     )
                                                     Text(
                                                         text = "Fächer filtern",
                                                         modifier = Modifier.weight(1f),
-                                                        style = typography.bodyLarge
+                                                        style = typography.bodyLarge,
                                                     )
                                                     AnimatedVisibility(filterSubjects) {
                                                         EnhancedIconButton(
                                                             onClick = {
                                                                 filterShown = !filterShown
-                                                            }
+                                                            },
                                                         ) {
                                                             AnimatedContent(filterShown) {
                                                                 if (it) {
@@ -1423,36 +1538,38 @@ fun Grades(
                                                 AnimatedVisibility(filterSubjects && filterShown) {
                                                     FlowRow(
                                                         modifier = Modifier.padding(horizontal = 15.dp).padding(bottom = closeBarHeight),
-                                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
                                                     ) {
                                                         (if (analyzeYears) allFilteredGrades.toList() else filteredGrades)
-                                                            .map { it.subject?.name ?: "" }.toSet().forEach { subject ->
-                                                            FilterChip(
-                                                                selected = !deselectedSubjects.contains(subject),
-                                                                onClick = {
-                                                                    if (deselectedSubjects.contains(subject)) {
-                                                                        deselectedSubjects.remove(subject)
-                                                                    } else {
-                                                                        deselectedSubjects.add(subject)
-                                                                    }
-                                                                },
-                                                                label = { Text(subject) }
-                                                            )
-                                                        }
+                                                            .map { it.subject?.name ?: "" }
+                                                            .toSet()
+                                                            .forEach { subject ->
+                                                                FilterChip(
+                                                                    selected = !deselectedSubjects.contains(subject),
+                                                                    onClick = {
+                                                                        if (deselectedSubjects.contains(subject)) {
+                                                                            deselectedSubjects.remove(subject)
+                                                                        } else {
+                                                                            deselectedSubjects.add(subject)
+                                                                        }
+                                                                    },
+                                                                    label = { Text(subject) },
+                                                                )
+                                                            }
                                                     }
                                                 }
                                             }
 
-                                            Box(Modifier
-                                                .fillMaxWidth()
-                                                .align(Alignment.BottomCenter)
-                                                .enhancedHazeEffect(hazeState, colorScheme.surfaceContainerHighest) {
-                                                    if (!lazyListState.canScrollForward && !lazyListState.canScrollBackward) blurEnabled = false
-                                                    progressive = HazeProgressive.verticalGradient()
-                                                }
-                                                .onGloballyPositioned {
-                                                    closeBarHeight = with(density) { it.size.height.toDp() }
-                                                }
+                                            Box(
+                                                Modifier
+                                                    .fillMaxWidth()
+                                                    .align(Alignment.BottomCenter)
+                                                    .enhancedHazeEffect(hazeState, colorScheme.surfaceContainerHighest) {
+                                                        if (!lazyListState.canScrollForward && !lazyListState.canScrollBackward) blurEnabled = false
+                                                        progressive = HazeProgressive.verticalGradient()
+                                                    }.onGloballyPositioned {
+                                                        closeBarHeight = with(density) { it.size.height.toDp() }
+                                                    },
                                             ) {
                                                 EnhancedButton(
                                                     onClick = {
@@ -1463,7 +1580,7 @@ fun Grades(
                                                             if (state == 0) userScrollEnabled = true
                                                         }
                                                     },
-                                                    modifier = Modifier.padding(10.dp).align(Alignment.CenterEnd)
+                                                    modifier = Modifier.padding(10.dp).align(Alignment.CenterEnd),
                                                 ) {
                                                     Text("Schließen")
                                                 }

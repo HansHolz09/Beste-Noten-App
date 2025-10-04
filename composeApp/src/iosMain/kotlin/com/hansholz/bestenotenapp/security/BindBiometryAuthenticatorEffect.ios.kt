@@ -6,7 +6,7 @@ import androidx.compose.runtime.LaunchedEffect
 @Composable
 actual fun BindBiometryAuthenticatorEffect(
     biometryAuthenticator: BiometryAuthenticator,
-    onBinded: suspend () -> Unit
+    onBinded: suspend () -> Unit,
 ) {
     LaunchedEffect(Unit) {
         onBinded()

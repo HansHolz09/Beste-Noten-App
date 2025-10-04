@@ -32,7 +32,7 @@ import org.jetbrains.compose.resources.imageResource
 fun App(
     isDark: (Boolean) -> Unit = {},
     colors: (ColorScheme) -> Unit = {},
-    onNavHostReady: suspend (NavController) -> Unit = {}
+    onNavHostReady: suspend (NavController) -> Unit = {},
 ) {
     AppTheme {
         colors(colorScheme)
@@ -47,14 +47,15 @@ fun App(
                     val backgroundAlpha = animateFloatAsState(if (LocalBackgroundEnabled.current.value) (if (blurEnabled) 1f else 0.2f) else 0f, tween(750))
                     RepeatingBackground(
                         imageBitmap = imageResource(Res.drawable.background),
-                        modifier = Modifier
-                            .hazeSource(AppHazeState.current.value)
-                            .hazeSource(viewModel.hazeBackgroundState)
-                            .hazeSource(viewModel.hazeBackgroundState1)
-                            .hazeSource(viewModel.hazeBackgroundState2)
-                            .hazeSource(viewModel.hazeBackgroundState3)
-                            .enhancedHazeEffect()
-                            .alpha(backgroundAlpha.value)
+                        modifier =
+                            Modifier
+                                .hazeSource(AppHazeState.current.value)
+                                .hazeSource(viewModel.hazeBackgroundState)
+                                .hazeSource(viewModel.hazeBackgroundState1)
+                                .hazeSource(viewModel.hazeBackgroundState2)
+                                .hazeSource(viewModel.hazeBackgroundState3)
+                                .enhancedHazeEffect()
+                                .alpha(backgroundAlpha.value),
                     )
 
                     AppNavigation(viewModel, onNavHostReady)
@@ -63,7 +64,7 @@ fun App(
                 Toaster(
                     state = toasterState,
                     richColors = true,
-                    darkTheme = isDark
+                    darkTheme = isDark,
                 )
             }
         }

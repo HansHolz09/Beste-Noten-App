@@ -148,10 +148,11 @@ interface DecoratedWindowScope : FrameWindowScope {
     val state: DecoratedWindowState
 }
 
-
 @Immutable
 @JvmInline
-value class DecoratedWindowState(val state: ULong) {
+value class DecoratedWindowState(
+    val state: ULong,
+) {
     val isActive: Boolean
         get() = state and Active != 0UL
 
@@ -182,7 +183,7 @@ value class DecoratedWindowState(val state: ULong) {
                 (if (fullscreen) Fullscreen else 0UL) or
                     (if (minimized) Minimize else 0UL) or
                     (if (maximized) Maximize else 0UL) or
-                    (if (active) Active else 0UL)
+                    (if (active) Active else 0UL),
             )
 
         fun of(window: ComposeWindow): DecoratedWindowState =
@@ -195,12 +196,17 @@ value class DecoratedWindowState(val state: ULong) {
     }
 }
 
-internal data class TitleBarInfo(val title: String, val icon: Painter?)
+internal data class TitleBarInfo(
+    val title: String,
+    val icon: Painter?,
+)
 
-internal val LocalTitleBarInfo: ProvidableCompositionLocal<TitleBarInfo> = compositionLocalOf {
-    error("LocalTitleBarInfo not provided, TitleBar must be used in DecoratedWindow")
-}
+internal val LocalTitleBarInfo: ProvidableCompositionLocal<TitleBarInfo> =
+    compositionLocalOf {
+        error("LocalTitleBarInfo not provided, TitleBar must be used in DecoratedWindow")
+    }
 
-internal val LocalDecoratedWindowScope: ProvidableCompositionLocal<DecoratedWindowScope> = compositionLocalOf {
-    error("LocalDecoratedWindowState not provided, DecoratedWindow must be used")
-}
+internal val LocalDecoratedWindowScope: ProvidableCompositionLocal<DecoratedWindowScope> =
+    compositionLocalOf {
+        error("LocalDecoratedWindowState not provided, DecoratedWindow must be used")
+    }

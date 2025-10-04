@@ -63,30 +63,33 @@ fun CloseableNavigationDrawer(
     drawerContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     drawerState: DrawerState = rememberDrawerState(DrawerValue.Closed),
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     Row(modifier.fillMaxSize()) {
         val isOpen = drawerState.targetValue == DrawerValue.Open
         AnimatedVisibility(
             visible = isOpen,
-            enter = fadeIn() + expandHorizontally(
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioLowBouncy,
-                            stiffness = Spring.StiffnessLow
-                        )
+            enter =
+                fadeIn() +
+                    expandHorizontally(
+                        animationSpec =
+                            spring(
+                                dampingRatio = Spring.DampingRatioLowBouncy,
+                                stiffness = Spring.StiffnessLow,
+                            ),
                     ),
         ) {
             drawerContent()
         }
-        Box(Modifier
-            .consumeWindowInsets(
-                if (isOpen) {
-                    DrawerDefaults.windowInsets.only(WindowInsetsSides.Left)
-                } else {
-                    WindowInsets()
-                }
-            )
-            .clip(RectangleShape)
+        Box(
+            Modifier
+                .consumeWindowInsets(
+                    if (isOpen) {
+                        DrawerDefaults.windowInsets.only(WindowInsetsSides.Left)
+                    } else {
+                        WindowInsets()
+                    },
+                ).clip(RectangleShape),
         ) {
             content()
         }
@@ -103,7 +106,7 @@ fun HazeModalDrawerSheet(
     drawerContentColor: Color = contentColorFor(drawerContainerColor),
     drawerTonalElevation: Dp = DrawerDefaults.ModalDrawerElevation,
     windowInsets: WindowInsets = DrawerDefaults.windowInsets,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     DrawerPredictiveBackHandler(drawerState) { drawerPredictiveBackState ->
         DrawerSheet(
@@ -116,7 +119,7 @@ fun HazeModalDrawerSheet(
             drawerContentColor = drawerContentColor,
             drawerTonalElevation = drawerTonalElevation,
             drawerOffset = { drawerState.currentOffset },
-            content = content
+            content = content,
         )
     }
 }
@@ -132,7 +135,7 @@ internal fun DrawerSheet(
     drawerContentColor: Color = contentColorFor(drawerContainerColor),
     drawerTonalElevation: Dp = DrawerDefaults.PermanentDrawerElevation,
     drawerOffset: FloatProducer = FloatProducer { 0F },
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable ColumnScope.() -> Unit,
 ) {
     val density = LocalDensity.current
     val maxWidth = 360.0.dp
@@ -155,34 +158,35 @@ internal fun DrawerSheet(
                 .horizontalScaleUp(
                     drawerOffset = drawerOffset,
                     drawerWidth = maxWidthPx,
-                    isRtl = isRtl
-                )
-                .then(predictiveBackDrawerContainerModifier)
+                    isRtl = isRtl,
+                ).then(predictiveBackDrawerContainerModifier)
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(topEnd = 30.dp, bottomEnd = 30.dp))
                 .enhancedHazeEffect(hazeState, colorScheme.surfaceContainerHighest),
         shape = drawerShape,
         color = drawerContainerColor,
         contentColor = drawerContentColor,
-        tonalElevation = drawerTonalElevation
+        tonalElevation = drawerTonalElevation,
     ) {
         val predictiveBackDrawerChildModifier =
-            if (drawerPredictiveBackState != null)
+            if (drawerPredictiveBackState != null) {
                 Modifier.predictiveBackDrawerChild(drawerPredictiveBackState)
-            else Modifier
+            } else {
+                Modifier
+            }
         Column(
-            Modifier.sizeIn(minWidth = MinimumDrawerWidth, maxWidth = maxWidth)
+            Modifier
+                .sizeIn(minWidth = MinimumDrawerWidth, maxWidth = maxWidth)
                 // Scale the content down in case the drawer offset is greater than one. The
                 // wrapping Surface is scaled up, so this is done to maintain the content's aspect
                 // ratio.
                 .horizontalScaleDown(
                     drawerOffset = drawerOffset,
                     drawerWidth = maxWidthPx,
-                    isRtl = isRtl
-                )
-                .then(predictiveBackDrawerChildModifier)
+                    isRtl = isRtl,
+                ).then(predictiveBackDrawerChildModifier)
                 .windowInsetsPadding(windowInsets),
-            content = content
+            content = content,
         )
     }
 }
@@ -200,7 +204,7 @@ internal fun DrawerSheet(
 private fun Modifier.horizontalScaleUp(
     drawerOffset: FloatProducer,
     drawerWidth: Float,
-    isRtl: Boolean
+    isRtl: Boolean,
 ) = graphicsLayer {
     val offset = drawerOffset()
     scaleX = if (offset > 0f) 1f + offset / drawerWidth else 1f
@@ -218,25 +222,22 @@ private fun Modifier.horizontalScaleUp(
 private fun Modifier.horizontalScaleDown(
     drawerOffset: FloatProducer,
     drawerWidth: Float,
-    isRtl: Boolean
+    isRtl: Boolean,
 ) = graphicsLayer {
     val offset = drawerOffset()
     scaleX = if (offset > 0f) 1 / (1f + offset / drawerWidth) else 1f
     transformOrigin = TransformOrigin(if (isRtl) 0f else 1f, 0f)
 }
 
-private fun Modifier.predictiveBackDrawerContainer(
-    drawerPredictiveBackState: DrawerPredictiveBackState
-) = graphicsLayer {
-    this.translationX = -drawerPredictiveBackState.scaleYDistance
-}
+private fun Modifier.predictiveBackDrawerContainer(drawerPredictiveBackState: DrawerPredictiveBackState) =
+    graphicsLayer {
+        this.translationX = -drawerPredictiveBackState.scaleYDistance
+    }
 
-private fun Modifier.predictiveBackDrawerChild(
-    drawerPredictiveBackState: DrawerPredictiveBackState
-) = graphicsLayer {
-    this.translationX = -drawerPredictiveBackState.scaleYDistance
-}
-
+private fun Modifier.predictiveBackDrawerChild(drawerPredictiveBackState: DrawerPredictiveBackState) =
+    graphicsLayer {
+        this.translationX = -drawerPredictiveBackState.scaleYDistance
+    }
 
 /**
  * Registers a [PredictiveBackHandler] and provides animation values in [DrawerPredictiveBackState]
@@ -249,7 +250,7 @@ private fun Modifier.predictiveBackDrawerChild(
 @Composable
 internal fun DrawerPredictiveBackHandler(
     drawerState: DrawerState,
-    content: @Composable (DrawerPredictiveBackState) -> Unit
+    content: @Composable (DrawerPredictiveBackState) -> Unit,
 ) {
     val drawerPredictiveBackState = remember { DrawerPredictiveBackState() }
     val scope = rememberCoroutineScope()
@@ -272,7 +273,7 @@ internal fun DrawerPredictiveBackHandler(
                     isRtl,
                     maxScaleXDistanceGrow,
                     maxScaleXDistanceShrink,
-                    maxScaleYDistance
+                    maxScaleYDistance,
                 )
             }
         } catch (_: kotlin.coroutines.cancellation.CancellationException) {
@@ -284,7 +285,7 @@ internal fun DrawerPredictiveBackHandler(
                 scope.launch {
                     animate(
                         initialValue = drawerPredictiveBackState.scaleXDistance,
-                        targetValue = 0f
+                        targetValue = 0f,
                     ) { value, _ ->
                         drawerPredictiveBackState.scaleXDistance = value
                     }
@@ -306,7 +307,6 @@ internal fun DrawerPredictiveBackHandler(
 
 @Stable
 internal class DrawerPredictiveBackState {
-
     var swipeEdgeMatchesDrawer by mutableStateOf(true)
 
     var scaleXDistance by mutableFloatStateOf(0f)
@@ -319,7 +319,7 @@ internal class DrawerPredictiveBackState {
         isRtl: Boolean,
         maxScaleXDistanceGrow: Float,
         maxScaleXDistanceShrink: Float,
-        maxScaleYDistance: Float
+        maxScaleYDistance: Float,
     ) {
         swipeEdgeMatchesDrawer = swipeEdgeLeft != isRtl
         val maxScaleXDistance =

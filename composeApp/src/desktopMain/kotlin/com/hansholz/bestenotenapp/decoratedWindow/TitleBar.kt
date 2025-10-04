@@ -40,7 +40,7 @@ internal fun DecoratedWindowScope.TitleBarImpl(
     modifier: Modifier = Modifier,
     applyTitleBar: (Dp, DecoratedWindowState) -> PaddingValues,
     titleBarHeight: MutableState<Dp>,
-    content: @Composable () -> Unit = {}
+    content: @Composable () -> Unit = {},
 ) {
     val density = LocalDensity.current
 
@@ -59,7 +59,8 @@ internal fun DecoratedWindowScope.TitleBarImpl(
 private class TitleBarChildDataElement(
     val horizontalAlignment: Alignment.Horizontal,
     val inspectorInfo: InspectorInfo.() -> Unit = NoInspectorInfo,
-) : ModifierNodeElement<TitleBarChildDataNode>(), InspectableValue {
+) : ModifierNodeElement<TitleBarChildDataNode>(),
+    InspectableValue {
     override fun create(): TitleBarChildDataNode = TitleBarChildDataNode(horizontalAlignment)
 
     override fun equals(other: Any?): Boolean {
@@ -79,7 +80,9 @@ private class TitleBarChildDataElement(
     }
 }
 
-private class TitleBarChildDataNode(var horizontalAlignment: Alignment.Horizontal) :
-    ParentDataModifierNode, Modifier.Node() {
+private class TitleBarChildDataNode(
+    var horizontalAlignment: Alignment.Horizontal,
+) : Modifier.Node(),
+    ParentDataModifierNode {
     override fun Density.modifyParentData(parentData: Any?) = this@TitleBarChildDataNode
 }

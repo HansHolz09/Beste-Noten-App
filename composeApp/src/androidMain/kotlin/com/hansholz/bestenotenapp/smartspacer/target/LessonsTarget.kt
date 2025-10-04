@@ -17,37 +17,41 @@ import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerTargetProvider
 import com.kieronquinn.app.smartspacer.sdk.utils.TargetTemplate
 import kotlin.time.ExperimentalTime
 
-class LessonsTarget: SmartspacerTargetProvider() {
+class LessonsTarget : SmartspacerTargetProvider() {
     override fun getSmartspaceTargets(smartspacerId: String): List<SmartspaceTarget> {
         val isTokenStored = SmartspacerPrefs.getTokenState(provideContext())
         val day = SmartspacerPrefs.getDay(provideContext())
-        val (title, subtitle) = if (!isTokenStored) {
-            "Nutze \"Angemeldet bleiben\" in der Beste-Noten-App" to "Die Aktualisierung dauert einen Moment"
-        } else if (day != null) {
-            val (current, next) = day.nowAndNext()
-            val t = current?.let { "Aktuell: ${it.prettyLine()}" } ?: "Aktuell: kein Unterricht"
-            val s = next?.let { "Als nächstes: ${it.prettyLine()}" } ?: "Als nächstes: kein Unterricht"
-            t to s
-        } else {
-            "Aktuell: —" to "Als nächstes: —"
-        }
+        val (title, subtitle) =
+            if (!isTokenStored) {
+                "Nutze \"Angemeldet bleiben\" in der Beste-Noten-App" to "Die Aktualisierung dauert einen Moment"
+            } else if (day != null) {
+                val (current, next) = day.nowAndNext()
+                val t = current?.let { "Aktuell: ${it.prettyLine()}" } ?: "Aktuell: kein Unterricht"
+                val s = next?.let { "Als nächstes: ${it.prettyLine()}" } ?: "Als nächstes: kein Unterricht"
+                t to s
+            } else {
+                "Aktuell: —" to "Als nächstes: —"
+            }
 
-        val target = TargetTemplate.Basic(
-            id = "lessons_$smartspacerId",
-            componentName = ComponentName(provideContext(), LessonsTarget::class.java),
-            title = Text(title),
-            subtitle = Text(subtitle),
-            icon = com.kieronquinn.app.smartspacer.sdk.model.uitemplatedata.Icon(
-                Icon.createWithResource(provideContext(), R.drawable.logo_monochrome)
-            ),
-            onClick = TapAction(intent = Intent(provideContext(), MainActivity::class.java))
-        ).create()
+        val target =
+            TargetTemplate
+                .Basic(
+                    id = "lessons_$smartspacerId",
+                    componentName = ComponentName(provideContext(), LessonsTarget::class.java),
+                    title = Text(title),
+                    subtitle = Text(subtitle),
+                    icon =
+                        com.kieronquinn.app.smartspacer.sdk.model.uitemplatedata.Icon(
+                            Icon.createWithResource(provideContext(), R.drawable.logo_monochrome),
+                        ),
+                    onClick = TapAction(intent = Intent(provideContext(), MainActivity::class.java)),
+                ).create()
 
         return listOf(target)
     }
 
-    override fun getConfig(smartspacerId: String?): Config {
-        return Config(
+    override fun getConfig(smartspacerId: String?): Config =
+        Config(
             label = "Stundeninformation",
             description = "Zeigt die aktuelle und nächste Schulstunde",
             icon = Icon.createWithResource(provideContext(), R.drawable.logo_monochrome),
@@ -55,12 +59,16 @@ class LessonsTarget: SmartspacerTargetProvider() {
             refreshIfNotVisible = true,
             compatibilityState = CompatibilityState.Compatible,
         )
-    }
 
-    override fun onDismiss(smartspacerId: String, targetId: String): Boolean = true
+    override fun onDismiss(
+        smartspacerId: String,
+        targetId: String,
+    ): Boolean = true
 
-
-    data class NowNext(val current: JournalLesson?, val next: JournalLesson?)
+    data class NowNext(
+        val current: JournalLesson?,
+        val next: JournalLesson?,
+    )
 
     @OptIn(ExperimentalTime::class)
     fun JournalDay.nowAndNext(): NowNext {
@@ -80,7 +88,7 @@ class LessonsTarget: SmartspacerTargetProvider() {
             "Ausfall ($subjectName)"
         } else {
             "$subjectName in ${rooms?.joinToString { it.localId } ?: "?"}" +
-                    if (!notes.isNullOrEmpty()) " - " + notes.joinToString(" - ") { it.type?.name ?: "" } else ""
+                if (!notes.isNullOrEmpty()) " - " + notes.joinToString(" - ") { it.type?.name ?: "" } else ""
         }
     }
 }

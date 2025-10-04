@@ -8,7 +8,7 @@ actual class BiometryAuthenticator {
         requestTitle: String,
         requestReason: String,
         scope: CoroutineScope,
-        result: (successful: Boolean) -> Unit
+        result: (successful: Boolean) -> Unit,
     ) {
         error("Not supported")
     }

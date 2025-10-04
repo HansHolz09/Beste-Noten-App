@@ -31,24 +31,26 @@ import org.kodein.emoji.compose.m3.TextWithNotoImageEmoji
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun GradeValueBox(gradeValue: String?) {
-    val color = when (gradeValue?.take(1)) {
-        "1" -> Color(0xFF4CAF50)
-        "2" -> Color(0xFF8BC34A)
-        "3" -> Color(0xFFCDDC39)
-        "4" -> Color(0xFFFFEB3B)
-        "5" -> Color(0xFFFF9800)
-        "6" -> Color(0xFFF44336)
-        else -> colorScheme.errorContainer
-    }
-    val shape = when (gradeValue?.take(1)) {
-        "1" -> SoftBurst
-        "2" -> Pill
-        "3" -> Ghostish
-        "4" -> Slanted
-        "5" -> Gem
-        "6" -> Cookie6Sided
-        else -> PixelCircle
-    }.toShape()
+    val color =
+        when (gradeValue?.take(1)) {
+            "1" -> Color(0xFF4CAF50)
+            "2" -> Color(0xFF8BC34A)
+            "3" -> Color(0xFFCDDC39)
+            "4" -> Color(0xFFFFEB3B)
+            "5" -> Color(0xFFFF9800)
+            "6" -> Color(0xFFF44336)
+            else -> colorScheme.errorContainer
+        }
+    val shape =
+        when (gradeValue?.take(1)) {
+            "1" -> SoftBurst
+            "2" -> Pill
+            "3" -> Ghostish
+            "4" -> Slanted
+            "5" -> Gem
+            "6" -> Cookie6Sided
+            else -> PixelCircle
+        }.toShape()
     Box(Modifier.clip(shape).background(color).size(30.dp)) {
         gradeValue?.let {
             TextWithNotoImageEmoji(
@@ -56,7 +58,7 @@ fun GradeValueBox(gradeValue: String?) {
                 textAlign = TextAlign.Center,
                 modifier = Modifier.align(Alignment.Center),
                 color = Color.Black,
-                fontSize = 20.sp
+                fontSize = 20.sp,
             )
         } ?: Icon(
             imageVector = Icons.Outlined.Block,

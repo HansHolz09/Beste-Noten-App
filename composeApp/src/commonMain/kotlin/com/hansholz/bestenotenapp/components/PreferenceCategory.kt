@@ -16,11 +16,12 @@ fun PreferenceCategory(
         text = title,
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.primary,
-        modifier = modifier.padding(
-            top = 24.dp,
-            start = 8.dp,
-            end = 8.dp,
-            bottom = 8.dp
-        )
+        modifier =
+            modifier.padding(
+                top = 24.dp,
+                start = 8.dp,
+                end = 8.dp,
+                bottom = 8.dp,
+            ),
     )
 }

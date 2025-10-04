@@ -26,14 +26,12 @@ import com.hansholz.bestenotenapp.api.models.User
 import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.api.oidcClient
 import com.hansholz.bestenotenapp.demo.DemoDataGenerator
-import com.hansholz.bestenotenapp.security.AuthTokenManager
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
+import com.hansholz.bestenotenapp.security.AuthTokenManager
 import com.hansholz.bestenotenapp.utils.weekOfYear
 import com.russhwolf.settings.Settings
 import dev.chrisbanes.haze.HazeState
 import io.ktor.utils.io.CancellationException
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -44,8 +42,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.publicvalue.multiplatform.oidc.DefaultOpenIdConnectClient
 import org.publicvalue.multiplatform.oidc.OpenIdConnectException
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
-class ViewModel(toasterState: ToasterState) : ViewModel() {
+class ViewModel(
+    toasterState: ToasterState,
+) : ViewModel() {
     val toaster = toasterState
     val settings = Settings()
 
@@ -54,7 +56,6 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
     val authTokenManager = AuthTokenManager()
     val authToken = mutableStateOf<String?>(null)
     private val authFlow = codeAuthFlowFactory.createAuthFlow(DefaultOpenIdConnectClient(httpClient, oidcClient.config))
-
 
     val studentId = mutableStateOf<String?>(null)
     private val api = BesteSchuleApi(httpClient, authToken, studentId)
@@ -71,8 +72,8 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
     val currentJournalDay = mutableStateOf<JournalDay?>(null)
     val journalWeeks = mutableStateListOf<Pair<String, JournalWeek>>()
     val currentTimetable = mutableStateOf<TimeTable?>(null)
-    val subjectsAndTeachers = mutableStateListOf<Pair<Subject?,List<Teacher>?>>()
-    val teachersAndSubjects = mutableStateListOf<Pair<Teacher?,List<Subject?>>>()
+    val subjectsAndTeachers = mutableStateListOf<Pair<Subject?, List<Teacher>?>>()
+    val teachersAndSubjects = mutableStateListOf<Pair<Teacher?, List<Subject?>>>()
     val subjects = mutableStateListOf<Subject>()
 
     val startGradeCollections = mutableStateListOf<GradeCollection>()
@@ -83,22 +84,22 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
     val isDemoAccount = mutableStateOf(false)
     private var demoWeekPlan: List<List<Subject>> = emptyList()
 
-
     val isBesteSchuleNotReachable = mutableStateOf(false)
+
     private suspend fun couldReachBesteSchule() {
         if (isBesteSchuleNotReachable.value) init()
         isBesteSchuleNotReachable.value = false
     }
+
     private fun couldNotReachBesteSchule() {
         isBesteSchuleNotReachable.value = true
         toaster.show(
             Toast(
                 message = "beste.schule konnte nicht erreicht werden",
-                type = ToastType.Error
-            )
+                type = ToastType.Error,
+            ),
         )
     }
-
 
     suspend fun getAccessToken(): Boolean {
         try {
@@ -107,7 +108,9 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
         } catch (e: OpenIdConnectException.UnsuccessfulTokenRequest) {
             try {
                 @Serializable
-                data class TokenResponse(@SerialName("access_token") val accessToken: String)
+                data class TokenResponse(
+                    @SerialName("access_token") val accessToken: String,
+                )
 
                 val withUnknownKeys = Json { ignoreUnknownKeys = true }
                 authToken.value = withUnknownKeys.decodeFromString<TokenResponse>(e.body ?: "").accessToken
@@ -134,8 +137,8 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
                 toaster.show(
                     Toast(
                         message = "Es sind ausschließlich Schüler-Accounts zulässig",
-                        type = ToastType.Error
-                    )
+                        type = ToastType.Error,
+                    ),
                 )
                 isLoading(false)
             } else {
@@ -147,8 +150,18 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
                             GradeNotifications.onLogin()
                         }
                     } else {
-                        settings.putString("studentId", user.students.first().id.toString())
-                        studentId.value = user.students.first().id.toString()
+                        settings.putString(
+                            "studentId",
+                            user.students
+                                .first()
+                                .id
+                                .toString(),
+                        )
+                        studentId.value =
+                            user.students
+                                .first()
+                                .id
+                                .toString()
                         GradeNotifications.onLogin()
                     }
                 }
@@ -159,8 +172,8 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
                 toaster.show(
                     Toast(
                         message = "Angemeldet als ${user.username}",
-                        type = ToastType.Success
-                    )
+                        type = ToastType.Success,
+                    ),
                 )
             }
         } catch (e: Exception) {
@@ -168,8 +181,8 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
             toaster.show(
                 Toast(
                     message = "Anmeldung fehlgeschlagen",
-                    type = ToastType.Error
-                )
+                    type = ToastType.Error,
+                ),
             )
             isLoading(false)
         }
@@ -197,8 +210,8 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
             toaster.show(
                 Toast(
                     message = "Demo-Account aktiviert",
-                    type = ToastType.Success
-                )
+                    type = ToastType.Success,
+                ),
             )
         } finally {
             isLoading(false)
@@ -216,7 +229,6 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
         onCleared()
     }
 
-
     suspend fun closeOrOpenDrawer(windowWidthSizeClass: WindowWidthSizeClass) {
         if (windowWidthSizeClass == WindowWidthSizeClass.Companion.COMPACT) {
             if (compactDrawerState.value.isClosed) {
@@ -232,7 +244,6 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
             }
         }
     }
-
 
     private suspend fun init(): User? {
         if (isDemoAccount.value) {
@@ -301,9 +312,16 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
     }
 
     @OptIn(ExperimentalTime::class)
-    suspend fun getJournalWeek(date: LocalDate? = null, useCached: Boolean = true): JournalWeek? {
+    suspend fun getJournalWeek(
+        date: LocalDate? = null,
+        useCached: Boolean = true,
+    ): JournalWeek? {
         if (isDemoAccount.value) {
-            val targetDate = date ?: Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+            val targetDate =
+                date ?: Clock.System
+                    .now()
+                    .toLocalDateTime(TimeZone.currentSystemDefault())
+                    .date
             val nr = "${targetDate.year}-${targetDate.weekOfYear}"
             val cachedWeek = if (useCached) journalWeeks.firstOrNull { it.first == nr }?.second else null
             val week = cachedWeek ?: DemoDataGenerator.generateJournalWeek(targetDate, demoWeekPlan)
@@ -316,15 +334,23 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
         }
         try {
             @OptIn(ExperimentalTime::class)
-            val currentNr = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.let { "${it.year}-${it.weekOfYear}" }
+            val currentNr =
+                Clock.System
+                    .now()
+                    .toLocalDateTime(TimeZone.currentSystemDefault())
+                    .date
+                    .let { "${it.year}-${it.weekOfYear}" }
             val nr = date?.let { "${it.year}-${it.weekOfYear}" } ?: currentNr
-            val year = date?.let {
-                years.firstOrNull { schoolYear ->
-                    val fromDate = LocalDate.parse(schoolYear.from)
-                    val toDate = LocalDate.parse(schoolYear.to)
-                    date in fromDate..toDate
-                }?.id.toString()
-            }
+            val year =
+                date?.let {
+                    years
+                        .firstOrNull { schoolYear ->
+                            val fromDate = LocalDate.parse(schoolYear.from)
+                            val toDate = LocalDate.parse(schoolYear.to)
+                            date in fromDate..toDate
+                        }?.id
+                        .toString()
+                }
             val cachedWeek = if (useCached) journalWeeks.firstOrNull { it.first == nr }?.second else null
             val week = cachedWeek ?: api.journalWeekShow(nr, year, true, "days.lessons").data
             if (cachedWeek == null) {
@@ -343,14 +369,24 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
         }
     }
 
-    suspend fun getSubjectsAndTeachers(): List<Pair<Subject?,List<Teacher>?>>? {
+    suspend fun getSubjectsAndTeachers(): List<Pair<Subject?, List<Teacher>?>>? {
         if (isDemoAccount.value) delay(500)
         try {
             if (currentTimetable.value == null) {
                 val index = api.timeTablesIndex().data
                 currentTimetable.value = api.timeTablesShow(index.last().id).data
             }
-            val data = currentTimetable.value?.lessons?.groupBy { it.subject }?.map { it.key to it.value.flatMap { it.teachers.orEmpty() }.toSet().toList() }
+            val data =
+                currentTimetable.value
+                    ?.lessons
+                    ?.groupBy { it.subject }
+                    ?.map {
+                        it.key to
+                            it.value
+                                .flatMap { it.teachers.orEmpty() }
+                                .toSet()
+                                .toList()
+                    }
             couldReachBesteSchule()
             return data
         } catch (e: Exception) {
@@ -360,14 +396,24 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
         }
     }
 
-    suspend fun getTeachersAndSubjects(): List<Pair<Teacher?,List<Subject?>>>? {
+    suspend fun getTeachersAndSubjects(): List<Pair<Teacher?, List<Subject?>>>? {
         if (isDemoAccount.value) delay(500)
         try {
             if (currentTimetable.value == null) {
                 val index = api.timeTablesIndex().data
                 currentTimetable.value = api.timeTablesShow(index.last().id).data
             }
-            val data = currentTimetable.value?.lessons?.groupBy { it.teachers }?.map { it.key?.firstOrNull() to it.value.map { it.subject }.toSet().toList() }
+            val data =
+                currentTimetable.value
+                    ?.lessons
+                    ?.groupBy { it.teachers }
+                    ?.map {
+                        it.key?.firstOrNull() to
+                            it.value
+                                .map { it.subject }
+                                .toSet()
+                                .toList()
+                    }
             couldReachBesteSchule()
             return data
         } catch (e: Exception) {
@@ -405,8 +451,8 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
                 toaster.show(
                     Toast(
                         message = "Fehler bei der Initialisierung",
-                        type = ToastType.Error
-                    )
+                        type = ToastType.Error,
+                    ),
                 )
             }
         }
@@ -427,5 +473,3 @@ class ViewModel(toasterState: ToasterState) : ViewModel() {
         currentJournalDay.value = null
     }
 }
-
-

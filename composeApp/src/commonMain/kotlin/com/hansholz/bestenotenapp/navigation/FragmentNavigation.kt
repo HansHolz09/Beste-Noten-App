@@ -23,7 +23,7 @@ import com.hansholz.bestenotenapp.screens.Timetable
 fun FragmentNavigation(
     viewModel: ViewModel,
     navController: NavHostController,
-    onNavigateToLogin: () -> Unit
+    onNavigateToLogin: () -> Unit,
 ) {
     SharedTransitionLayout {
         NavHost(
@@ -44,7 +44,7 @@ fun FragmentNavigation(
                 } else {
                     slideOutHorizontally(tween()) { -it / 4 } + fadeOut()
                 }
-            }
+            },
         ) {
             composable(route = Fragment.Home.route) {
                 Home(
@@ -53,7 +53,7 @@ fun FragmentNavigation(
                     animatedVisibilityScope = this,
                     onNavigateToScreen = {
                         navController.navigate(it.route)
-                    }
+                    },
                 )
             }
 
@@ -88,7 +88,7 @@ fun FragmentNavigation(
             composable(route = Fragment.Settings.route) {
                 Settings(
                     viewModel = viewModel,
-                    onNavigateToLogin = onNavigateToLogin
+                    onNavigateToLogin = onNavigateToLogin,
                 )
             }
         }

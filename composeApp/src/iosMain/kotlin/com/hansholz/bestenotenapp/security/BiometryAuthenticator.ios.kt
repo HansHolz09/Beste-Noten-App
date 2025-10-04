@@ -15,7 +15,7 @@ actual class BiometryAuthenticator {
         requestTitle: String,
         requestReason: String,
         scope: CoroutineScope,
-        result: (successful: Boolean) -> Unit
+        result: (successful: Boolean) -> Unit,
     ) {
         scope.launch {
             if (isBiometricAvailable()) {
@@ -32,7 +32,5 @@ actual class BiometryAuthenticator {
     }
 
     @OptIn(ExperimentalForeignApi::class)
-    actual fun isBiometricAvailable(): Boolean {
-        return context.canEvaluatePolicy(LAPolicyDeviceOwnerAuthentication, null)
-    }
+    actual fun isBiometricAvailable(): Boolean = context.canEvaluatePolicy(LAPolicyDeviceOwnerAuthentication, null)
 }

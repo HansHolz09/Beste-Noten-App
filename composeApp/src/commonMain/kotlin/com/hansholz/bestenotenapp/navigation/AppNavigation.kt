@@ -21,25 +21,26 @@ import com.russhwolf.settings.Settings
 @Composable
 fun AppNavigation(
     viewModel: ViewModel,
-    onNavHostReady: suspend (NavController) -> Unit = {}
+    onNavHostReady: suspend (NavController) -> Unit = {},
 ) {
     val settings = Settings()
     val requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
     val token = rememberSaveable { viewModel.authTokenManager.getToken() ?: "" }
-    val startDestination = rememberSaveable {
-        when {
-            token.isEmpty() || !settings.hasKey("studentId") -> Screen.Login.route
-            requireBiometricAuthentification -> Screen.Biometry.route
-            else -> Screen.Main.route
+    val startDestination =
+        rememberSaveable {
+            when {
+                token.isEmpty() || !settings.hasKey("studentId") -> Screen.Login.route
+                requireBiometricAuthentification -> Screen.Biometry.route
+                else -> Screen.Main.route
+            }
         }
-    }
     val navController = rememberNavController()
     SharedTransitionLayout {
         NavHost(
             navController = navController,
             startDestination = startDestination,
             enterTransition = { fadeIn() },
-            exitTransition = { fadeOut() }
+            exitTransition = { fadeOut() },
         ) {
             composable(route = Screen.Biometry.route) {
                 Biometry(
@@ -48,7 +49,7 @@ fun AppNavigation(
                         navController.navigate(it.route) {
                             popUpTo(navController.graph.id) { inclusive = true }
                         }
-                    }
+                    },
                 )
             }
 
@@ -59,7 +60,7 @@ fun AppNavigation(
                         navController.navigate(Screen.Main.route) {
                             popUpTo(navController.graph.id) { inclusive = true }
                         }
-                    }
+                    },
                 )
             }
 
@@ -71,7 +72,7 @@ fun AppNavigation(
                         navController.navigate(Screen.Login.route) {
                             popUpTo(navController.graph.id) { inclusive = true }
                         }
-                    }
+                    },
                 )
             }
         }

@@ -6,16 +6,16 @@ import com.hansholz.bestenotenapp.smartspacer.SmartspacerPrefs
 import com.hansholz.bestenotenapp.utils.AndroidContext
 import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerTargetProvider
 import com.kieronquinn.app.smartspacer.sdk.receivers.SmartspacerTargetUpdateReceiver
-import java.time.ZonedDateTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.ZonedDateTime
 
 class LessonsTargetUpdateReceiver : SmartspacerTargetUpdateReceiver() {
     @SuppressLint("NewApi")
     override fun onRequestSmartspaceTargetUpdate(
         context: Context,
-        requestTargets: List<RequestTarget>
+        requestTargets: List<RequestTarget>,
     ) {
         AndroidContext.init(context)
         val scope = CoroutineScope(Dispatchers.IO)

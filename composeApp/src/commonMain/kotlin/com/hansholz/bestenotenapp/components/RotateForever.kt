@@ -16,25 +16,27 @@ fun Modifier.rotateForever(
     durationMillis: Int = 3000,
     clockwise: Boolean = true,
     enabled: Boolean = true,
-    easing: Easing = LinearEasing
-): Modifier = composed {
-    if (enabled) {
-        val infiniteTransition = rememberInfiniteTransition(label = "RotateForeverTransition")
+    easing: Easing = LinearEasing,
+): Modifier =
+    composed {
+        if (enabled) {
+            val infiniteTransition = rememberInfiniteTransition(label = "RotateForeverTransition")
 
-        val angle by infiniteTransition.animateFloat(
-            initialValue = 0f,
-            targetValue = if (clockwise) 360f else -360f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis, easing = easing),
-                repeatMode = RepeatMode.Restart
-            ),
-            label = "RotationAngle"
-        )
+            val angle by infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = if (clockwise) 360f else -360f,
+                animationSpec =
+                    infiniteRepeatable(
+                        animation = tween(durationMillis, easing = easing),
+                        repeatMode = RepeatMode.Restart,
+                    ),
+                label = "RotationAngle",
+            )
 
-        this.graphicsLayer {
-            rotationZ = angle
+            this.graphicsLayer {
+                rotationZ = angle
+            }
+        } else {
+            this
         }
-    } else {
-        this
     }
-}

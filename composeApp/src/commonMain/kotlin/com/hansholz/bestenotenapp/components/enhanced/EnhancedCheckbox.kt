@@ -55,33 +55,32 @@ fun EnhancedCheckbox(
     CheckboxImpl(
         enabled = enabled,
         value = toggleableState,
-        modifier = modifier
-            .minimumInteractiveComponentSize()
-            .triStateToggleable(
-                state = toggleableState,
-                onClick = {
-                    val newState = !checked
-                    onCheckedChange(newState)
-                    hapticFeedback.performHapticFeedback(
-                        if (newState) {
-                            HapticFeedbackType.ToggleOn
-                        } else {
-                            HapticFeedbackType.ToggleOff
-                        }
-                    )
-                },
-                enabled = enabled,
-                role = Role.Checkbox,
-                interactionSource = interactionSource,
-                indication = ripple(bounded = false, radius = 20.dp),
-            )
-            .padding(2.dp),
+        modifier =
+            modifier
+                .minimumInteractiveComponentSize()
+                .triStateToggleable(
+                    state = toggleableState,
+                    onClick = {
+                        val newState = !checked
+                        onCheckedChange(newState)
+                        hapticFeedback.performHapticFeedback(
+                            if (newState) {
+                                HapticFeedbackType.ToggleOn
+                            } else {
+                                HapticFeedbackType.ToggleOff
+                            },
+                        )
+                    },
+                    enabled = enabled,
+                    role = Role.Checkbox,
+                    interactionSource = interactionSource,
+                    indication = ripple(bounded = false, radius = 20.dp),
+                ).padding(2.dp),
         colors = colors,
         checkmarkStroke = Stroke(width = strokeWidthPx, cap = StrokeCap.Round),
         outlineStroke = Stroke(width = strokeWidthPx),
     )
 }
-
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -104,7 +103,7 @@ private fun CheckboxImpl(
                     targetState == ToggleableState.Off -> snap(delayMillis = 100)
                     else -> defaultAnimationSpec
                 }
-            }
+            },
         ) {
             when (it) {
                 ToggleableState.On -> 1f
@@ -122,7 +121,7 @@ private fun CheckboxImpl(
                     targetState == ToggleableState.Off -> snap(delayMillis = 100)
                     else -> defaultAnimationSpec
                 }
-            }
+            },
         ) {
             when (it) {
                 ToggleableState.On -> 0f
@@ -142,14 +141,14 @@ private fun CheckboxImpl(
         drawCircle(
             color = boxColor.value,
             radius = radius,
-            center = center
+            center = center,
         )
 
         drawCircle(
             color = borderColor.value,
             radius = radius,
             center = center,
-            style = outlineStroke
+            style = outlineStroke,
         )
 
         drawCheck(
@@ -175,12 +174,16 @@ private fun CheckboxColors.checkmarkColor(state: ToggleableState): State<Color> 
 }
 
 @Composable
-internal fun CheckboxColors.boxColor(enabled: Boolean, state: ToggleableState): State<Color> {
+internal fun CheckboxColors.boxColor(
+    enabled: Boolean,
+    state: ToggleableState,
+): State<Color> {
     val target =
         if (enabled) {
             when (state) {
                 ToggleableState.On,
-                ToggleableState.Indeterminate -> checkedBoxColor
+                ToggleableState.Indeterminate,
+                -> checkedBoxColor
                 ToggleableState.Off -> uncheckedBoxColor
             }
         } else {
@@ -201,12 +204,16 @@ internal fun CheckboxColors.boxColor(enabled: Boolean, state: ToggleableState): 
 }
 
 @Composable
-private fun CheckboxColors.borderColor(enabled: Boolean, state: ToggleableState): State<Color> {
+private fun CheckboxColors.borderColor(
+    enabled: Boolean,
+    state: ToggleableState,
+): State<Color> {
     val target =
         if (enabled) {
             when (state) {
                 ToggleableState.On,
-                ToggleableState.Indeterminate -> checkedBorderColor
+                ToggleableState.Indeterminate,
+                -> checkedBorderColor
                 ToggleableState.Off -> uncheckedBorderColor
             }
         } else {
@@ -228,15 +235,14 @@ private fun CheckboxColors.borderColor(enabled: Boolean, state: ToggleableState)
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun colorAnimationSpecForState(state: ToggleableState): AnimationSpec<Color> {
-    return if (state == ToggleableState.Off) {
+private fun colorAnimationSpecForState(state: ToggleableState): AnimationSpec<Color> =
+    if (state == ToggleableState.Off) {
         // Box out
         motionScheme.fastEffectsSpec()
     } else {
         // Box in
         motionScheme.defaultEffectsSpec()
     }
-}
 
 private fun DrawScope.drawCheck(
     checkColor: Color,

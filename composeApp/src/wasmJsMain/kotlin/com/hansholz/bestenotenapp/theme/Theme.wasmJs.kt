@@ -6,6 +6,6 @@ import androidx.compose.runtime.Composable
 @Composable
 internal actual fun SystemAppearance(
     isDark: Boolean,
-    customColorScheme: @Composable ((ColorScheme?) -> Unit)
+    customColorScheme: @Composable ((ColorScheme?) -> Unit),
 ) {
 }

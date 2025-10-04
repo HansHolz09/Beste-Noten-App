@@ -10,7 +10,7 @@ import androidx.fragment.app.FragmentManager
 @Composable
 actual fun BindBiometryAuthenticatorEffect(
     biometryAuthenticator: BiometryAuthenticator,
-    onBinded: suspend () -> Unit
+    onBinded: suspend () -> Unit,
 ) {
     val context: Context = LocalContext.current
 

@@ -43,67 +43,74 @@ fun PreferenceItem(
     textModifier: Modifier = Modifier,
     iconTint: Color = LocalContentColor.current,
     position: PreferencePosition = PreferencePosition.Single,
-    trailingContent: @Composable (() -> Unit)? = null
+    trailingContent: @Composable (() -> Unit)? = null,
 ) {
-    val shape = when (position) {
-        PreferencePosition.Single -> MaterialTheme.shapes.large
-        PreferencePosition.Top -> MaterialTheme.shapes.large.copy(
-            bottomStart = MaterialTheme.shapes.extraSmall.bottomStart,
-            bottomEnd = MaterialTheme.shapes.extraSmall.bottomEnd
-        )
+    val shape =
+        when (position) {
+            PreferencePosition.Single -> MaterialTheme.shapes.large
+            PreferencePosition.Top ->
+                MaterialTheme.shapes.large.copy(
+                    bottomStart = MaterialTheme.shapes.extraSmall.bottomStart,
+                    bottomEnd = MaterialTheme.shapes.extraSmall.bottomEnd,
+                )
 
-        PreferencePosition.Bottom -> MaterialTheme.shapes.large.copy(
-            topStart = MaterialTheme.shapes.extraSmall.topStart,
-            topEnd = MaterialTheme.shapes.extraSmall.topEnd
-        )
+            PreferencePosition.Bottom ->
+                MaterialTheme.shapes.large.copy(
+                    topStart = MaterialTheme.shapes.extraSmall.topStart,
+                    topEnd = MaterialTheme.shapes.extraSmall.topEnd,
+                )
 
-        PreferencePosition.Middle -> MaterialTheme.shapes.extraSmall
-    }
+            PreferencePosition.Middle -> MaterialTheme.shapes.extraSmall
+        }
     val animatedEnabled by animateFloatAsState(if (enabled) 1f else 0.5f)
 
     Surface(
-        modifier = modifier
-            .alpha(animatedEnabled)
-            .fillMaxWidth()
-            .clip(shape)
-            .then(
-                if (onClick != null) {
-                    Modifier.clickable { onClick() }
-                } else {
-                    Modifier
-                }
-            ),
+        modifier =
+            modifier
+                .alpha(animatedEnabled)
+                .fillMaxWidth()
+                .clip(shape)
+                .then(
+                    if (onClick != null) {
+                        Modifier.clickable { onClick() }
+                    } else {
+                        Modifier
+                    },
+                ),
         color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(0.7f),
-        shape = shape
+        shape = shape,
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             when (icon) {
-                is ImageVector -> Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = iconTint,
-                    modifier = Modifier.size(24.dp)
-                )
+                is ImageVector ->
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = iconTint,
+                        modifier = Modifier.size(24.dp),
+                    )
 
-                is Painter -> Icon(
-                    painter = icon,
-                    contentDescription = null,
-                    tint = iconTint,
-                    modifier = Modifier.size(24.dp)
-                )
+                is Painter ->
+                    Icon(
+                        painter = icon,
+                        contentDescription = null,
+                        tint = iconTint,
+                        modifier = Modifier.size(24.dp),
+                    )
 
                 else -> {}
             }
 
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(
                     text = title,
@@ -117,7 +124,7 @@ fun PreferenceItem(
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }

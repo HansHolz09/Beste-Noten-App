@@ -34,23 +34,24 @@ internal fun DecoratedWindowScope.TitleBarOnLinux(
     TitleBarImpl(
         modifier,
         { _, _ -> PaddingValues(0.dp) },
-        titleBarHeight
+        titleBarHeight,
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().height(titleBarHeight.value),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            val colors = if (isDark) {
-                IconButtonDefaults.filledIconButtonColors(Color(38, 40, 42), Color.LightGray)
-            } else {
-                IconButtonDefaults.filledIconButtonColors(Color(227, 227, 227), Color.DarkGray)
-            }
+            val colors =
+                if (isDark) {
+                    IconButtonDefaults.filledIconButtonColors(Color(38, 40, 42), Color.LightGray)
+                } else {
+                    IconButtonDefaults.filledIconButtonColors(Color(227, 227, 227), Color.DarkGray)
+                }
             Spacer(Modifier.weight(1f))
             FilledIconButton(
                 onClick = {
                     window.extendedState = Frame.ICONIFIED
                 },
-                colors = colors
+                colors = colors,
             ) {
                 Icon(Icons.Outlined.Remove, null)
             }
@@ -62,7 +63,7 @@ internal fun DecoratedWindowScope.TitleBarOnLinux(
                         window.extendedState = Frame.MAXIMIZED_BOTH
                     }
                 },
-                colors = colors
+                colors = colors,
             ) {
                 Icon(if (state.isMaximized) Icons.Outlined.CloseFullscreen else Icons.Outlined.OpenInFull, null)
             }
@@ -70,7 +71,7 @@ internal fun DecoratedWindowScope.TitleBarOnLinux(
                 onClick = {
                     window.dispatchEvent(WindowEvent(window, WindowEvent.WINDOW_CLOSING))
                 },
-                colors = colors
+                colors = colors,
             ) {
                 Icon(Icons.Outlined.Close, null)
             }

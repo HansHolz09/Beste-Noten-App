@@ -17,7 +17,7 @@ fun EnhancedAnimated(
     repeat: Boolean = false,
     animateOnEnter: Boolean = true,
     state: AnimatedState = rememberAnimatedState(),
-    content: @Composable (isAnimated: Boolean) -> Unit
+    content: @Composable (isAnimated: Boolean) -> Unit,
 ) {
     if (LocalAnimationsEnabled.current.value) {
         Animated(

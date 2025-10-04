@@ -63,7 +63,7 @@ import kotlinx.coroutines.launch
 fun AppNavigationDrawer(
     viewModel: ViewModel,
     onNavHostReady: suspend (NavController) -> Unit = {},
-    onNavigateToLogin: () -> Unit
+    onNavigateToLogin: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val hapticFeedback = LocalHapticFeedback.current
@@ -89,41 +89,43 @@ fun AppNavigationDrawer(
                 EnhancedAnimated(
                     preset = RubberBand(0.05f),
                     durationMillis = 1000,
-                    state = animateState
+                    state = animateState,
                 ) {
                     Text(
                         text = "Beste-Noten-App",
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(horizontal = 40.dp)
-                            .clickable(null, null) {
-                                showConfetti = true
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                            },
+                        modifier =
+                            Modifier
+                                .align(Alignment.CenterHorizontally)
+                                .padding(horizontal = 40.dp)
+                                .clickable(null, null) {
+                                    showConfetti = true
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                },
                         color = colorScheme.onSurface,
                         autoSize = TextAutoSize.StepBased(10.sp),
                         fontFamily = FontFamilies.KeaniaOne(),
-                        maxLines = 1
+                        maxLines = 1,
                     )
                 }
                 EnhancedAnimated(
                     preset = Jello(),
                     durationMillis = 1000,
-                    state = animateState
+                    state = animateState,
                 ) {
                     Text(
                         text = "für beste.schule",
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(horizontal = 80.dp)
-                            .clickable(null, null) {
-                                showConfetti = true
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                            },
+                        modifier =
+                            Modifier
+                                .align(Alignment.CenterHorizontally)
+                                .padding(horizontal = 80.dp)
+                                .clickable(null, null) {
+                                    showConfetti = true
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                },
                         color = colorScheme.onSurface,
                         autoSize = TextAutoSize.StepBased(5.sp),
                         fontFamily = FontFamilies.Schoolbell(),
-                        maxLines = 1
+                        maxLines = 1,
                     )
                 }
                 Spacer(Modifier.height(15.dp))
@@ -145,13 +147,15 @@ fun AppNavigationDrawer(
                                 }
                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                             },
-                            modifier = Modifier.padding(10.dp).then(
-                                if (isCurrentScreen) Modifier.border(2.dp, colorScheme.onSurface, shapes.extraExtraLarge) else Modifier
-                            ),
-                            colors = NavigationDrawerItemDefaults.colors(
-                                selectedContainerColor = colorScheme.secondaryContainer.copy(0.7f),
-                                unselectedTextColor = colorScheme.onSurface
-                            )
+                            modifier =
+                                Modifier.padding(10.dp).then(
+                                    if (isCurrentScreen) Modifier.border(2.dp, colorScheme.onSurface, shapes.extraExtraLarge) else Modifier,
+                                ),
+                            colors =
+                                NavigationDrawerItemDefaults.colors(
+                                    selectedContainerColor = colorScheme.secondaryContainer.copy(0.7f),
+                                    unselectedTextColor = colorScheme.onSurface,
+                                ),
                         )
                     }
                 }
@@ -173,23 +177,25 @@ fun AppNavigationDrawer(
                             }
                             hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                         },
-                        modifier = Modifier.padding(10.dp).then(
-                            if (isCurrentScreen) Modifier.border(2.dp, colorScheme.onSurface, shapes.extraExtraLarge) else Modifier
-                        ),
+                        modifier =
+                            Modifier.padding(10.dp).then(
+                                if (isCurrentScreen) Modifier.border(2.dp, colorScheme.onSurface, shapes.extraExtraLarge) else Modifier,
+                            ),
                         icon = { Icon(Icons.Outlined.Settings, null) },
-                        colors = NavigationDrawerItemDefaults.colors(
-                            selectedContainerColor = colorScheme.secondaryContainer.copy(0.7f),
-                            unselectedTextColor = colorScheme.onSurface
-                        )
+                        colors =
+                            NavigationDrawerItemDefaults.colors(
+                                selectedContainerColor = colorScheme.secondaryContainer.copy(0.7f),
+                                unselectedTextColor = colorScheme.onSurface,
+                            ),
                     )
                 }
             }
-        }
+        },
     ) {
         FragmentNavigation(
             viewModel = viewModel,
             navController = navController,
-            onNavigateToLogin = onNavigateToLogin
+            onNavigateToLogin = onNavigateToLogin,
         )
     }
     LaunchedEffect(navController) {
@@ -202,7 +208,7 @@ fun AppNavigationDrawer(
             parties = ConfettiPresets.logos(),
             onParticleSystemEnded = { _, activeSystems ->
                 if (activeSystems == 0) showConfetti = false
-            }
+            },
         )
     }
 }

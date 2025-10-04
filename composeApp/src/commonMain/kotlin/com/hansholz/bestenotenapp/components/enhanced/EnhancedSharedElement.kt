@@ -37,19 +37,22 @@ fun Modifier.enhancedSharedElement(
     renderInOverlayDuringTransition: Boolean = true,
     zIndexInOverlay: Float = 0f,
     clipInOverlayDuringTransition: OverlayClip = ParentClip,
-): Modifier = with(sharedTransitionScope) {
-    if (LocalAnimationsEnabled.current.value) {
-        this@enhancedSharedElement.sharedElement(
-            sharedContentState = sharedContentState,
-            animatedVisibilityScope = animatedVisibilityScope,
-            boundsTransform = boundsTransform,
-            placeHolderSize = placeHolderSize,
-            renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-            zIndexInOverlay = zIndexInOverlay,
-            clipInOverlayDuringTransition = clipInOverlayDuringTransition
-        )
-    } else this@enhancedSharedElement
-}
+): Modifier =
+    with(sharedTransitionScope) {
+        if (LocalAnimationsEnabled.current.value) {
+            this@enhancedSharedElement.sharedElement(
+                sharedContentState = sharedContentState,
+                animatedVisibilityScope = animatedVisibilityScope,
+                boundsTransform = boundsTransform,
+                placeHolderSize = placeHolderSize,
+                renderInOverlayDuringTransition = renderInOverlayDuringTransition,
+                zIndexInOverlay = zIndexInOverlay,
+                clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+            )
+        } else {
+            this@enhancedSharedElement
+        }
+    }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -65,22 +68,25 @@ fun Modifier.enhancedSharedBounds(
     renderInOverlayDuringTransition: Boolean = true,
     zIndexInOverlay: Float = 0f,
     clipInOverlayDuringTransition: OverlayClip = ParentClip,
-): Modifier = with(sharedTransitionScope) {
-    if (LocalAnimationsEnabled.current.value) {
-        this@enhancedSharedBounds.sharedBounds(
-            sharedContentState = sharedContentState,
-            animatedVisibilityScope = animatedVisibilityScope,
-            enter = enter,
-            exit = exit,
-            boundsTransform = boundsTransform,
-            resizeMode = resizeMode,
-            placeHolderSize = placeHolderSize,
-            renderInOverlayDuringTransition = renderInOverlayDuringTransition,
-            zIndexInOverlay = zIndexInOverlay,
-            clipInOverlayDuringTransition = clipInOverlayDuringTransition
-        )
-    } else this@enhancedSharedBounds
-}
+): Modifier =
+    with(sharedTransitionScope) {
+        if (LocalAnimationsEnabled.current.value) {
+            this@enhancedSharedBounds.sharedBounds(
+                sharedContentState = sharedContentState,
+                animatedVisibilityScope = animatedVisibilityScope,
+                enter = enter,
+                exit = exit,
+                boundsTransform = boundsTransform,
+                resizeMode = resizeMode,
+                placeHolderSize = placeHolderSize,
+                renderInOverlayDuringTransition = renderInOverlayDuringTransition,
+                zIndexInOverlay = zIndexInOverlay,
+                clipInOverlayDuringTransition = clipInOverlayDuringTransition,
+            )
+        } else {
+            this@enhancedSharedBounds
+        }
+    }
 
 @ExperimentalSharedTransitionApi
 private val ParentClip: OverlayClip =
@@ -90,7 +96,5 @@ private val ParentClip: OverlayClip =
             bounds: Rect,
             layoutDirection: LayoutDirection,
             density: Density,
-        ): Path? {
-            return sharedContentState.parentSharedContentState?.clipPathInOverlay
-        }
+        ): Path? = sharedContentState.parentSharedContentState?.clipPathInOverlay
     }

@@ -19,7 +19,7 @@ import com.russhwolf.settings.Settings
 import dev.chrisbanes.haze.HazeDefaults
 import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
 
-internal val LocalUseSystemIsDark  = compositionLocalOf { mutableStateOf(true) }
+internal val LocalUseSystemIsDark = compositionLocalOf { mutableStateOf(true) }
 internal val LocalIsDark = compositionLocalOf { mutableStateOf(true) }
 internal val LocalThemeIsDark = compositionLocalOf { true }
 internal val LocalUseCustomColorScheme = compositionLocalOf { mutableStateOf(false) }
@@ -46,7 +46,7 @@ internal fun AppTheme(content: @Composable () -> Unit) {
         LocalUseCustomColorScheme provides useCustomColorSchemeState,
         LocalSupportsCustomColorScheme provides supportsCustomColorSchemeState,
         LocalAnimationsEnabled provides animationsEnabledState,
-        LocalBlurEnabled provides blurEnabledState
+        LocalBlurEnabled provides blurEnabledState,
     ) {
         val isDark = isDarkState
         val useCustomColorScheme by useCustomColorSchemeState
@@ -55,11 +55,12 @@ internal fun AppTheme(content: @Composable () -> Unit) {
             customColorScheme = it
             if (it != null) LocalSupportsCustomColorScheme.current.value = true
         }
-        val colorScheme = (if (useCustomColorScheme) customColorScheme else null) ?: rememberDynamicColorScheme(
-            seedColor = Color.Yellow,
-            isDark = isDark,
-            specVersion = ColorSpec.SpecVersion.SPEC_2025,
-        )
+        val colorScheme =
+            (if (useCustomColorScheme) customColorScheme else null) ?: rememberDynamicColorScheme(
+                seedColor = Color.Yellow,
+                isDark = isDark,
+                specVersion = ColorSpec.SpecVersion.SPEC_2025,
+            )
         MaterialExpressiveTheme(
             colorScheme = animateColorScheme(colorScheme, { tween(750) }),
             typography = AppTypography(),

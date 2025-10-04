@@ -33,12 +33,12 @@ internal actual fun SystemAppearance(
         if (window is Window && Build.VERSION.SDK_INT >= VERSION_CODES.VANILLA_ICE_CREAM) {
             window.insetsController?.setSystemBarsAppearance(
                 APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND,
-                APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND
+                APPEARANCE_TRANSPARENT_CAPTION_BAR_BACKGROUND,
             )
             val lightIcons = if (isDark) 0 else APPEARANCE_LIGHT_CAPTION_BARS
             window.insetsController?.setSystemBarsAppearance(
                 lightIcons,
-                APPEARANCE_LIGHT_CAPTION_BARS
+                APPEARANCE_LIGHT_CAPTION_BARS,
             )
         }
     }

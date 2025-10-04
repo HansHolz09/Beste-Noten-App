@@ -8,17 +8,17 @@ import com.hansholz.bestenotenapp.utils.SimpleTime
 import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerRequirementProvider
 
 class SchooltimeRequirement : SmartspacerRequirementProvider() {
-    override fun getConfig(smartspacerId: String?): Config {
-        return Config(
+    override fun getConfig(smartspacerId: String?): Config =
+        Config(
             label = "Während der Schulzeit",
             description = "Nur anzeigen, wenn aktuell Schule ist (Optional mit Puffer)",
             icon = Icon.createWithResource(provideContext(), R.drawable.logo_monochrome),
-            configActivity = Intent(
-                provideContext(),
-                SchooltimeRequirementConfigActivity::class.java
-            ),
+            configActivity =
+                Intent(
+                    provideContext(),
+                    SchooltimeRequirementConfigActivity::class.java,
+                ),
         )
-    }
 
     override fun isRequirementMet(smartspacerId: String): Boolean {
         val ctx = provideContext()

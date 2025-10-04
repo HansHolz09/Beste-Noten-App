@@ -6,19 +6,17 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
-val Github: ImageVector
-    get() {
-        if (_Github != null) return _Github!!
-
-        _Github = ImageVector.Builder(
+val Github: ImageVector =
+    ImageVector
+        .Builder(
             name = "Github",
             defaultWidth = 16.dp,
             defaultHeight = 16.dp,
             viewportWidth = 16f,
-            viewportHeight = 16f
+            viewportHeight = 16f,
         ).apply {
             path(
-                fill = SolidColor(Color.Black)
+                fill = SolidColor(Color.Black),
             ) {
                 moveTo(8f, 0f)
                 curveTo(3.58f, 0f, 0f, 3.58f, 0f, 8f)
@@ -48,9 +46,3 @@ val Github: ImageVector
                 curveToRelative(0f, -4.42f, -3.58f, -8f, -8f, -8f)
             }
         }.build()
-
-        return _Github!!
-    }
-
-private var _Github: ImageVector? = null
-

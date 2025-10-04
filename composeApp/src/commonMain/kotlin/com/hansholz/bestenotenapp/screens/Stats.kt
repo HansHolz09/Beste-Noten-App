@@ -17,8 +17,16 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.PaintingStyle
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathOperation
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.withSaveLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.platform.LocalDensity
@@ -28,7 +36,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import io.github.koalaplot.core.pie.PieSliceScope
-import io.github.koalaplot.core.util.*
+import io.github.koalaplot.core.util.Degrees
+import io.github.koalaplot.core.util.ExperimentalKoalaPlotApi
+import io.github.koalaplot.core.util.Radians
+import io.github.koalaplot.core.util.deg
+import io.github.koalaplot.core.util.toDegrees
+import io.github.koalaplot.core.util.toRadians
 import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.min
@@ -167,7 +180,7 @@ fun PieSliceScope.DefaultSlice(
     antiAlias: Boolean = false,
     gap: Float = 0.0f,
     cornerRadius: Dp = 5.dp,
-    onClick: () -> Unit = {}
+    onClick: () -> Unit = {},
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
@@ -177,51 +190,74 @@ fun PieSliceScope.DefaultSlice(
     val cornerRadiusPx = with(LocalDensity.current) { cornerRadius.toPx() }
 
     // Die Shape mit dem neuen Parameter erstellen
-    val shape = Slice(
-        startAngle = pieSliceData.startAngle.toDegrees().value.toFloat() + gap,
-        angle = pieSliceData.angle.toDegrees().value.toFloat() - 2 * gap,
-        innerRadius = innerRadius,
-        outerRadius = targetOuterRadius,
-        cornerRadius = cornerRadiusPx
-    )
+    val shape =
+        Slice(
+            startAngle =
+                pieSliceData.startAngle
+                    .toDegrees()
+                    .value
+                    .toFloat() + gap,
+            angle =
+                pieSliceData.angle
+                    .toDegrees()
+                    .value
+                    .toFloat() - 2 * gap,
+            innerRadius = innerRadius,
+            outerRadius = targetOuterRadius,
+            cornerRadius = cornerRadiusPx,
+        )
 
     Box(
-        modifier = modifier.fillMaxSize()
-            .drawWithContent {
-                drawIntoCanvas {
-                    val path = (shape.createOutline(size, layoutDirection, this) as Outline.Generic).path
-                    it.drawPath(path, Paint().apply { isAntiAlias = antiAlias; this.color = color })
-                    if (border != null) {
-                        it.withSaveLayer(Rect(Offset.Zero, size), Paint().apply { isAntiAlias = antiAlias }) {
-                            val clip = Path().apply {
-                                addRect(Rect(Offset.Zero, size))
-                                op(this, path, PathOperation.Difference)
+        modifier =
+            modifier
+                .fillMaxSize()
+                .drawWithContent {
+                    drawIntoCanvas {
+                        val path = (shape.createOutline(size, layoutDirection, this) as Outline.Generic).path
+                        it.drawPath(
+                            path,
+                            Paint().apply {
+                                isAntiAlias = antiAlias
+                                this.color = color
+                            },
+                        )
+                        if (border != null) {
+                            it.withSaveLayer(Rect(Offset.Zero, size), Paint().apply { isAntiAlias = antiAlias }) {
+                                val clip =
+                                    Path().apply {
+                                        addRect(Rect(Offset.Zero, size))
+                                        op(this, path, PathOperation.Difference)
+                                    }
+                                it.drawPath(
+                                    path,
+                                    Paint().apply {
+                                        isAntiAlias = antiAlias
+                                        strokeWidth = border.width.toPx()
+                                        style = PaintingStyle.Stroke
+                                        border.brush.applyTo(size, this, 1f)
+                                    },
+                                )
+                                it.drawPath(
+                                    clip,
+                                    Paint().apply {
+                                        isAntiAlias = antiAlias
+                                        blendMode = BlendMode.Clear
+                                    },
+                                )
                             }
-                            it.drawPath(
-                                path,
-                                Paint().apply {
-                                    isAntiAlias = antiAlias
-                                    strokeWidth = border.width.toPx()
-                                    style = PaintingStyle.Stroke
-                                    border.brush.applyTo(size, this, 1f)
-                                }
-                            )
-                            it.drawPath(
-                                clip,
-                                Paint().apply { isAntiAlias = antiAlias; blendMode = BlendMode.Clear }
-                            )
                         }
                     }
-                }
-                drawContent()
-            }.clip(shape)
-            .then(
-                if (clickable) Modifier.clickable(enabled = true, role = Role.Button, onClick = onClick)
-                else Modifier
-            )
-            .pointerHoverIcon(PointerIcon.Hand)
-            .hoverableElement(hoverElement)
-            .hoverable(interactionSource)
+                    drawContent()
+                }.clip(shape)
+                .then(
+                    if (clickable) {
+                        Modifier.clickable(enabled = true, role = Role.Button, onClick = onClick)
+                    } else {
+                        Modifier
+                    },
+                ).pointerHoverIcon(PointerIcon.Hand)
+                .hoverableElement(hoverElement)
+                .hoverable(interactionSource),
     ) {}
 }
 
@@ -230,12 +266,12 @@ private class Slice(
     private val angle: Float,
     private val innerRadius: Float,
     private val outerRadius: Float,
-    private val cornerRadius: Float = 0f // Neuer Konstruktor-Parameter
+    private val cornerRadius: Float = 0f, // Neuer Konstruktor-Parameter
 ) : Shape {
     override fun createOutline(
         size: Size,
         layoutDirection: LayoutDirection,
-        density: Density
+        density: Density,
     ): Outline {
         // Wenn kein Eckradius angegeben ist, wird die originale, scharfkantige Logik verwendet.
         if (cornerRadius <= 0f) {
@@ -319,12 +355,15 @@ private class Slice(
     }
 }
 
+fun polarToCartesian(
+    radius: Float,
+    angle: Degrees,
+): Offset = polarToCartesian(radius, angle.toRadians())
 
-fun polarToCartesian(radius: Float, angle: Degrees): Offset = polarToCartesian(radius, angle.toRadians())
-
-fun polarToCartesian(radius: Float, angle: Radians): Offset {
-    return Offset((radius * cos(angle.value)).toFloat(), (radius * sin(angle.value)).toFloat())
-}
+fun polarToCartesian(
+    radius: Float,
+    angle: Radians,
+): Offset = Offset((radius * cos(angle.value)).toFloat(), (radius * sin(angle.value)).toFloat())
 
 fun Path.lineTo(offset: Offset) {
     lineTo(offset.x, offset.y)

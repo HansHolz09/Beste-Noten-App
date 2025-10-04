@@ -1,11 +1,13 @@
+
+import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule.GROUP
-import java.text.SimpleDateFormat
-import java.util.Date
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.text.SimpleDateFormat
+import java.util.Date
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -16,6 +18,7 @@ plugins {
     alias(libs.plugins.serialization)
     alias(libs.plugins.buildConfig)
     alias(libs.plugins.aboutLibraries)
+    alias(libs.plugins.ktlint)
 }
 
 buildConfig {
@@ -42,7 +45,7 @@ kotlin {
     listOf(
         iosX64(),
         iosArm64(),
-        iosSimulatorArm64()
+        iosSimulatorArm64(),
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
@@ -135,17 +138,29 @@ kotlin {
 
 android {
     namespace = "com.hansholz.bestenotenapp"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk =
+        libs.versions.android.compileSdk
+            .get()
+            .toInt()
 
     defaultConfig {
         applicationId = "com.hansholz.bestenotenapp"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = libs.versions.appVersionCode.get().toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
+        targetSdk =
+            libs.versions.android.targetSdk
+                .get()
+                .toInt()
+        versionCode =
+            libs.versions.appVersionCode
+                .get()
+                .toInt()
         versionName = libs.versions.appVersion.get()
 
         addManifestPlaceholders(
-            mapOf("oidcRedirectScheme" to "bestenotenapp://callback")
+            mapOf("oidcRedirectScheme" to "bestenotenapp://callback"),
         )
     }
     packaging {
@@ -243,11 +258,31 @@ compose.desktop {
     }
 }
 
-val copyAssetsCarToMacResources = tasks.register<Copy>("copyAssetsCarToMacResources") {
-    dependsOn("createReleaseDistributable")
-    from(layout.projectDirectory.file("src/desktopMain/assets/Assets.car"))
-    into(layout.buildDirectory.dir("compose/binaries/main-release/app/${libs.versions.appName.get()}.app/Contents").map { it.dir("Resources") })
+ktlint {
+    enableExperimentalRules.set(true)
+    additionalEditorconfig.set(
+        mapOf(
+            "max_line_length" to "180",
+            "ktlint_function_naming_ignore_when_annotated_with" to "Composable",
+        ),
+    )
+    filter {
+        exclude { element ->
+            val path = element.file.path
+            path.contains("\\generated\\") || path.contains("/generated/")
+        }
+    }
+
+    tasks.named("desktopJar").dependsOn(tasks.ktlintFormat)
+    tasks.preBuild.dependsOn(tasks.ktlintFormat)
 }
+
+val copyAssetsCarToMacResources =
+    tasks.register<Copy>("copyAssetsCarToMacResources") {
+        dependsOn("createReleaseDistributable")
+        from(layout.projectDirectory.file("src/desktopMain/assets/Assets.car"))
+        into(layout.buildDirectory.dir("compose/binaries/main-release/app/${libs.versions.appName.get()}.app/Contents").map { it.dir("Resources") })
+    }
 tasks.register("createReleaseDmg") {
     group = "packaging"
     description = "Creates DMG for MacOS with MacOS 26 Icon"

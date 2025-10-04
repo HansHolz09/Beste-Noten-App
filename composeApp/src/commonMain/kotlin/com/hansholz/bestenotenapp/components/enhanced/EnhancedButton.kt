@@ -38,10 +38,11 @@ fun EnhancedButton(
             onClick()
             hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
         },
-        shapes = ButtonShapes(
-            shape = shapes.extraExtraLarge,
-            pressedShape = shapes.small,
-        ),
+        shapes =
+            ButtonShapes(
+                shape = shapes.extraExtraLarge,
+                pressedShape = shapes.small,
+            ),
         modifier = modifier,
         enabled = enabled,
         colors = colors,
@@ -49,7 +50,7 @@ fun EnhancedButton(
         border = border,
         contentPadding = contentPadding,
         interactionSource = interactionSource,
-        content = content
+        content = content,
     )
 }
 
@@ -74,10 +75,11 @@ fun EnhancedOutlinedButton(
             onClick()
             hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
         },
-        shapes = ButtonShapes(
-            shape = shapes.extraExtraLarge,
-            pressedShape = shapes.small,
-        ),
+        shapes =
+            ButtonShapes(
+                shape = shapes.extraExtraLarge,
+                pressedShape = shapes.small,
+            ),
         modifier = modifier,
         enabled = enabled,
         colors = colors,
@@ -85,6 +87,6 @@ fun EnhancedOutlinedButton(
         border = border,
         contentPadding = contentPadding,
         interactionSource = interactionSource,
-        content = content
+        content = content,
     )
 }

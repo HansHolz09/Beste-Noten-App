@@ -6,11 +6,11 @@ import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.models.JournalDay
 import com.hansholz.bestenotenapp.security.AuthTokenManager
 import com.hansholz.bestenotenapp.utils.weekOfYear
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 class LessonsTargetRepository {
     private val tokenManager = AuthTokenManager()
@@ -28,24 +28,33 @@ class LessonsTargetRepository {
     suspend fun getCurrentJournalDay(): JournalDay? {
         if (!ensureToken()) return null
 
-        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+        val today =
+            Clock.System
+                .now()
+                .toLocalDateTime(TimeZone.currentSystemDefault())
+                .date
         val nr = "${today.year}-${today.weekOfYear}"
 
-        val week = runCatching {
-            api.journalWeekShow(
-                nr = nr,
-                filterYear = null,
-                interpolate = true,
-                include = "days.lessons"
-            ).data
-        }.getOrNull()
+        val week =
+            runCatching {
+                api
+                    .journalWeekShow(
+                        nr = nr,
+                        filterYear = null,
+                        interpolate = true,
+                        include = "days.lessons",
+                    ).data
+            }.getOrNull()
 
-        val currentDate = Clock.System.now()
-            .toLocalDateTime(TimeZone.currentSystemDefault()).date
-            .let {
-                "${it.year}-${it.month.number.toString().padStart(2, '0')}" +
+        val currentDate =
+            Clock.System
+                .now()
+                .toLocalDateTime(TimeZone.currentSystemDefault())
+                .date
+                .let {
+                    "${it.year}-${it.month.number.toString().padStart(2, '0')}" +
                         "-${it.day.toString().padStart(2, '0')}"
-            }
+                }
 
         return week?.days?.find { it.date == currentDate }
     }

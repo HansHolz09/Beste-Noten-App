@@ -41,6 +41,7 @@ fun Biometry(
     var isFailure by remember { mutableStateOf(false) }
 
     val biometryAuthenticator = remember { BiometryAuthenticator() }
+
     fun tryBiometricAuthentication() {
         if (biometryAuthenticator.isBiometricAvailable()) {
             biometryAuthenticator.checkBiometryAuthentication(
@@ -55,7 +56,7 @@ fun Biometry(
                                 Screen.Login
                             } else {
                                 Screen.Main
-                            }
+                            },
                         )
                     } else {
                         isFailure = true
@@ -73,7 +74,7 @@ fun Biometry(
 
     TopAppBarScaffold(
         title = "Authentifizieren",
-        hazeState = viewModel.hazeBackgroundState2
+        hazeState = viewModel.hazeBackgroundState2,
     ) { innerPadding, topAppBarBackground ->
         EmptyStateMessage(
             title = "Gesperrt",
@@ -88,7 +89,7 @@ fun Biometry(
                             onClick = {
                                 tryBiometricAuthentication()
                             },
-                            modifier = Modifier.sizeIn(maxWidth = 300.dp).fillMaxWidth().padding(10.dp)
+                            modifier = Modifier.sizeIn(maxWidth = 300.dp).fillMaxWidth().padding(10.dp),
                         ) {
                             Text("Erneut Versuchen")
                         }
@@ -97,7 +98,7 @@ fun Biometry(
                                 viewModel.logout()
                                 onNavigateToScreen(Screen.Login)
                             },
-                            modifier = Modifier.sizeIn(maxWidth = 300.dp).fillMaxWidth().padding(10.dp)
+                            modifier = Modifier.sizeIn(maxWidth = 300.dp).fillMaxWidth().padding(10.dp),
                         ) {
                             Text("Abmelden")
                         }
@@ -105,7 +106,7 @@ fun Biometry(
                 }
             },
             modifier = Modifier.padding(innerPadding),
-            icon = Icons.Outlined.Lock
+            icon = Icons.Outlined.Lock,
         )
 
         topAppBarBackground(innerPadding.calculateTopPadding())

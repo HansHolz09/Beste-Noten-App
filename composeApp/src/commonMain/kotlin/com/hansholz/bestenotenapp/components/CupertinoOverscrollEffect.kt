@@ -44,12 +44,12 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.toOffset
 import androidx.compose.ui.unit.toSize
-import kotlin.coroutines.coroutineContext
-import kotlin.math.abs
-import kotlin.math.sign
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
+import kotlin.math.abs
+import kotlin.math.sign
 
 @Composable
 fun ProvideCupertinoOverscrollEffect(
@@ -72,13 +72,12 @@ private data class CupertinoOverscrollEffectFactory(
     private val density: Density,
     private val hapticFeedback: HapticFeedback,
 ) : OverscrollFactory {
-    override fun createOverscrollEffect(): OverscrollEffect {
-        return CupertinoOverscrollEffect(
+    override fun createOverscrollEffect(): OverscrollEffect =
+        CupertinoOverscrollEffect(
             density = density.density,
             applyClip = false,
-            hapticFeedback = hapticFeedback
+            hapticFeedback = hapticFeedback,
         )
-    }
 }
 
 private enum class CupertinoScrollSource {
@@ -166,7 +165,7 @@ internal class CupertinoOverscrollEffect(
 
     override val isInProgress: Boolean
         get() =
-        // If visible overscroll offset has at least one pixel
+            // If visible overscroll offset has at least one pixel
             // this effect is considered to be in progress
             visibleOverscrollOffset.toOffset().getDistance() > 0.5f
 
@@ -424,7 +423,7 @@ internal class CupertinoOverscrollEffect(
             }
 
         springAnimationScope?.cancel()
-        springAnimationScope = CoroutineScope(coroutineContext)
+        springAnimationScope = CoroutineScope(currentCoroutineContext())
         springAnimationScope?.run {
             AnimationState(
                 Float.VectorConverter,
@@ -448,7 +447,7 @@ internal class CupertinoOverscrollEffect(
             springAnimationScope = null
         }
 
-        if (coroutineContext.isActive) {
+        if (currentCoroutineContext().isActive) {
             // The spring is critically damped, so in case spring-fling-spring sequence is slightly
             // offset and velocity is of the opposite sign, it will end up with no animation
             overscrollOffset = Offset.Zero

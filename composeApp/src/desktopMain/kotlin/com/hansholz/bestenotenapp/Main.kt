@@ -28,10 +28,10 @@ import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
 import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.jetbrains.JBR
-import java.awt.Color
-import java.awt.Dimension
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.skiko.hostOs
+import java.awt.Color
+import java.awt.Dimension
 
 @OptIn(ExperimentalMaterial3ComponentOverrideApi::class, ExperimentalMaterial3Api::class)
 fun main() {
@@ -48,7 +48,8 @@ fun main() {
             var isDark by remember { mutableStateOf(false) }
             CompositionLocalProvider(
                 LocalTitleBarModifier provides Modifier.onGloballyPositioned { titleBarHeight.value = with(density) { it.size.height.toDp() } },
-                LocalNavigationDrawerTopPadding provides if (getExactPlatform() == ExactPlatform.MACOS && !LocalDecoratedWindowScope.current.state.isFullscreen) titleBarHeight.value else null
+                LocalNavigationDrawerTopPadding provides
+                    if (getExactPlatform() == ExactPlatform.MACOS && !LocalDecoratedWindowScope.current.state.isFullscreen) titleBarHeight.value else null,
             ) {
                 App(
                     isDark = { isDark = it },
@@ -56,10 +57,16 @@ fun main() {
                         if (JBR.isRoundedCornersManagerSupported()) {
                             JBR.getRoundedCornersManager().setRoundedCorners(
                                 window,
-                                if (hostOs.isWindows) "full" else if (hostOs.isMacOS) arrayOf(20f, 2, Color(it.outline.toArgb())) else null
+                                if (hostOs.isWindows) {
+                                    "full"
+                                } else if (hostOs.isMacOS) {
+                                    arrayOf(20f, 2, Color(it.outline.toArgb()))
+                                } else {
+                                    null
+                                },
                             )
                         }
-                    }
+                    },
                 )
             }
             TitleBar(isDark = isDark, titleBarHeight = titleBarHeight)

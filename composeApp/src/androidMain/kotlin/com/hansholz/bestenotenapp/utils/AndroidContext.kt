@@ -10,6 +10,7 @@ object AndroidContext {
     fun init(activity: ComponentActivity) {
         context = WeakReference(activity.applicationContext)
     }
+
     fun init(context: Context) {
         this.context = WeakReference(context)
     }

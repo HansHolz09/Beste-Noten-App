@@ -36,6 +36,6 @@ fun EnhancedIconButton(
         enabled = enabled,
         colors = colors,
         interactionSource = interactionSource,
-        content = { content(enabled) }
+        content = { content(enabled) },
     )
 }

@@ -35,10 +35,12 @@ fun TopAppBarScaffold(
     navigationIcon: @Composable () -> Unit = {},
     sideMenuExpanded: Boolean? = null,
     hazeState: HazeState? = null,
-    content: @Composable ((
+    content: @Composable (
+    (
         innerPadding: PaddingValues,
-        topAppBarBackground: @Composable (height: Dp) -> Unit
-    ) -> Unit)
+        topAppBarBackground: @Composable (height: Dp) -> Unit,
+    ) -> Unit
+    ),
 ) {
     Scaffold(
         modifier = modifier,
@@ -62,22 +64,23 @@ fun TopAppBarScaffold(
                     }
                 },
                 actions = { Spacer(Modifier.width(topAppBarEndPadding())) },
-                colors = TopAppBarDefaults.topAppBarColors(Color.Transparent)
+                colors = TopAppBarDefaults.topAppBarColors(Color.Transparent),
             )
         },
         containerColor = Color.Transparent,
         content = { innerPadding ->
             content(innerPadding) { height ->
-                Box(Modifier
-                    .fillMaxWidth()
-                    .height(height)
-                    .then(
-                        hazeState?.let {
-                            Modifier.enhancedHazeEffect(hazeState, colorScheme.secondaryContainer)
-                        } ?: Modifier.background(colorScheme.secondaryContainer)
-                    )
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(height)
+                        .then(
+                            hazeState?.let {
+                                Modifier.enhancedHazeEffect(hazeState, colorScheme.secondaryContainer)
+                            } ?: Modifier.background(colorScheme.secondaryContainer),
+                        ),
                 )
             }
-        }
+        },
     )
 }

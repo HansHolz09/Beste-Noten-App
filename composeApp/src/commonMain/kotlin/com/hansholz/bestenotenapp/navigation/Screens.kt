@@ -3,7 +3,9 @@ package com.hansholz.bestenotenapp.navigation
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed class Screen(val route: String) {
+sealed class Screen(
+    val route: String,
+) {
     @Serializable
     data object Biometry : Screen("biometry")
 
@@ -15,8 +17,10 @@ sealed class Screen(val route: String) {
 }
 
 @Serializable
-sealed class Fragment(val label: String, val route: String) {
-
+sealed class Fragment(
+    val label: String,
+    val route: String,
+) {
     @Serializable
     data object Home : Fragment("Startseite", "home")
 

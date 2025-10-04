@@ -7,9 +7,9 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.hansholz.bestenotenapp.utils.AndroidContext
-import java.util.concurrent.Executor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.util.concurrent.Executor
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual class BiometryAuthenticator {
@@ -23,7 +23,7 @@ actual class BiometryAuthenticator {
         requestTitle: String,
         requestReason: String,
         scope: CoroutineScope,
-        result: (successful: Boolean) -> Unit
+        result: (successful: Boolean) -> Unit,
     ) {
         val resolverFragment: ResolverFragment = getResolverFragment()
 
@@ -43,11 +43,13 @@ actual class BiometryAuthenticator {
     }
 
     private fun getResolverFragment(): ResolverFragment {
-        val fragmentManager: FragmentManager = fragmentManager
-            ?: error("can't check biometry without active window")
+        val fragmentManager: FragmentManager =
+            fragmentManager
+                ?: error("can't check biometry without active window")
 
-        val currentFragment: Fragment? = fragmentManager
-            .findFragmentByTag(BIOMETRY_RESOLVER_FRAGMENT_TAG)
+        val currentFragment: Fragment? =
+            fragmentManager
+                .findFragmentByTag(BIOMETRY_RESOLVER_FRAGMENT_TAG)
 
         return if (currentFragment != null) {
             currentFragment as ResolverFragment
@@ -69,38 +71,41 @@ actual class BiometryAuthenticator {
         fun showBiometricPrompt(
             requestTitle: String,
             requestReason: String,
-            callback: (Boolean) -> Unit
+            callback: (Boolean) -> Unit,
         ) {
             val context = AndroidContext.context.get()!!
 
             executor = ContextCompat.getMainExecutor(context)
 
-            biometricPrompt = BiometricPrompt(this, executor,
-                object : BiometricPrompt.AuthenticationCallback() {
-                    override fun onAuthenticationError(
-                        errorCode: Int,
-                        errString: CharSequence
-                    ) {
-                        super.onAuthenticationError(errorCode, errString)
-                        callback(false)
-                    }
+            biometricPrompt =
+                BiometricPrompt(
+                    this,
+                    executor,
+                    object : BiometricPrompt.AuthenticationCallback() {
+                        override fun onAuthenticationError(
+                            errorCode: Int,
+                            errString: CharSequence,
+                        ) {
+                            super.onAuthenticationError(errorCode, errString)
+                            callback(false)
+                        }
 
-                    override fun onAuthenticationSucceeded(
-                        result: BiometricPrompt.AuthenticationResult
-                    ) {
-                        super.onAuthenticationSucceeded(result)
-                        callback(true)
-                    }
-                }
-            )
+                        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                            super.onAuthenticationSucceeded(result)
+                            callback(true)
+                        }
+                    },
+                )
 
-            promptInfo = BiometricPrompt.PromptInfo.Builder()
-                .setTitle(requestTitle)
-                .setSubtitle(requestReason)
-                .setNegativeButtonText("Abbrechen")
-                .setConfirmationRequired(false)
-                .setAllowedAuthenticators(BIOMETRIC_WEAK)
-                .build()
+            promptInfo =
+                BiometricPrompt.PromptInfo
+                    .Builder()
+                    .setTitle(requestTitle)
+                    .setSubtitle(requestReason)
+                    .setNegativeButtonText("Abbrechen")
+                    .setConfirmationRequired(false)
+                    .setAllowedAuthenticators(BIOMETRIC_WEAK)
+                    .build()
 
             biometricPrompt.authenticate(promptInfo)
         }
