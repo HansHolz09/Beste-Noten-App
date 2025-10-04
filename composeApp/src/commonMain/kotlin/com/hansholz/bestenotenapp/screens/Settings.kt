@@ -36,12 +36,10 @@ import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material.icons.outlined.WavingHand
 import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.Text
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -58,8 +56,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import bestenotenapp.composeApp.BuildConfig
 import bestenotenapp.composeapp.generated.resources.Res
@@ -94,6 +92,7 @@ import com.hansholz.bestenotenapp.theme.LocalIsDark
 import com.hansholz.bestenotenapp.theme.LocalSupportsCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseSystemIsDark
+import com.hansholz.bestenotenapp.utils.formateInterval
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import com.mikepenz.aboutlibraries.ui.compose.rememberLibraries
 import com.russhwolf.settings.Settings
@@ -257,19 +256,24 @@ fun Settings(
                 icon = Icons.Outlined.Texture,
                 position = PreferencePosition.Bottom,
             )
-            if (GradeNotifications.isSupported && !viewModel.isDemoAccount.value) {
+            if (GradeNotifications.isSupported && !viewModel.isDemoAccount.value && !viewModel.authTokenManager.getToken().isNullOrEmpty()) {
                 item {
                     PreferenceCategory("Benachrichtigungen", Modifier.padding(horizontal = 15.dp))
                 }
                 settingsToggleItem(
                     checked = notificationsEnabled,
                     onCheckedChange = {
-                        notificationsEnabled = it
-                        settings[GradeNotifications.KEY_ENABLED] = it
-                        if (it) {
-                            GradeNotifications.requestPermission {}
+                        scope.launch {
+                            if (it) {
+                                val granted = GradeNotifications.requestPermission()
+                                notificationsEnabled = granted
+                                settings["gradeNotificationsEnabled"] = granted
+                            } else {
+                                notificationsEnabled = false
+                                settings["gradeNotificationsEnabled"] = false
+                            }
+                            GradeNotifications.onSettingsUpdated()
                         }
-                        GradeNotifications.onSettingsUpdated()
                     },
                     text = "Benachrichtigungen über neue Noten",
                     icon = Icons.Outlined.Notifications,
@@ -282,7 +286,7 @@ fun Settings(
                             return@settingsToggleItem
                         }
                         notificationsWifiOnly = enabled
-                        settings[GradeNotifications.KEY_WIFI_ONLY] = enabled
+                        settings["gradeNotificationsWifiOnly"] = enabled
                         GradeNotifications.onSettingsUpdated()
                     },
                     text = "Nur mit WLAN überprüfen",
@@ -294,7 +298,7 @@ fun Settings(
                     PreferenceItem(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         title = "Überprüfungsintervall",
-                        subtitle = "Aktuell: ${formatInterval(notificationIntervalMinutes)}",
+                        subtitle = "Aktuell: ${formateInterval(notificationIntervalMinutes)}",
                         icon = Icons.Outlined.History,
                         enabled = notificationsEnabled,
                         onClick = if (notificationsEnabled) {
@@ -516,7 +520,7 @@ fun Settings(
                                         onClick = {
                                             hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                                             notificationIntervalMinutes = option
-                                            settings.putLong(GradeNotifications.KEY_INTERVAL_MINUTES, option)
+                                            settings.putLong("gradeNotificationsIntervalMinutes", option)
                                             GradeNotifications.onSettingsUpdated()
                                             showIntervalDialog = false
                                         },
@@ -529,7 +533,7 @@ fun Settings(
                                     onClick = null,
                                 )
                                 Text(
-                                    text = formatInterval(option),
+                                    text = formateInterval(option),
                                     style = typography.bodyLarge,
                                     modifier = Modifier.padding(start = 16.dp),
                                 )
@@ -584,14 +588,5 @@ fun Settings(
                 if (activeSystems == 0) showConfetti = false
             }
         )
-    }
-}
-
-private fun formatInterval(minutes: Long): String {
-    return if (minutes % 60L == 0L) {
-        val hours = minutes / 60L
-        if (hours == 1L) "1 Stunde" else "$hours Stunden"
-    } else {
-        "$minutes Minuten"
     }
 }

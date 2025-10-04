@@ -99,7 +99,6 @@ kotlin {
             implementation(libs.confettikit)
             implementation(libs.emoji.compose.m3)
             implementation(libs.sonner)
-            implementation(libs.kotlinx.coroutines.core)
         }
         androidMain.dependencies {
             implementation(compose.preview)
@@ -108,11 +107,13 @@ kotlin {
             implementation(libs.androidx.biometric)
             implementation(libs.ktor.client.cio)
             implementation(libs.smartspacer.sdk)
+            implementation(libs.permission)
             implementation(libs.alarmee)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
             implementation(libs.multiplatform.settings)
+            implementation(libs.permission)
             implementation(libs.alarmee)
         }
         desktopMain.dependencies {

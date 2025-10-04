@@ -7,7 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.russhwolf.settings.Settings
 
 internal val LocalBackgroundEnabled = compositionLocalOf { mutableStateOf(false) }
@@ -19,8 +18,7 @@ internal val LocalShowAllSubjects = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowCollectionsWithoutGrades = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowTeachersWithFirstname = compositionLocalOf { mutableStateOf(false) }
 internal val LocalGradeNotificationsEnabled = compositionLocalOf { mutableStateOf(false) }
-internal val LocalGradeNotificationIntervalMinutes =
-    compositionLocalOf { mutableStateOf(GradeNotifications.DEFAULT_INTERVAL_MINUTES) }
+internal val LocalGradeNotificationIntervalMinutes = compositionLocalOf { mutableStateOf(60L) }
 internal val LocalGradeNotificationsWifiOnly = compositionLocalOf { mutableStateOf(false) }
 
 internal val LocalRequireBiometricAuthentification = compositionLocalOf { mutableStateOf(false) }
@@ -40,19 +38,10 @@ fun SettingsProvider(content: @Composable () -> Unit) {
     val showAllSubjectsState = remember { mutableStateOf(settings.getBoolean("showAllSubjects", false)) }
     val showCollectionsWithoutGradesState = remember { mutableStateOf(settings.getBoolean("showCollectionsWithoutGrades", false)) }
     val showTeachersWithFirstnameState = remember { mutableStateOf(settings.getBoolean("showTeachersWithFirstname", false)) }
+    val gradeNotificationsEnabledState = remember { mutableStateOf(settings.getBoolean("gradeNotificationsEnabled", false)) }
+    val gradeNotificationIntervalState = remember { mutableStateOf(settings.getLong("gradeNotificationsIntervalMinutes", 60L)) }
+    val gradeNotificationsWifiOnlyState = remember { mutableStateOf(settings.getBoolean("gradeNotificationsWifiOnly", false)) }
     val requireBiometricAuthentificationState = remember { mutableStateOf(settings.getBoolean("requireBiometricAuthentification", false)) }
-    val gradeNotificationsEnabledState = remember { mutableStateOf(settings.getBoolean(GradeNotifications.KEY_ENABLED, false)) }
-    val gradeNotificationIntervalState = remember {
-        mutableStateOf(
-            settings.getLong(
-                GradeNotifications.KEY_INTERVAL_MINUTES,
-                GradeNotifications.DEFAULT_INTERVAL_MINUTES
-            )
-        )
-    }
-    val gradeNotificationsWifiOnlyState = remember {
-        mutableStateOf(settings.getBoolean(GradeNotifications.KEY_WIFI_ONLY, false))
-    }
     CompositionLocalProvider(
         LocalBackgroundEnabled provides backgroundEnabledState,
         LocalShowGreetings provides showGreetingsState,
@@ -62,10 +51,10 @@ fun SettingsProvider(content: @Composable () -> Unit) {
         LocalShowAllSubjects provides showAllSubjectsState,
         LocalShowCollectionsWithoutGrades provides showCollectionsWithoutGradesState,
         LocalShowTeachersWithFirstname provides showTeachersWithFirstnameState,
-        LocalRequireBiometricAuthentification provides requireBiometricAuthentificationState,
         LocalGradeNotificationsEnabled provides gradeNotificationsEnabledState,
         LocalGradeNotificationIntervalMinutes provides gradeNotificationIntervalState,
-        LocalGradeNotificationsWifiOnly provides gradeNotificationsWifiOnlyState
+        LocalGradeNotificationsWifiOnly provides gradeNotificationsWifiOnlyState,
+        LocalRequireBiometricAuthentification provides requireBiometricAuthentificationState
     ) {
         content()
     }

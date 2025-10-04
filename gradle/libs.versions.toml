@@ -25,6 +25,7 @@ ktorClientCore = "3.3.0"
 jbrApi = "1.7.0"
 jetlime = "4.0.0"
 jna = "5.17.0"
+permission = "0.13.0"
 platformtools = "0.6.1"
 navigationCompose = "2.9.0-rc02"
 #noinspection NewerVersionAvailable
@@ -71,6 +72,7 @@ ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktorClientC
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorClientCore" }
 material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 oidc-appsupport = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-appsupport", version.ref = "oidc" }
+permission = { module = "tech.kotlinlang:permission", version.ref = "permission" }
 platformtools-darkmodedetector = { module = "io.github.kdroidfilter:platformtools.darkmodedetector", version.ref = "platformtools" }
 jbr-api = { module = "org.jetbrains.runtime:jbr-api", version.ref = "jbrApi" }
 jetlime = { module = "io.github.pushpalroy:jetlime", version.ref = "jetlime" }
@@ -83,7 +85,6 @@ navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-co
 ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "composeMultiplatform" }
 smartspacer-sdk = { module = "com.kieronquinn.smartspacer:sdk-plugin", version.ref = "smartspacer-sdk" }
 sonner = { module = "io.github.dokar3:sonner", version.ref = "sonner" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 
 [plugins]
 aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutLibraries" }

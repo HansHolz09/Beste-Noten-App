@@ -8,8 +8,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.fragment.app.FragmentActivity
 import com.hansholz.bestenotenapp.api.androidCodeAuthFlowFactory
 import com.hansholz.bestenotenapp.main.App
-import com.hansholz.bestenotenapp.utils.AndroidContext
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
+import com.hansholz.bestenotenapp.utils.AndroidContext
+import tech.kotlinlang.permission.PermissionInitiation
 
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,6 +18,7 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         AndroidContext.init(this)
         GradeNotifications.initialize(this)
+        PermissionInitiation.setActivity(this)
         androidCodeAuthFlowFactory.registerActivity(this)
         setContent {
             App()
