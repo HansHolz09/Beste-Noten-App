@@ -418,7 +418,7 @@ data class History(
 @Serializable
 data class Conductor(
     val id: Int,
-    @SerialName("local_id") val localId: String?,
+    @SerialName("local_id") val localId: String? = null,
     val forename: String?,
     val name: String?,
     val tags: List<String>? = emptyList()

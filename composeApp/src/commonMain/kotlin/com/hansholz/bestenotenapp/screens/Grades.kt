@@ -132,6 +132,7 @@ import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
 import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.utils.filterHistory
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.isScrollingUp
 import com.hansholz.bestenotenapp.utils.normalizeGrade
@@ -267,7 +268,7 @@ fun Grades(
                     1 -> secondLazyListState
                     else -> rememberLazyListState()
                 }
-                val items = remember(viewModel.gradeCollections, selectedYears.size, showCollectionsWithoutGrades, searchQuery) {
+                val items = remember(viewModel.gradeCollections, selectedYears.size, showCollectionsWithoutGrades, searchQuery, isLoading) {
                      viewModel
                         .gradeCollections
                         .toSet()
@@ -331,7 +332,7 @@ fun Grades(
                                                                 if (histories?.isEmpty() == false && showGradeHistory) {
                                                                     Spacer(Modifier.height(10.dp))
                                                                     Text("Historie deiner Note:")
-                                                                    histories.forEach {
+                                                                    histories.filterHistory().forEach {
                                                                         Text("${if (showTeachersWithFirstname) it.conductor?.forename else it.conductor?.forename?.take(1) + "."} ${it.conductor?.name}: ${translateHistoryBody(it.body)}")
                                                                     }
                                                                 }
@@ -422,7 +423,7 @@ fun Grades(
                                                                         if (histories?.isEmpty() == false && showGradeHistory) {
                                                                             Spacer(Modifier.height(10.dp))
                                                                             Text("Historie deiner Note:")
-                                                                            histories.forEach {
+                                                                            histories.filterHistory().forEach {
                                                                                 Text("${if (showTeachersWithFirstname) it.conductor?.forename else it.conductor?.forename?.take(1) + "."} ${it.conductor?.name}: ${translateHistoryBody(it.body)}")
                                                                             }
                                                                         }
@@ -966,29 +967,45 @@ fun Grades(
                                                         item {
                                                             val grades = filteredGrades
                                                                 .filter { !filterSubjects || !deselectedSubjects.contains(it.subject?.name) }
-                                                                .map { it.grades!![0].value.take(1).toIntOrNull() ?: 0 }.sortedBy { it }.groupBy { it }.toList()
-                                                            val barChartEntries = buildList {
-                                                                grades.map { (int, grade) ->
-                                                                    add(DefaultVerticalBarPlotEntry(int.toFloat(), DefaultVerticalBarPosition(0f, grade.size.toFloat())))
-                                                                }
-                                                            }
+                                                                .map { it.grades!![0].value.take(1).toIntOrNull() ?: 0 }.sorted()
+
                                                             if (grades.isNotEmpty()) {
+                                                                val counts: Map<Int, Int> = grades.groupingBy { it }.eachCount()
+
+                                                                val minX = counts.keys.minOrNull()!!
+                                                                val maxX = counts.keys.maxOrNull()!!
+
+                                                                val completeGrades: List<Pair<Int, Int>> = (minX..maxX).map { x -> x to (counts[x] ?: 0) }
+
+                                                                val barChartEntries = buildList {
+                                                                    completeGrades.forEach { (x, c) ->
+                                                                        add(
+                                                                            DefaultVerticalBarPlotEntry(
+                                                                                x.toFloat(),
+                                                                                DefaultVerticalBarPosition(0f, c.toFloat())
+                                                                            )
+                                                                        )
+                                                                    }
+                                                                }
+
+                                                                val yMax = maxOf(1, completeGrades.maxOf { it.second })
+
                                                                 XYGraph(
                                                                     xAxisModel = FloatLinearAxisModel(
-                                                                        if (grades.isNotEmpty()) (grades.minOf { it.first }.toFloat() - 1f)..(grades.maxOf { it.first }.toFloat() + 1f) else 0f..1f,
+                                                                        (minX - 1).toFloat()..(maxX + 1).toFloat(),
                                                                         minimumMajorTickIncrement = 1f,
                                                                         minimumMajorTickSpacing = 10.dp,
                                                                         minorTickCount = 0
                                                                     ),
                                                                     yAxisModel = FloatLinearAxisModel(
-                                                                        if (grades.isNotEmpty()) 0f..grades.maxOf { it.second.size }.toFloat() else 0f..1f,
+                                                                        0f..yMax.toFloat(),
                                                                         minimumMajorTickIncrement = 1f,
                                                                         minorTickCount = 0
                                                                     ),
                                                                     modifier = Modifier.padding(10.dp).height(400.dp),
                                                                     xAxisLabels = {
                                                                         try {
-                                                                            if (it != 0f && it != (grades.maxOf { it.first }.toFloat() + 1f)) it.toString(0) else ""
+                                                                            if (it != (minX - 1).toFloat() && it != (maxX + 1).toFloat()) it.toString(0) else ""
                                                                         } catch (_: Exception) {
                                                                             ""
                                                                         }
@@ -1011,7 +1028,7 @@ fun Grades(
                                                                                     color = colorScheme.surfaceContainerHighest,
                                                                                 ) {
                                                                                     Box(Modifier.padding(5.dp)) {
-                                                                                        Text(grades[index].second.size.toString())
+                                                                                        Text(completeGrades[index].second.toString())
                                                                                     }
                                                                                 }
                                                                             }
@@ -1019,7 +1036,11 @@ fun Grades(
                                                                     )
                                                                 }
                                                             } else {
-                                                                Text("Noch keine Noten vorhanden", modifier = Modifier.fillMaxWidth().padding(16.dp), textAlign = TextAlign.Center)
+                                                                Text(
+                                                                    "Noch keine Noten vorhanden",
+                                                                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                                                    textAlign = TextAlign.Center
+                                                                )
                                                             }
                                                         }
                                                     }

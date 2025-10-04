@@ -5,16 +5,16 @@ ___
 # Beste-Noten-App
 > **_Hintergrund:_** Diese App ist im Rahmen des praktischen Teils meiner Facharbeit über Compose Multiplatform entstanden
 
-[Beschreibung]
+Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher und ist eine einfachere, schönere und schnellere Alternative zur offiziellen beste.schule-App.
 
 **Zur Web-Version:** [Link](Link-zu-Github-Pages)
 
 **Native Apps:** [siehe Releases](Link-zu-Github-Releases) _(außer iOS)_
 > **_Hinweis:_** Die nativen Apps enthalten keine Entwickler-Zertifikate, weshalb wahrscheinlich Warnungen beim Installieren angezeigt werden. 
-> Die iOS/iPadOS Version müssen selber kompiliert und installiert werden ([siehe **Bauen der App**](#bauen-der-app)), da es aktuell noch keinen Weg gibt, 
+> Die iOS/iPadOS Version müssen selber kompiliert und installiert werden ([siehe **Bauen der App**](#bauenstarten-der-app)), da es aktuell noch keinen Weg gibt, 
 > Apps auf diesen Geräten ohne Apple Developer Account zu sideloaden. 
 
----
+
 ## Funktionen
 - Login über Private-Access-Token oder direkt über beste.schule
 - Demo-Account zum Ausprobieren der App
@@ -33,7 +33,7 @@ ___
 - [Smartspacer](https://github.com/KieronQuinn/Smartspacer)-Integration für Android
 - und mehr...
 
----
+
 ## Plattformen/Screenshots
 
 ### Android
@@ -54,7 +54,7 @@ ___
 ### Web
 [Screenshot]
 
----
+
 ## Genutzte Bibliotheken und Plugins
 - [Ktor Client](https://github.com/ktorio/ktor) - Apache 2.0 - Zugriff auf Api von beste.schule
 - [Kotlin Multiplatform OIDC](https://github.com/kalinjul/kotlin-multiplatform-oidc) - Apache 2.0 - OpenID Connect Unterstützung für Authentifizierung über beste.schule
@@ -77,7 +77,17 @@ ___
 - [Credential Secure Storage for Java](https://github.com/microsoft/credential-secure-storage-for-java) - MIT - Sichere Tokenspeicherung für JVM
 - [gradle-buildconfig-plugin](https://github.com/gmazzo/gradle-buildconfig-plugin) - Apache 2.0 - Automatisches Erzeugen von BuildConfig-Klasse für App-Version
 
----
-## Bauen der App
 
-...
+## Bauen/Starten der App
+
+1. Klone den Quellcode
+2. Öffne ihn mit [Android Studio](https://developer.android.com/studio) oder [Intellij IDEA (Community Edition)](https://www.jetbrains.com/idea/download)
+3. Zum bauen bzw. starten der iOS/iPadOS App öffne `/iosApp` in XCode (Nur unter MacOS)
+4. Starte eine beliebige Konfiguration in Android Studio/Intellij IDEA:
+    - Run Desktop App / `./gradlew run`
+    - Run Web App / `./gradlew wasmJsBrowserDevelopmentRun`
+    - Run Android App
+    - Package Release as DMG / `./gradlew createReleaseDmg` (Nur unter MacOS)
+    - Package Release as EXE / `./gradlew packageReleaseExe` (Nur unter Windows)
+    - Package Release as DEB / `./gradlew packageReleaseDeb` (Nur unter Linux)
+    - Package Web App / `./gradlew wasmJsBrowserDistribution`
