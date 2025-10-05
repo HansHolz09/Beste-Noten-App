@@ -81,10 +81,6 @@ fun FragmentNavigation(
                 )
             }
 
-//            composable(route = Fragment.Stats.route) {
-//                Stats()
-//            }
-
             composable(route = Fragment.Settings.route) {
                 Settings(
                     viewModel = viewModel,

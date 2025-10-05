@@ -33,9 +33,6 @@ sealed class Fragment(
     @Serializable
     data object SubjectsAndTeachers : Fragment("Fächer und Lehrer", "subjects_and_teachers")
 
-//    @Serializable
-//    data object Stats : Fragment("Statistiken", "stats")
-
     @Serializable
     data object Settings : Fragment("Einstellungen", "settings")
 
@@ -46,7 +43,6 @@ sealed class Fragment(
                 Grades,
                 Timetable,
                 SubjectsAndTeachers,
-//                Stats
             )
         }
     }
