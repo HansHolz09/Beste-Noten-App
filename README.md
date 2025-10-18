@@ -62,7 +62,8 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 - [KoalaPlot Core](https://github.com/koalaplot/koalaplot-core) - MIT - Diagramm-Bibliothek
 - [Jetlime](https://github.com/pushpalroy/Jetlime) - MIT - Timeline-Komponenten für Schulstunden-Übersicht
 - [Haze](https://github.com/chrisbanes/haze) - Apache 2.0 - Hintergrund Unschärfe-Effekte
-- [MaterialKolor](https://github.com/jordond/MaterialKolor) - MIT - Erstellen von Material-Design-Farbpaletten auf nicht-Android-Plattformen
+- [MaterialKolor](https://github.com/jordond/MaterialKolor) - MIT - Animierte Farb-Übergänge
+- [Multiplatform Material You](https://github.com/zacharee/MultiplatformMaterialYou) - MIT - Erstellen von Material-Design-Farbpaletten für JVM
 - [Platform-Tools](https://github.com/kdroidFilter/Platform-Tools) - MIT - Reaktives Erkennen von Hell/Dunkel-Modus
 - [animate-compose](https://github.com/NomanR/animate-compose) - Apache 2.0 - Animations-Komponenten
 - [ConfettiKit](https://github.com/vinceglb/confettikit) - MIT - Confetti-Animationen (Easter-Eggs)

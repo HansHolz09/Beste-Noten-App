@@ -15,5 +15,8 @@
 -keep class com.jetbrains.JBR* { *; }
 -keepnames class com.jetbrains.** { *; }
 
+# For MaterialYou on Mac
+-keep class de.jangassen.jfa.** { *; }
+
 -dontwarn **
 -dontnote **

@@ -126,6 +126,7 @@ kotlin {
             implementation(libs.ktor.client.cio)
             implementation(libs.jna.core)
             implementation(libs.credential.secure.storage)
+            implementation(libs.materialyou)
         }
         wasmJsMain.dependencies {
             implementation(libs.ktor.client.js)

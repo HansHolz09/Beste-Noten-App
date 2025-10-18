@@ -26,6 +26,7 @@ ktorClientCore = "3.3.0"
 jbrApi = "1.7.0"
 jetlime = "4.0.0"
 jna = "5.17.0"
+materialyou = "0.2.9"
 permission = "0.13.0"
 platformtools = "0.6.1"
 navigationCompose = "2.9.0-rc02"
@@ -72,6 +73,7 @@ ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "kto
 ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktorClientCore" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorClientCore" }
 material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
+materialyou = { module = "dev.zwander:materialyou", version.ref = "materialyou" }
 oidc-appsupport = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-appsupport", version.ref = "oidc" }
 permission = { module = "tech.kotlinlang:permission", version.ref = "permission" }
 platformtools-darkmodedetector = { module = "io.github.kdroidfilter:platformtools.darkmodedetector", version.ref = "platformtools" }
