@@ -1,16 +1,13 @@
 @file:Suppress("DEPRECATION")
 
-package com.hansholz.bestenotenapp.screens
+package com.hansholz.bestenotenapp.screens.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.Menu
@@ -39,33 +36,24 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import bestenotenapp.composeApp.BuildConfig
-import bestenotenapp.composeapp.generated.resources.Res
-import com.hansholz.bestenotenapp.components.ConfettiPresets
 import com.hansholz.bestenotenapp.components.PreferenceCategory
 import com.hansholz.bestenotenapp.components.PreferenceItem
 import com.hansholz.bestenotenapp.components.PreferencePosition
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
-import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.icons.Github
 import com.hansholz.bestenotenapp.components.settingsToggleItem
@@ -92,14 +80,10 @@ import com.hansholz.bestenotenapp.theme.LocalSupportsCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseSystemIsDark
 import com.hansholz.bestenotenapp.utils.formateInterval
-import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
-import com.mikepenz.aboutlibraries.ui.compose.rememberLibraries
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
-import components.dialogs.EnhancedAlertDialog
 import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.hazeSource
-import io.github.vinceglb.confettikit.compose.ConfettiKit
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -108,6 +92,8 @@ fun Settings(
     viewModel: ViewModel,
     onNavigateToLogin: () -> Unit,
 ) {
+    val settingsViewModel = viewModel { SettingsViewModel() }
+
     val scope = rememberCoroutineScope()
     val uriHandler = LocalUriHandler.current
     val hapticFeedback = LocalHapticFeedback.current
@@ -135,10 +121,6 @@ fun Settings(
 
     val biometryAuthenticator = remember { BiometryAuthenticator() }
     BindBiometryAuthenticatorEffect(biometryAuthenticator)
-
-    var showIntervalDialog by rememberSaveable { mutableStateOf(false) }
-    var showLicenseDialog by rememberSaveable { mutableStateOf(false) }
-    var showConfetti by rememberSaveable { mutableStateOf(false) }
 
     TopAppBarScaffold(
         title = "Einstellungen",
@@ -305,7 +287,7 @@ fun Settings(
                             if (notificationsEnabled) {
                                 {
                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                    showIntervalDialog = true
+                                    settingsViewModel.showIntervalDialog = true
                                 }
                             } else {
                                 null
@@ -470,7 +452,7 @@ fun Settings(
                     title = "Open-Source-Lizenzen",
                     icon = Icons.Outlined.LocalLibrary,
                     onClick = {
-                        showLicenseDialog = true
+                        settingsViewModel.showLicenseDialog = true
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                     },
                     position = PreferencePosition.Middle,
@@ -481,12 +463,12 @@ fun Settings(
                 val func = {
                     tapCount++
                     if (tapCount % 7 == 0) {
-                        showConfetti = true
+                        settingsViewModel.showConfetti = true
                     } else {
                         hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                     }
                 }
-                val onClick: (() -> Unit)? = if (!showConfetti) func else null
+                val onClick: (() -> Unit)? = if (!settingsViewModel.showConfetti) func else null
                 PreferenceItem(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     title = "Beste-Noten-App",
@@ -503,91 +485,7 @@ fun Settings(
         topAppBarBackground(innerPadding.calculateTopPadding())
     }
 
-    val intervalOptions = remember { listOf(15L, 30L, 60L, 120L, 360L, 720L, 1440L) }
-    EnhancedAlertDialog(
-        visible = GradeNotifications.isSupported && showIntervalDialog,
-        onDismissRequest = { showIntervalDialog = false },
-        icon = { Icon(Icons.Outlined.History, null) },
-        title = { Text("Überprüfungsintervall") },
-        text = {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                intervalOptions.forEach { option ->
-                    item {
-                        Row(
-                            Modifier
-                                .height(56.dp)
-                                .fillParentMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .selectable(
-                                    selected = (notificationIntervalMinutes == option),
-                                    onClick = {
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                        notificationIntervalMinutes = option
-                                        settings.putLong("gradeNotificationsIntervalMinutes", option)
-                                        GradeNotifications.onSettingsUpdated()
-                                        showIntervalDialog = false
-                                    },
-                                    role = Role.RadioButton,
-                                ).padding(horizontal = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            RadioButton(
-                                selected = (notificationIntervalMinutes == option),
-                                onClick = null,
-                            )
-                            Text(
-                                text = formateInterval(option),
-                                style = typography.bodyLarge,
-                                modifier = Modifier.padding(start = 16.dp),
-                            )
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            EnhancedButton(onClick = { showIntervalDialog = false }) {
-                Text("Schließen")
-            }
-        },
-    )
-
-    val libraries by rememberLibraries {
-        Res.readBytes("files/aboutlibraries.json").decodeToString()
-    }
-    EnhancedAlertDialog(
-        visible = showLicenseDialog,
-        onDismissRequest = { showLicenseDialog = false },
-        confirmButton = {
-            EnhancedButton(
-                onClick = {
-                    showLicenseDialog = false
-                },
-            ) {
-                Text("Schließen")
-            }
-        },
-        icon = { Icon(Icons.Outlined.LocalLibrary, null) },
-        title = { Text("Open-Source-Lizenzen") },
-        text = {
-            LibrariesContainer(
-                libraries = libraries,
-                showDescription = true,
-                licenseDialogConfirmText = "Schließen",
-            )
-        },
-    )
-
-    if (showConfetti) {
-        ConfettiKit(
-            modifier = Modifier.fillMaxSize(),
-            parties = ConfettiPresets.randomFirework(20),
-            onParticleSystemStarted = { _, _ ->
-                hapticFeedback.performHapticFeedback(HapticFeedbackType.VirtualKey)
-            },
-            onParticleSystemEnded = { _, activeSystems ->
-                if (activeSystems == 0) showConfetti = false
-            },
-        )
-    }
+    NotificationIntervalDialog(settingsViewModel)
+    LibrariesDialog(settingsViewModel)
+    ConfettiEasterEgg(settingsViewModel)
 }

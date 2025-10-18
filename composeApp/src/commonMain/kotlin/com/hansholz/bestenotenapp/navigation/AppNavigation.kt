@@ -13,8 +13,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.ViewModel
-import com.hansholz.bestenotenapp.screens.Biometry
-import com.hansholz.bestenotenapp.screens.Login
+import com.hansholz.bestenotenapp.screens.biometry.Biometry
+import com.hansholz.bestenotenapp.screens.login.Login
 import com.russhwolf.settings.Settings
 
 @OptIn(ExperimentalSharedTransitionApi::class)

@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.hansholz.bestenotenapp.screens
+package com.hansholz.bestenotenapp.screens.home
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -59,7 +59,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.grades
 import bestenotenapp.composeapp.generated.resources.subjectsAndTeachers
@@ -91,14 +91,9 @@ import com.pushpal.jetlime.JetLimeExtendedEvent
 import com.pushpal.jetlime.LocalJetLimeStyle
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.number
-import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.imageResource
 import org.kodein.emoji.compose.m3.TextWithNotoAnimatedEmoji
 import kotlin.random.Random
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
@@ -109,6 +104,8 @@ fun Home(
     onNavigateToScreen: (Fragment) -> Unit,
 ) {
     with(sharedTransitionScope) {
+        val homeViewModel = viewModel { HomeViewModel(viewModel) }
+
         val scope = rememberCoroutineScope()
         val isDark = LocalThemeIsDark.current
         val hapticFeedback = LocalHapticFeedback.current
@@ -120,53 +117,8 @@ fun Home(
         val showNewestGrades by LocalShowNewestGrades.current
         val showCurrentLesson by LocalShowCurrentLesson.current
 
-        var isGradesLoading by remember { mutableStateOf(false) }
-        var isTimetableLoading by remember { mutableStateOf(false) }
-
-        LaunchedEffect(Unit) {
-            viewModel.viewModelScope.launch {
-                if (showNewestGrades) {
-                    isGradesLoading = true
-                    if (viewModel.startGradeCollections.isEmpty()) {
-                        viewModel.getCollections()?.let { viewModel.startGradeCollections.addAll(it) }
-                    }
-                    isGradesLoading = false
-                }
-            }
-            viewModel.viewModelScope.launch {
-                if (showCurrentLesson) {
-                    isTimetableLoading = true
-                    if (viewModel.currentJournalDay.value == null) {
-                        @OptIn(ExperimentalTime::class)
-                        val currentDate =
-                            Clock.System
-                                .now()
-                                .toLocalDateTime(TimeZone.currentSystemDefault())
-                                .date
-                                .let {
-                                    "${it.year}-${it.month.number.toString().padStart(2, '0')}" +
-                                        "-${it.day.toString().padStart(2, '0')}"
-                                }
-                        viewModel.currentJournalDay.value = viewModel.getJournalWeek()?.days?.find { it.date == currentDate }
-                    }
-                    isTimetableLoading = false
-                }
-            }
-        }
         UpdateOnNewDay {
-            isTimetableLoading = true
-            @OptIn(ExperimentalTime::class)
-            val currentDate =
-                Clock.System
-                    .now()
-                    .toLocalDateTime(TimeZone.currentSystemDefault())
-                    .date
-                    .let {
-                        "${it.year}-${it.month.number.toString().padStart(2, '0')}" +
-                            "-${it.day.toString().padStart(2, '0')}"
-                    }
-            viewModel.currentJournalDay.value = viewModel.getJournalWeek(useCached = false)?.days?.find { it.date == currentDate }
-            isTimetableLoading = false
+            homeViewModel.refreshTimetable(viewModel)
         }
 
         TopAppBarScaffold(
@@ -292,20 +244,13 @@ fun Home(
                                 )
                                 EnhancedIconButton(
                                     onClick = {
-                                        viewModel.viewModelScope.launch {
-                                            isGradesLoading = true
-                                            viewModel.getCollections()?.let {
-                                                viewModel.startGradeCollections.clear()
-                                                viewModel.startGradeCollections.addAll(it)
-                                            }
-                                            isGradesLoading = false
-                                        }
+                                        homeViewModel.refreshGrades(viewModel)
                                     },
                                     modifier = Modifier.align(Alignment.CenterEnd),
-                                    enabled = !isGradesLoading && showNewestGrades,
+                                    enabled = !homeViewModel.isGradesLoading && showNewestGrades,
                                 ) {
                                     this@Column.AnimatedVisibility(
-                                        visible = !isGradesLoading && showNewestGrades,
+                                        visible = !homeViewModel.isGradesLoading && showNewestGrades,
                                         enter = scaleIn(),
                                         exit = scaleOut(),
                                     ) {
@@ -314,7 +259,7 @@ fun Home(
                                 }
                             }
                             if (showNewestGrades) {
-                                AnimatedContent(isGradesLoading) { targetState ->
+                                AnimatedContent(homeViewModel.isGradesLoading) { targetState ->
                                     if (targetState) {
                                         Box(Modifier.fillMaxWidth().sizeIn(minHeight = 100.dp)) {
                                             ContainedLoadingIndicator(Modifier.align(Alignment.Center))
@@ -396,27 +341,13 @@ fun Home(
                                 )
                                 EnhancedIconButton(
                                     onClick = {
-                                        viewModel.viewModelScope.launch {
-                                            isTimetableLoading = true
-                                            @OptIn(ExperimentalTime::class)
-                                            val currentDate =
-                                                Clock.System
-                                                    .now()
-                                                    .toLocalDateTime(TimeZone.currentSystemDefault())
-                                                    .date
-                                                    .let {
-                                                        "${it.year}-${it.month.number.toString().padStart(2, '0')}" +
-                                                            "-${it.day.toString().padStart(2, '0')}"
-                                                    }
-                                            viewModel.currentJournalDay.value = viewModel.getJournalWeek(useCached = false)?.days?.find { it.date == currentDate }
-                                            isTimetableLoading = false
-                                        }
+                                        homeViewModel.refreshTimetable(viewModel)
                                     },
                                     modifier = Modifier.align(Alignment.CenterEnd),
-                                    enabled = !isTimetableLoading && showCurrentLesson,
+                                    enabled = !homeViewModel.isTimetableLoading && showCurrentLesson,
                                 ) {
                                     this@Column.AnimatedVisibility(
-                                        visible = !isTimetableLoading && showCurrentLesson,
+                                        visible = !homeViewModel.isTimetableLoading && showCurrentLesson,
                                         enter = scaleIn(),
                                         exit = scaleOut(),
                                     ) {
@@ -425,7 +356,7 @@ fun Home(
                                 }
                             }
                             if (showCurrentLesson) {
-                                AnimatedContent(isTimetableLoading) { targetState ->
+                                AnimatedContent(homeViewModel.isTimetableLoading) { targetState ->
                                     if (targetState) {
                                         Box(Modifier.fillMaxWidth().sizeIn(minHeight = 100.dp)) {
                                             ContainedLoadingIndicator(Modifier.align(Alignment.Center))

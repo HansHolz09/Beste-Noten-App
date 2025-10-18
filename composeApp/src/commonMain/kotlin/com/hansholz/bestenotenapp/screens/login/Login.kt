@@ -1,4 +1,4 @@
-package com.hansholz.bestenotenapp.screens
+package com.hansholz.bestenotenapp.screens.login
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.Image
@@ -18,9 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.KeyboardActionHandler
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -37,12 +35,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -55,9 +51,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.logo
-import com.hansholz.bestenotenapp.api.models.Student
 import com.hansholz.bestenotenapp.components.CurvedText
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
@@ -69,12 +65,10 @@ import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.security.BindBiometryAuthenticatorEffect
-import com.hansholz.bestenotenapp.security.BiometryAuthenticator
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
-import components.dialogs.EnhancedAlertDialog
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -86,6 +80,8 @@ fun Login(
     viewModel: ViewModel,
     onNavigateHome: () -> Unit,
 ) {
+    val loginViewModel = viewModel { LoginViewModel() }
+
     val scope = viewModel.viewModelScope
 
     @Suppress("DEPRECATION")
@@ -95,13 +91,7 @@ fun Login(
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
     val settings = Settings()
 
-    val biometryAuthenticator = remember { BiometryAuthenticator() }
-    BindBiometryAuthenticatorEffect(biometryAuthenticator)
-
-    var isLoading by remember { mutableStateOf(false) }
-
-    var chooseStudentDialog by remember { mutableStateOf<Pair<Boolean, List<Student>?>>(false to null) }
-    var chosenStudent by remember { mutableStateOf<String?>(null) }
+    BindBiometryAuthenticatorEffect(loginViewModel.biometryAuthenticator)
 
     TopAppBarScaffold(
         title = "Login",
@@ -114,7 +104,7 @@ fun Login(
             val width = this.maxWidth
             val modifier = if (width >= 780.dp) Modifier.width(400.dp) else Modifier.fillMaxWidth().padding(horizontal = 20.dp)
             AnimatedContent(
-                targetState = isLoading,
+                targetState = loginViewModel.isLoading,
                 modifier = Modifier.align(Alignment.Center),
                 contentAlignment = Alignment.Center,
             ) { targetState ->
@@ -178,14 +168,14 @@ fun Login(
                                             scope.launch {
                                                 viewModel.login(
                                                     stayLoggedIn = stayLoggedIn,
-                                                    isLoading = { isLoading = it },
+                                                    isLoading = { loginViewModel.isLoading = it },
                                                     onNavigateHome = onNavigateHome,
                                                     chooseStudent = { students, callback ->
-                                                        chooseStudentDialog = true to students
-                                                        while (chosenStudent == null) {
+                                                        loginViewModel.chooseStudentDialog = true to students
+                                                        while (loginViewModel.chosenStudent == null) {
                                                             delay(100)
                                                         }
-                                                        callback(chosenStudent!!)
+                                                        callback(loginViewModel.chosenStudent!!)
                                                     },
                                                 ) {
                                                     viewModel.authToken.value = textFieldState.text.toString()
@@ -204,14 +194,14 @@ fun Login(
                                         scope.launch {
                                             viewModel.login(
                                                 stayLoggedIn = stayLoggedIn,
-                                                isLoading = { isLoading = it },
+                                                isLoading = { loginViewModel.isLoading = it },
                                                 onNavigateHome = onNavigateHome,
                                                 chooseStudent = { students, callback ->
-                                                    chooseStudentDialog = true to students
-                                                    while (chosenStudent == null) {
+                                                    loginViewModel.chooseStudentDialog = true to students
+                                                    while (loginViewModel.chosenStudent == null) {
                                                         delay(100)
                                                     }
-                                                    callback(chosenStudent!!)
+                                                    callback(loginViewModel.chosenStudent!!)
                                                 },
                                             ) {
                                                 viewModel.authToken.value = textFieldState.text.toString()
@@ -226,14 +216,14 @@ fun Login(
                                     scope.launch {
                                         viewModel.login(
                                             stayLoggedIn = stayLoggedIn,
-                                            isLoading = { isLoading = it },
+                                            isLoading = { loginViewModel.isLoading = it },
                                             onNavigateHome = onNavigateHome,
                                             chooseStudent = { students, callback ->
-                                                chooseStudentDialog = true to students
-                                                while (chosenStudent == null) {
+                                                loginViewModel.chooseStudentDialog = true to students
+                                                while (loginViewModel.chosenStudent == null) {
                                                     delay(100)
                                                 }
-                                                callback(chosenStudent!!)
+                                                callback(loginViewModel.chosenStudent!!)
                                             },
                                         ) {
                                             val successful = viewModel.getAccessToken()
@@ -251,7 +241,7 @@ fun Login(
                                 onClick = {
                                     scope.launch {
                                         viewModel.loginDemo(
-                                            isLoading = { isLoading = it },
+                                            isLoading = { loginViewModel.isLoading = it },
                                             onNavigateHome = onNavigateHome,
                                         )
                                     }
@@ -290,7 +280,7 @@ fun Login(
                                     enabled = viewModel.authTokenManager.isAvailable,
                                 )
                             }
-                            if (biometryAuthenticator.isBiometricAvailable()) {
+                            if (loginViewModel.biometryAuthenticator.isBiometricAvailable()) {
                                 Row(
                                     modifier =
                                         modifier
@@ -298,7 +288,7 @@ fun Login(
                                             .clickable {
                                                 val newValue = !requireBiometricAuthentification
                                                 if (newValue) {
-                                                    biometryAuthenticator.checkBiometryAuthentication(
+                                                    loginViewModel.biometryAuthenticator.checkBiometryAuthentication(
                                                         requestTitle = "Bestätigen",
                                                         requestReason = "Bestätige, um die biometrische Authentifizierung beim Start zu aktiven",
                                                         scope = scope,
@@ -332,7 +322,7 @@ fun Login(
                                         checked = requireBiometricAuthentification,
                                         onCheckedChange = {
                                             if (it) {
-                                                biometryAuthenticator.checkBiometryAuthentication(
+                                                loginViewModel.biometryAuthenticator.checkBiometryAuthentication(
                                                     requestTitle = "Bestätigen",
                                                     requestReason = "Bestätige, um die biometrische Authentifizierung beim Start zu aktiven",
                                                     scope = scope,
@@ -359,56 +349,5 @@ fun Login(
         topAppBarBackground(innerPadding.calculateTopPadding())
     }
 
-    var selectedStudent by remember { mutableStateOf("") }
-    EnhancedAlertDialog(
-        visible = chooseStudentDialog.first && chooseStudentDialog.second != null,
-        onDismissRequest = {},
-        confirmButton = {
-            EnhancedButton(
-                onClick = {
-                    chosenStudent = selectedStudent
-                    chooseStudentDialog = false to null
-                },
-                enabled = selectedStudent.isNotEmpty(),
-            ) {
-                Text("Wählen")
-            }
-        },
-        title = {
-            Text(
-                text = "Schüler wählen",
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
-            )
-        },
-        text = {
-            LazyColumn {
-                chooseStudentDialog.second?.forEach { student ->
-                    item {
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .height(56.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable {
-                                    selectedStudent = student.id.toString()
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                }.padding(horizontal = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            RadioButton(
-                                selected = student.id.toString() == selectedStudent,
-                                onClick = null,
-                            )
-                            Text(
-                                text = "${student.forename} ${student.name}",
-                                style = typography.bodyLarge,
-                                modifier = Modifier.padding(start = 16.dp),
-                            )
-                        }
-                    }
-                }
-            }
-        },
-    )
+    ChooseStudentDialog(loginViewModel)
 }

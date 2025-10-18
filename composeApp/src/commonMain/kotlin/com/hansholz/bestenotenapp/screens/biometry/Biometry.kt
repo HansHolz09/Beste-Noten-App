@@ -1,4 +1,4 @@
-package com.hansholz.bestenotenapp.screens
+package com.hansholz.bestenotenapp.screens.biometry
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -14,21 +14,15 @@ import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.navigation.Screen
 import com.hansholz.bestenotenapp.security.BindBiometryAuthenticatorEffect
-import com.hansholz.bestenotenapp.security.BiometryAuthenticator
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -36,40 +30,10 @@ fun Biometry(
     viewModel: ViewModel,
     onNavigateToScreen: (Screen) -> Unit,
 ) {
-    val scope = viewModel.viewModelScope
+    val biometryViewModel = viewModel { BiometryViewModel() }
 
-    var isFailure by remember { mutableStateOf(false) }
-
-    val biometryAuthenticator = remember { BiometryAuthenticator() }
-
-    fun tryBiometricAuthentication() {
-        if (biometryAuthenticator.isBiometricAvailable()) {
-            biometryAuthenticator.checkBiometryAuthentication(
-                requestTitle = "Authentifizieren",
-                requestReason = "Authentifiziere dich, um Einblicke in deine Noten zu erhalten.",
-                scope = scope,
-            ) { isSuccessful ->
-                scope.launch {
-                    if (isSuccessful) {
-                        onNavigateToScreen(
-                            if (viewModel.authTokenManager.getToken().isNullOrEmpty()) {
-                                Screen.Login
-                            } else {
-                                Screen.Main
-                            },
-                        )
-                    } else {
-                        isFailure = true
-                    }
-                }
-            }
-        } else {
-            viewModel.logout()
-            onNavigateToScreen(Screen.Login)
-        }
-    }
-    BindBiometryAuthenticatorEffect(biometryAuthenticator) {
-        tryBiometricAuthentication()
+    BindBiometryAuthenticatorEffect(biometryViewModel.biometryAuthenticator) {
+        biometryViewModel.tryBiometricAuthentication(viewModel, onNavigateToScreen)
     }
 
     TopAppBarScaffold(
@@ -80,14 +44,14 @@ fun Biometry(
             title = "Gesperrt",
             button = {
                 AnimatedVisibility(
-                    visible = isFailure,
+                    visible = biometryViewModel.isFailure,
                     enter = fadeIn() + expandVertically(),
                     exit = fadeOut() + shrinkVertically(),
                 ) {
                     Column {
                         EnhancedButton(
                             onClick = {
-                                tryBiometricAuthentication()
+                                biometryViewModel.tryBiometricAuthentication(viewModel, onNavigateToScreen)
                             },
                             modifier = Modifier.sizeIn(maxWidth = 300.dp).fillMaxWidth().padding(10.dp),
                         ) {

@@ -12,11 +12,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.hansholz.bestenotenapp.main.ViewModel
-import com.hansholz.bestenotenapp.screens.Grades
-import com.hansholz.bestenotenapp.screens.Home
-import com.hansholz.bestenotenapp.screens.Settings
-import com.hansholz.bestenotenapp.screens.SubjectsAndTeachers
-import com.hansholz.bestenotenapp.screens.Timetable
+import com.hansholz.bestenotenapp.screens.grades.Grades
+import com.hansholz.bestenotenapp.screens.home.Home
+import com.hansholz.bestenotenapp.screens.settings.Settings
+import com.hansholz.bestenotenapp.screens.subjectsAndTeachers.SubjectsAndTeachers
+import com.hansholz.bestenotenapp.screens.timetable.Timetable
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable

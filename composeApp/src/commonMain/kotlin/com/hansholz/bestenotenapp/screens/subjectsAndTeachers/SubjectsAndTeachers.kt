@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.hansholz.bestenotenapp.screens
+package com.hansholz.bestenotenapp.screens.subjectsAndTeachers
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -37,10 +37,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,6 +50,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hansholz.bestenotenapp.api.models.Subject
 import com.hansholz.bestenotenapp.api.models.Teacher
 import com.hansholz.bestenotenapp.components.EmptyStateMessage
@@ -76,6 +75,8 @@ fun SubjectsAndTeachers(
     animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
     with(sharedTransitionScope) {
+        val subjectsAndTeachersViewModel = viewModel { SubjectsAndTeachersViewModel(viewModel) }
+
         val scope = rememberCoroutineScope()
         val density = LocalDensity.current
         val hapticFeedback = LocalHapticFeedback.current
@@ -83,22 +84,6 @@ fun SubjectsAndTeachers(
 
         val showAllSubjects by LocalShowAllSubjects.current
         val showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
-
-        var isLoading by remember { mutableStateOf(false) }
-
-        LaunchedEffect(Unit) {
-            isLoading = true
-            if (viewModel.subjectsAndTeachers.isEmpty()) {
-                viewModel.getSubjectsAndTeachers()?.let { viewModel.subjectsAndTeachers.addAll(it) }
-            }
-            if (viewModel.teachersAndSubjects.isEmpty()) {
-                viewModel.getTeachersAndSubjects()?.let { viewModel.teachersAndSubjects.addAll(it) }
-            }
-            if (viewModel.subjects.isEmpty()) {
-                viewModel.getSubjects()?.let { viewModel.subjects.addAll(it) }
-            }
-            isLoading = false
-        }
 
         TopAppBarScaffold(
             modifier =
@@ -129,12 +114,11 @@ fun SubjectsAndTeachers(
             sideMenuExpanded = viewModel.mediumExpandedDrawerState.value.isOpen,
             hazeState = viewModel.hazeBackgroundState,
         ) { innerPadding, topAppBarBackground ->
-            var topPadding by remember { mutableStateOf(0.dp) }
-            val contentPadding = PaddingValues(top = topPadding, bottom = innerPadding.calculateBottomPadding())
+            val contentPadding = PaddingValues(top = subjectsAndTeachersViewModel.topPadding, bottom = innerPadding.calculateBottomPadding())
 
             val pagerState = rememberEnhancedPagerState(2)
             HorizontalPager(pagerState, Modifier.hazeSource(viewModel.hazeBackgroundState)) {
-                AnimatedContent(isLoading) { targetState ->
+                AnimatedContent(subjectsAndTeachersViewModel.isLoading) { targetState ->
                     Box(Modifier.fillMaxSize()) {
                         if (targetState) {
                             ContainedLoadingIndicator(Modifier.padding(contentPadding).align(Alignment.Center))
@@ -258,14 +242,14 @@ fun SubjectsAndTeachers(
                     }
                 }
             }
-            topAppBarBackground(topPadding)
+            topAppBarBackground(subjectsAndTeachersViewModel.topPadding)
             PrimaryTabRow(
                 selectedTabIndex = pagerState.currentPage,
                 modifier =
                     Modifier
                         .padding(top = innerPadding.calculateTopPadding())
                         .onGloballyPositioned {
-                            topPadding = with(density) { it.size.height.toDp() } + innerPadding.calculateTopPadding()
+                            subjectsAndTeachersViewModel.topPadding = with(density) { it.size.height.toDp() } + innerPadding.calculateTopPadding()
                         },
                 containerColor = Color.Transparent,
                 divider = { HorizontalDivider(thickness = 2.dp) },
