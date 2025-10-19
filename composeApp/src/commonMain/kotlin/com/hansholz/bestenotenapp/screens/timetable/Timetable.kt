@@ -80,7 +80,6 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hansholz.bestenotenapp.api.models.JournalWeek
 import com.hansholz.bestenotenapp.components.EmptyStateMessage
@@ -93,6 +92,8 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.main.ViewModel
 import dev.chrisbanes.haze.hazeSource
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -101,8 +102,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 
 @OptIn(
     ExperimentalSharedTransitionApi::class,
@@ -168,20 +167,19 @@ fun Timetable(
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.hazeSource(viewModel.hazeBackgroundState).enhancedHazeEffect(blurRadius = contentBlurRadius.value),
+                    beyondViewportPageCount = 1,
                     userScrollEnabled = timetableViewModel.userScrollEnabled && !timetableViewModel.lessonPopupShown.value,
                 ) { currentPage ->
                     var isLoading by remember { mutableStateOf(false) }
                     val weekDate = remember { timetableViewModel.startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK) }
                     var week by remember { mutableStateOf<JournalWeek?>(null) }
                     LaunchedEffect(Unit) {
-                        timetableViewModel.viewModelScope.launch {
-                            isLoading = true
-                            week = viewModel.getJournalWeek(weekDate)
-                            isLoading = false
-                            if (viewModel.years.isEmpty()) {
-                                viewModel.getYears()?.let { viewModel.years.addAll(it) }
-                            }
+                        isLoading = true
+                        if (viewModel.years.isEmpty()) {
+                            viewModel.getYears()?.let { viewModel.years.addAll(it) }
                         }
+                        week = viewModel.getJournalWeek(weekDate)
+                        isLoading = false
                     }
                     var isRefreshLoading by remember { mutableStateOf(false) }
                     val pullToRefreshState = rememberPullToRefreshState()
