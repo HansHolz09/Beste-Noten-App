@@ -2,12 +2,12 @@
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule.GROUP
+import java.text.SimpleDateFormat
+import java.util.Date
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import java.text.SimpleDateFormat
-import java.util.Date
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -127,6 +127,7 @@ kotlin {
             implementation(libs.jna.core)
             implementation(libs.credential.secure.storage)
             implementation(libs.materialyou)
+            implementation(libs.advanced.menubar)
         }
         wasmJsMain.dependencies {
             implementation(libs.ktor.client.js)
