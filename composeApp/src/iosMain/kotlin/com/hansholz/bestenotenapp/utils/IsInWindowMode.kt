@@ -18,6 +18,6 @@ fun isInWindowMode(): Boolean {
     return remember(windowInfo.containerSize) {
         val isInWindowMode = viewController.view.window?.frame != UIScreen.mainScreen.bounds
         // Switch to official Implementation if possibel
-        isInWindowMode && getExactPlatform() == ExactPlatform.IPADOS && (getPlatformVersion()?.toFloatOrNull() ?: 0f) >= 26f
+        isInWindowMode && getExactPlatform() == ExactPlatform.IPADOS && (getPlatformVersion()?.substringBefore('.')?.toIntOrNull() ?: 0) >= 26
     }
 }
