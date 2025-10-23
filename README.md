@@ -42,34 +42,34 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 
 <details>
     <summary>Android</summary>
-    <img src="screenshots/android_phone.png" style="max-height:500px"/>
-    <img src="screenshots/android_tablet.png" style="max-height:500px"/>
+    <img src="screenshots/android_phone.png" height="500"/>
+    <img src="screenshots/android_tablet.png" height="500"/>
 </details>
 
 <details>
     <summary>iOS/iPadOS</summary>
-    <img src="screenshots/ios.png" style="max-height:500px"/>
-    <img src="screenshots/ipados.png" style="max-height:500px">
+    <img src="screenshots/ios.png" height="500"/>
+    <img src="screenshots/ipados.png" height="500"/>
 </details>
 
 <details>
     <summary>MacOS</summary>
-    <img src="screenshots/macos.png" style="max-height:500px"/>
+    <img src="screenshots/macos.png" height="500"/>
 </details>
 
 <details>
     <summary>Windows</summary>
-    <img src="screenshots/windows.png" style="max-height:500px"/>
+    <img src="screenshots/windows.png" height="500"/>
 </details>
 
 <details>
     <summary>Linux</summary>
-    <img src="screenshots/linux.png" style="max-height:500px"/>
+    <img src="screenshots/linux.png" height="500"/>
 </details>
 
 <details>
     <summary>Web</summary>
-    <img src="screenshots/web.png" style="max-height:500px"/>
+    <img src="screenshots/web.png" height="500"/>
 </details>
 
 [Weitere Screenshots](SCREENSHOTS.md)
