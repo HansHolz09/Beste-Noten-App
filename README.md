@@ -1,15 +1,19 @@
-Deutsch | [English](https://github.com/HansHolz09/Beste-Noten-App/blob/main/README_en.md)
+Deutsch | [English](README_en.md)
 ___
-<img src="https://github.com/HansHolz09/Beste-Noten-App/blob/5ca8b6602f3fb3446c2f594f6baf22aab3dbbcc1/composeApp/src/commonMain/composeResources/drawable/logo.png?raw=true" width="100" />
+<div align="center">
+  <a href="https://hansholz09.github.io/beste-noten-app" target="_blank">
+    <img width="140" src="composeApp/src/commonMain/composeResources/drawable/logo.png">
+  </a>
+  <h1>Beste-Noten-App</h1>
+</div>
 
-# Beste-Noten-App
 > **_Hintergrund:_** Diese App ist im Rahmen des praktischen Teils meiner Facharbeit über Compose Multiplatform entstanden
 
 Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher und ist eine einfachere, schönere und schnellere Alternative zur offiziellen beste.schule-App.
 
-**Zur Web-Version:** [Link](Link-zu-Github-Pages)
+### [Zur Web-Version](https://hansholz09.github.io/beste-noten-app)
 
-**Native Apps:** [siehe Releases](Link-zu-Github-Releases) _(außer iOS)_
+**Native Apps:** [siehe Releases](https://github.com/HansHolz09/Beste-Noten-App/releases) _(außer iOS)_
 > **_Hinweis:_** Die nativen Apps enthalten keine Entwickler-Zertifikate, weshalb wahrscheinlich Warnungen beim Installieren angezeigt werden. 
 > Die iOS/iPadOS Version müssen selber kompiliert und installiert werden ([siehe **Bauen der App**](#bauenstarten-der-app)), da es aktuell noch keinen Weg gibt, 
 > Apps auf diesen Geräten ohne Apple Developer Account zu sideloaden. 
@@ -36,23 +40,39 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 
 ## Plattformen/Screenshots
 
-### Android
-[Screenshot]
+<details>
+    <summary>Android</summary>
+    <img src="screenshots/android_phone.png" style="max-height:500px"/>
+    <img src="screenshots/android_tablet.png" style="max-height:500px"/>
+</details>
 
-### iOS/iPadOS
-[Screenshot]
+<details>
+    <summary>iOS/iPadOS</summary>
+    <img src="screenshots/ios.png" style="max-height:500px"/>
+    <img src="screenshots/ipados.png" style="max-height:500px">
+</details>
 
-### MacOS
-[Screenshot]
+<details>
+    <summary>MacOS</summary>
+    <img src="screenshots/macos.png" style="max-height:500px"/>
+</details>
 
-### Windows
-[Screenshot]
+<details>
+    <summary>Windows</summary>
+    <img src="screenshots/windows.png" style="max-height:500px"/>
+</details>
 
-### Linux
-[Screenshot]
+<details>
+    <summary>Linux</summary>
+    <img src="screenshots/linux.png" style="max-height:500px"/>
+</details>
 
-### Web
-[Screenshot]
+<details>
+    <summary>Web</summary>
+    <img src="screenshots/web.png" style="max-height:500px"/>
+</details>
+
+[Weitere Screenshots](SCREENSHOTS.md)
 
 
 ## Genutzte Bibliotheken und Plugins
