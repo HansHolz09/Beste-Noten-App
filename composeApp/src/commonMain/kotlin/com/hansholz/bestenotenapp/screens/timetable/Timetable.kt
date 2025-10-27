@@ -92,8 +92,6 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.main.ViewModel
 import dev.chrisbanes.haze.hazeSource
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -102,6 +100,8 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
 @OptIn(
     ExperimentalSharedTransitionApi::class,
@@ -186,21 +186,25 @@ fun Timetable(
                     PullToRefreshBox(
                         isRefreshing = isRefreshLoading,
                         onRefresh = {
-                            scope.launch {
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureEnd)
-                                isRefreshLoading = true
-                                week = viewModel.getJournalWeek(weekDate, false)
-                                isRefreshLoading = false
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                            if (timetableViewModel.userScrollEnabled) {
+                                scope.launch {
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                                    isRefreshLoading = true
+                                    week = viewModel.getJournalWeek(weekDate, false)
+                                    isRefreshLoading = false
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                }
                             }
                         },
                         state = pullToRefreshState,
                         indicator = {
-                            PullToRefreshDefaults.LoadingIndicator(
-                                modifier = Modifier.align(Alignment.TopCenter).padding(topPadding),
-                                isRefreshing = isRefreshLoading,
-                                state = pullToRefreshState,
-                            )
+                            if (timetableViewModel.userScrollEnabled) {
+                                PullToRefreshDefaults.LoadingIndicator(
+                                    modifier = Modifier.align(Alignment.TopCenter).padding(topPadding),
+                                    isRefreshing = isRefreshLoading,
+                                    state = pullToRefreshState,
+                                )
+                            }
                         },
                     ) {
                         LazyColumn(
@@ -237,6 +241,7 @@ fun Timetable(
                                                     isCurrentPage = currentPage == pagerState.currentPage,
                                                     contentPadding = contentPadding,
                                                     modifier = Modifier.padding(bottom = 10.dp).padding(horizontal = 6.dp),
+                                                    enabled = timetableViewModel.userScrollEnabled,
                                                 )
                                             }
                                         }

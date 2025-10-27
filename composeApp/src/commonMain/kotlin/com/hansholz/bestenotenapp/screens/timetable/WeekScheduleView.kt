@@ -86,6 +86,7 @@ fun WeekScheduleView(
     isCurrentPage: Boolean,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     val scope = rememberCoroutineScope()
     val isDark = LocalThemeIsDark.current
@@ -166,22 +167,24 @@ fun WeekScheduleView(
                                 selectedLesson = selectedLesson,
                                 shownLessonPopup = if (targetLessonPopupShown) selectedLesson else null,
                             ) { lesson ->
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                selectedLesson = lesson
-                                selectedDay = "${
-                                    when (currentDate.dayOfWeek) {
-                                        DayOfWeek.MONDAY -> "Montag"
-                                        DayOfWeek.TUESDAY -> "Dienstag"
-                                        DayOfWeek.WEDNESDAY -> "Mittwoch"
-                                        DayOfWeek.THURSDAY -> "Donnerstag"
-                                        DayOfWeek.FRIDAY -> "Freitag"
-                                        DayOfWeek.SATURDAY -> "Samstag"
-                                        DayOfWeek.SUNDAY -> "Sonntag"
-                                    }
-                                }, ${currentDate.day.toString().padStart(2, '0')}." +
-                                    "${currentDate.month.number.toString().padStart(2, '0')}.${currentDate.year}"
-                                lessonPopupShown.value = true
-                                contentBlurred = true
+                                if (enabled) {
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                    selectedLesson = lesson
+                                    selectedDay = "${
+                                        when (currentDate.dayOfWeek) {
+                                            DayOfWeek.MONDAY -> "Montag"
+                                            DayOfWeek.TUESDAY -> "Dienstag"
+                                            DayOfWeek.WEDNESDAY -> "Mittwoch"
+                                            DayOfWeek.THURSDAY -> "Donnerstag"
+                                            DayOfWeek.FRIDAY -> "Freitag"
+                                            DayOfWeek.SATURDAY -> "Samstag"
+                                            DayOfWeek.SUNDAY -> "Sonntag"
+                                        }
+                                    }, ${currentDate.day.toString().padStart(2, '0')}." +
+                                        "${currentDate.month.number.toString().padStart(2, '0')}.${currentDate.year}"
+                                    lessonPopupShown.value = true
+                                    contentBlurred = true
+                                }
                             }
                         }
                     }
