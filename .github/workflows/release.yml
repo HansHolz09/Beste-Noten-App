@@ -1,0 +1,304 @@
+name: Release Compose Multiplatform & Deploy WASM
+
+on:
+  workflow_dispatch:
+    inputs:
+      description:
+        description: "Release description shown in GitHub Release notes"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+env:
+  MODULE_PATH: composeApp
+  JBR_VERSION: "21.0.9"
+  JBR_BUILD: "b1163.78"
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Prepare Android signing
+        shell: bash
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          set -e
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > $HOME/release.keystore
+            cat > keystore.properties <<EOF
+            storeFile=$HOME/release.keystore
+            storePassword=$ANDROID_KEYSTORE_PASSWORD
+            keyAlias=$ANDROID_KEY_ALIAS
+            keyPassword=$ANDROID_KEY_PASSWORD
+            EOF
+          fi
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Build universal APK
+        run: |
+          set -e
+          ./gradlew :${MODULE_PATH}:packageReleaseUniversalApk || ./gradlew :${MODULE_PATH}:assembleRelease
+          mkdir -p artifacts
+          APK=$(ls -1 ${MODULE_PATH}/build/outputs/**/*.apk 2>/dev/null | grep -i universal || ls -1 ${MODULE_PATH}/build/outputs/**/*.apk | grep -i release | head -n1)
+          cp "$APK" artifacts/android-universal.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-universal-apk
+          path: artifacts/android-universal.apk
+
+  windows-x64:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JetBrains Runtime (JBRSDK + JCEF)
+        shell: bash
+        run: |
+          set -e
+          BASE="https://cache-redirector.jetbrains.com/intellij-jbr"
+          FILE="jbrsdk_jcef-${JBR_VERSION}-windows-x64-${JBR_BUILD}.tar.gz"
+          curl -fsSL "$BASE/$FILE" -o "$RUNNER_TEMP/jbr.tar.gz"
+          mkdir -p "$RUNNER_TEMP/jbr"
+          tar -xzf "$RUNNER_TEMP/jbr.tar.gz" -C "$RUNNER_TEMP/jbr" --strip-components=1
+          echo "JAVA_HOME=$RUNNER_TEMP/jbr" >> $GITHUB_ENV
+          echo "$RUNNER_TEMP/jbr/bin" >> $GITHUB_PATH
+          java -version
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Build EXE (x64)
+        shell: bash
+        run: |
+          set -e
+          ./gradlew :${MODULE_PATH}:packageReleaseExe
+          mkdir -p artifacts
+          EXE=$(ls -1 ${MODULE_PATH}/build/compose/binaries/**/*.exe | head -n1)
+          cp "$EXE" artifacts/windows-x64.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64-exe
+          path: artifacts/windows-x64.exe
+
+  windows-arm64:
+    runs-on: windows-11-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JetBrains Runtime (JBRSDK + JCEF)
+        shell: bash
+        run: |
+          set -e
+          BASE="https://cache-redirector.jetbrains.com/intellij-jbr"
+          FILE="jbrsdk_jcef-${JBR_VERSION}-windows-aarch64-${JBR_BUILD}.tar.gz"
+          curl -fsSL "$BASE/$FILE" -o "$RUNNER_TEMP/jbr.tar.gz"
+          mkdir -p "$RUNNER_TEMP/jbr"
+          tar -xzf "$RUNNER_TEMP/jbr.tar.gz" -C "$RUNNER_TEMP/jbr" --strip-components=1
+          echo "JAVA_HOME=$RUNNER_TEMP/jbr" >> $GITHUB_ENV
+          echo "$RUNNER_TEMP/jbr/bin" >> $GITHUB_PATH
+          java -version
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Build EXE (arm64)
+        shell: bash
+        run: |
+          set -e
+          ./gradlew :${MODULE_PATH}:packageReleaseExe
+          mkdir -p artifacts
+          EXE=$(ls -1 ${MODULE_PATH}/build/compose/binaries/**/*.exe | head -n1)
+          cp "$EXE" artifacts/windows-arm64.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-arm64-exe
+          path: artifacts/windows-arm64.exe
+
+  macos:
+    strategy:
+      matrix:
+        runner: [macos-15-intel, macos-15]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JetBrains Runtime (JBRSDK + JCEF)
+        shell: bash
+        run: |
+          set -e
+          BASE="https://cache-redirector.jetbrains.com/intellij-jbr"
+          if [[ "${{ matrix.runner }}" == "macos-15-intel" ]]; then ARCH="x64"; else ARCH="aarch64"; fi
+          FILE="jbrsdk_jcef-${JBR_VERSION}-osx-${ARCH}-${JBR_BUILD}.tar.gz"
+          curl -fsSL "$BASE/$FILE" -o "$RUNNER_TEMP/jbr.tar.gz"
+          mkdir -p "$RUNNER_TEMP/jbr"
+          tar -xzf "$RUNNER_TEMP/jbr.tar.gz" -C "$RUNNER_TEMP/jbr" --strip-components=1
+          echo "JAVA_HOME=$RUNNER_TEMP/jbr" >> $GITHUB_ENV
+          echo "$RUNNER_TEMP/jbr/bin" >> $GITHUB_PATH
+          java -version
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Build DMG
+        run: |
+          set -e
+          ./gradlew :${MODULE_PATH}:createReleaseDmg
+          mkdir -p artifacts
+          DMG=$(ls -1 ${MODULE_PATH}/build/compose/binaries/**/*.dmg | head -n1)
+          if [[ "${{ matrix.runner }}" == "macos-15-intel" ]]; then SUFFIX="x64"; else SUFFIX="arm64"; fi
+          cp "$DMG" "artifacts/macos-${SUFFIX}.dmg"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.runner }}-dmg
+          path: artifacts/*.dmg
+
+  linux:
+    strategy:
+      matrix:
+        runner: [ubuntu-latest, ubuntu-22.04-arm]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fakeroot rpm
+
+      - name: Setup JetBrains Runtime (JBRSDK + JCEF)
+        run: |
+          set -e
+          BASE="https://cache-redirector.jetbrains.com/intellij-jbr"
+          if [[ "${{ matrix.runner }}" == "ubuntu-latest" ]]; then ARCH="x64"; else ARCH="aarch64"; fi
+          FILE="jbrsdk_jcef-${JBR_VERSION}-linux-${ARCH}-${JBR_BUILD}.tar.gz"
+          curl -fsSL "$BASE/$FILE" -o "$RUNNER_TEMP/jbr.tar.gz"
+          mkdir -p "$RUNNER_TEMP/jbr"
+          tar -xzf "$RUNNER_TEMP/jbr.tar.gz" -C "$RUNNER_TEMP/jbr" --strip-components=1
+          echo "JAVA_HOME=$RUNNER_TEMP/jbr" >> $GITHUB_ENV
+          echo "$RUNNER_TEMP/jbr/bin" >> $GITHUB_PATH
+          java -version
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Build DEB
+        run: |
+          set -e
+          ./gradlew :${MODULE_PATH}:packageReleaseDeb
+          mkdir -p artifacts
+          DEB=$(ls -1 ${MODULE_PATH}/build/compose/binaries/**/*.deb | head -n1)
+          if [[ "${{ matrix.runner }}" == "ubuntu-latest" ]]; then SUFFIX="x64"; else SUFFIX="arm64"; fi
+          cp "$DEB" "artifacts/linux-${SUFFIX}.deb"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-${{ matrix.runner }}-deb
+          path: artifacts/*.deb
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [android, windows-x64, windows-arm64, macos, linux]
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: Read version from libs.versions.toml
+        id: version
+        run: |
+          set -e
+          FILE="gradle/libs.versions.toml"
+          [ -f "$FILE" ] || FILE="libs.versions.toml"
+          APP_VERSION=$(awk -F '"' '/appVersion/ {print $2; exit}' "$FILE")
+          [ -n "$APP_VERSION" ] || { echo "appVersion not found"; exit 1; }
+          echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
+          echo "app_version=$APP_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create tag if missing
+        run: |
+          set -e
+          git fetch --tags
+          if git ls-remote --exit-code --tags origin "refs/tags/v${APP_VERSION}" >/dev/null 2>&1; then
+            echo "Tag exists."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag "v${APP_VERSION}"
+            git push origin "v${APP_VERSION}"
+          fi
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release_assets
+          merge-multiple: true
+
+      - name: Rename files
+        run: |
+          set -e
+          REPO="${GITHUB_REPOSITORY##*/}"
+          cd release_assets
+          [ -f android-universal.apk ] && mv android-universal.apk "${REPO}-${APP_VERSION}-android-universal.apk"
+          [ -f windows-x64.exe ]      && mv windows-x64.exe      "${REPO}-${APP_VERSION}-windows-x64.exe"
+          [ -f windows-arm64.exe ]    && mv windows-arm64.exe    "${REPO}-${APP_VERSION}-windows-arm64.exe"
+          [ -f macos-x64.dmg ]        && mv macos-x64.dmg        "${REPO}-${APP_VERSION}-macos-x64.dmg"
+          [ -f macos-arm64.dmg ]      && mv macos-arm64.dmg      "${REPO}-${APP_VERSION}-macos-arm64.dmg"
+          [ -f linux-x64.deb ]        && mv linux-x64.deb        "${REPO}-${APP_VERSION}-linux-x64.deb"
+          [ -f linux-arm64.deb ]      && mv linux-arm64.deb      "${REPO}-${APP_VERSION}-linux-arm64.deb"
+          ls -l
+
+      - name: Create/Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.APP_VERSION }}
+          name: ${{ env.APP_VERSION }}
+          body: ${{ github.event.inputs.description }}
+          generate_release_notes: true
+          append_body: true
+          files: release_assets/*
+
+  wasm-pages:
+    runs-on: ubuntu-latest
+    needs: release
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Build WASM Distribution
+        run: |
+          set -e
+          ./gradlew :${MODULE_PATH}:wasmJsBrowserDistribution
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ env.MODULE_PATH }}/build/dist/wasmJs/productionExecutable
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
