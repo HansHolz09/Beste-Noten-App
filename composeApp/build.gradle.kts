@@ -4,6 +4,7 @@ import com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule.GROUP
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Properties
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -145,6 +146,13 @@ android {
             .get()
             .toInt()
 
+    val keystorePropsFile = rootProject.file("keystore.properties")
+    val hasKeystore = keystorePropsFile.exists()
+    val keystoreProps =
+        Properties().apply {
+            if (hasKeystore) keystorePropsFile.inputStream().use { load(it) }
+        }
+
     defaultConfig {
         applicationId = "com.hansholz.bestenotenapp"
         minSdk =
@@ -170,11 +178,26 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    signingConfigs {
+        if (hasKeystore) {
+            create("release") {
+                storeFile = file(keystoreProps["storeFile"]!!.toString())
+                storePassword = keystoreProps["storePassword"]!!.toString()
+                keyAlias = keystoreProps["keyAlias"]!!.toString()
+                keyPassword = keystoreProps["keyPassword"]!!.toString()
+                enableV1Signing = true
+                enableV2Signing = true
+                enableV3Signing = true
+            }
+        }
+    }
+
     buildTypes {
         getByName("release") {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles("src/androidMain/proguard-rules.pro")
+            if (hasKeystore) signingConfig = signingConfigs.getByName("release")
 
             applicationVariants.all {
                 val variant = this
