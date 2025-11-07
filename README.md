@@ -11,7 +11,7 @@ ___
 
 Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher und ist eine einfachere, schönere und schnellere Alternative zur offiziellen beste.schule-App.
 
-### [Zur Web-Version](https://hansholz09.github.io/beste-noten-app)
+### [Zur Web-Version](https://hansholz09.github.io/Beste-Noten-App)
 
 **Native Apps:** [siehe Releases](https://github.com/HansHolz09/Beste-Noten-App/releases) _(außer iOS)_
 > **_Hinweis:_** Die nativen Apps enthalten keine Entwickler-Zertifikate, weshalb wahrscheinlich Warnungen beim Installieren angezeigt werden. 
