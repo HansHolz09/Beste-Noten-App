@@ -11,7 +11,7 @@ ___
 
 This cross-platform school app makes everyday school life more organized and is a simpler, more beautiful, and faster alternative to the official beste.schule app.
 
-### [Web Version](https://hansholz09.github.io/beste-noten-app)
+### [Web Version](https://hansholz09.github.io/Beste-Noten-App)
 
 **Native Apps:** [see Releases](https://github.com/HansHolz09/Beste-Noten-App/releases) _(except for iOS)_
 > **_Note:_** The native apps are not signed with developer certificates, so you will likely see warnings during installation.
