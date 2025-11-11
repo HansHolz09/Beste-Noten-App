@@ -32,6 +32,8 @@ import com.hansholz.bestenotenapp.utils.weekOfYear
 import com.russhwolf.settings.Settings
 import dev.chrisbanes.haze.HazeState
 import io.ktor.utils.io.CancellationException
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -42,8 +44,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.publicvalue.multiplatform.oidc.DefaultOpenIdConnectClient
 import org.publicvalue.multiplatform.oidc.OpenIdConnectException
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 class ViewModel(
     toasterState: ToasterState,
@@ -133,16 +133,16 @@ class ViewModel(
         try {
             handleToken()
             val user = init()
-            if (user?.role != "student") {
+            if (user?.students.isNullOrEmpty()) {
                 toaster.show(
                     Toast(
-                        message = "Es sind ausschließlich Schüler-Accounts zulässig",
+                        message = "Es sind ausschließlich Schüler/Eltern-Accounts zulässig",
                         type = ToastType.Error,
                     ),
                 )
                 isLoading(false)
             } else {
-                user.students?.size?.let {
+                user.students.size.let {
                     if (it > 1) {
                         chooseStudent(user.students) {
                             settings.putString("studentId", it)
