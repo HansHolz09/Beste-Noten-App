@@ -173,13 +173,14 @@ fun Timetable(
                     userScrollEnabled = timetableViewModel.userScrollEnabled && !timetableViewModel.lessonPopupShown.value,
                 ) { currentPage ->
                     var isLoading by remember { mutableStateOf(false) }
-                    val weekDate = remember { timetableViewModel.startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK) }
+                    var weekDate = remember { timetableViewModel.startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK) }
                     var week by remember { mutableStateOf<JournalWeek?>(null) }
-                    LaunchedEffect(Unit) {
+                    LaunchedEffect(weekDate, timetableViewModel.startPageDate) {
                         isLoading = true
                         if (viewModel.years.isEmpty()) {
                             viewModel.getYears()?.let { viewModel.years.addAll(it) }
                         }
+                        weekDate = timetableViewModel.startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK)
                         week = viewModel.getJournalWeek(weekDate)
                         isLoading = false
                     }
@@ -472,7 +473,6 @@ fun Timetable(
                                                             .toLocalDateTime(TimeZone.currentSystemDefault())
                                                             .date
                                                     timetableViewModel.startPageDate = selectedDate
-                                                    pagerState.scrollToPage((Int.MAX_VALUE / 2) - 1)
                                                     pagerState.scrollToPage(Int.MAX_VALUE / 2)
                                                     delay(250)
                                                     if (timetableViewModel.toolbarState == 0) timetableViewModel.userScrollEnabled = true
