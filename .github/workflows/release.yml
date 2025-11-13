@@ -274,6 +274,12 @@ jobs:
           path: release_assets
           merge-multiple: true
 
+      - name: Remove Pages artifact from release assets
+        run: |
+          set -e
+          ls -l release_assets
+          rm -f release_assets/artifact.tar
+
       - name: Rename files
         run: |
           set -e
