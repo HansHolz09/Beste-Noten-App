@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
@@ -121,7 +122,7 @@ fun WeekScheduleView(
     var selectedDay by remember { mutableStateOf("") }
 
     var contentBlurred by remember { mutableStateOf(false) }
-    val contentBlurRadius = animateDpAsState(if (contentBlurred) 10.dp else 0.dp)
+    val contentBlurRadius = animateDpAsState(if (contentBlurred) 10.dp else 0.dp, tween(300, 50, CubicBezierEasing(0.0f, 0.0f, 1.0f, 1.0f)))
 
     SharedTransitionLayout(
         modifier = Modifier,
@@ -131,8 +132,8 @@ fun WeekScheduleView(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
             transitionSpec = {
-                fadeIn(animationSpec = tween(250)) togetherWith
-                    fadeOut(animationSpec = tween(250)) using
+                fadeIn(animationSpec = tween(500)) togetherWith
+                    fadeOut(animationSpec = tween(500)) using
                     SizeTransform(
                         clip = false,
                         sizeAnimationSpec = { _, _ ->
