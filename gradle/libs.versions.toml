@@ -40,8 +40,8 @@ sonner = "0.3.8"
 
 # App configurations
 appName = "Beste-Noten-App"
-appVersion = "1.0.1"
-appVersionCode = "2"
+appVersion = "1.0.2"
+appVersionCode = "3"
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "36"
