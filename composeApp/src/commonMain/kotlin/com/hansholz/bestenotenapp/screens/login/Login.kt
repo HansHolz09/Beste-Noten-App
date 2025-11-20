@@ -61,9 +61,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.rotateForever
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
-import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
-import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.security.BindBiometryAuthenticatorEffect
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
@@ -232,7 +230,6 @@ fun Login(
                                     }
                                 },
                                 modifier = modifier,
-                                enabled = getPlatform() != Platform.WEB,
                             ) {
                                 Text("Login über beste.schule")
                             }
