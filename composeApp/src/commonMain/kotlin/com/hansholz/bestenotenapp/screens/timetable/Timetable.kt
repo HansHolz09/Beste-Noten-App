@@ -94,6 +94,8 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.main.ViewModel
 import dev.chrisbanes.haze.hazeSource
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -102,8 +104,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
 
 @OptIn(
     ExperimentalSharedTransitionApi::class,
@@ -119,7 +119,7 @@ fun Timetable(
     animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
     with(sharedTransitionScope) {
-        val timetableViewModel = viewModel { TimetableViewModel() }
+        val timetableViewModel = viewModel { TimetableViewModel(viewModel) }
 
         val scope = rememberCoroutineScope()
         val density = LocalDensity.current
@@ -177,9 +177,7 @@ fun Timetable(
                     var week by remember { mutableStateOf<JournalWeek?>(null) }
                     LaunchedEffect(weekDate, timetableViewModel.startPageDate) {
                         isLoading = true
-                        if (viewModel.years.isEmpty()) {
-                            viewModel.getYears()?.let { viewModel.years.addAll(it) }
-                        }
+                        while (viewModel.years.isEmpty()) delay(10)
                         weekDate = timetableViewModel.startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK)
                         week = viewModel.getJournalWeek(weekDate)
                         isLoading = false

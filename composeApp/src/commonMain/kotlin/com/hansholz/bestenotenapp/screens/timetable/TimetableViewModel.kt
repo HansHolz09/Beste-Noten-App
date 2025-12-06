@@ -5,15 +5,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlinx.coroutines.launch
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
-class TimetableViewModel : ViewModel() {
+class TimetableViewModel(
+    viewModel: com.hansholz.bestenotenapp.main.ViewModel,
+) : ViewModel() {
     val lessonPopupShown = mutableStateOf(false)
 
     var toolbarPadding by mutableStateOf(0.dp)
@@ -43,4 +47,12 @@ class TimetableViewModel : ViewModel() {
     var contentBlurred by mutableStateOf(false)
 
     var toolbarState by mutableStateOf(0)
+
+    init {
+        viewModelScope.launch {
+            if (viewModel.years.isEmpty()) {
+                viewModel.getYears()?.let { viewModel.years.addAll(it) }
+            }
+        }
+    }
 }
