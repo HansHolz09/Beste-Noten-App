@@ -13,8 +13,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -26,6 +29,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,6 +43,8 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.EventBusy
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ContainedLoadingIndicator
@@ -83,6 +89,8 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import bestenotenapp.composeapp.generated.resources.Res
+import bestenotenapp.composeapp.generated.resources.logo
 import com.hansholz.bestenotenapp.api.models.JournalWeek
 import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
@@ -93,7 +101,15 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.theme.AppTheme
+import com.hansholz.bestenotenapp.theme.FontFamilies
 import dev.chrisbanes.haze.hazeSource
+import io.github.bigboyapps.kmpdf.PdfConfig
+import io.github.bigboyapps.kmpdf.PdfResult
+import io.github.bigboyapps.kmpdf.createKmPdfGenerator
+import io.github.bigboyapps.kmpdf.sharePdf
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -102,8 +118,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
+import org.jetbrains.compose.resources.imageResource
 
 @OptIn(
     ExperimentalSharedTransitionApi::class,
@@ -166,12 +181,9 @@ fun Timetable(
 
                 val pagerState = rememberEnhancedPagerState(Int.MAX_VALUE, Int.MAX_VALUE / 2)
                 val contentBlurRadius = animateDpAsState(if (timetableViewModel.contentBlurred) 10.dp else 0.dp)
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier.hazeSource(viewModel.hazeBackgroundState).enhancedHazeEffect(blurRadius = contentBlurRadius.value),
-                    beyondViewportPageCount = 1,
-                    userScrollEnabled = timetableViewModel.userScrollEnabled && !timetableViewModel.lessonPopupShown.value,
-                ) { currentPage ->
+
+                @Composable
+                fun pageContent(currentPage: Int) {
                     var isLoading by remember { mutableStateOf(false) }
                     var weekDate = remember { timetableViewModel.startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK) }
                     var week by remember { mutableStateOf<JournalWeek?>(null) }
@@ -253,6 +265,15 @@ fun Timetable(
                             }
                         }
                     }
+                }
+
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.hazeSource(viewModel.hazeBackgroundState).enhancedHazeEffect(blurRadius = contentBlurRadius.value),
+                    beyondViewportPageCount = 1,
+                    userScrollEnabled = timetableViewModel.userScrollEnabled && !timetableViewModel.lessonPopupShown.value,
+                ) { currentPage ->
+                    pageContent(currentPage)
                 }
                 topAppBarBackground(innerPadding.calculateTopPadding())
 
@@ -352,8 +373,58 @@ fun Timetable(
                                                     tint = colorScheme.onPrimaryContainer,
                                                 )
                                             }
+                                            EnhancedIconButton(
+                                                onClick = {
+                                                    val pdfGenerator = createKmPdfGenerator()
+                                                    scope.launch {
+                                                        val result =
+                                                            pdfGenerator.generatePdf(PdfConfig(fileName = "Stundeplan")) {
+                                                                page {
+                                                                    AppTheme(false) {
+                                                                        Box(Modifier.background(Color.White)) {
+                                                                            pageContent(pagerState.currentPage)
+                                                                            Row(
+                                                                                Modifier.padding(10.dp).align(Alignment.TopCenter),
+                                                                                verticalAlignment = Alignment.CenterVertically,
+                                                                            ) {
+                                                                                Image(imageResource(Res.drawable.logo), null, Modifier.size(30.dp))
+                                                                                Text(
+                                                                                    text = "Beste-Noten-App",
+                                                                                    modifier = Modifier.padding(start = 10.dp),
+                                                                                    color = colorScheme.onSurface,
+                                                                                    fontFamily = FontFamilies.KeaniaOne(),
+                                                                                    maxLines = 1,
+                                                                                )
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        when (result) {
+                                                            is PdfResult.Success -> sharePdf(result.uri)
+                                                            is PdfResult.Error -> viewModel.toaster.show(result.message)
+                                                        }
+                                                    }
+                                                },
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Outlined.Share,
+                                                    contentDescription = null,
+                                                    tint = colorScheme.onPrimaryContainer,
+                                                )
+                                            }
                                         },
                                         trailingContent = {
+                                            EnhancedIconButton(
+                                                onClick = {
+                                                },
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Outlined.Refresh,
+                                                    contentDescription = null,
+                                                    tint = colorScheme.onPrimaryContainer,
+                                                )
+                                            }
                                             EnhancedIconButton(
                                                 onClick = {
                                                     scope.launch {

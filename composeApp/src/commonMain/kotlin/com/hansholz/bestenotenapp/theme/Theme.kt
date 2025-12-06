@@ -29,12 +29,15 @@ internal val LocalBlurEnabled = compositionLocalOf { mutableStateOf(false) }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-internal fun AppTheme(content: @Composable () -> Unit) {
+internal fun AppTheme(
+    forceDark: Boolean? = null,
+    content: @Composable () -> Unit,
+) {
     val settings = Settings()
 
     val useSystemIsDark = remember { mutableStateOf(settings.getBoolean("useSystemIsDark", true)) }
     val isDark = remember { mutableStateOf(settings.getBoolean("isDark", false)) }
-    val isDarkState = if (useSystemIsDark.value) isSystemInDarkMode() else isDark.value
+    val isDarkState = forceDark ?: (if (useSystemIsDark.value) isSystemInDarkMode() else isDark.value)
     val useCustomColorSchemeState = remember { mutableStateOf(settings.getBoolean("useCustomColorScheme", false)) }
     val supportsCustomColorSchemeState = remember { mutableStateOf(false) }
     val animationsEnabledState = remember { mutableStateOf(settings.getBoolean("animationsEnabled", true)) }

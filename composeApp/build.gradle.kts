@@ -103,6 +103,7 @@ kotlin {
             implementation(libs.confettikit)
             implementation(libs.emoji.compose.m3)
             implementation(libs.sonner)
+            implementation("io.github.big-jared:kmpdf:1.0.0")
         }
         androidMain.dependencies {
             implementation(compose.preview)

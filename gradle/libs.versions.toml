@@ -43,7 +43,7 @@ appName = "Beste-Noten-App"
 appVersion = "1.0.2"
 appVersionCode = "3"
 android-compileSdk = "36"
-android-minSdk = "24"
+android-minSdk = "26"
 android-targetSdk = "36"
 
 [libraries]
