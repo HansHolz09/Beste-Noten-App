@@ -90,10 +90,10 @@ import com.pushpal.jetlime.JetLimeEventDefaults
 import com.pushpal.jetlime.JetLimeExtendedEvent
 import com.pushpal.jetlime.LocalJetLimeStyle
 import dev.chrisbanes.haze.hazeSource
+import kotlin.random.Random
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.imageResource
 import org.kodein.emoji.compose.m3.TextWithNotoAnimatedEmoji
-import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
@@ -158,18 +158,12 @@ fun Home(
                             } else {
                                 var greeting by rememberSaveable { mutableStateOf("") }
                                 LaunchedEffect(viewModel.user.value) {
-                                    if (viewModel.user.value
+                                    val student =
+                                        viewModel.user.value
                                             ?.students
-                                            ?.firstOrNull() != null &&
-                                        greeting.isEmpty()
-                                    ) {
-                                        greeting =
-                                            getGreeting(
-                                                viewModel.user.value
-                                                    ?.students
-                                                    ?.firstOrNull()
-                                                    ?.forename ?: "du",
-                                            )
+                                            ?.find { it.id.toString() == viewModel.studentId.value }
+                                    if (student != null && greeting.isEmpty()) {
+                                        greeting = getGreeting(student.forename ?: "du")
                                     }
                                 }
                                 AnimatedContent(greeting) {
