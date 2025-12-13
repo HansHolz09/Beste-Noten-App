@@ -164,13 +164,14 @@ fun Timetable(
                 val contentPadding = PaddingValues(top = topPadding, bottom = innerPadding.calculateBottomPadding() + timetableViewModel.toolbarPadding)
                 val verticalPadding = PaddingValues(start = innerPadding.calculateStartPadding(layoutDirection), end = innerPadding.calculateEndPadding(layoutDirection))
 
+                val lessonPopupShown = remember { mutableStateOf(false) }
                 val pagerState = rememberEnhancedPagerState(Int.MAX_VALUE, Int.MAX_VALUE / 2)
                 val contentBlurRadius = animateDpAsState(if (timetableViewModel.contentBlurred) 10.dp else 0.dp)
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.hazeSource(viewModel.hazeBackgroundState).enhancedHazeEffect(blurRadius = contentBlurRadius.value),
                     beyondViewportPageCount = 1,
-                    userScrollEnabled = timetableViewModel.userScrollEnabled && !timetableViewModel.lessonPopupShown.value,
+                    userScrollEnabled = timetableViewModel.userScrollEnabled && !lessonPopupShown.value,
                 ) { currentPage ->
                     var isLoading by remember { mutableStateOf(false) }
                     var weekDate = remember { timetableViewModel.startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK) }
@@ -239,6 +240,7 @@ fun Timetable(
                                                 WeekScheduleView(
                                                     week = week,
                                                     lessonPopupShown = timetableViewModel.lessonPopupShown,
+                                                    lessonPopupShown = lessonPopupShown,
                                                     isCurrentPage = currentPage == pagerState.currentPage,
                                                     contentPadding = contentPadding,
                                                     modifier = Modifier.padding(bottom = 10.dp).padding(horizontal = 6.dp),
@@ -341,7 +343,7 @@ fun Timetable(
                                                         pagerState.animateScrollToPage(pagerState.currentPage - 1)
                                                     }
                                                 },
-                                                enabled = !timetableViewModel.lessonPopupShown.value,
+                                                enabled = !lessonPopupShown.value,
                                                 hapticEnabled = false,
                                             ) {
                                                 Icon(
@@ -358,7 +360,7 @@ fun Timetable(
                                                         pagerState.animateScrollToPage(pagerState.currentPage + 1)
                                                     }
                                                 },
-                                                enabled = !timetableViewModel.lessonPopupShown.value,
+                                                enabled = !lessonPopupShown.value,
                                                 hapticEnabled = false,
                                             ) {
                                                 Icon(
@@ -379,7 +381,7 @@ fun Timetable(
                                                 timetableViewModel.userScrollEnabled = false
                                                 timetableViewModel.contentBlurred = true
                                             },
-                                            enabled = !timetableViewModel.lessonPopupShown.value,
+                                            enabled = !lessonPopupShown.value,
                                             modifier = Modifier.width(64.dp),
                                             colors =
                                                 IconButtonDefaults.filledIconButtonColors(

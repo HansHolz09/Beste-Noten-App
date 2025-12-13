@@ -18,8 +18,6 @@ import kotlinx.datetime.toLocalDateTime
 class TimetableViewModel(
     viewModel: com.hansholz.bestenotenapp.main.ViewModel,
 ) : ViewModel() {
-    val lessonPopupShown = mutableStateOf(false)
-
     var toolbarPadding by mutableStateOf(0.dp)
 
     @OptIn(ExperimentalTime::class)
