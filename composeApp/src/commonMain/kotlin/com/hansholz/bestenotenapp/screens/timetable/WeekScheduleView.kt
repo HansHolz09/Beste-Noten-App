@@ -58,6 +58,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
+import com.hansholz.bestenotenapp.api.models.Absence
 import com.hansholz.bestenotenapp.api.models.JournalLesson
 import com.hansholz.bestenotenapp.api.models.JournalWeek
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
@@ -67,22 +68,28 @@ import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.utils.SimpleTime
+import com.hansholz.bestenotenapp.utils.formateDate
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.number
+import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
 
 @OptIn(
     ExperimentalSharedTransitionApi::class,
     ExperimentalComposeUiApi::class,
     ExperimentalMaterial3ExpressiveApi::class,
+    ExperimentalTime::class,
 )
 @Composable
 fun WeekScheduleView(
     week: JournalWeek?,
+    absences: List<Absence>,
     lessonPopupShown: MutableState<Boolean>,
     isCurrentPage: Boolean,
     contentPadding: PaddingValues,
@@ -119,7 +126,14 @@ fun WeekScheduleView(
     val latestLessonEnd = allLessons.maxOfOrNull { SimpleTime.parse(it.time?.to ?: "00:00") }
 
     var selectedLesson by remember { mutableStateOf<JournalLesson?>(null) }
-    var selectedDay by remember { mutableStateOf("") }
+    var selectedDay by remember {
+        mutableStateOf(
+            Clock.System
+                .now()
+                .toLocalDateTime(TimeZone.currentSystemDefault())
+                .date,
+        )
+    }
 
     var contentBlurred by remember { mutableStateOf(false) }
     val contentBlurRadius = animateDpAsState(if (contentBlurred) 10.dp else 0.dp, tween(300, 50, CubicBezierEasing(0.0f, 0.0f, 1.0f, 1.0f)))
@@ -160,6 +174,8 @@ fun WeekScheduleView(
                             DayHeader(currentDate)
                             DailyScheduleLayout(
                                 lessons = day.lessons,
+                                absences = absences,
+                                date = currentDate,
                                 modifier = Modifier.fillMaxHeight(),
                                 minTime = minTimeHour ?: SimpleTime.parse("7:00"),
                                 maxTime = latestLessonEnd ?: SimpleTime.parse("18:00"),
@@ -171,18 +187,7 @@ fun WeekScheduleView(
                                 if (enabled) {
                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                                     selectedLesson = lesson
-                                    selectedDay = "${
-                                        when (currentDate.dayOfWeek) {
-                                            DayOfWeek.MONDAY -> "Montag"
-                                            DayOfWeek.TUESDAY -> "Dienstag"
-                                            DayOfWeek.WEDNESDAY -> "Mittwoch"
-                                            DayOfWeek.THURSDAY -> "Donnerstag"
-                                            DayOfWeek.FRIDAY -> "Freitag"
-                                            DayOfWeek.SATURDAY -> "Samstag"
-                                            DayOfWeek.SUNDAY -> "Sonntag"
-                                        }
-                                    }, ${currentDate.day.toString().padStart(2, '0')}." +
-                                        "${currentDate.month.number.toString().padStart(2, '0')}.${currentDate.year}"
+                                    selectedDay = currentDate
                                     lessonPopupShown.value = true
                                     contentBlurred = true
                                 }
@@ -281,7 +286,15 @@ fun WeekScheduleView(
                             overlineContent = {
                                 Text(
                                     text =
-                                        "${selectedDay}\n${selectedLesson?.nr ?: "?"}. Stunde" +
+                                        "${when (selectedDay.dayOfWeek) {
+                                            DayOfWeek.MONDAY -> "Montag"
+                                            DayOfWeek.TUESDAY -> "Dienstag"
+                                            DayOfWeek.WEDNESDAY -> "Mittwoch"
+                                            DayOfWeek.THURSDAY -> "Donnerstag"
+                                            DayOfWeek.FRIDAY -> "Freitag"
+                                            DayOfWeek.SATURDAY -> "Samstag"
+                                            DayOfWeek.SUNDAY -> "Sonntag"
+                                        }}, ${formateDate(selectedDay.toString())}\n${selectedLesson?.nr ?: "?"}. Stunde" +
                                             if (week.days
                                                     .flatMap { it.lessons.orEmpty() }
                                                     .find { it == selectedLesson }
@@ -368,6 +381,26 @@ fun WeekScheduleView(
                                 colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f)),
                             )
                         }
+                        absences
+                            .filter {
+                                LocalDate.parse(it.from.take(10)) == selectedDay &&
+                                    SimpleTime.parse(it.from.takeLast(8)) <= SimpleTime.parse(selectedLesson?.time?.from ?: "00:00") &&
+                                    SimpleTime.parse(it.to.takeLast(8)) >= SimpleTime.parse(selectedLesson?.time?.to ?: "23:59")
+                            }.forEach { absence ->
+                                val dialogShown = remember { mutableStateOf(false) }
+                                HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
+                                ListItem(
+                                    headlineContent = { Text(absence.type.name) },
+                                    overlineContent = { Text("Abwesenheit durch") },
+                                    modifier =
+                                        Modifier
+                                            .clickable {
+                                                dialogShown.value = true
+                                            }.skipToLookaheadSize(),
+                                    colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f)),
+                                )
+                                AbsenceInfoDialog(dialogShown, absence)
+                            }
                     }
                 }
             }

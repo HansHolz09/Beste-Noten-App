@@ -15,6 +15,7 @@ import com.dokar.sonner.ToasterState
 import com.hansholz.bestenotenapp.api.BesteSchuleApi
 import com.hansholz.bestenotenapp.api.codeAuthFlowFactory
 import com.hansholz.bestenotenapp.api.createHttpClient
+import com.hansholz.bestenotenapp.api.models.Absence
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.api.models.JournalDay
 import com.hansholz.bestenotenapp.api.models.JournalWeek
@@ -72,6 +73,7 @@ class ViewModel(
     val currentJournalDay = mutableStateOf<JournalDay?>(null)
     val journalWeeks = mutableStateListOf<Pair<String, JournalWeek>>()
     val currentTimetable = mutableStateOf<TimeTable?>(null)
+    val absences = mutableStateListOf<Pair<String, List<Absence>>>()
     val subjectsAndTeachers = mutableStateListOf<Pair<Subject?, List<Teacher>?>>()
     val teachersAndSubjects = mutableStateListOf<Pair<Teacher?, List<Subject?>>>()
     val subjects = mutableStateListOf<Subject>()
@@ -315,6 +317,7 @@ class ViewModel(
     suspend fun getJournalWeek(
         date: LocalDate? = null,
         useCached: Boolean = true,
+        getAbsences: Boolean = false,
     ): JournalWeek? {
         if (isDemoAccount.value) {
             val targetDate =
@@ -351,6 +354,9 @@ class ViewModel(
                         }?.id
                         .toString()
                 }
+            if (getAbsences && year != null && absences.none { it.first == year }) {
+                getAbsences(year)?.let { absences.add(year to it) }
+            }
             val cachedWeek = if (useCached) journalWeeks.firstOrNull { it.first == nr }?.second else null
             val week = cachedWeek ?: api.journalWeekShow(nr, year, true, "days.lessons").data
             if (cachedWeek == null) {
@@ -430,6 +436,22 @@ class ViewModel(
         }
         try {
             val data = api.subjectsIndex().data
+            couldReachBesteSchule()
+            return data
+        } catch (e: Exception) {
+            e.printStackTrace()
+            couldNotReachBesteSchule()
+            return null
+        }
+    }
+
+    suspend fun getAbsences(filterYear: String? = null): List<Absence>? {
+        if (isDemoAccount.value) {
+            delay(500)
+            return emptyList()
+        }
+        try {
+            val data = api.absencesIndex(filterYear = filterYear).data
             couldReachBesteSchule()
             return data
         } catch (e: Exception) {

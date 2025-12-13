@@ -21,6 +21,7 @@ import androidx.compose.material.icons.outlined.DisabledVisible
 import androidx.compose.material.icons.outlined.FiberNew
 import androidx.compose.material.icons.outlined.FormatListBulleted
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.HowToReg
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.InvertColors
 import androidx.compose.material.icons.outlined.LightMode
@@ -62,6 +63,7 @@ import com.hansholz.bestenotenapp.main.LocalGradeNotificationIntervalMinutes
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationsEnabled
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationsWifiOnly
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
+import com.hansholz.bestenotenapp.main.LocalShowAbsences
 import com.hansholz.bestenotenapp.main.LocalShowAllSubjects
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
 import com.hansholz.bestenotenapp.main.LocalShowCurrentLesson
@@ -115,6 +117,7 @@ fun Settings(
     var showGradeHistory by LocalShowGradeHistory.current
     var showAllSubjects by LocalShowAllSubjects.current
     var showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
+    var showAbsences by LocalShowAbsences.current
     var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
     val settings = Settings()
@@ -352,6 +355,29 @@ fun Settings(
                     text = "Leistungen ohne Noten anzeigen",
                     icon = Icons.Outlined.DisabledVisible,
                     position = PreferencePosition.Bottom,
+                )
+                item {
+                    PreferenceCategory("Stundenplan", Modifier.padding(horizontal = 15.dp))
+                }
+                settingsToggleItem(
+                    checked = showAbsences,
+                    onCheckedChange = {
+                        showAbsences = it
+                        settings["showAbsences"] = it
+
+                        scope.launch {
+                            if (it && viewModel.absences.isEmpty()) {
+                                val currentYearId =
+                                    viewModel.years
+                                        .last()
+                                        .id
+                                        .toString()
+                                viewModel.getAbsences(currentYearId)?.let { viewModel.absences.add(currentYearId to it) }
+                            }
+                        }
+                    },
+                    text = "Abwesenheits-Einträge anzeigen",
+                    icon = Icons.Outlined.HowToReg,
                 )
                 item {
                     PreferenceCategory("Fächer und Lehrer", Modifier.padding(horizontal = 15.dp))

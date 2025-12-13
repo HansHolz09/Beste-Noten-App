@@ -92,6 +92,7 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
+import com.hansholz.bestenotenapp.main.LocalShowAbsences
 import com.hansholz.bestenotenapp.main.ViewModel
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.CancellationException
@@ -125,6 +126,8 @@ fun Timetable(
         val density = LocalDensity.current
         val layoutDirection = LocalLayoutDirection.current
         val hapticFeedback = LocalHapticFeedback.current
+
+        var showAbsences by LocalShowAbsences.current
 
         @Suppress("DEPRECATION")
         val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
@@ -178,9 +181,9 @@ fun Timetable(
                     var week by remember { mutableStateOf<JournalWeek?>(null) }
                     LaunchedEffect(weekDate, timetableViewModel.startPageDate) {
                         isLoading = true
-                        while (viewModel.years.isEmpty()) delay(10)
+                        while (viewModel.years.isEmpty() || (viewModel.absences.isEmpty() && showAbsences)) delay(10)
                         weekDate = timetableViewModel.startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK)
-                        week = viewModel.getJournalWeek(weekDate)
+                        week = viewModel.getJournalWeek(weekDate, getAbsences = showAbsences && pagerState.currentPage == currentPage)
                         isLoading = false
                     }
                     var isRefreshLoading by remember { mutableStateOf(false) }
@@ -192,7 +195,7 @@ fun Timetable(
                                 scope.launch {
                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureEnd)
                                     isRefreshLoading = true
-                                    week = viewModel.getJournalWeek(weekDate, false)
+                                    week = viewModel.getJournalWeek(weekDate, false, showAbsences)
                                     isRefreshLoading = false
                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
                                 }
@@ -239,7 +242,7 @@ fun Timetable(
                                             } else {
                                                 WeekScheduleView(
                                                     week = week,
-                                                    lessonPopupShown = timetableViewModel.lessonPopupShown,
+                                                    absences = if (showAbsences) viewModel.absences.flatMap { it.second } else emptyList(),
                                                     lessonPopupShown = lessonPopupShown,
                                                     isCurrentPage = currentPage == pagerState.currentPage,
                                                     contentPadding = contentPadding,

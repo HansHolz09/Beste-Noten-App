@@ -33,11 +33,11 @@ import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.hansholz.bestenotenapp.navigation.Fragment
 import com.jetbrains.JBR
 import dev.hansholz.advancedmenubar.DefaultMacMenu
-import java.awt.Color
-import java.awt.Dimension
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.skiko.hostOs
+import java.awt.Color
+import java.awt.Dimension
 
 @OptIn(ExperimentalMaterial3ComponentOverrideApi::class, ExperimentalMaterial3Api::class)
 fun main() {

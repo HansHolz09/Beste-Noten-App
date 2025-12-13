@@ -17,6 +17,7 @@ internal val LocalShowCurrentLesson = compositionLocalOf { mutableStateOf(false)
 internal val LocalShowGradeHistory = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowAllSubjects = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowCollectionsWithoutGrades = compositionLocalOf { mutableStateOf(false) }
+internal val LocalShowAbsences = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowTeachersWithFirstname = compositionLocalOf { mutableStateOf(false) }
 internal val LocalGradeNotificationsEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalGradeNotificationIntervalMinutes = compositionLocalOf { mutableStateOf(60L) }
@@ -40,6 +41,7 @@ fun SettingsProvider(content: @Composable () -> Unit) {
     val showGradeHistoryState = remember { mutableStateOf(settings.getBoolean("showGradeHistory", false)) }
     val showAllSubjectsState = remember { mutableStateOf(settings.getBoolean("showAllSubjects", false)) }
     val showCollectionsWithoutGradesState = remember { mutableStateOf(settings.getBoolean("showCollectionsWithoutGrades", false)) }
+    val showAbsences = remember { mutableStateOf(settings.getBoolean("showAbsences", true)) }
     val showTeachersWithFirstnameState = remember { mutableStateOf(settings.getBoolean("showTeachersWithFirstname", false)) }
     val gradeNotificationsEnabledState = remember { mutableStateOf(settings.getBoolean("gradeNotificationsEnabled", false)) }
     val gradeNotificationIntervalState = remember { mutableStateOf(settings.getLong("gradeNotificationsIntervalMinutes", 60L)) }
@@ -53,6 +55,7 @@ fun SettingsProvider(content: @Composable () -> Unit) {
         LocalShowGradeHistory provides showGradeHistoryState,
         LocalShowAllSubjects provides showAllSubjectsState,
         LocalShowCollectionsWithoutGrades provides showCollectionsWithoutGradesState,
+        LocalShowAbsences provides showAbsences,
         LocalShowTeachersWithFirstname provides showTeachersWithFirstnameState,
         LocalGradeNotificationsEnabled provides gradeNotificationsEnabledState,
         LocalGradeNotificationIntervalMinutes provides gradeNotificationIntervalState,

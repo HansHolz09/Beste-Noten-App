@@ -24,6 +24,7 @@ data class Absence(
     val student: Student? = null,
     val subjects: List<Subject>? = null,
     val verification: AbsenceVerification? = null,
+    val histories: List<History>? = null,
     @SerialName("lesson_students") val lessonStudents: List<JournalLessonStudent>? = null,
     @SerialName("lesson_students_count") val lessonStudentsCount: String? = null,
     val lessons: List<JournalLessonStudent>? = null,
