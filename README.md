@@ -1,7 +1,7 @@
 Deutsch | [English](README_en.md)
 ___
 <div align="center">
-  <a href="https://hansholz09.github.io/beste-noten-app" target="_blank">
+  <a href="https://hansholz09.github.io/Beste-Noten-App" target="_blank">
     <img width="140" src="composeApp/src/commonMain/composeResources/drawable/logo.png">
   </a>
   <h1>Beste-Noten-App</h1>
@@ -25,9 +25,9 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 - Startseite mit Tagesübersicht und aktuellen Noten
 - Einfache Notenübersicht mit Möglichkeit zum Ansehen der Noten-Historien
 - Noten-Diagramme zum Vergleich der verschiedenen Schuljahre
-- Übersichtliche Stundenplan-Ansicht mit Vertretungsplan-Änderungen
+- Übersichtliche Stundenplan-Ansicht mit Vertretungsplan-Änderungen und Abwesenheits-Einträgen
 - Übersicht aktueller Fächer und Lehrer mit ihren Abkürzungen
-- Adaptives Material-3-Expressive-Design auf allen Platformen
+- Adaptives Material-3-Expressive-Design auf allen Plattformen
 - Schöne Animationen und Übergänge
 - Haptisches Feedback auf Android und iOS
 - Benachrichtigungen über neue Noten mit anpassbarem Überprüfungsintervall für Android und iOS
@@ -53,7 +53,7 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 </details>
 
 <details>
-    <summary>MacOS</summary>
+    <summary>macOS</summary>
     <img src="screenshots/macos.png" height="500"/>
 </details>
 
@@ -94,6 +94,7 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 - [AndroidX Security Crypto](https://developer.android.com/jetpack/androidx/releases/security) - Apache 2.0 - Kryptografiebibliothek für Android
 - [AndroidX Biometric](https://developer.android.com/jetpack/androidx/releases/biometric) - Apache 2.0 - Unterstützung für biometrische Authentifizierung unter Android
 - [SmartSpacer SDK](https://github.com/KieronQuinn/Smartspacer) - GPL 3.0 - Integration für SmartSpacer unter Android
+- [Advanced Menubar for Compose Desktop](https://github.com/HansHolz09/Advanced-Menubar) - Apache 2.0 - Deutsche macOS Menubar mit mehr Optionen
 - [JBR API](https://github.com/JetBrains/JetBrainsRuntimeApi) - Apache 2.0 - API von JetBrains Runtime für Zugriff auf Native Fenstersteuerelemente
 - [JNA](https://github.com/java-native-access/jna) - Apache 2.0 - Java Native Access für Zugriff auf Native Fenstersteuerelemente
 - [Credential Secure Storage for Java](https://github.com/microsoft/credential-secure-storage-for-java) - MIT - Sichere Tokenspeicherung für JVM
@@ -105,12 +106,12 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 
 1. Klone den Quellcode
 2. Öffne ihn mit [Android Studio](https://developer.android.com/studio) oder [Intellij IDEA (Community Edition)](https://www.jetbrains.com/idea/download)
-3. Zum bauen bzw. starten der iOS/iPadOS App öffne `/iosApp` in XCode (Nur unter MacOS)
+3. Zum bauen bzw. starten der iOS/iPadOS App öffne `/iosApp` in XCode (Nur unter macOS)
 4. Starte eine beliebige Konfiguration in Android Studio/Intellij IDEA:
     - Run Desktop App / `./gradlew run`
     - Run Web App / `./gradlew wasmJsBrowserDevelopmentRun`
     - Run Android App
-    - Package Release as DMG / `./gradlew createReleaseDmg` (Nur unter MacOS)
+    - Package Release as DMG / `./gradlew createReleaseDmg` (Nur unter macOS)
     - Package Release as EXE / `./gradlew packageReleaseExe` (Nur unter Windows)
     - Package Release as DEB / `./gradlew packageReleaseDeb` (Nur unter Linux)
     - Package Web App / `./gradlew wasmJsBrowserDistribution`

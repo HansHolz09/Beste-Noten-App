@@ -1,7 +1,7 @@
 English | [Deutsch](README.md)
 ___
 <div align="center">
-  <a href="https://hansholz09.github.io/beste-noten-app" target="_blank">
+  <a href="https://hansholz09.github.io/Beste-Noten-App" target="_blank">
     <img width="140" src="composeApp/src/commonMain/composeResources/drawable/logo.png">
   </a>
   <h1>Beste-Noten-App</h1>
@@ -24,7 +24,7 @@ This cross-platform school app makes everyday school life more organized and is 
 - Home screen with a daily overview and recent grades
 - Simple grade overview with the option to view grade histories
 - Grade charts to compare different school years
-- Clear timetable view with substitution plan changes
+- Clear timetable view with substitution plan changes and absence entries
 - Overview of current subjects and teachers with their abbreviations
 - Adaptive Material 3 Expressive design on all platforms
 - Beautiful animations and transitions
@@ -52,7 +52,7 @@ This cross-platform school app makes everyday school life more organized and is 
 </details>
 
 <details>
-    <summary>MacOS</summary>
+    <summary>macOS</summary>
     <img src="screenshots/macos.png" height="500"/>
 </details>
 
@@ -93,6 +93,7 @@ This cross-platform school app makes everyday school life more organized and is 
 - [AndroidX Security Crypto](https://developer.android.com/jetpack/androidx/releases/security) - Apache 2.0 - Cryptography library for Android
 - [AndroidX Biometric](https://developer.android.com/jetpack/androidx/releases/biometric) - Apache 2.0 - Support for biometric authentication on Android
 - [SmartSpacer SDK](https://github.com/KieronQuinn/Smartspacer) - GPL 3.0 - Integration for SmartSpacer on Android
+- [Advanced Menubar for Compose Desktop](https://github.com/HansHolz09/Advanced-Menubar) - Apache 2.0 - German macOS menubar with more options
 - [JBR API](https://github.com/JetBrains/JetBrainsRuntimeApi) - Apache 2.0 - API from JetBrains Runtime for accessing native window controls
 - [JNA](https://github.com/java-native-access/jna) - Apache 2.0 - Java Native Access for accessing native window controls
 - [Credential Secure Storage for Java](https://github.com/microsoft/credential-secure-storage-for-java) - MIT - Secure token storage for JVM
