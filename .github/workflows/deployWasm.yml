@@ -8,6 +8,9 @@ permissions:
   pages: write
   id-token: write
 
+env:
+  MODULE_PATH: composeApp
+
 jobs:
   wasm:
     runs-on: ubuntu-latest
