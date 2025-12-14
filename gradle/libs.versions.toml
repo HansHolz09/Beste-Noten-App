@@ -34,7 +34,7 @@ navigationCompose = "2.9.0-rc02"
 #noinspection NewerVersionAvailable
 materialKolor = "3.0.0-beta07"
 multiplatformSettings = "1.3.0"
-oidc = "0.15.1"
+oidc = "0.15.3"
 smartspacer-sdk = "1.1"
 sonner = "0.3.8"
 
