@@ -38,7 +38,7 @@ fun App(
         colors(colorScheme)
         val isDark = LocalThemeIsDark.current
         isDark(isDark)
-        ProvideCupertinoOverscrollEffect(listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())) {
+        ProvideCupertinoOverscrollEffect(getPlatform() != Platform.DESKTOP) {
             SettingsProvider {
                 val toasterState = rememberToasterState()
                 val viewModel = viewModel { ViewModel(toasterState) }
