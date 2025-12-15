@@ -67,8 +67,8 @@ data class AbsenceType(
 
 @Serializable
 data class AbsenceVerification(
-    val id: Int,
-    val confirmed: Boolean,
+    val id: String? = null,
+    val confirmed: Boolean? = null,
     @SerialName("local_id") val localId: String? = null,
     val note: String? = null,
     @SerialName("recorded_at") val recordedAt: String? = null,
