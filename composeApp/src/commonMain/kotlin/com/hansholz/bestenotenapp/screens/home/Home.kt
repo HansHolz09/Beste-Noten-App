@@ -65,6 +65,7 @@ import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.grades
 import bestenotenapp.composeapp.generated.resources.subjectsAndTeachers
 import bestenotenapp.composeapp.generated.resources.timetable
+import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.components.GradeValueBox
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.UpdateOnNewDay
@@ -92,10 +93,10 @@ import com.pushpal.jetlime.JetLimeEventDefaults
 import com.pushpal.jetlime.JetLimeExtendedEvent
 import com.pushpal.jetlime.LocalJetLimeStyle
 import dev.chrisbanes.haze.hazeSource
+import kotlin.random.Random
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.imageResource
 import org.kodein.emoji.compose.m3.TextWithNotoAnimatedEmoji
-import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
@@ -275,7 +276,7 @@ fun Home(
                                             viewModel
                                                 .startGradeCollections
                                                 .filter { it.grades?.size != 0 }
-                                                .sortedByDescending { it.givenAt }
+                                                .sortedWith(compareByDescending<GradeCollection> { it.givenAt }.thenBy { it.name })
                                                 .take(5)
                                                 .toSet()
                                                 .forEach {

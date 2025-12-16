@@ -101,6 +101,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.GradeValueBox
 import com.hansholz.bestenotenapp.components.PreferencePosition
@@ -251,7 +252,7 @@ fun Grades(
                                             contentPadding = contentPadding,
                                             userScrollEnabled = gradesViewModel.userScrollEnabled,
                                         ) {
-                                            items(items.sortedByDescending { it.givenAt }.toList()) {
+                                            items(items.sortedWith(compareByDescending<GradeCollection> { it.givenAt }.thenBy { it.name }).toList()) {
                                                 EnhancedAnimated(
                                                     modifier = Modifier.padding(verticalPadding),
                                                     preset = ZoomIn(),
@@ -307,7 +308,7 @@ fun Grades(
                                             userScrollEnabled = gradesViewModel.userScrollEnabled,
                                         ) {
                                             items
-                                                .sortedWith(compareBy({ it.subject?.name }, { it.givenAt }))
+                                                .sortedWith(compareBy({ it.subject?.name }, { it.givenAt }, { it.name }))
                                                 .groupBy { it.subject?.name }
                                                 .toList()
                                                 .forEach { (title, items) ->
