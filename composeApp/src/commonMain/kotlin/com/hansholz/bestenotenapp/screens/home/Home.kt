@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -82,6 +83,7 @@ import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.utils.SimpleTime
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.getGreeting
+import com.hansholz.bestenotenapp.utils.makeItemVisibleAndNavigate
 import com.hansholz.bestenotenapp.utils.rememberCurrentSimpleTime
 import com.pushpal.jetlime.EventPointType
 import com.pushpal.jetlime.EventPosition
@@ -90,10 +92,10 @@ import com.pushpal.jetlime.JetLimeEventDefaults
 import com.pushpal.jetlime.JetLimeExtendedEvent
 import com.pushpal.jetlime.LocalJetLimeStyle
 import dev.chrisbanes.haze.hazeSource
+import kotlin.random.Random
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.imageResource
 import org.kodein.emoji.compose.m3.TextWithNotoAnimatedEmoji
-import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
@@ -137,9 +139,11 @@ fun Home(
             sideMenuExpanded = viewModel.mediumExpandedDrawerState.value.isOpen,
             hazeState = viewModel.hazeBackgroundState1,
         ) { innerPadding, topAppBarBackground ->
+            val lazyStaggeredGridState = rememberLazyStaggeredGridState()
             LazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Adaptive(400.dp),
                 modifier = Modifier.hazeSource(viewModel.hazeBackgroundState1),
+                state = lazyStaggeredGridState,
                 contentPadding = innerPadding,
             ) {
                 if (showGreetings) {
@@ -214,8 +218,16 @@ fun Home(
                                 offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = 0f) },
                             ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
                             .clickable {
-                                onNavigateToScreen(Fragment.Grades)
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                scope.launch {
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                    makeItemVisibleAndNavigate(
+                                        listState = lazyStaggeredGridState,
+                                        index = 1,
+                                        onNavigate = {
+                                            onNavigateToScreen(Fragment.Grades)
+                                        },
+                                    )
+                                }
                             }.enhancedSharedBounds(
                                 sharedTransitionScope = sharedTransitionScope,
                                 sharedContentState = rememberSharedContentState(key = "grades-card"),
@@ -311,8 +323,16 @@ fun Home(
                                 offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = -50f) },
                             ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
                             .clickable {
-                                onNavigateToScreen(Fragment.Timetable)
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                scope.launch {
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                    makeItemVisibleAndNavigate(
+                                        listState = lazyStaggeredGridState,
+                                        index = 2,
+                                        onNavigate = {
+                                            onNavigateToScreen(Fragment.Timetable)
+                                        },
+                                    )
+                                }
                             }.enhancedSharedBounds(
                                 sharedTransitionScope = sharedTransitionScope,
                                 sharedContentState = rememberSharedContentState(key = "timetable-card"),
@@ -472,8 +492,16 @@ fun Home(
                                 offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = -100f) },
                             ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
                             .clickable {
-                                onNavigateToScreen(Fragment.SubjectsAndTeachers)
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                scope.launch {
+                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                    makeItemVisibleAndNavigate(
+                                        listState = lazyStaggeredGridState,
+                                        index = 3,
+                                        onNavigate = {
+                                            onNavigateToScreen(Fragment.SubjectsAndTeachers)
+                                        },
+                                    )
+                                }
                             }.enhancedSharedBounds(
                                 sharedTransitionScope = sharedTransitionScope,
                                 sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-card"),
