@@ -92,10 +92,10 @@ import com.pushpal.jetlime.JetLimeEventDefaults
 import com.pushpal.jetlime.JetLimeExtendedEvent
 import com.pushpal.jetlime.LocalJetLimeStyle
 import dev.chrisbanes.haze.hazeSource
-import kotlin.random.Random
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.imageResource
 import org.kodein.emoji.compose.m3.TextWithNotoAnimatedEmoji
+import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class)
 @Composable

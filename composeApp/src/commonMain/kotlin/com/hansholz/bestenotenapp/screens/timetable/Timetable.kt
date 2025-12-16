@@ -93,7 +93,9 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.main.LocalShowAbsences
+import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.main.getPlatform
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -191,7 +193,7 @@ fun Timetable(
                     PullToRefreshBox(
                         isRefreshing = isRefreshLoading,
                         onRefresh = {
-                            if (timetableViewModel.userScrollEnabled) {
+                            if (timetableViewModel.userScrollEnabled && !lessonPopupShown.value && getPlatform() != Platform.DESKTOP) {
                                 scope.launch {
                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureEnd)
                                     isRefreshLoading = true
@@ -203,7 +205,7 @@ fun Timetable(
                         },
                         state = pullToRefreshState,
                         indicator = {
-                            if (timetableViewModel.userScrollEnabled) {
+                            if (timetableViewModel.userScrollEnabled && !lessonPopupShown.value && getPlatform() != Platform.DESKTOP) {
                                 PullToRefreshDefaults.LoadingIndicator(
                                     modifier = Modifier.align(Alignment.TopCenter).padding(topPadding),
                                     isRefreshing = isRefreshLoading,
