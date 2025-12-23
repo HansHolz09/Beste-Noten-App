@@ -46,6 +46,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -141,323 +142,325 @@ fun Home(
             hazeState = viewModel.hazeBackgroundState1,
         ) { innerPadding, topAppBarBackground ->
             val lazyStaggeredGridState = rememberLazyStaggeredGridState()
-            LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Adaptive(400.dp),
-                modifier = Modifier.hazeSource(viewModel.hazeBackgroundState1),
-                state = lazyStaggeredGridState,
-                contentPadding = innerPadding,
-            ) {
-                if (showGreetings) {
-                    item {
-                        AnimatedContent(viewModel.isBesteSchuleNotReachable.value) { notReachable ->
-                            if (notReachable) {
-                                Text(
-                                    text =
-                                        "beste.schule konnte nicht erreicht werden, somit können deine Daten momentan nicht geladen werden." +
-                                            "\n\nBitte überprüfe deine Internetverbindung und den Status von beste.schule." +
-                                            "\n\nSollte der Fehler weiterhin auftreten, versuche dich erneut anzumelden.",
-                                    modifier = Modifier.padding(20.dp),
-                                    textAlign = TextAlign.Center,
-                                    style = typography.bodyLarge,
-                                )
-                            } else {
-                                var greeting by rememberSaveable { mutableStateOf("") }
-                                LaunchedEffect(viewModel.user.value) {
-                                    val student =
-                                        viewModel.user.value
-                                            ?.students
-                                            ?.find { it.id.toString() == viewModel.studentId.value }
-                                    if (student != null && greeting.isEmpty()) {
-                                        greeting = getGreeting(student.forename ?: "du")
+            key(lazyStaggeredGridState.layoutInfo.orientation) {
+                LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Adaptive(400.dp),
+                    modifier = Modifier.hazeSource(viewModel.hazeBackgroundState1),
+                    state = lazyStaggeredGridState,
+                    contentPadding = innerPadding,
+                ) {
+                    if (showGreetings) {
+                        item {
+                            AnimatedContent(viewModel.isBesteSchuleNotReachable.value) { notReachable ->
+                                if (notReachable) {
+                                    Text(
+                                        text =
+                                            "beste.schule konnte nicht erreicht werden, somit können deine Daten momentan nicht geladen werden." +
+                                                "\n\nBitte überprüfe deine Internetverbindung und den Status von beste.schule." +
+                                                "\n\nSollte der Fehler weiterhin auftreten, versuche dich erneut anzumelden.",
+                                        modifier = Modifier.padding(20.dp),
+                                        textAlign = TextAlign.Center,
+                                        style = typography.bodyLarge,
+                                    )
+                                } else {
+                                    var greeting by rememberSaveable { mutableStateOf("") }
+                                    LaunchedEffect(viewModel.user.value) {
+                                        val student =
+                                            viewModel.user.value
+                                                ?.students
+                                                ?.find { it.id.toString() == viewModel.studentId.value }
+                                        if (student != null && greeting.isEmpty()) {
+                                            greeting = getGreeting(student.forename ?: "du")
+                                        }
+                                    }
+                                    AnimatedContent(greeting) {
+                                        TextWithNotoAnimatedEmoji(
+                                            text = it,
+                                            modifier =
+                                                Modifier
+                                                    .animateItem()
+                                                    .animateContentSize()
+                                                    .padding(20.dp)
+                                                    .clickable(
+                                                        interactionSource = remember { MutableInteractionSource() },
+                                                        indication = null,
+                                                        enabled = !viewModel.isBesteSchuleNotReachable.value,
+                                                    ) {
+                                                        greeting =
+                                                            getGreeting(
+                                                                viewModel.user.value
+                                                                    ?.students
+                                                                    ?.firstOrNull()
+                                                                    ?.forename ?: "du",
+                                                            )
+                                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                                    },
+                                            textAlign = TextAlign.Center,
+                                            fontFamily = FontFamilies.Schoolbell(),
+                                            style = typography.titleLarge,
+                                        )
                                     }
                                 }
-                                AnimatedContent(greeting) {
-                                    TextWithNotoAnimatedEmoji(
-                                        text = it,
+                            }
+                        }
+                    }
+                    item {
+                        val imageBitmap = imageResource(Res.drawable.grades)
+                        Box(
+                            Modifier
+                                .animateItem()
+                                .animateContentSize()
+                                .fillMaxWidth()
+                                .padding(10.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(colorScheme.surfaceContainerHighest.copy(0.7f))
+                                .repeatingBackground(
+                                    imageBitmap = imageBitmap,
+                                    alpha = backgroundAlpha.value,
+                                    scale = 0.75f,
+                                    offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = 0f) },
+                                ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
+                                .clickable {
+                                    scope.launch {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                        makeItemVisibleAndNavigate(
+                                            listState = lazyStaggeredGridState,
+                                            index = 1,
+                                            onNavigate = {
+                                                onNavigateToScreen(Fragment.Grades)
+                                            },
+                                        )
+                                    }
+                                }.enhancedSharedBounds(
+                                    sharedTransitionScope = sharedTransitionScope,
+                                    sharedContentState = rememberSharedContentState(key = "grades-card"),
+                                    animatedVisibilityScope = animatedVisibilityScope,
+                                ),
+                        ) {
+                            Column(Modifier.fillMaxWidth()) {
+                                Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
+                                    Text(
+                                        text = "Noten",
                                         modifier =
                                             Modifier
-                                                .animateItem()
-                                                .animateContentSize()
-                                                .padding(20.dp)
-                                                .clickable(
-                                                    interactionSource = remember { MutableInteractionSource() },
-                                                    indication = null,
-                                                    enabled = !viewModel.isBesteSchuleNotReachable.value,
-                                                ) {
-                                                    greeting =
-                                                        getGreeting(
-                                                            viewModel.user.value
-                                                                ?.students
-                                                                ?.firstOrNull()
-                                                                ?.forename ?: "du",
-                                                        )
-                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                                },
-                                        textAlign = TextAlign.Center,
-                                        fontFamily = FontFamilies.Schoolbell(),
-                                        style = typography.titleLarge,
+                                                .align(Alignment.Center)
+                                                .enhancedSharedElement(
+                                                    sharedTransitionScope = sharedTransitionScope,
+                                                    sharedContentState = rememberSharedContentState(key = "grades-title"),
+                                                    animatedVisibilityScope = animatedVisibilityScope,
+                                                ).skipToLookaheadSize(),
+                                        style = typography.headlineSmall,
                                     )
-                                }
-                            }
-                        }
-                    }
-                }
-                item {
-                    val imageBitmap = imageResource(Res.drawable.grades)
-                    Box(
-                        Modifier
-                            .animateItem()
-                            .animateContentSize()
-                            .fillMaxWidth()
-                            .padding(10.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(colorScheme.surfaceContainerHighest.copy(0.7f))
-                            .repeatingBackground(
-                                imageBitmap = imageBitmap,
-                                alpha = backgroundAlpha.value,
-                                scale = 0.75f,
-                                offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = 0f) },
-                            ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
-                            .clickable {
-                                scope.launch {
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                    makeItemVisibleAndNavigate(
-                                        listState = lazyStaggeredGridState,
-                                        index = 1,
-                                        onNavigate = {
-                                            onNavigateToScreen(Fragment.Grades)
+                                    EnhancedIconButton(
+                                        onClick = {
+                                            homeViewModel.refreshGrades(viewModel)
                                         },
-                                    )
-                                }
-                            }.enhancedSharedBounds(
-                                sharedTransitionScope = sharedTransitionScope,
-                                sharedContentState = rememberSharedContentState(key = "grades-card"),
-                                animatedVisibilityScope = animatedVisibilityScope,
-                            ),
-                    ) {
-                        Column(Modifier.fillMaxWidth()) {
-                            Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
-                                Text(
-                                    text = "Noten",
-                                    modifier =
-                                        Modifier
-                                            .align(Alignment.Center)
-                                            .enhancedSharedElement(
-                                                sharedTransitionScope = sharedTransitionScope,
-                                                sharedContentState = rememberSharedContentState(key = "grades-title"),
-                                                animatedVisibilityScope = animatedVisibilityScope,
-                                            ).skipToLookaheadSize(),
-                                    style = typography.headlineSmall,
-                                )
-                                EnhancedIconButton(
-                                    onClick = {
-                                        homeViewModel.refreshGrades(viewModel)
-                                    },
-                                    modifier = Modifier.align(Alignment.CenterEnd),
-                                    enabled = !homeViewModel.isGradesLoading && showNewestGrades,
-                                ) {
-                                    this@Column.AnimatedVisibility(
-                                        visible = !homeViewModel.isGradesLoading && showNewestGrades,
-                                        enter = scaleIn(),
-                                        exit = scaleOut(),
+                                        modifier = Modifier.align(Alignment.CenterEnd),
+                                        enabled = !homeViewModel.isGradesLoading && showNewestGrades,
                                     ) {
-                                        Icon(Icons.Outlined.Refresh, null)
-                                    }
-                                }
-                            }
-                            if (showNewestGrades) {
-                                AnimatedContent(homeViewModel.isGradesLoading) { targetState ->
-                                    if (targetState) {
-                                        Box(Modifier.fillMaxWidth().sizeIn(minHeight = 100.dp)) {
-                                            ContainedLoadingIndicator(Modifier.align(Alignment.Center))
-                                        }
-                                    } else {
-                                        Column {
-                                            viewModel
-                                                .startGradeCollections
-                                                .filter { it.grades?.size != 0 }
-                                                .sortedWith(compareByDescending<GradeCollection> { it.givenAt }.thenBy { it.name })
-                                                .take(5)
-                                                .toSet()
-                                                .forEach {
-                                                    ListItem(
-                                                        headlineContent = {
-                                                            Text("${it.subject?.name}: ${it.name}")
-                                                        },
-                                                        supportingContent = {
-                                                            Column {
-                                                                Text("${it.type} vom ${formateDate(it.givenAt)}")
-                                                            }
-                                                        },
-                                                        leadingContent = {
-                                                            GradeValueBox(it.grades?.getOrNull(0)?.value)
-                                                        },
-                                                        colors = ListItemDefaults.colors(Color.Transparent),
-                                                    )
-                                                }
-                                        }
-                                    }
-                                }
-                            }
-                            Text(
-                                text = "Tippen, um deine Noten ansehen und analysieren zu können",
-                                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
-                                textAlign = TextAlign.Center,
-                            )
-                        }
-                    }
-                }
-                item {
-                    val imageBitmap = imageResource(Res.drawable.timetable)
-                    Box(
-                        Modifier
-                            .animateItem()
-                            .animateContentSize()
-                            .fillMaxWidth()
-                            .padding(10.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(colorScheme.surfaceContainerHighest.copy(0.7f))
-                            .repeatingBackground(
-                                imageBitmap = imageBitmap,
-                                alpha = backgroundAlpha.value,
-                                scale = 0.6f,
-                                offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = -50f) },
-                            ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
-                            .clickable {
-                                scope.launch {
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                    makeItemVisibleAndNavigate(
-                                        listState = lazyStaggeredGridState,
-                                        index = 2,
-                                        onNavigate = {
-                                            onNavigateToScreen(Fragment.Timetable)
-                                        },
-                                    )
-                                }
-                            }.enhancedSharedBounds(
-                                sharedTransitionScope = sharedTransitionScope,
-                                sharedContentState = rememberSharedContentState(key = "timetable-card"),
-                                animatedVisibilityScope = animatedVisibilityScope,
-                            ),
-                    ) {
-                        Column(Modifier.fillMaxWidth()) {
-                            Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
-                                Text(
-                                    text = "Stundenplan",
-                                    modifier =
-                                        Modifier
-                                            .align(Alignment.Center)
-                                            .enhancedSharedElement(
-                                                sharedTransitionScope = sharedTransitionScope,
-                                                sharedContentState = rememberSharedContentState(key = "timetable-title"),
-                                                animatedVisibilityScope = animatedVisibilityScope,
-                                            ).skipToLookaheadSize(),
-                                    style = typography.headlineSmall,
-                                )
-                                EnhancedIconButton(
-                                    onClick = {
-                                        homeViewModel.refreshTimetable(viewModel)
-                                    },
-                                    modifier = Modifier.align(Alignment.CenterEnd),
-                                    enabled = !homeViewModel.isTimetableLoading && showCurrentLesson,
-                                ) {
-                                    this@Column.AnimatedVisibility(
-                                        visible = !homeViewModel.isTimetableLoading && showCurrentLesson,
-                                        enter = scaleIn(),
-                                        exit = scaleOut(),
-                                    ) {
-                                        Icon(Icons.Outlined.Refresh, null)
-                                    }
-                                }
-                            }
-                            if (showCurrentLesson) {
-                                AnimatedContent(homeViewModel.isTimetableLoading) { targetState ->
-                                    if (targetState) {
-                                        Box(Modifier.fillMaxWidth().sizeIn(minHeight = 100.dp)) {
-                                            ContainedLoadingIndicator(Modifier.align(Alignment.Center))
-                                        }
-                                    } else {
-                                        if (!viewModel.currentJournalDay.value
-                                                ?.lessons
-                                                .isNullOrEmpty()
+                                        this@Column.AnimatedVisibility(
+                                            visible = !homeViewModel.isGradesLoading && showNewestGrades,
+                                            enter = scaleIn(),
+                                            exit = scaleOut(),
                                         ) {
-                                            val lessons = viewModel.currentJournalDay.value!!.lessons!!
-                                            Column(Modifier.padding(10.dp).padding(start = 5.dp)) {
-                                                CompositionLocalProvider(
-                                                    LocalJetLimeStyle provides
-                                                        JetLimeDefaults
-                                                            .columnStyle(
-                                                                lineBrush = JetLimeDefaults.lineSolidBrush(colorScheme.primary.copy(0.7f)),
-                                                            ),
-                                                ) {
-                                                    lessons.sortedBy { it.nr }.groupBy { it.nr }.forEach { groupLessons ->
-                                                        val firstLesson = groupLessons.value[0]
-                                                        val position = EventPosition.dynamic(firstLesson.nr.toInt() - 1, lessons.maxOf { it.nr.toInt() })
-                                                        val lessonTimeStart = SimpleTime.parse(firstLesson.time?.from ?: "00:00")
-                                                        val lessonTimeEnd = SimpleTime.parse(firstLesson.time?.to ?: "00:00")
-                                                        val currentTime by rememberCurrentSimpleTime()
-                                                        @OptIn(ExperimentalComposeApi::class)
-                                                        JetLimeExtendedEvent(
-                                                            style =
-                                                                JetLimeEventDefaults.eventStyle(
-                                                                    position = position,
-                                                                    pointAnimation =
-                                                                        if (currentTime in
-                                                                            lessonTimeStart..lessonTimeEnd
-                                                                        ) {
-                                                                            JetLimeEventDefaults.pointAnimation(targetValue = 1.4f)
-                                                                        } else {
-                                                                            null
-                                                                        },
-                                                                    pointType = if (lessonTimeStart <= currentTime) EventPointType.Default else EventPointType.EMPTY,
-                                                                    pointColor =
-                                                                        if (groupLessons.value.size > 1) {
-                                                                            colorScheme.surface
-                                                                        } else {
-                                                                            when (firstLesson.status) {
-                                                                                "hold" -> if (isDark) Color(48, 99, 57) else Color(226, 251, 232)
-                                                                                "canceled" -> colorScheme.errorContainer
-                                                                                "initial" -> if (isDark) Color.DarkGray else Color.LightGray
-                                                                                "planned" -> if (isDark) Color(38, 63, 168) else Color(222, 233, 252)
-                                                                                else -> colorScheme.surface
-                                                                            }
-                                                                        },
+                                            Icon(Icons.Outlined.Refresh, null)
+                                        }
+                                    }
+                                }
+                                if (showNewestGrades) {
+                                    AnimatedContent(homeViewModel.isGradesLoading) { targetState ->
+                                        if (targetState) {
+                                            Box(Modifier.fillMaxWidth().sizeIn(minHeight = 100.dp)) {
+                                                ContainedLoadingIndicator(Modifier.align(Alignment.Center))
+                                            }
+                                        } else {
+                                            Column {
+                                                viewModel
+                                                    .startGradeCollections
+                                                    .filter { it.grades?.size != 0 }
+                                                    .sortedWith(compareByDescending<GradeCollection> { it.givenAt }.thenBy { it.name })
+                                                    .take(5)
+                                                    .toSet()
+                                                    .forEach {
+                                                        ListItem(
+                                                            headlineContent = {
+                                                                Text("${it.subject?.name}: ${it.name}")
+                                                            },
+                                                            supportingContent = {
+                                                                Column {
+                                                                    Text("${it.type} vom ${formateDate(it.givenAt)}")
+                                                                }
+                                                            },
+                                                            leadingContent = {
+                                                                GradeValueBox(it.grades?.getOrNull(0)?.value)
+                                                            },
+                                                            colors = ListItemDefaults.colors(Color.Transparent),
+                                                        )
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                                Text(
+                                    text = "Tippen, um deine Noten ansehen und analysieren zu können",
+                                    modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
+                        }
+                    }
+                    item {
+                        val imageBitmap = imageResource(Res.drawable.timetable)
+                        Box(
+                            Modifier
+                                .animateItem()
+                                .animateContentSize()
+                                .fillMaxWidth()
+                                .padding(10.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(colorScheme.surfaceContainerHighest.copy(0.7f))
+                                .repeatingBackground(
+                                    imageBitmap = imageBitmap,
+                                    alpha = backgroundAlpha.value,
+                                    scale = 0.6f,
+                                    offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = -50f) },
+                                ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
+                                .clickable {
+                                    scope.launch {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                        makeItemVisibleAndNavigate(
+                                            listState = lazyStaggeredGridState,
+                                            index = 2,
+                                            onNavigate = {
+                                                onNavigateToScreen(Fragment.Timetable)
+                                            },
+                                        )
+                                    }
+                                }.enhancedSharedBounds(
+                                    sharedTransitionScope = sharedTransitionScope,
+                                    sharedContentState = rememberSharedContentState(key = "timetable-card"),
+                                    animatedVisibilityScope = animatedVisibilityScope,
+                                ),
+                        ) {
+                            Column(Modifier.fillMaxWidth()) {
+                                Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
+                                    Text(
+                                        text = "Stundenplan",
+                                        modifier =
+                                            Modifier
+                                                .align(Alignment.Center)
+                                                .enhancedSharedElement(
+                                                    sharedTransitionScope = sharedTransitionScope,
+                                                    sharedContentState = rememberSharedContentState(key = "timetable-title"),
+                                                    animatedVisibilityScope = animatedVisibilityScope,
+                                                ).skipToLookaheadSize(),
+                                        style = typography.headlineSmall,
+                                    )
+                                    EnhancedIconButton(
+                                        onClick = {
+                                            homeViewModel.refreshTimetable(viewModel)
+                                        },
+                                        modifier = Modifier.align(Alignment.CenterEnd),
+                                        enabled = !homeViewModel.isTimetableLoading && showCurrentLesson,
+                                    ) {
+                                        this@Column.AnimatedVisibility(
+                                            visible = !homeViewModel.isTimetableLoading && showCurrentLesson,
+                                            enter = scaleIn(),
+                                            exit = scaleOut(),
+                                        ) {
+                                            Icon(Icons.Outlined.Refresh, null)
+                                        }
+                                    }
+                                }
+                                if (showCurrentLesson) {
+                                    AnimatedContent(homeViewModel.isTimetableLoading) { targetState ->
+                                        if (targetState) {
+                                            Box(Modifier.fillMaxWidth().sizeIn(minHeight = 100.dp)) {
+                                                ContainedLoadingIndicator(Modifier.align(Alignment.Center))
+                                            }
+                                        } else {
+                                            if (!viewModel.currentJournalDay.value
+                                                    ?.lessons
+                                                    .isNullOrEmpty()
+                                            ) {
+                                                val lessons = viewModel.currentJournalDay.value!!.lessons!!
+                                                Column(Modifier.padding(10.dp).padding(start = 5.dp)) {
+                                                    CompositionLocalProvider(
+                                                        LocalJetLimeStyle provides
+                                                            JetLimeDefaults
+                                                                .columnStyle(
+                                                                    lineBrush = JetLimeDefaults.lineSolidBrush(colorScheme.primary.copy(0.7f)),
                                                                 ),
-                                                            additionalContent = {
-                                                                Box(Modifier.clip(ClamShell.toShape()).background(colorScheme.primaryContainer)) {
+                                                    ) {
+                                                        lessons.sortedBy { it.nr }.groupBy { it.nr }.forEach { groupLessons ->
+                                                            val firstLesson = groupLessons.value[0]
+                                                            val position = EventPosition.dynamic(firstLesson.nr.toInt() - 1, lessons.maxOf { it.nr.toInt() })
+                                                            val lessonTimeStart = SimpleTime.parse(firstLesson.time?.from ?: "00:00")
+                                                            val lessonTimeEnd = SimpleTime.parse(firstLesson.time?.to ?: "00:00")
+                                                            val currentTime by rememberCurrentSimpleTime()
+                                                            @OptIn(ExperimentalComposeApi::class)
+                                                            JetLimeExtendedEvent(
+                                                                style =
+                                                                    JetLimeEventDefaults.eventStyle(
+                                                                        position = position,
+                                                                        pointAnimation =
+                                                                            if (currentTime in
+                                                                                lessonTimeStart..lessonTimeEnd
+                                                                            ) {
+                                                                                JetLimeEventDefaults.pointAnimation(targetValue = 1.4f)
+                                                                            } else {
+                                                                                null
+                                                                            },
+                                                                        pointType = if (lessonTimeStart <= currentTime) EventPointType.Default else EventPointType.EMPTY,
+                                                                        pointColor =
+                                                                            if (groupLessons.value.size > 1) {
+                                                                                colorScheme.surface
+                                                                            } else {
+                                                                                when (firstLesson.status) {
+                                                                                    "hold" -> if (isDark) Color(48, 99, 57) else Color(226, 251, 232)
+                                                                                    "canceled" -> colorScheme.errorContainer
+                                                                                    "initial" -> if (isDark) Color.DarkGray else Color.LightGray
+                                                                                    "planned" -> if (isDark) Color(38, 63, 168) else Color(222, 233, 252)
+                                                                                    else -> colorScheme.surface
+                                                                                }
+                                                                            },
+                                                                    ),
+                                                                additionalContent = {
+                                                                    Box(Modifier.clip(ClamShell.toShape()).background(colorScheme.primaryContainer)) {
+                                                                        Text(
+                                                                            text =
+                                                                                groupLessons.value
+                                                                                    .flatMap { it.rooms.orEmpty() }
+                                                                                    .map { it.localId }
+                                                                                    .toSet()
+                                                                                    .joinToString()
+                                                                                    .ifEmpty { "?" },
+                                                                            modifier = Modifier.width(60.dp).padding(vertical = 2.dp),
+                                                                            color = colorScheme.onPrimaryContainer,
+                                                                            textAlign = TextAlign.Center,
+                                                                        )
+                                                                    }
+                                                                },
+                                                            ) {
+                                                                Column(Modifier.padding(start = 5.dp)) {
                                                                     Text(
                                                                         text =
                                                                             groupLessons.value
-                                                                                .flatMap { it.rooms.orEmpty() }
-                                                                                .map { it.localId }
+                                                                                .map { it.subject?.name ?: "?" }
                                                                                 .toSet()
-                                                                                .joinToString()
-                                                                                .ifEmpty { "?" },
-                                                                        modifier = Modifier.width(60.dp).padding(vertical = 2.dp),
-                                                                        color = colorScheme.onPrimaryContainer,
-                                                                        textAlign = TextAlign.Center,
-                                                                    )
-                                                                }
-                                                            },
-                                                        ) {
-                                                            Column(Modifier.padding(start = 5.dp)) {
-                                                                Text(
-                                                                    text =
-                                                                        groupLessons.value
-                                                                            .map { it.subject?.name ?: "?" }
-                                                                            .toSet()
-                                                                            .joinToString(),
-                                                                    color = if (currentTime in lessonTimeStart..lessonTimeEnd) colorScheme.primary else Color.Unspecified,
-                                                                )
-                                                                groupLessons.value.flatMap { it.notes.orEmpty() }.forEach {
-                                                                    Text(
-                                                                        text =
-                                                                            (it.type?.name?.replace("Substitution Plan", "Vertretungsplan") ?: "?") +
-                                                                                ": ${it.description ?: "Keine Beschreibung"}",
-                                                                        modifier = Modifier.padding(vertical = 5.dp),
+                                                                                .joinToString(),
                                                                         color = if (currentTime in lessonTimeStart..lessonTimeEnd) colorScheme.primary else Color.Unspecified,
-                                                                        style = typography.bodyMedium,
                                                                     )
+                                                                    groupLessons.value.flatMap { it.notes.orEmpty() }.forEach {
+                                                                        Text(
+                                                                            text =
+                                                                                (it.type?.name?.replace("Substitution Plan", "Vertretungsplan") ?: "?") +
+                                                                                    ": ${it.description ?: "Keine Beschreibung"}",
+                                                                            modifier = Modifier.padding(vertical = 5.dp),
+                                                                            color = if (currentTime in lessonTimeStart..lessonTimeEnd) colorScheme.primary else Color.Unspecified,
+                                                                            style = typography.bodyMedium,
+                                                                        )
+                                                                    }
                                                                 }
                                                             }
                                                         }
@@ -467,70 +470,70 @@ fun Home(
                                         }
                                     }
                                 }
+                                Text(
+                                    text = "Tippen, um deinen wöchentlichen Stundenplan zu sehen",
+                                    modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                    textAlign = TextAlign.Center,
+                                )
                             }
-                            Text(
-                                text = "Tippen, um deinen wöchentlichen Stundenplan zu sehen",
-                                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
-                                textAlign = TextAlign.Center,
-                            )
                         }
                     }
-                }
-                item {
-                    val imageBitmap = imageResource(Res.drawable.subjectsAndTeachers)
-                    Box(
-                        Modifier
-                            .animateItem()
-                            .animateContentSize()
-                            .fillMaxWidth()
-                            .padding(10.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(colorScheme.surfaceContainerHighest.copy(0.7f))
-                            .repeatingBackground(
-                                imageBitmap = imageBitmap,
-                                alpha = backgroundAlpha.value,
-                                scale = 0.6f,
-                                offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = -100f) },
-                            ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
-                            .clickable {
-                                scope.launch {
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                    makeItemVisibleAndNavigate(
-                                        listState = lazyStaggeredGridState,
-                                        index = 3,
-                                        onNavigate = {
-                                            onNavigateToScreen(Fragment.SubjectsAndTeachers)
-                                        },
+                    item {
+                        val imageBitmap = imageResource(Res.drawable.subjectsAndTeachers)
+                        Box(
+                            Modifier
+                                .animateItem()
+                                .animateContentSize()
+                                .fillMaxWidth()
+                                .padding(10.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(colorScheme.surfaceContainerHighest.copy(0.7f))
+                                .repeatingBackground(
+                                    imageBitmap = imageBitmap,
+                                    alpha = backgroundAlpha.value,
+                                    scale = 0.6f,
+                                    offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = -100f) },
+                                ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
+                                .clickable {
+                                    scope.launch {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                        makeItemVisibleAndNavigate(
+                                            listState = lazyStaggeredGridState,
+                                            index = 3,
+                                            onNavigate = {
+                                                onNavigateToScreen(Fragment.SubjectsAndTeachers)
+                                            },
+                                        )
+                                    }
+                                }.enhancedSharedBounds(
+                                    sharedTransitionScope = sharedTransitionScope,
+                                    sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-card"),
+                                    animatedVisibilityScope = animatedVisibilityScope,
+                                ),
+                        ) {
+                            Column(Modifier.fillMaxWidth()) {
+                                Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
+                                    Text(
+                                        text = "Fächer und Lehrer",
+                                        modifier =
+                                            Modifier
+                                                .align(Alignment.Center)
+                                                .enhancedSharedElement(
+                                                    sharedTransitionScope = sharedTransitionScope,
+                                                    sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-title"),
+                                                    animatedVisibilityScope = animatedVisibilityScope,
+                                                ).skipToLookaheadSize(),
+                                        fontFamily = FontFamilies.KeaniaOne(),
+                                        style = typography.headlineSmall,
                                     )
+                                    EnhancedIconButton(onClick = {}, enabled = false) {}
                                 }
-                            }.enhancedSharedBounds(
-                                sharedTransitionScope = sharedTransitionScope,
-                                sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-card"),
-                                animatedVisibilityScope = animatedVisibilityScope,
-                            ),
-                    ) {
-                        Column(Modifier.fillMaxWidth()) {
-                            Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
                                 Text(
-                                    text = "Fächer und Lehrer",
-                                    modifier =
-                                        Modifier
-                                            .align(Alignment.Center)
-                                            .enhancedSharedElement(
-                                                sharedTransitionScope = sharedTransitionScope,
-                                                sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-title"),
-                                                animatedVisibilityScope = animatedVisibilityScope,
-                                            ).skipToLookaheadSize(),
-                                    fontFamily = FontFamilies.KeaniaOne(),
-                                    style = typography.headlineSmall,
+                                    text = "Tippen, um einen Überblick über Fächer und Lehrer zu bekommen",
+                                    modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                    textAlign = TextAlign.Center,
                                 )
-                                EnhancedIconButton(onClick = {}, enabled = false) {}
                             }
-                            Text(
-                                text = "Tippen, um einen Überblick über Fächer und Lehrer zu bekommen",
-                                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
-                                textAlign = TextAlign.Center,
-                            )
                         }
                     }
                 }
