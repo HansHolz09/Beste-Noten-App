@@ -56,46 +56,48 @@ fun AbsenceInfoDialog(
                     }?.conductor ?: Conductor(0, forename = "", name = "einer unbekannten Person")
 
             Text(
-                buildAnnotatedString {
-                    withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
-                        append("Zeitspanne: ")
-                    }
-                    append(
-                        if (absence.from.takeLast(8).take(5) == "00:00" && absence.to.takeLast(8).take(5) == "23:59" && absence.from.take(10) == absence.to.take(10)) {
-                            "ganztägig am ${formateDate(absence.from.take(10))}"
-                        } else if ((absence.from.takeLast(8).take(5) != "00:00" || absence.to.takeLast(8).take(5) != "23:59") && absence.from.take(10) == absence.to.take(10)) {
-                            "am ${formateDate(absence.from.take(10))} von ${absence.from.takeLast(8).take(5)} bis ${absence.to.takeLast(8).take(5)}"
-                        } else {
-                            "vom ${formateDate(absence.from.take(10))} um ${absence.from.takeLast(8).take(5)} " +
-                                "bis zum ${formateDate(absence.to.take(10))} um ${absence.to.takeLast(8).take(5)}"
-                        },
-                    )
-                    withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
-                        append("\nErstellt: ")
-                    }
-                    append(
-                        "am ${absence.recordedAt?.let { formateDate(it.take(10)) }} " +
-                            "um ${absence.recordedAt?.takeLast(8)?.take(5)} von ${if (showTeachersWithFirstname) {
-                                createdBy.forename
+                text =
+                    buildAnnotatedString {
+                        withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
+                            append("Zeitspanne: ")
+                        }
+                        append(
+                            if (absence.from.takeLast(8).take(5) == "00:00" && absence.to.takeLast(8).take(5) == "23:59" && absence.from.take(10) == absence.to.take(10)) {
+                                "ganztägig am ${formateDate(absence.from.take(10))}"
+                            } else if ((absence.from.takeLast(8).take(5) != "00:00" || absence.to.takeLast(8).take(5) != "23:59") && absence.from.take(10) == absence.to.take(10)) {
+                                "am ${formateDate(absence.from.take(10))} von ${absence.from.takeLast(8).take(5)} bis ${absence.to.takeLast(8).take(5)}"
                             } else {
-                                createdBy.forename?.take(1) + "."
-                            }} ${createdBy.name}",
-                    )
-                    withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
-                        append("\nBestätigt: ")
-                    }
-                    append(
-                        if (absence.verification?.confirmed == true) {
-                            "am ${absence.verification.recordedAt?.let { formateDate(it.take(10)) }} von ${if (showTeachersWithFirstname) {
-                                verifiedBy.forename
+                                "vom ${formateDate(absence.from.take(10))} um ${absence.from.takeLast(8).take(5)} " +
+                                    "bis zum ${formateDate(absence.to.take(10))} um ${absence.to.takeLast(8).take(5)}"
+                            },
+                        )
+                        withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
+                            append("\nErstellt: ")
+                        }
+                        append(
+                            "am ${absence.recordedAt?.let { formateDate(it.take(10)) }} " +
+                                "um ${absence.recordedAt?.takeLast(8)?.take(5)} von ${if (showTeachersWithFirstname) {
+                                    createdBy.forename
+                                } else {
+                                    createdBy.forename?.take(1) + "."
+                                }} ${createdBy.name}",
+                        )
+                        withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
+                            append("\nBestätigt: ")
+                        }
+                        append(
+                            if (absence.verification?.confirmed == true) {
+                                "am ${absence.verification.recordedAt?.let { formateDate(it.take(10)) }} von ${if (showTeachersWithFirstname) {
+                                    verifiedBy.forename
+                                } else {
+                                    verifiedBy.forename?.take(1) + "."
+                                }} ${verifiedBy.name}"
                             } else {
-                                verifiedBy.forename?.take(1) + "."
-                            }} ${verifiedBy.name}"
-                        } else {
-                            "noch keine Bestätigung"
-                        },
-                    )
-                },
+                                "noch keine Bestätigung"
+                            },
+                        )
+                    },
+                color = colorScheme.onSurface.copy(0.8f),
             )
         },
     )
