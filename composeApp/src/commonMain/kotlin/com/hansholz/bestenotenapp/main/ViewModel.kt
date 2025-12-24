@@ -17,7 +17,9 @@ import com.hansholz.bestenotenapp.api.codeAuthFlowFactory
 import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.models.Absence
 import com.hansholz.bestenotenapp.api.models.GradeCollection
+import com.hansholz.bestenotenapp.api.models.Interval
 import com.hansholz.bestenotenapp.api.models.JournalDay
+import com.hansholz.bestenotenapp.api.models.JournalDayStudentCount
 import com.hansholz.bestenotenapp.api.models.JournalWeek
 import com.hansholz.bestenotenapp.api.models.Student
 import com.hansholz.bestenotenapp.api.models.Subject
@@ -82,6 +84,9 @@ class ViewModel(
     val gradeCollections = mutableStateListOf<GradeCollection>()
     val allGradeCollectionsLoaded = mutableStateOf(false)
     val years = mutableStateListOf<Year>()
+    val intervals = mutableStateListOf<Interval>()
+    val dayStudentCount = mutableStateOf<JournalDayStudentCount?>(null)
+    val currentDayStudentCount = mutableStateOf<JournalDayStudentCount?>(null)
 
     val isDemoAccount = mutableStateOf(false)
     private var demoWeekPlan: List<List<Subject>> = emptyList()
@@ -263,6 +268,39 @@ class ViewModel(
         }
         try {
             val data = api.yearIndex().data
+            couldReachBesteSchule()
+            return data
+        } catch (e: Exception) {
+            e.printStackTrace()
+            couldNotReachBesteSchule()
+            return null
+        }
+    }
+
+    suspend fun getIntervals(): List<Interval>? {
+        if (isDemoAccount.value) {
+            return emptyList()
+        }
+        try {
+            val data = api.studentsShow(studentId.value!!, listOf("intervals")).data.intervals
+            couldReachBesteSchule()
+            return data
+        } catch (e: Exception) {
+            e.printStackTrace()
+            couldNotReachBesteSchule()
+            return null
+        }
+    }
+
+    suspend fun getDayStudentCount(year: Year? = null): JournalDayStudentCount? {
+        if (isDemoAccount.value) {
+            delay(500)
+            return null
+        }
+        try {
+            val data =
+                year?.let { api.dayStudentCount(it.id, it.from, it.to).data.first() }
+                    ?: api.dayStudentCount().data.first()
             couldReachBesteSchule()
             return data
         } catch (e: Exception) {

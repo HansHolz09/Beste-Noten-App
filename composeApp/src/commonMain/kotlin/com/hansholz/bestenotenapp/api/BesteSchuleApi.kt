@@ -45,6 +45,8 @@ import com.hansholz.bestenotenapp.api.models.ImporterStundenplan24
 import com.hansholz.bestenotenapp.api.models.Interval
 import com.hansholz.bestenotenapp.api.models.JournalDay
 import com.hansholz.bestenotenapp.api.models.JournalDayStudent
+import com.hansholz.bestenotenapp.api.models.JournalDayStudentCount
+import com.hansholz.bestenotenapp.api.models.JournalLessonStudentCount
 import com.hansholz.bestenotenapp.api.models.JournalNote
 import com.hansholz.bestenotenapp.api.models.JournalNoteType
 import com.hansholz.bestenotenapp.api.models.JournalWeek
@@ -1061,6 +1063,30 @@ class BesteSchuleApi(
 
     suspend fun dayStudentIndex(): Any = client.get("$baseUrl/journal/day-student").body()
 
+    suspend fun dayStudentCount(
+        filterYear: Int? = null,
+        filterRangeFrom: String? = null,
+        filterRangeTo: String? = null,
+    ): ListDataWrapper<JournalDayStudentCount> =
+        client
+            .get("$baseUrl/journal/day-student?count=true") {
+                filterYear?.let { parameter("filter[year]", it) }
+                filterRangeFrom?.let { parameter("filter[range][from]", it) }
+                filterRangeTo?.let { parameter("filter[range][to]", it) }
+            }.body()
+
+    suspend fun lessonStudentCount(
+        filterYear: Int? = null,
+        filterRangeFrom: String? = null,
+        filterRangeTo: String? = null,
+    ): ListDataWrapper<JournalLessonStudentCount> =
+        client
+            .get("$baseUrl/journal/lesson-student?count=true") {
+                filterYear?.let { parameter("filter[year]", it) }
+                filterRangeFrom?.let { parameter("filter[range][from]", it) }
+                filterRangeTo?.let { parameter("filter[range][to]", it) }
+            }.body()
+
     suspend fun dayStudentUpdate(
         id: String,
         requestBody: UpdateJournalLessonStudentRequest? = null,
@@ -1600,7 +1626,14 @@ class BesteSchuleApi(
         client.delete("$baseUrl/students/$id")
     }
 
-    suspend fun studentsShow(id: String): DataWrapper<Student> = client.get("$baseUrl/students/$id").body()
+    suspend fun studentsShow(
+        id: String,
+        include: List<String>? = null,
+    ): DataWrapper<Student> =
+        client
+            .get("$baseUrl/students/$id") {
+                parameter("include", include?.joinToString(","))
+            }.body()
 
     suspend fun studentSetSubjectCalculation(
         id: String,

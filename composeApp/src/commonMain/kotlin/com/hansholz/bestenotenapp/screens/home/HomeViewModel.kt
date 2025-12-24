@@ -20,6 +20,10 @@ class HomeViewModel(
 
     var isGradesLoading by mutableStateOf(false)
     var isTimetableLoading by mutableStateOf(false)
+    var isStatsLoading by mutableStateOf(false)
+
+    var isStatsDialogShown by mutableStateOf(false)
+    var isStatsDialogLoading by mutableStateOf(true)
 
     fun refreshGrades(viewModel: com.hansholz.bestenotenapp.main.ViewModel) {
         viewModelScope.launch {
@@ -50,6 +54,17 @@ class HomeViewModel(
         }
     }
 
+    fun refreshStats(viewModel: com.hansholz.bestenotenapp.main.ViewModel) {
+        viewModelScope.launch {
+            isStatsLoading = true
+            viewModel.getIntervals()?.let {
+                viewModel.intervals.clear()
+                viewModel.intervals.addAll(it)
+            }
+            isStatsLoading = false
+        }
+    }
+
     init {
         viewModelScope.launch {
             if (settings.getBoolean("showNewestGrades", true)) {
@@ -77,6 +92,15 @@ class HomeViewModel(
                     viewModel.currentJournalDay.value = viewModel.getJournalWeek()?.days?.find { it.date == currentDate }
                 }
                 isTimetableLoading = false
+            }
+        }
+        viewModelScope.launch {
+            if (settings.getBoolean("showYearProgress", true)) {
+                isStatsLoading = true
+                if (viewModel.intervals.isEmpty()) {
+                    viewModel.getIntervals()?.let { viewModel.intervals.addAll(it) }
+                }
+                isStatsLoading = false
             }
         }
     }

@@ -20,6 +20,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
@@ -33,6 +34,7 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialShapes.Companion.ClamShell
@@ -64,11 +66,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.grades
+import bestenotenapp.composeapp.generated.resources.stats
 import bestenotenapp.composeapp.generated.resources.subjectsAndTeachers
 import bestenotenapp.composeapp.generated.resources.timetable
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.components.GradeValueBox
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
+import com.hansholz.bestenotenapp.components.TwoToneLinearWavyProgressIndicator
 import com.hansholz.bestenotenapp.components.UpdateOnNewDay
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
@@ -78,6 +82,7 @@ import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalShowCurrentLesson
 import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
+import com.hansholz.bestenotenapp.main.LocalShowYearProgress
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.navigation.Fragment
 import com.hansholz.bestenotenapp.theme.FontFamilies
@@ -86,7 +91,9 @@ import com.hansholz.bestenotenapp.utils.SimpleTime
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.getGreeting
 import com.hansholz.bestenotenapp.utils.makeItemVisibleAndNavigate
+import com.hansholz.bestenotenapp.utils.percentOfSchoolYearAt
 import com.hansholz.bestenotenapp.utils.rememberCurrentSimpleTime
+import com.hansholz.bestenotenapp.utils.switchPercent
 import com.pushpal.jetlime.EventPointType
 import com.pushpal.jetlime.EventPosition
 import com.pushpal.jetlime.JetLimeDefaults
@@ -94,8 +101,10 @@ import com.pushpal.jetlime.JetLimeEventDefaults
 import com.pushpal.jetlime.JetLimeExtendedEvent
 import com.pushpal.jetlime.LocalJetLimeStyle
 import dev.chrisbanes.haze.hazeSource
+import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.imageResource
 import org.kodein.emoji.compose.m3.TextWithNotoAnimatedEmoji
 
@@ -120,9 +129,12 @@ fun Home(
         val showGreetings by LocalShowGreetings.current
         val showNewestGrades by LocalShowNewestGrades.current
         val showCurrentLesson by LocalShowCurrentLesson.current
+        val showYearProgress by LocalShowYearProgress.current
 
         UpdateOnNewDay {
+            homeViewModel.refreshGrades(viewModel)
             homeViewModel.refreshTimetable(viewModel)
+            homeViewModel.refreshStats(viewModel)
         }
 
         TopAppBarScaffold(
@@ -536,9 +548,100 @@ fun Home(
                             }
                         }
                     }
+                    if (!viewModel.isDemoAccount.value) {
+                        item {
+                            val imageBitmap = imageResource(Res.drawable.stats)
+                            Box(
+                                Modifier
+                                    .animateItem()
+                                    .animateContentSize()
+                                    .fillMaxWidth()
+                                    .padding(10.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(colorScheme.surfaceContainerHighest.copy(0.7f))
+                                    .repeatingBackground(
+                                        imageBitmap = imageBitmap,
+                                        alpha = backgroundAlpha.value,
+                                        scale = 0.5f,
+                                        offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = 0f) },
+                                        cropPx = 30,
+                                    ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
+                                    .clickable {
+                                        homeViewModel.isStatsDialogShown = true
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                    },
+                            ) {
+                                Column(Modifier.fillMaxWidth()) {
+                                    Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
+                                        Text(
+                                            text = "Jahresinformationen",
+                                            modifier = Modifier.align(Alignment.Center),
+                                            style = typography.headlineSmall,
+                                        )
+                                        EnhancedIconButton(
+                                            onClick = {
+                                                homeViewModel.refreshStats(viewModel)
+                                            },
+                                            modifier = Modifier.align(Alignment.CenterEnd),
+                                            enabled = !homeViewModel.isStatsLoading && showYearProgress,
+                                        ) {
+                                            this@Column.AnimatedVisibility(
+                                                visible = !homeViewModel.isStatsLoading && showYearProgress,
+                                                enter = scaleIn(),
+                                                exit = scaleOut(),
+                                            ) {
+                                                Icon(Icons.Outlined.Refresh, null)
+                                            }
+                                        }
+                                    }
+                                    if (showYearProgress) {
+                                        AnimatedContent(homeViewModel.isStatsLoading || viewModel.intervals.isEmpty()) {
+                                            if (it) {
+                                                LinearWavyProgressIndicator(Modifier.height(40.dp).fillMaxWidth().padding(10.dp))
+                                            } else {
+                                                val firstIntervalFrom = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[0].from) }
+                                                val firstIntervalTo = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[0].to) }
+                                                val secondIntervalFrom = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[1].from) }
+                                                val secondIntervalTo = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[1].to) }
+                                                val progress =
+                                                    remember(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo) {
+                                                        percentOfSchoolYearAt(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo)
+                                                    }
+                                                val split =
+                                                    remember(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo) {
+                                                        switchPercent(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo)
+                                                    }
+                                                Column {
+                                                    TwoToneLinearWavyProgressIndicator(
+                                                        progress = progress,
+                                                        split = split,
+                                                        firstColor = colorScheme.primary,
+                                                        secondColor = colorScheme.inversePrimary,
+                                                        modifier = Modifier.height(40.dp).fillMaxWidth().padding(10.dp),
+                                                    )
+                                                    Text(
+                                                        text = "Du hast aktuell ${(progress * 100).roundToInt()}% des Schuljahres geschafft",
+                                                        modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                                        textAlign = TextAlign.Center,
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                    Text(
+                                        text = "Tippen, um Informationen zum aktuellen Schuljahr zu erhalten",
+                                        modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                        textAlign = TextAlign.Center,
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
             topAppBarBackground(innerPadding.calculateTopPadding())
         }
+
+        StatsDialog(viewModel, homeViewModel)
     }
 }

@@ -4,14 +4,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.ImageShader
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 
 @Composable
 fun RepeatingBackground(
@@ -35,32 +39,57 @@ fun Modifier.repeatingBackground(
     alpha: Float = 1.0f,
     scale: Float = 1.0f,
     offset: Offset = Offset.Zero,
-): Modifier {
-    require(scale > 0f) { "Scale must be positive" }
+    cropPx: Int = 0,
+): Modifier =
+    this.drawWithCache {
+        val finalBitmap =
+            if (cropPx > 0) {
+                val targetWidth = imageBitmap.width - 2 * cropPx
+                val targetHeight = imageBitmap.height - 2 * cropPx
 
-    return this.drawBehind {
-        val imageShader = ImageShader(imageBitmap, TileMode.Repeated, TileMode.Repeated)
+                if (targetWidth > 0 && targetHeight > 0) {
+                    val bitmap = ImageBitmap(targetWidth, targetHeight)
+                    val canvas = Canvas(bitmap)
+                    val paint = Paint()
+                    canvas.drawImageRect(
+                        image = imageBitmap,
+                        srcOffset = IntOffset(cropPx, cropPx),
+                        srcSize = IntSize(targetWidth, targetHeight),
+                        dstOffset = IntOffset.Zero,
+                        dstSize = IntSize(targetWidth, targetHeight),
+                        paint = paint,
+                    )
+                    bitmap
+                } else {
+                    imageBitmap
+                }
+            } else {
+                imageBitmap
+            }
+
+        val imageShader = ImageShader(finalBitmap, TileMode.Repeated, TileMode.Repeated)
         val brush = ShaderBrush(imageShader)
 
-        val scaledWidth = imageBitmap.width * scale
-        val scaledHeight = imageBitmap.height * scale
+        onDrawBehind {
+            val scaledWidth = finalBitmap.width * scale
+            val scaledHeight = finalBitmap.height * scale
 
-        val correctedStartX = (offset.x % scaledWidth).let { if (it > 0) it - scaledWidth else it }
-        val correctedStartY = (offset.y % scaledHeight).let { if (it > 0) it - scaledHeight else it }
+            val correctedStartX = (offset.x % scaledWidth).let { if (it > 0) it - scaledWidth else it }
+            val correctedStartY = (offset.y % scaledHeight).let { if (it > 0) it - scaledHeight else it }
 
-        withTransform({
-            translate(left = correctedStartX, top = correctedStartY)
-            scale(scaleX = scale, scaleY = scale, pivot = Offset.Zero)
-        }) {
-            drawRect(
-                brush = brush,
-                alpha = alpha,
-                size =
-                    Size(
-                        width = (this.size.width - correctedStartX) / scale,
-                        height = (this.size.height - correctedStartY) / scale,
-                    ),
-            )
+            withTransform({
+                translate(left = correctedStartX, top = correctedStartY)
+                scale(scaleX = scale, scaleY = scale, pivot = Offset.Zero)
+            }) {
+                drawRect(
+                    brush = brush,
+                    alpha = alpha,
+                    size =
+                        Size(
+                            width = (this.size.width - correctedStartX) / scale,
+                            height = (this.size.height - correctedStartY) / scale,
+                        ),
+                )
+            }
         }
     }
-}

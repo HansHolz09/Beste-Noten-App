@@ -14,6 +14,7 @@ internal val LocalBackgroundEnabled = compositionLocalOf { mutableStateOf(false)
 internal val LocalShowGreetings = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowNewestGrades = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowCurrentLesson = compositionLocalOf { mutableStateOf(false) }
+internal val LocalShowYearProgress = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowGradeHistory = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowAllSubjects = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowCollectionsWithoutGrades = compositionLocalOf { mutableStateOf(false) }
@@ -38,6 +39,7 @@ fun SettingsProvider(content: @Composable () -> Unit) {
     val showGreetingsState = remember { mutableStateOf(settings.getBoolean("showGreetings", true)) }
     val showNewestGradesState = remember { mutableStateOf(settings.getBoolean("showNewestGrades", true)) }
     val showCurrentLessonState = remember { mutableStateOf(settings.getBoolean("showCurrentLesson", true)) }
+    val showYearProgress = remember { mutableStateOf(settings.getBoolean("showYearProgress", true)) }
     val showGradeHistoryState = remember { mutableStateOf(settings.getBoolean("showGradeHistory", false)) }
     val showAllSubjectsState = remember { mutableStateOf(settings.getBoolean("showAllSubjects", false)) }
     val showCollectionsWithoutGradesState = remember { mutableStateOf(settings.getBoolean("showCollectionsWithoutGrades", false)) }
@@ -52,6 +54,7 @@ fun SettingsProvider(content: @Composable () -> Unit) {
         LocalShowGreetings provides showGreetingsState,
         LocalShowNewestGrades provides showNewestGradesState,
         LocalShowCurrentLesson provides showCurrentLessonState,
+        LocalShowYearProgress provides showYearProgress,
         LocalShowGradeHistory provides showGradeHistoryState,
         LocalShowAllSubjects provides showAllSubjectsState,
         LocalShowCollectionsWithoutGrades provides showCollectionsWithoutGradesState,

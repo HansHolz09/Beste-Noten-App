@@ -504,6 +504,28 @@ data class JournalDayStudent(
 )
 
 @Serializable
+data class JournalDayStudentCount(
+    val count: Int? = null,
+    @SerialName("lessons_count") val lessonsCount: String? = null,
+    @SerialName("not_present_count") val notPresentCount: Int? = null,
+    @SerialName("not_present_with_absence_count") val notPresentWithAbsenceCount: Int? = null,
+    @SerialName("not_present_without_absence_count") val notPresentWithoutAbsenceCount: Int? = null,
+    @SerialName("not_present_mixed_absence_count") val notPresentMixedAbsenceCount: Int? = null,
+    @SerialName("lessons_not_present_count") val lessonsNotPresentCount: String? = null,
+    @SerialName("lessons_not_present_with_absence_count") val lessonsNotPresentWithAbsenceCount: String? = null,
+    @SerialName("lessons_not_present_without_absence_count") val lessonsNotPresentWithoutAbsenceCount: String? = null,
+    @SerialName("lessons_mixed_not_present_with_absence_count") val lessonsMixedNotPresentWithAbsenceCount: String? = null,
+    @SerialName("lessons_mixed_not_present_without_absence_count") val lessonsMixedNotPresentWithoutAbsenceCount: String? = null,
+    @SerialName("too_late_with_absence_count") val tooLateWithAbsenceCount: String? = null,
+    @SerialName("too_late_without_absence_count") val tooLateWithoutAbsenceCount: String? = null,
+    @SerialName("too_early_with_absence_count") val tooEarlyWithAbsenceCount: String? = null,
+    @SerialName("too_early_without_absence_count") val tooEarlyWithoutAbsenceCount: String? = null,
+    @SerialName("student_id") val studentId: Int? = null,
+    @SerialName("absence_mixed") val absenceMixed: String? = null,
+    val student: Student? = null,
+)
+
+@Serializable
 data class JournalLesson(
     val id: String? = null,
     val nr: String,
@@ -539,6 +561,21 @@ data class JournalLessonStudent(
     val lesson: JournalLesson? = null,
     @SerialName("journal_lesson_ids") val journalLessonIds: String? = null,
     val notes: List<JournalNote>? = null,
+)
+
+@Serializable
+data class JournalLessonStudentCount(
+    val count: Int? = null,
+    @SerialName("not_present_count") val notPresentCount: Int? = null,
+    @SerialName("not_present_with_absence_count") val notPresentWithAbsenceCount: Int? = null,
+    @SerialName("too_late_sum") val tooLateSum: Int? = null,
+    @SerialName("too_late_with_absence_sum") val tooLateWithAbsenceSum: Int? = null,
+    @SerialName("too_early_sum") val tooEarlySum: Int? = null,
+    @SerialName("too_early_with_absence_sum") val tooEarlyWithAbsenceSum: Int? = null,
+    @SerialName("missing_equipment_sum") val missingEquipmentSum: Int? = null,
+    @SerialName("missing_homework_sum") val missingHomeworkSum: Int? = null,
+    @SerialName("student_id") val studentId: Int? = null,
+    val student: Student? = null,
 )
 
 @Serializable
@@ -1288,7 +1325,7 @@ data class Student(
     val name: String? = null,
     val gender: String? = null,
     val birthday: String? = null,
-    @SerialName("is_adult") val isAdult: Int,
+    @SerialName("is_adult") val isAdult: Int? = null,
     val phone: String? = null,
     val token: String? = null,
     @SerialName("token_valid_until") val tokenValidUntil: String? = null,

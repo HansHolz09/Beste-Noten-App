@@ -28,6 +28,7 @@ import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.LocalLibrary
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Percent
 import androidx.compose.material.icons.outlined.Subject
 import androidx.compose.material.icons.outlined.Texture
 import androidx.compose.material.icons.outlined.Title
@@ -71,6 +72,7 @@ import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
 import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
+import com.hansholz.bestenotenapp.main.LocalShowYearProgress
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.security.BindBiometryAuthenticatorEffect
@@ -87,6 +89,11 @@ import com.russhwolf.settings.set
 import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -114,6 +121,7 @@ fun Settings(
     var showGreetings by LocalShowGreetings.current
     var showNewestGrades by LocalShowNewestGrades.current
     var showCurrentLesson by LocalShowCurrentLesson.current
+    var showYearProgress by LocalShowYearProgress.current
     var showGradeHistory by LocalShowGradeHistory.current
     var showAllSubjects by LocalShowAllSubjects.current
     var showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
@@ -317,6 +325,12 @@ fun Settings(
                 onCheckedChange = {
                     showNewestGrades = it
                     settings["showNewestGrades"] = it
+
+                    scope.launch {
+                        if (it && viewModel.startGradeCollections.isEmpty()) {
+                            viewModel.getCollections()?.let { viewModel.startGradeCollections.addAll(it) }
+                        }
+                    }
                 },
                 text = "Neuste Noten anzeigen",
                 icon = Icons.Outlined.FiberNew,
@@ -327,11 +341,45 @@ fun Settings(
                 onCheckedChange = {
                     showCurrentLesson = it
                     settings["showCurrentLesson"] = it
+
+                    scope.launch {
+                        if (it && viewModel.currentJournalDay.value == null) {
+                            @OptIn(ExperimentalTime::class)
+                            val currentDate =
+                                Clock.System
+                                    .now()
+                                    .toLocalDateTime(TimeZone.currentSystemDefault())
+                                    .date
+                                    .let {
+                                        "${it.year}-${it.month.number.toString().padStart(2, '0')}" +
+                                            "-${it.day.toString().padStart(2, '0')}"
+                                    }
+                            viewModel.currentJournalDay.value = viewModel.getJournalWeek()?.days?.find { it.date == currentDate }
+                        }
+                    }
                 },
                 text = "Aktuellen Schultag anzeigen",
                 icon = Icons.Outlined.FormatListBulleted,
-                position = PreferencePosition.Bottom,
+                position = if (viewModel.isDemoAccount.value) PreferencePosition.Bottom else PreferencePosition.Middle,
             )
+            if (!viewModel.isDemoAccount.value) {
+                settingsToggleItem(
+                    checked = showYearProgress,
+                    onCheckedChange = {
+                        showYearProgress = it
+                        settings["showYearProgress"] = it
+
+                        scope.launch {
+                            if (it && viewModel.intervals.isEmpty()) {
+                                viewModel.getIntervals()?.let { viewModel.intervals.addAll(it) }
+                            }
+                        }
+                    },
+                    text = "Schuljahres-Fortschritt anzeigen",
+                    icon = Icons.Outlined.Percent,
+                    position = PreferencePosition.Bottom,
+                )
+            }
             item {
                 PreferenceCategory("Noten", Modifier.padding(horizontal = 15.dp))
             }
