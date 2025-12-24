@@ -239,7 +239,7 @@ compose.desktop {
             modules += "jdk.unsupported"
 
             windows {
-                iconFile = project.file("src/commonMain/composeResources/drawable/icon.ico")
+                iconFile = project.file("src/desktopMain/icons/icon.ico")
                 menuGroup = libs.versions.appName.get()
                 upgradeUuid = "a9bdc510-b2a5-4c39-8b69-27c754eea3ff"
                 console = false
@@ -255,7 +255,7 @@ compose.desktop {
             }
 
             macOS {
-                iconFile = project.file("src/commonMain/composeResources/drawable/icon.icns")
+                iconFile = project.file("src/desktopMain/icons/icon.icns")
                 dockName = libs.versions.appName.get()
                 packageBuildVersion = libs.versions.appVersionCode.get()
                 jvmArgs("-Dapple.awt.application.appearance=system")
