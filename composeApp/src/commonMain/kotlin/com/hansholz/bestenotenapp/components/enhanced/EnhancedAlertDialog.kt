@@ -43,7 +43,9 @@ import androidx.compose.ui.backhandler.PredictiveBackHandler
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -76,9 +78,14 @@ fun EnhancedAlertDialog(
     textContentColor: Color = AlertDialogDefaults.textContentColor,
     tonalElevation: Dp = AlertDialogDefaults.TonalElevation,
 ) {
+    val hapticFeedback = LocalHapticFeedback.current
+
     BasicEnhancedAlertDialog(
         visible = visible,
-        onDismissRequest = onDismissRequest,
+        onDismissRequest = {
+            onDismissRequest()
+            hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+        },
         content = {
             EnhancedAlertDialogContent(
                 buttons = {

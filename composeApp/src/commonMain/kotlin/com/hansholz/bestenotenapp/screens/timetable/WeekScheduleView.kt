@@ -69,6 +69,8 @@ import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.utils.SimpleTime
 import com.hansholz.bestenotenapp.utils.formateDate
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DateTimeUnit
@@ -77,8 +79,6 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 @OptIn(
     ExperimentalSharedTransitionApi::class,
@@ -396,6 +396,7 @@ fun WeekScheduleView(
                                         Modifier
                                             .clickable {
                                                 dialogShown.value = true
+                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
                                             }.skipToLookaheadSize(),
                                     colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f)),
                                 )
