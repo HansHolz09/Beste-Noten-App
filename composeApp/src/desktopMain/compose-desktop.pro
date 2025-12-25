@@ -16,7 +16,7 @@
 -keepnames class com.jetbrains.** { *; }
 
 # For MaterialYou on Mac
--keep class de.jangassen.jfa.** { *; }
+-keep class dev.zwander.jfa.** { *; }
 
 -dontwarn **
 -dontnote **
