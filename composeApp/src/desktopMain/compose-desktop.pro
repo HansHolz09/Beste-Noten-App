@@ -15,8 +15,9 @@
 -keep class com.jetbrains.JBR* { *; }
 -keepnames class com.jetbrains.** { *; }
 
-# For MaterialYou on Mac
--keep class dev.zwander.jfa.** { *; }
+# For MaterialYou
+-keep class dev.zwander.jfa.** { *; } #  for macOS
+-keep class dev.zwander.compose.util.** { *; } # for Linux
 
 -dontwarn **
 -dontnote **
