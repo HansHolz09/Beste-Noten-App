@@ -142,38 +142,38 @@ fun StatsDialog(
                                     withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
                                         append("Zeiträume:\n")
                                     }
-                                    append(
+                                    appendWithSymbols(
                                         viewModel.intervals.joinToString("\n") { interval ->
                                             val daysRemaining = Clock.System.todayIn(TimeZone.currentSystemDefault()).daysUntil(LocalDate.parse(interval.to))
                                             interval.name.let { if (it.regionMatches(2, "HJ", 0, 2)) "${it.take(2)} ${it.substringAfter('.')}" else it } +
                                                 " vom ${formateDate(interval.from)} bis ${formateDate(interval.to)}" +
                                                 (if (interval.to != interval.editableTo) " mit Notenschluss am ${formateDate(interval.editableTo)}" else "") +
-                                                (if (daysRemaining > 1) "\n➞ noch $daysRemaining Tage" else "")
+                                                (if (daysRemaining > 1) "\n➜ noch $daysRemaining Tage" else "")
                                         },
                                     )
                                     withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
                                         append("\n\nDaten zum aktuellen Schuljahr (${viewModel.years.lastOrNull()?.name}):\n")
                                     }
-                                    append(
+                                    appendWithSymbols(
                                         "• Schultage: ${currentDayData?.count}\n" +
                                             "• Abwesende Tage: ${currentDayData?.notPresentCount} (davon ${currentDayData?.notPresentWithAbsenceCount} entschuldigt," +
                                             " $currentDaysNotPresentWithoutAbsenceCount nicht)\n" +
                                             "• Unterrichtsstunden: ${currentLessonData?.count}\n" +
                                             "• Abwesende Stunden: ${currentLessonData?.notPresentCount} (davon ${currentLessonData?.notPresentWithAbsenceCount}" +
                                             " entschuldigt, $currentLessonsNotPresentWithoutAbsenceCount nicht)\n" +
-                                            "➞ Durchschnittlich $currentAverage Stunden/Tag, $currentPresence% Anwesenheit",
+                                            "➜ Durchschnittlich $currentAverage Stunden/Tag, $currentPresence% Anwesenheit",
                                     )
                                     withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
                                         append("\n\nGesamtübersicht:\n")
                                     }
-                                    append(
+                                    appendWithSymbols(
                                         "• Schultage: ${dayData?.count}\n" +
                                             "• Abwesende Tage: ${dayData?.notPresentCount} (davon ${dayData?.notPresentWithAbsenceCount} entschuldigt," +
                                             " $daysNotPresentWithoutAbsenceCount nicht)\n" +
                                             "• Unterrichtsstunden: ${lessonData?.count}\n" +
                                             "• Abwesende Stunden: ${lessonData?.notPresentCount} (davon ${lessonData?.notPresentWithAbsenceCount} entschuldigt," +
                                             " $lessonsNotPresentWithoutAbsenceCount nicht)\n" +
-                                            "➞ Durchschnittlich $average Stunden/Tag, $presence% Anwesenheit",
+                                            "➜ Durchschnittlich $average Stunden/Tag, $presence% Anwesenheit",
                                     )
                                 },
                             modifier = Modifier.onGloballyPositioned { with(density) { width = it.size.width.toDp() } },
