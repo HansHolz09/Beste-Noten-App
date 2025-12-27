@@ -33,8 +33,10 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.utils.appendWithSymbols
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.roundToDecimals
+import com.hansholz.bestenotenapp.utils.tryRemember
 import components.dialogs.EnhancedAlertDialog
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -60,11 +62,17 @@ fun StatsDialog(
             if (viewModel.dayStudentCount.value == null) {
                 viewModel.getDayStudentCount()?.let { viewModel.dayStudentCount.value = it }
             }
+            if (viewModel.lessonStudentCount.value == null) {
+                viewModel.getLessonStudentCount()?.let { viewModel.lessonStudentCount.value = it }
+            }
             if (viewModel.years.isEmpty()) {
                 viewModel.getYears()?.let { viewModel.years.addAll(it) }
             }
             if (viewModel.currentDayStudentCount.value == null) {
                 viewModel.getDayStudentCount(viewModel.years.lastOrNull())?.let { viewModel.currentDayStudentCount.value = it }
+            }
+            if (viewModel.currentLessonStudentCount.value == null) {
+                viewModel.getLessonStudentCount(viewModel.years.lastOrNull())?.let { viewModel.currentLessonStudentCount.value = it }
             }
             homeViewModel.isStatsDialogLoading = false
         }
@@ -86,55 +94,41 @@ fun StatsDialog(
         title = { Text("Jahresinformationen") },
         text = {
             val dayData = remember(viewModel.dayStudentCount.value) { viewModel.dayStudentCount.value }
+            val lessonData = remember(viewModel.lessonStudentCount.value) { viewModel.lessonStudentCount.value }
             val currentDayData = remember(viewModel.currentDayStudentCount.value) { viewModel.currentDayStudentCount.value }
+            val currentLessonData = remember(viewModel.currentLessonStudentCount.value) { viewModel.currentLessonStudentCount.value }
 
-            val currentLessonsNotPresentCount =
-                remember(currentDayData) {
-                    try {
-                        currentDayData!!.lessonsNotPresentWithAbsenceCount!!.toInt() + currentDayData.lessonsNotPresentWithoutAbsenceCount!!.toInt()
-                    } catch (_: Exception) {
-                        0
-                    }
-                }
             val currentAverage =
-                remember(currentDayData) {
-                    try {
-                        (currentDayData!!.lessonsCount!!.toFloat() / currentDayData.count!!.toFloat()).roundToDecimals(2).toString().replace('.', ',')
-                    } catch (_: Exception) {
-                        0
-                    }
+                tryRemember(currentLessonData, currentDayData) {
+                    (currentLessonData!!.count!!.toFloat() / currentDayData!!.count!!.toFloat()).roundToDecimals(2).toString().replace('.', ',')
                 }
             val currentPresence =
-                remember(currentDayData) {
-                    try {
-                        (100 - currentLessonsNotPresentCount.toFloat() / currentDayData!!.lessonsCount!!.toFloat() * 100).roundToDecimals(1).toString().replace('.', ',')
-                    } catch (_: Exception) {
-                        0
-                    }
+                tryRemember(currentLessonData, currentDayData) {
+                    (100 - currentLessonData!!.notPresentCount!!.toFloat() / currentDayData!!.lessonsCount!!.toFloat() * 100).roundToDecimals(1).toString().replace('.', ',')
                 }
-            val lessonsNotPresentCount =
-                remember(currentDayData) {
-                    try {
-                        dayData!!.lessonsNotPresentWithAbsenceCount!!.toInt() + dayData.lessonsNotPresentWithoutAbsenceCount!!.toInt()
-                    } catch (_: Exception) {
-                        0
-                    }
+            val currentDaysNotPresentWithoutAbsenceCount =
+                tryRemember(currentDayData) {
+                    currentDayData!!.notPresentCount!! - currentDayData.notPresentWithAbsenceCount!!
+                }
+            val currentLessonsNotPresentWithoutAbsenceCount =
+                tryRemember(currentLessonData) {
+                    currentLessonData?.notPresentCount!! - currentLessonData.notPresentWithAbsenceCount!!
                 }
             val average =
-                remember(currentDayData) {
-                    try {
-                        (dayData!!.lessonsCount!!.toFloat() / dayData.count!!.toFloat()).roundToDecimals(2).toString().replace('.', ',')
-                    } catch (_: Exception) {
-                        0
-                    }
+                tryRemember(lessonData, dayData) {
+                    (lessonData!!.count!!.toFloat() / dayData!!.count!!.toFloat()).roundToDecimals(2).toString().replace('.', ',')
                 }
             val presence =
-                remember(currentDayData) {
-                    try {
-                        (100 - lessonsNotPresentCount.toFloat() / dayData!!.lessonsCount!!.toFloat() * 100).roundToDecimals(1).toString().replace('.', ',')
-                    } catch (_: Exception) {
-                        0
-                    }
+                tryRemember(lessonData, dayData) {
+                    (100 - lessonData!!.notPresentCount!!.toFloat() / dayData!!.lessonsCount!!.toFloat() * 100).roundToDecimals(1).toString().replace('.', ',')
+                }
+            val daysNotPresentWithoutAbsenceCount =
+                tryRemember(dayData) {
+                    dayData!!.notPresentCount!! - dayData.notPresentWithAbsenceCount!!
+                }
+            val lessonsNotPresentWithoutAbsenceCount =
+                tryRemember(lessonData) {
+                    lessonData?.notPresentCount!! - lessonData.notPresentWithAbsenceCount!!
                 }
             AnimatedContent(homeViewModel.isStatsDialogLoading) { isLoading ->
                 if (isLoading) {
@@ -154,7 +148,7 @@ fun StatsDialog(
                                             interval.name.let { if (it.regionMatches(2, "HJ", 0, 2)) "${it.take(2)} ${it.substringAfter('.')}" else it } +
                                                 " vom ${formateDate(interval.from)} bis ${formateDate(interval.to)}" +
                                                 (if (interval.to != interval.editableTo) " mit Notenschluss am ${formateDate(interval.editableTo)}" else "") +
-                                                (if (daysRemaining > 0) "\n➞ noch $daysRemaining Tage" else "")
+                                                (if (daysRemaining > 1) "\n➞ noch $daysRemaining Tage" else "")
                                         },
                                     )
                                     withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
@@ -163,10 +157,10 @@ fun StatsDialog(
                                     append(
                                         "• Schultage: ${currentDayData?.count}\n" +
                                             "• Abwesende Tage: ${currentDayData?.notPresentCount} (davon ${currentDayData?.notPresentWithAbsenceCount} entschuldigt," +
-                                            " ${currentDayData?.notPresentWithoutAbsenceCount} nicht)\n" +
-                                            "• Unterrichtsstunden: ${currentDayData?.lessonsCount}\n" +
-                                            "• Abwesende Stunden: $currentLessonsNotPresentCount (davon ${currentDayData?.lessonsNotPresentWithAbsenceCount}" +
-                                            " entschuldigt, ${currentDayData?.lessonsNotPresentWithoutAbsenceCount} nicht)\n" +
+                                            " $currentDaysNotPresentWithoutAbsenceCount nicht)\n" +
+                                            "• Unterrichtsstunden: ${currentLessonData?.count}\n" +
+                                            "• Abwesende Stunden: ${currentLessonData?.notPresentCount} (davon ${currentLessonData?.notPresentWithAbsenceCount}" +
+                                            " entschuldigt, $currentLessonsNotPresentWithoutAbsenceCount nicht)\n" +
                                             "➞ Durchschnittlich $currentAverage Stunden/Tag, $currentPresence% Anwesenheit",
                                     )
                                     withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
@@ -175,10 +169,10 @@ fun StatsDialog(
                                     append(
                                         "• Schultage: ${dayData?.count}\n" +
                                             "• Abwesende Tage: ${dayData?.notPresentCount} (davon ${dayData?.notPresentWithAbsenceCount} entschuldigt," +
-                                            " ${dayData?.notPresentWithoutAbsenceCount} nicht)\n" +
-                                            "• Unterrichtsstunden: ${dayData?.lessonsCount}\n" +
-                                            "• Abwesende Stunden: $lessonsNotPresentCount (davon ${dayData?.lessonsNotPresentWithAbsenceCount} entschuldigt," +
-                                            " ${dayData?.lessonsNotPresentWithoutAbsenceCount} nicht)\n" +
+                                            " $daysNotPresentWithoutAbsenceCount nicht)\n" +
+                                            "• Unterrichtsstunden: ${lessonData?.count}\n" +
+                                            "• Abwesende Stunden: ${lessonData?.notPresentCount} (davon ${lessonData?.notPresentWithAbsenceCount} entschuldigt," +
+                                            " $lessonsNotPresentWithoutAbsenceCount nicht)\n" +
                                             "➞ Durchschnittlich $average Stunden/Tag, $presence% Anwesenheit",
                                     )
                                 },

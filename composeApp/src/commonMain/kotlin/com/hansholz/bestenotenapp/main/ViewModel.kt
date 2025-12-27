@@ -20,6 +20,7 @@ import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.api.models.Interval
 import com.hansholz.bestenotenapp.api.models.JournalDay
 import com.hansholz.bestenotenapp.api.models.JournalDayStudentCount
+import com.hansholz.bestenotenapp.api.models.JournalLessonStudentCount
 import com.hansholz.bestenotenapp.api.models.JournalWeek
 import com.hansholz.bestenotenapp.api.models.Student
 import com.hansholz.bestenotenapp.api.models.Subject
@@ -86,7 +87,9 @@ class ViewModel(
     val years = mutableStateListOf<Year>()
     val intervals = mutableStateListOf<Interval>()
     val dayStudentCount = mutableStateOf<JournalDayStudentCount?>(null)
+    val lessonStudentCount = mutableStateOf<JournalLessonStudentCount?>(null)
     val currentDayStudentCount = mutableStateOf<JournalDayStudentCount?>(null)
+    val currentLessonStudentCount = mutableStateOf<JournalLessonStudentCount?>(null)
 
     val isDemoAccount = mutableStateOf(false)
     private var demoWeekPlan: List<List<Subject>> = emptyList()
@@ -301,6 +304,24 @@ class ViewModel(
             val data =
                 year?.let { api.dayStudentCount(it.id, it.from, it.to).data.first() }
                     ?: api.dayStudentCount().data.first()
+            couldReachBesteSchule()
+            return data
+        } catch (e: Exception) {
+            e.printStackTrace()
+            couldNotReachBesteSchule()
+            return null
+        }
+    }
+
+    suspend fun getLessonStudentCount(year: Year? = null): JournalLessonStudentCount? {
+        if (isDemoAccount.value) {
+            delay(500)
+            return null
+        }
+        try {
+            val data =
+                year?.let { api.lessonStudentCount(it.id, it.from, it.to).data.first() }
+                    ?: api.lessonStudentCount().data.first()
             couldReachBesteSchule()
             return data
         } catch (e: Exception) {
@@ -531,5 +552,10 @@ class ViewModel(
         subjectsAndTeachers.clear()
         teachersAndSubjects.clear()
         currentJournalDay.value = null
+        intervals.clear()
+        dayStudentCount.value = null
+        lessonStudentCount.value = null
+        currentDayStudentCount.value = null
+        currentLessonStudentCount.value = null
     }
 }
