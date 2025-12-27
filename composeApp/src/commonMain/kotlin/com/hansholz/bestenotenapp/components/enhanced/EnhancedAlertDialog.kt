@@ -78,14 +78,9 @@ fun EnhancedAlertDialog(
     textContentColor: Color = AlertDialogDefaults.textContentColor,
     tonalElevation: Dp = AlertDialogDefaults.TonalElevation,
 ) {
-    val hapticFeedback = LocalHapticFeedback.current
-
     BasicEnhancedAlertDialog(
         visible = visible,
-        onDismissRequest = {
-            onDismissRequest()
-            hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
-        },
+        onDismissRequest = onDismissRequest,
         content = {
             EnhancedAlertDialogContent(
                 buttons = {
@@ -140,6 +135,8 @@ fun BasicEnhancedAlertDialog(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit,
 ) {
+    val hapticFeedback = LocalHapticFeedback.current
+
     var visibleAnimated by remember { mutableStateOf(false) }
 
     var scale by remember {
@@ -175,8 +172,12 @@ fun BasicEnhancedAlertDialog(
                     Box(
                         modifier =
                             Modifier
-                                .pointerInput(Unit) { detectTapGestures { onDismissRequest.invoke() } }
-                                .enhancedHazeEffect(AppHazeState.current.value, MaterialTheme.colorScheme.scrim, fallbackAlpha = alpha)
+                                .pointerInput(Unit) {
+                                    detectTapGestures {
+                                        onDismissRequest.invoke()
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                    }
+                                }.enhancedHazeEffect(AppHazeState.current.value, MaterialTheme.colorScheme.scrim, fallbackAlpha = alpha)
                                 .fillMaxSize(),
                     )
                 }
