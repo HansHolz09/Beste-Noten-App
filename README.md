@@ -27,6 +27,7 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 - Noten-Diagramme zum Vergleich der verschiedenen Schuljahre
 - Übersichtliche Stundenplan-Ansicht mit Vertretungsplan-Änderungen und Abwesenheits-Einträgen
 - Übersicht aktueller Fächer und Lehrer mit ihren Abkürzungen
+- Jahresinformationen zu den Halbjahres-Zeiträumen und Abwesenheits-Statistiken
 - Adaptives Material-3-Expressive-Design auf allen Plattformen
 - Schöne Animationen und Übergänge
 - Haptisches Feedback auf Android und iOS

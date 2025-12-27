@@ -26,6 +26,7 @@ This cross-platform school app makes everyday school life more organized and is 
 - Grade charts to compare different school years
 - Clear timetable view with substitution plan changes and absence entries
 - Overview of current subjects and teachers with their abbreviations
+- Annual information on half-year periods and absence statistics
 - Adaptive Material 3 Expressive design on all platforms
 - Beautiful animations and transitions
 - Haptic feedback on Android and iOS
