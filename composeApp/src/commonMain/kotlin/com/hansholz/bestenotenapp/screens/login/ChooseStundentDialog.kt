@@ -18,16 +18,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import components.dialogs.EnhancedAlertDialog
+import top.ltfan.multihaptic.compose.rememberVibrator
 
 @Composable
 fun ChooseStudentDialog(loginViewModel: LoginViewModel) {
-    val hapticFeedback = LocalHapticFeedback.current
+    val vibrator = rememberVibrator()
 
     var selectedStudent by remember { mutableStateOf("") }
     EnhancedAlertDialog(
@@ -62,7 +63,7 @@ fun ChooseStudentDialog(loginViewModel: LoginViewModel) {
                                 .clip(RoundedCornerShape(12.dp))
                                 .clickable {
                                     selectedStudent = student.id.toString()
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                    vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                                 }.padding(horizontal = 16.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {

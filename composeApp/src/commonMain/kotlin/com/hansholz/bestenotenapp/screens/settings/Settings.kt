@@ -32,6 +32,7 @@ import androidx.compose.material.icons.outlined.Percent
 import androidx.compose.material.icons.outlined.Subject
 import androidx.compose.material.icons.outlined.Texture
 import androidx.compose.material.icons.outlined.Title
+import androidx.compose.material.icons.outlined.Vibration
 import androidx.compose.material.icons.outlined.WavingHand
 import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -46,8 +47,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -57,12 +56,16 @@ import com.hansholz.bestenotenapp.components.PreferenceItem
 import com.hansholz.bestenotenapp.components.PreferencePosition
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.components.enhanced.isAvailable
 import com.hansholz.bestenotenapp.components.icons.Github
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationIntervalMinutes
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationsEnabled
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationsWifiOnly
+import com.hansholz.bestenotenapp.main.LocalHapticsEnabled
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.LocalShowAbsences
 import com.hansholz.bestenotenapp.main.LocalShowAllSubjects
@@ -92,6 +95,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
+import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -104,8 +108,8 @@ fun Settings(
     val settingsViewModel = viewModel { SettingsViewModel() }
 
     val scope = rememberCoroutineScope()
+    val vibrator = rememberVibrator()
     val uriHandler = LocalUriHandler.current
-    val hapticFeedback = LocalHapticFeedback.current
     val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
     var useSystemIsDark by LocalUseSystemIsDark.current
@@ -115,6 +119,7 @@ fun Settings(
     var animationsEnabled by LocalAnimationsEnabled.current
     var blurEnabled by LocalBlurEnabled.current
     var backgroundEnabled by LocalBackgroundEnabled.current
+    var hapticsEnabled by LocalHapticsEnabled.current
     var notificationsEnabled by LocalGradeNotificationsEnabled.current
     var notificationIntervalMinutes by LocalGradeNotificationIntervalMinutes.current
     var notificationsWifiOnly by LocalGradeNotificationsWifiOnly.current
@@ -155,7 +160,7 @@ fun Settings(
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             item {
-                PreferenceCategory("Design", Modifier.padding(horizontal = 15.dp))
+                PreferenceCategory("Personalisierung", Modifier.padding(horizontal = 15.dp))
             }
             item {
                 PreferenceItem(
@@ -170,7 +175,7 @@ fun Settings(
                             onCheckedChange = {
                                 useSystemIsDark = it
                                 settings["useSystemIsDark"] = it
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                                vibrator.enhancedVibrate(EnhancedVibrations.SLOW_RISE)
                             },
                             shapes = IconButtonDefaults.toggleableShapes(),
                         ) {
@@ -183,7 +188,7 @@ fun Settings(
                                 settings["useSystemIsDark"] = !it
                                 isDark = !it
                                 settings["isDark"] = !it
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                                vibrator.enhancedVibrate(EnhancedVibrations.SLOW_RISE)
                             },
                             shapes = IconButtonDefaults.toggleableShapes(),
                         ) {
@@ -196,7 +201,7 @@ fun Settings(
                                 settings["useSystemIsDark"] = !it
                                 isDark = it
                                 settings["isDark"] = it
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.Confirm)
+                                vibrator.enhancedVibrate(EnhancedVibrations.SLOW_RISE)
                             },
                             shapes = IconButtonDefaults.toggleableShapes(),
                         ) {
@@ -247,8 +252,20 @@ fun Settings(
                 },
                 text = "Hintergrundbild",
                 icon = Icons.Outlined.Texture,
-                position = PreferencePosition.Bottom,
+                position = if (vibrator.isAvailable) PreferencePosition.Middle else PreferencePosition.Bottom,
             )
+            if (vibrator.isAvailable) {
+                settingsToggleItem(
+                    checked = hapticsEnabled,
+                    onCheckedChange = {
+                        hapticsEnabled = it
+                        settings["hapticsEnabled"] = it
+                    },
+                    text = "Haptisches Feedback",
+                    icon = Icons.Outlined.Vibration,
+                    position = PreferencePosition.Bottom,
+                )
+            }
             if (GradeNotifications.isSupported && !viewModel.isDemoAccount.value && !viewModel.authTokenManager.getToken().isNullOrEmpty()) {
                 item {
                     PreferenceCategory("Benachrichtigungen", Modifier.padding(horizontal = 15.dp))
@@ -297,7 +314,7 @@ fun Settings(
                         onClick =
                             if (notificationsEnabled) {
                                 {
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                    vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                                     settingsViewModel.showIntervalDialog = true
                                 }
                             } else {
@@ -499,7 +516,7 @@ fun Settings(
                     onClick = {
                         viewModel.logout()
                         onNavigateToLogin()
-                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                     },
                     position = PreferencePosition.Bottom,
                 )
@@ -515,7 +532,7 @@ fun Settings(
                     icon = Github,
                     onClick = {
                         uriHandler.openUri("https://github.com/HansHolz09/Beste-Noten-App")
-                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                     },
                     position = PreferencePosition.Top,
                 )
@@ -527,7 +544,7 @@ fun Settings(
                     icon = Icons.Outlined.LocalLibrary,
                     onClick = {
                         settingsViewModel.showLicenseDialog = true
-                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                     },
                     position = PreferencePosition.Middle,
                 )
@@ -539,7 +556,7 @@ fun Settings(
                     if (tapCount % 7 == 0) {
                         settingsViewModel.showConfetti = true
                     } else {
-                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                     }
                 }
                 val onClick: (() -> Unit)? = if (!settingsViewModel.showConfetti) func else null

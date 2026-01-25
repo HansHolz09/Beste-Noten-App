@@ -7,8 +7,7 @@ import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
+import top.ltfan.multihaptic.compose.rememberVibrator
 
 @Composable
 fun EnhancedIconButton(
@@ -21,14 +20,14 @@ fun EnhancedIconButton(
     interactionSource: MutableInteractionSource? = null,
     content: @Composable (enabled: Boolean) -> Unit,
 ) {
-    val hapticFeedback = LocalHapticFeedback.current
+    val vibrator = rememberVibrator()
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     IconButton(
         onClick = {
             onClick()
             if (hapticEnabled) {
-                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
             }
         },
         shapes = IconButtonDefaults.shapes(),

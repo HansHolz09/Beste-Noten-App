@@ -43,9 +43,7 @@ import androidx.compose.ui.backhandler.PredictiveBackHandler
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -53,12 +51,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.components.FullscreenDialog
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.main.AppHazeState
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import kotlinx.coroutines.delay
+import top.ltfan.multihaptic.compose.rememberVibrator
 
 @Composable
 fun EnhancedAlertDialog(
@@ -135,7 +136,7 @@ fun BasicEnhancedAlertDialog(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    val hapticFeedback = LocalHapticFeedback.current
+    val vibrator = rememberVibrator()
 
     var visibleAnimated by remember { mutableStateOf(false) }
 
@@ -175,7 +176,7 @@ fun BasicEnhancedAlertDialog(
                                 .pointerInput(Unit) {
                                     detectTapGestures {
                                         onDismissRequest.invoke()
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                        vibrator.enhancedVibrate(EnhancedVibrations.QUICK_FALL)
                                     }
                                 }.enhancedHazeEffect(AppHazeState.current.value, MaterialTheme.colorScheme.scrim, fallbackAlpha = alpha)
                                 .fillMaxSize(),

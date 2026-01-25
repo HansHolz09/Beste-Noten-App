@@ -11,6 +11,7 @@ import com.russhwolf.settings.Settings
 import dev.chrisbanes.haze.HazeState
 
 internal val LocalBackgroundEnabled = compositionLocalOf { mutableStateOf(false) }
+internal val LocalHapticsEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowGreetings = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowNewestGrades = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowCurrentLesson = compositionLocalOf { mutableStateOf(false) }
@@ -36,6 +37,7 @@ fun SettingsProvider(content: @Composable () -> Unit) {
     val settings = Settings()
 
     val backgroundEnabledState = remember { mutableStateOf(settings.getBoolean("backgroundEnabled", true)) }
+    val hapticsEnabledState = remember { mutableStateOf(settings.getBoolean("hapticsEnabled", listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform()))) }
     val showGreetingsState = remember { mutableStateOf(settings.getBoolean("showGreetings", true)) }
     val showNewestGradesState = remember { mutableStateOf(settings.getBoolean("showNewestGrades", true)) }
     val showCurrentLessonState = remember { mutableStateOf(settings.getBoolean("showCurrentLesson", true)) }
@@ -51,6 +53,7 @@ fun SettingsProvider(content: @Composable () -> Unit) {
     val requireBiometricAuthentificationState = remember { mutableStateOf(settings.getBoolean("requireBiometricAuthentification", false)) }
     CompositionLocalProvider(
         LocalBackgroundEnabled provides backgroundEnabledState,
+        LocalHapticsEnabled provides hapticsEnabledState,
         LocalShowGreetings provides showGreetingsState,
         LocalShowNewestGrades provides showNewestGradesState,
         LocalShowCurrentLesson provides showCurrentLessonState,

@@ -30,7 +30,7 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 - Jahresinformationen zu den Halbjahres-Zeiträumen und Abwesenheits-Statistiken
 - Adaptives Material-3-Expressive-Design auf allen Plattformen
 - Schöne Animationen und Übergänge
-- Haptisches Feedback auf Android und iOS
+- Immersives haptisches Feedback auf unterstützten Geräten
 - Benachrichtigungen über neue Noten mit anpassbarem Überprüfungsintervall für Android und iOS
 - Optionale biometrische Authentifizierung bei jedem Start der App auf Android und iOS
 - Einige Anpassungsmöglichkeiten
@@ -92,6 +92,7 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 - [Compose Sonner](https://github.com/dokar3/compose-sonner) - Apache 2.0 - Toast-Komponente
 - [Alarmee](https://github.com/Tweener/alarmee) - Apache 2.0 - Benachrichtigungen für Android und iOS
 - [KMM Permission](https://github.com/reyazoct/Kmm-Permissions) - MIT - Anfragen der Benachrichtigungsberechtigung
+- [multihaptic](https://github.com/xfqwdsj/multihaptic) - MIT - Vielseitig anpassbares haptisches Feedback
 - [AndroidX Security Crypto](https://developer.android.com/jetpack/androidx/releases/security) - Apache 2.0 - Kryptografiebibliothek für Android
 - [AndroidX Biometric](https://developer.android.com/jetpack/androidx/releases/biometric) - Apache 2.0 - Unterstützung für biometrische Authentifizierung unter Android
 - [SmartSpacer SDK](https://github.com/KieronQuinn/Smartspacer) - GPL 3.0 - Integration für SmartSpacer unter Android

@@ -75,10 +75,8 @@ import androidx.compose.ui.backhandler.PredictiveBackHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -88,9 +86,11 @@ import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.main.LocalShowAbsences
 import com.hansholz.bestenotenapp.main.Platform
@@ -105,6 +105,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
+import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -125,9 +126,9 @@ fun Timetable(
         val timetableViewModel = viewModel { TimetableViewModel(viewModel) }
 
         val scope = rememberCoroutineScope()
+        val vibrator = rememberVibrator()
         val density = LocalDensity.current
         val layoutDirection = LocalLayoutDirection.current
-        val hapticFeedback = LocalHapticFeedback.current
 
         var showAbsences by LocalShowAbsences.current
 
@@ -195,11 +196,11 @@ fun Timetable(
                         onRefresh = {
                             if (timetableViewModel.userScrollEnabled && !lessonPopupShown.value && getPlatform() != Platform.DESKTOP) {
                                 scope.launch {
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureEnd)
+                                    vibrator.enhancedVibrate(EnhancedVibrations.SPIN)
                                     isRefreshLoading = true
                                     week = viewModel.getJournalWeek(weekDate, false, showAbsences)
                                     isRefreshLoading = false
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentTick)
+                                    vibrator.enhancedVibrate(EnhancedVibrations.QUICK_FALL)
                                 }
                             }
                         },

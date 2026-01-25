@@ -44,9 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -59,6 +57,8 @@ import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.components.rotateForever
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.ViewModel
@@ -71,6 +71,7 @@ import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
+import top.ltfan.multihaptic.compose.rememberVibrator
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -82,9 +83,10 @@ fun Login(
 
     val scope = viewModel.viewModelScope
 
+    val vibrator = rememberVibrator()
+
     @Suppress("DEPRECATION")
     val clipboard = LocalClipboardManager.current
-    val hapticFeedback = LocalHapticFeedback.current
     val animationsEnabled by LocalAnimationsEnabled.current
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
     val settings = Settings()
@@ -255,11 +257,11 @@ fun Login(
                                         .clickable(viewModel.authTokenManager.isAvailable) {
                                             val newValue = !stayLoggedIn
                                             stayLoggedIn = newValue
-                                            hapticFeedback.performHapticFeedback(
+                                            vibrator.enhancedVibrate(
                                                 if (newValue) {
-                                                    HapticFeedbackType.ToggleOn
+                                                    EnhancedVibrations.TOGGLE_ON
                                                 } else {
-                                                    HapticFeedbackType.ToggleOff
+                                                    EnhancedVibrations.TOGGLE_OFF
                                                 },
                                             )
                                         }.padding(start = 10.dp),
@@ -299,11 +301,11 @@ fun Login(
                                                     requireBiometricAuthentification = newValue
                                                     settings["requireBiometricAuthentification"] = newValue
                                                 }
-                                                hapticFeedback.performHapticFeedback(
+                                                vibrator.enhancedVibrate(
                                                     if (newValue) {
-                                                        HapticFeedbackType.ToggleOn
+                                                        EnhancedVibrations.TOGGLE_ON
                                                     } else {
-                                                        HapticFeedbackType.ToggleOff
+                                                        EnhancedVibrations.TOGGLE_OFF
                                                     },
                                                 )
                                             }.padding(start = 10.dp),

@@ -43,10 +43,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -57,15 +55,20 @@ import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
+import com.hansholz.bestenotenapp.components.rememberLazyListScrollSpeedState
 import com.hansholz.bestenotenapp.main.LocalShowAllSubjects
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.nomanr.animate.compose.presets.zoomingextrances.ZoomIn
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
+import top.ltfan.multihaptic.compose.rememberVibrator
+import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
@@ -78,8 +81,8 @@ fun SubjectsAndTeachers(
         val subjectsAndTeachersViewModel = viewModel { SubjectsAndTeachersViewModel(viewModel) }
 
         val scope = rememberCoroutineScope()
+        val vibrator = rememberVibrator()
         val density = LocalDensity.current
-        val hapticFeedback = LocalHapticFeedback.current
         val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
         val showAllSubjects by LocalShowAllSubjects.current
@@ -141,6 +144,7 @@ fun SubjectsAndTeachers(
                                         )
                                     } else {
                                         val lazyListState = rememberLazyListState()
+                                        val speedState = rememberLazyListScrollSpeedState(lazyListState)
                                         LazyColumn(
                                             state = lazyListState,
                                             contentPadding = contentPadding,
@@ -151,8 +155,8 @@ fun SubjectsAndTeachers(
                                                     durationMillis = 200,
                                                 ) { isAnimated ->
                                                     LaunchedEffect(Unit) {
-                                                        if (lazyListState.isScrollInProgress && isAnimated) {
-                                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                                        if (lazyListState.isScrollInProgress && isAnimated && abs(speedState.pxPerSecond) > 4000) {
+                                                            vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
                                                         }
                                                     }
                                                     ListItem(
@@ -199,6 +203,7 @@ fun SubjectsAndTeachers(
                                         )
                                     } else {
                                         val lazyListState = rememberLazyListState()
+                                        val speedState = rememberLazyListScrollSpeedState(lazyListState)
                                         LazyColumn(
                                             state = lazyListState,
                                             contentPadding = contentPadding,
@@ -209,8 +214,8 @@ fun SubjectsAndTeachers(
                                                     durationMillis = 200,
                                                 ) { isAnimated ->
                                                     LaunchedEffect(Unit) {
-                                                        if (lazyListState.isScrollInProgress && isAnimated) {
-                                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                                        if (lazyListState.isScrollInProgress && isAnimated && abs(speedState.pxPerSecond) > 4000) {
+                                                            vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
                                                         }
                                                     }
                                                     ListItem(

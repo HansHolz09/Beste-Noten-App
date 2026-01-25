@@ -55,15 +55,15 @@ import androidx.compose.ui.backhandler.PredictiveBackHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.api.models.Absence
 import com.hansholz.bestenotenapp.api.models.JournalLesson
 import com.hansholz.bestenotenapp.api.models.JournalWeek
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
@@ -77,6 +77,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
+import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -97,9 +98,9 @@ fun WeekScheduleView(
     enabled: Boolean = true,
 ) {
     val scope = rememberCoroutineScope()
+    val vibrator = rememberVibrator()
     val isDark = LocalThemeIsDark.current
     val blurEnabled = LocalBlurEnabled.current
-    val hapticFeedback = LocalHapticFeedback.current
     val showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
 
     if (week?.days == null) return
@@ -185,7 +186,7 @@ fun WeekScheduleView(
                                 shownLessonPopup = if (targetLessonPopupShown) selectedLesson else null,
                             ) { lesson ->
                                 if (enabled) {
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                    vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                                     selectedLesson = lesson
                                     selectedDay = currentDate
                                     lessonPopupShown.value = true
@@ -228,7 +229,7 @@ fun WeekScheduleView(
                     Modifier.fillMaxSize().clickable(null, null) {
                         lessonPopupShown.value = false
                         contentBlurred = false
-                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                        vibrator.enhancedVibrate(EnhancedVibrations.QUICK_FALL)
                     },
                 ) {
                     OutlinedCard(
@@ -396,7 +397,7 @@ fun WeekScheduleView(
                                         Modifier
                                             .clickable {
                                                 dialogShown.value = true
-                                                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                                vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                                             }.skipToLookaheadSize(),
                                     colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f)),
                                 )

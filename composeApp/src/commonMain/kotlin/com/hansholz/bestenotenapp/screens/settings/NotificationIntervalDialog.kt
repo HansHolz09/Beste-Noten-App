@@ -20,20 +20,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationIntervalMinutes
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.utils.formateInterval
 import com.russhwolf.settings.Settings
 import components.dialogs.EnhancedAlertDialog
+import top.ltfan.multihaptic.compose.rememberVibrator
 
 @Composable
 fun NotificationIntervalDialog(settingsViewModel: SettingsViewModel) {
-    val hapticFeedback = LocalHapticFeedback.current
+    val vibrator = rememberVibrator()
 
     var notificationIntervalMinutes by LocalGradeNotificationIntervalMinutes.current
     val settings = Settings()
@@ -56,7 +57,7 @@ fun NotificationIntervalDialog(settingsViewModel: SettingsViewModel) {
                                 .selectable(
                                     selected = (notificationIntervalMinutes == option),
                                     onClick = {
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                                         notificationIntervalMinutes = option
                                         settings.putLong("gradeNotificationsIntervalMinutes", option)
                                         GradeNotifications.onSettingsUpdated()

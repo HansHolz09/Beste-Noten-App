@@ -39,6 +39,7 @@ kotlin {
         compilations.configureEach {
             compileTaskProvider.get().compilerOptions {
                 freeCompilerArgs.add("-Xexpect-actual-classes")
+                freeCompilerArgs.add("-Xcontext-sensitive-resolution")
             }
         }
     }
@@ -99,6 +100,7 @@ kotlin {
             implementation(libs.haze)
             implementation(libs.material.kolor)
             implementation(libs.platformtools.darkmodedetector)
+            implementation(libs.multihaptic.compose)
             implementation(libs.animate.compose)
             implementation(libs.confettikit)
             implementation(libs.emoji.compose.m3)

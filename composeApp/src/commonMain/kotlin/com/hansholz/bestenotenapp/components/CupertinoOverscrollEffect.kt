@@ -20,8 +20,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
-import androidx.compose.ui.hapticfeedback.HapticFeedback
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -35,7 +33,6 @@ import androidx.compose.ui.node.LayoutAwareModifierNode
 import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.node.PointerInputModifierNode
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
@@ -44,10 +41,14 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.toOffset
 import androidx.compose.ui.unit.toSize
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
+import top.ltfan.multihaptic.compose.rememberVibrator
+import top.ltfan.multihaptic.vibrator.Vibrator
 import kotlin.math.abs
 import kotlin.math.sign
 
@@ -56,10 +57,10 @@ fun ProvideCupertinoOverscrollEffect(
     enabled: Boolean,
     content: @Composable () -> Unit,
 ) {
-    val haptic = LocalHapticFeedback.current
+    val vibrator = rememberVibrator()
     if (enabled) {
         CompositionLocalProvider(
-            LocalOverscrollFactory provides CupertinoOverscrollEffectFactory(LocalDensity.current, haptic),
+            LocalOverscrollFactory provides CupertinoOverscrollEffectFactory(LocalDensity.current, vibrator),
         ) {
             content()
         }
@@ -70,13 +71,13 @@ fun ProvideCupertinoOverscrollEffect(
 
 private data class CupertinoOverscrollEffectFactory(
     private val density: Density,
-    private val hapticFeedback: HapticFeedback,
+    private val vibrator: Vibrator,
 ) : OverscrollFactory {
     override fun createOverscrollEffect(): OverscrollEffect =
         CupertinoOverscrollEffect(
             density = density.density,
             applyClip = false,
-            hapticFeedback = hapticFeedback,
+            vibrator = vibrator,
         )
 }
 
@@ -120,7 +121,7 @@ private data class CupertinoOverscrollAvailableDelta(
 internal class CupertinoOverscrollEffect(
     private val density: Float,
     val applyClip: Boolean,
-    private val hapticFeedback: HapticFeedback,
+    private val vibrator: Vibrator,
 ) : OverscrollEffect {
     /*
      * Direction of scrolling for this overscroll effect, derived from arguments during
@@ -151,8 +152,8 @@ internal class CupertinoOverscrollEffect(
     private var overscrollOffset: Offset
         get() = overscrollOffsetState.value
         set(value) {
-            if (overscrollOffsetState.value == Offset.Zero && value != Offset.Zero) {
-                hapticFeedback.performHapticFeedback(HapticFeedbackType.GestureEnd)
+            if (overscrollOffsetState.value == Offset.Zero && value != Offset.Zero && lastFlingUnconsumedDelta != Offset.Zero) {
+                vibrator.enhancedVibrate(EnhancedVibrations.THUD)
             }
             overscrollOffsetState.value = value
             drawCallScheduledByOffsetChange = true

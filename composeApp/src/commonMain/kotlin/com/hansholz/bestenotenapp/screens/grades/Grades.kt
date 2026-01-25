@@ -91,10 +91,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
@@ -110,10 +108,13 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
+import com.hansholz.bestenotenapp.components.rememberLazyListScrollSpeedState
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
 import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
@@ -131,6 +132,8 @@ import io.github.koalaplot.core.util.ExperimentalKoalaPlotApi
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import top.ltfan.multihaptic.compose.rememberVibrator
+import kotlin.math.abs
 
 @OptIn(
     ExperimentalMaterial3ExpressiveApi::class,
@@ -149,8 +152,8 @@ fun Grades(
         val gradesViewModel = viewModel { GradesViewModel(viewModel) }
 
         val scope = rememberCoroutineScope()
+        val vibrator = rememberVibrator()
         val density = LocalDensity.current
-        val hapticFeedback = LocalHapticFeedback.current
         val layoutDirection = LocalLayoutDirection.current
 
         @Suppress("DEPRECATION")
@@ -247,6 +250,7 @@ fun Grades(
                             } else {
                                 when (currentPage) {
                                     0 -> {
+                                        val speedState = rememberLazyListScrollSpeedState(firstLazyListState)
                                         LazyColumn(
                                             state = firstLazyListState,
                                             contentPadding = contentPadding,
@@ -259,8 +263,8 @@ fun Grades(
                                                     durationMillis = 200,
                                                 ) { isAnimated ->
                                                     LaunchedEffect(Unit) {
-                                                        if (firstLazyListState.isScrollInProgress && isAnimated) {
-                                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                                        if (firstLazyListState.isScrollInProgress && isAnimated && abs(speedState.pxPerSecond) > 4000) {
+                                                            vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
                                                         }
                                                     }
                                                     ListItem(
@@ -301,6 +305,7 @@ fun Grades(
                                         }
                                     }
                                     1 -> {
+                                        val speedState = rememberLazyListScrollSpeedState(secondLazyListState)
                                         LazyColumn(
                                             state = secondLazyListState,
                                             modifier = Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding()),
@@ -318,8 +323,8 @@ fun Grades(
                                                             durationMillis = 200,
                                                         ) { isAnimated ->
                                                             LaunchedEffect(Unit) {
-                                                                if (secondLazyListState.isScrollInProgress && isAnimated) {
-                                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                                                if (secondLazyListState.isScrollInProgress && isAnimated && abs(speedState.pxPerSecond) > 4000) {
+                                                                    vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
                                                                 }
                                                             }
                                                             Column(
@@ -360,8 +365,8 @@ fun Grades(
                                                             durationMillis = 200,
                                                         ) { isAnimated ->
                                                             LaunchedEffect(Unit) {
-                                                                if (secondLazyListState.isScrollInProgress && isAnimated) {
-                                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.SegmentFrequentTick)
+                                                                if (secondLazyListState.isScrollInProgress && isAnimated && abs(speedState.pxPerSecond) > 4000) {
+                                                                    vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
                                                                 }
                                                             }
                                                             ListItem(

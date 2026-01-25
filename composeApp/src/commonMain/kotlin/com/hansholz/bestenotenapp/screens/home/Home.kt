@@ -16,7 +16,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -59,8 +58,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -75,8 +72,10 @@ import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.TwoToneLinearWavyProgressIndicator
 import com.hansholz.bestenotenapp.components.UpdateOnNewDay
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.components.repeatingBackground
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalShowCurrentLesson
@@ -105,6 +104,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.imageResource
 import org.kodein.emoji.compose.m3.TextWithNotoAnimatedEmoji
+import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -120,8 +120,8 @@ fun Home(
         val homeViewModel = viewModel { HomeViewModel(viewModel) }
 
         val scope = rememberCoroutineScope()
+        val vibrator = rememberVibrator()
         val isDark = LocalThemeIsDark.current
-        val hapticFeedback = LocalHapticFeedback.current
         val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
         val backgroundAlpha = animateFloatAsState(if (LocalBackgroundEnabled.current.value) 0.2f else 0f, tween(750))
@@ -194,18 +194,22 @@ fun Home(
                                                     .animateContentSize()
                                                     .padding(20.dp)
                                                     .clickable(
-                                                        interactionSource = remember { MutableInteractionSource() },
+                                                        interactionSource = null,
                                                         indication = null,
                                                         enabled = !viewModel.isBesteSchuleNotReachable.value,
                                                     ) {
-                                                        greeting =
-                                                            getGreeting(
-                                                                viewModel.user.value
-                                                                    ?.students
-                                                                    ?.firstOrNull()
-                                                                    ?.forename ?: "du",
-                                                            )
-                                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                                        var newGreeting = greeting
+                                                        while (newGreeting == greeting) {
+                                                            newGreeting =
+                                                                getGreeting(
+                                                                    viewModel.user.value
+                                                                        ?.students
+                                                                        ?.firstOrNull()
+                                                                        ?.forename ?: "du",
+                                                                )
+                                                        }
+                                                        greeting = newGreeting
+                                                        vibrator.enhancedVibrate(EnhancedVibrations.SPIN)
                                                     },
                                             textAlign = TextAlign.Center,
                                             fontFamily = FontFamilies.Schoolbell(),
@@ -234,7 +238,7 @@ fun Home(
                                 ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
                                 .clickable {
                                     scope.launch {
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                                         makeItemVisibleAndNavigate(
                                             listState = lazyStaggeredGridState,
                                             index = 1,
@@ -339,7 +343,7 @@ fun Home(
                                 ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
                                 .clickable {
                                     scope.launch {
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                                         makeItemVisibleAndNavigate(
                                             listState = lazyStaggeredGridState,
                                             index = 2,
@@ -508,7 +512,7 @@ fun Home(
                                 ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
                                 .clickable {
                                     scope.launch {
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                                         makeItemVisibleAndNavigate(
                                             listState = lazyStaggeredGridState,
                                             index = 3,
@@ -568,7 +572,7 @@ fun Home(
                                     ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
                                     .clickable {
                                         homeViewModel.isStatsDialogShown = true
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                                     },
                             ) {
                                 Column(Modifier.fillMaxWidth()) {

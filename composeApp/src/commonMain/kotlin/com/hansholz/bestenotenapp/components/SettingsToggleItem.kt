@@ -11,9 +11,10 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import top.ltfan.multihaptic.compose.rememberVibrator
 
 fun LazyListScope.settingsToggleItem(
     checked: Boolean,
@@ -36,16 +37,16 @@ fun LazyListScope.settingsToggleItem(
             enabled = enabled,
             position = position,
         ) {
-            val hapticFeedback = LocalHapticFeedback.current
+            val vibrator = rememberVibrator()
             Switch(
                 checked = checked,
                 onCheckedChange = {
                     onCheckedChange(it)
-                    hapticFeedback.performHapticFeedback(
+                    vibrator.enhancedVibrate(
                         if (it) {
-                            HapticFeedbackType.ToggleOn
+                            EnhancedVibrations.TOGGLE_ON
                         } else {
-                            HapticFeedbackType.ToggleOff
+                            EnhancedVibrations.TOGGLE_OFF
                         },
                     )
                 },

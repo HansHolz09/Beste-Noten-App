@@ -29,7 +29,7 @@ This cross-platform school app makes everyday school life more organized and is 
 - Annual information on half-year periods and absence statistics
 - Adaptive Material 3 Expressive design on all platforms
 - Beautiful animations and transitions
-- Haptic feedback on Android and iOS
+- Immersive haptic feedback on supported devices
 - Notifications for new grades with a customizable check interval for Android and iOS
 - Optional biometric authentication on every app launch for Android and iOS
 - Some customization options
@@ -91,6 +91,7 @@ This cross-platform school app makes everyday school life more organized and is 
 - [Compose Sonner](https://github.com/dokar3/compose-sonner) - Apache 2.0 - Toast component
 - [Alarmee](https://github.com/Tweener/alarmee) - Apache 2.0 - Notifications for Android and iOS
 - [KMM Permission](https://github.com/reyazoct/Kmm-Permissions) - MIT - Requesting notification permissions
+- [multihaptic](https://github.com/xfqwdsj/multihaptic) - MIT - Highly customizable haptic feedback
 - [AndroidX Security Crypto](https://developer.android.com/jetpack/androidx/releases/security) - Apache 2.0 - Cryptography library for Android
 - [AndroidX Biometric](https://developer.android.com/jetpack/androidx/releases/biometric) - Apache 2.0 - Support for biometric authentication on Android
 - [SmartSpacer SDK](https://github.com/KieronQuinn/Smartspacer) - GPL 3.0 - Integration for SmartSpacer on Android

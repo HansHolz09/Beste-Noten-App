@@ -36,8 +36,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -47,6 +45,8 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.hansholz.bestenotenapp.components.ConfettiPresets
 import com.hansholz.bestenotenapp.components.NavigationDrawer
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.theme.FontFamilies
@@ -57,6 +57,7 @@ import com.nomanr.animate.compose.presets.attentionseekers.RubberBand
 import io.github.vinceglb.confettikit.compose.ConfettiKit
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import top.ltfan.multihaptic.compose.rememberVibrator
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -66,7 +67,7 @@ fun AppNavigationDrawer(
     onNavigateToLogin: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
-    val hapticFeedback = LocalHapticFeedback.current
+    val vibrator = rememberVibrator()
     val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
     var showConfetti by remember { mutableStateOf(false) }
@@ -98,8 +99,10 @@ fun AppNavigationDrawer(
                                 .align(Alignment.CenterHorizontally)
                                 .padding(horizontal = 40.dp)
                                 .clickable(null, null) {
-                                    showConfetti = true
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                    if (!showConfetti) {
+                                        showConfetti = true
+                                        vibrator.enhancedVibrate(EnhancedVibrations.LOGO_RAIN)
+                                    }
                                 },
                         color = colorScheme.onSurface,
                         autoSize = TextAutoSize.StepBased(10.sp),
@@ -119,8 +122,10 @@ fun AppNavigationDrawer(
                                 .align(Alignment.CenterHorizontally)
                                 .padding(horizontal = 80.dp)
                                 .clickable(null, null) {
-                                    showConfetti = true
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                    if (!showConfetti) {
+                                        showConfetti = true
+                                        vibrator.enhancedVibrate(EnhancedVibrations.LOGO_RAIN)
+                                    }
                                 },
                         color = colorScheme.onSurface,
                         autoSize = TextAutoSize.StepBased(5.sp),
@@ -145,7 +150,7 @@ fun AppNavigationDrawer(
                                     navController.navigate(screen.route)
                                     if (windowWithSizeClass == WindowWidthSizeClass.COMPACT) viewModel.closeOrOpenDrawer(windowWithSizeClass)
                                 }
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                             },
                             modifier =
                                 Modifier.padding(10.dp).then(
@@ -175,7 +180,7 @@ fun AppNavigationDrawer(
                                 navController.navigate(Fragment.Settings.route)
                                 if (windowWithSizeClass == WindowWidthSizeClass.COMPACT) viewModel.closeOrOpenDrawer(windowWithSizeClass)
                             }
-                            hapticFeedback.performHapticFeedback(HapticFeedbackType.ContextClick)
+                            vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                         },
                         modifier =
                             Modifier.padding(10.dp).then(

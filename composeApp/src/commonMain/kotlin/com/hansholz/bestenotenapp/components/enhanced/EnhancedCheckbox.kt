@@ -30,13 +30,12 @@ import androidx.compose.ui.graphics.PathMeasure
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import top.ltfan.multihaptic.compose.rememberVibrator
 
 @Composable
 fun EnhancedCheckbox(
@@ -47,7 +46,7 @@ fun EnhancedCheckbox(
     colors: CheckboxColors = CheckboxDefaults.colors(),
     interactionSource: MutableInteractionSource? = null,
 ) {
-    val hapticFeedback = LocalHapticFeedback.current
+    val vibrator = rememberVibrator()
 
     val strokeWidthPx = with(LocalDensity.current) { 2.5.dp.toPx() }
     val toggleableState = ToggleableState(checked)
@@ -63,11 +62,11 @@ fun EnhancedCheckbox(
                     onClick = {
                         val newState = !checked
                         onCheckedChange(newState)
-                        hapticFeedback.performHapticFeedback(
+                        vibrator.enhancedVibrate(
                             if (newState) {
-                                HapticFeedbackType.ToggleOn
+                                EnhancedVibrations.TOGGLE_ON
                             } else {
-                                HapticFeedbackType.ToggleOff
+                                EnhancedVibrations.TOGGLE_OFF
                             },
                         )
                     },
