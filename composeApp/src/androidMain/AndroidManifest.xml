@@ -20,14 +20,15 @@
             android:label="Beste-Noten-App"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
-            android:theme="@android:style/Theme.Material.NoActionBar"
+            android:theme="@style/AppSplashScreen"
             android:enableOnBackInvokedCallback="true"
             tools:targetApi="33">
         <activity
                 android:exported="true"
                 android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|mnc|colorMode|density|fontScale|fontWeightAdjustment|keyboard|layoutDirection|locale|mcc|navigation|smallestScreenSize|touchscreen|uiMode"
                 android:windowSoftInputMode="adjustResize"
-                android:name=".MainActivity">
+                android:name=".MainActivity"
+                android:theme="@style/AppSplashScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 

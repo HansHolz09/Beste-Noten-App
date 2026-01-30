@@ -3,11 +3,11 @@ package com.hansholz.bestenotenapp.components.enhanced
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.russhwolf.settings.Settings
-import kotlin.time.Duration.Companion.milliseconds
 import top.ltfan.multihaptic.DelayType
 import top.ltfan.multihaptic.HapticEffect
 import top.ltfan.multihaptic.PrimitiveType
 import top.ltfan.multihaptic.vibrator.Vibrator
+import kotlin.time.Duration.Companion.milliseconds
 
 enum class EnhancedVibrations {
     CLICK,

@@ -10,6 +10,7 @@ androidx-biometric = "1.4.0-alpha02"
 animateCompose = "0.0.1"
 buildconfig = "5.6.8"
 confettikit = "0.6.0"
+coreSplashscreen = "1.2.0"
 #noinspection NewerVersionAvailable
 credential-storage = "1.0.0"
 composeHotReload = "1.0.0-beta08"
@@ -53,6 +54,7 @@ aboutlibraries-compose-core = { module = "com.mikepenz:aboutlibraries-compose-co
 aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }
 adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
 advanced-menubar = { module = "dev.hansholz:advanced-menubar", version.ref = "advancedMenubar" }
+androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 animate-compose = { module = "com.nomanr:animate-compose", version.ref = "animateCompose" }
 confettikit = { module = "io.github.vinceglb:confettikit", version.ref = "confettikit" }
 credential-secure-storage = { module = "com.microsoft:credential-secure-storage", version.ref = "credential-storage" }
