@@ -6,7 +6,12 @@ fun translateHistoryBody(body: String): String =
     body
         .let {
             if (it.startsWith("Updated Read_at")) {
-                "Am ${formateDate(it.takeLast(21).dropLast(11))} um ${it.takeLast(10).dropLast(5)} als gelesen markiert"
+                try {
+                    "Am ${formateDate(it.takeLast(21).dropLast(11))} um ${it.takeLast(10).dropLast(5)} als gelesen markiert"
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    it
+                }
             } else {
                 it
             }
