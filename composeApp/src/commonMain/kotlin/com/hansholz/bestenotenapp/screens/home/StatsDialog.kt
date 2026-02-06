@@ -1,6 +1,7 @@
 package com.hansholz.bestenotenapp.screens.home
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -10,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Insights
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -31,13 +33,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.utils.appendWithSymbols
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.roundToDecimals
 import com.hansholz.bestenotenapp.utils.tryRemember
 import components.dialogs.EnhancedAlertDialog
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.daysUntil
@@ -88,6 +93,32 @@ fun StatsDialog(
                 },
             ) {
                 Text("Schließen")
+            }
+        },
+        dismissButton = {
+            AnimatedVisibility(!homeViewModel.isStatsDialogLoading) {
+                EnhancedOutlinedButton(
+                    onClick = {
+                        viewModel.viewModelScope.launch {
+                            homeViewModel.isStatsDialogLoading = true
+                            viewModel.getIntervals()?.let {
+                                viewModel.intervals.clear()
+                                viewModel.intervals.addAll(it)
+                            }
+                            viewModel.getDayStudentCount()?.let { viewModel.dayStudentCount.value = it }
+                            viewModel.getLessonStudentCount()?.let { viewModel.lessonStudentCount.value = it }
+                            viewModel.getYears()?.let {
+                                viewModel.years.clear()
+                                viewModel.years.addAll(it)
+                            }
+                            viewModel.getDayStudentCount(viewModel.years.lastOrNull())?.let { viewModel.currentDayStudentCount.value = it }
+                            viewModel.getLessonStudentCount(viewModel.years.lastOrNull())?.let { viewModel.currentLessonStudentCount.value = it }
+                            homeViewModel.isStatsDialogLoading = false
+                        }
+                    },
+                ) {
+                    Icon(Icons.Outlined.Refresh, null)
+                }
             }
         },
         icon = { Icon(Icons.Outlined.Insights, null) },
