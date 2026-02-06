@@ -475,6 +475,7 @@ fun Grades(
 
                     var backProgress by remember { mutableFloatStateOf(0f) }
                     var isBackInProgress by remember { mutableStateOf(false) }
+                    @Suppress("DEPRECATION")
                     PredictiveBackHandler(enabled = gradesViewModel.toolbarState != 0 && !gradesViewModel.isLoading) { progressFlow ->
                         try {
                             isBackInProgress = true

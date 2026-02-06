@@ -200,6 +200,7 @@ fun WeekScheduleView(
             if (targetLessonPopupShown) {
                 var backProgress by remember { mutableFloatStateOf(0f) }
                 var isBackInProgress by remember { mutableStateOf(false) }
+                @Suppress("DEPRECATION")
                 PredictiveBackHandler(isCurrentPage) { progressFlow ->
                     try {
                         isBackInProgress = true

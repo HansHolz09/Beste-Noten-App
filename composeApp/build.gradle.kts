@@ -15,7 +15,6 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.composeHotReload)
     alias(libs.plugins.serialization)
     alias(libs.plugins.buildConfig)
     alias(libs.plugins.aboutLibraries)
@@ -71,13 +70,12 @@ kotlin {
         val desktopMain by getting
 
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.materialIconsExtended)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
+            implementation(libs.runtime)
+            implementation(libs.foundation)
+            implementation(libs.material3)
+            implementation(libs.ui)
+            implementation(libs.material.icons.extended)
+            implementation(libs.components.resources)
             implementation(libs.adaptive)
             implementation(libs.material3.adaptive.layout)
             implementation(libs.material3.adaptive.navigation)
@@ -107,7 +105,6 @@ kotlin {
             implementation(libs.sonner)
         }
         androidMain.dependencies {
-            implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.security.crypto)
             implementation(libs.androidx.biometric)
@@ -220,10 +217,6 @@ android {
     }
 }
 
-dependencies {
-    debugImplementation(compose.uiTooling)
-}
-
 compose.desktop {
     application {
         mainClass = "com.hansholz.bestenotenapp.MainKt"
@@ -237,7 +230,7 @@ compose.desktop {
             vendor = "Franz Scholz"
 
             appResourcesRootDir = layout.projectDirectory.dir("src/desktopMain/assets")
-            jvmArgs += "-splash:${'$'}APPDIR/resources/splash.png"
+            jvmArgs += $$"-splash:$APPDIR/resources/splash.png"
 
             modules += "jdk.unsupported"
 
@@ -319,9 +312,6 @@ tasks.register("createReleaseDmg") {
 }
 
 aboutLibraries {
-    android {
-        registerAndroidTasks = false
-    }
     library {
         duplicationMode = MERGE
         duplicationRule = GROUP

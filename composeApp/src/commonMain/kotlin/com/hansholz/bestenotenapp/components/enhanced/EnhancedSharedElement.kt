@@ -7,8 +7,7 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
-import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize
-import androidx.compose.animation.SharedTransitionScope.PlaceHolderSize.Companion.contentSize
+import androidx.compose.animation.SharedTransitionScope.PlaceholderSize.Companion.ContentSize
 import androidx.compose.animation.SharedTransitionScope.ResizeMode
 import androidx.compose.animation.SharedTransitionScope.SharedContentState
 import androidx.compose.animation.core.Spring.StiffnessMediumLow
@@ -33,7 +32,7 @@ fun Modifier.enhancedSharedElement(
     sharedContentState: SharedContentState,
     animatedVisibilityScope: AnimatedVisibilityScope,
     boundsTransform: BoundsTransform = BoundsTransform { _, _ -> spring(stiffness = StiffnessMediumLow, visibilityThreshold = Rect.VisibilityThreshold) },
-    placeHolderSize: PlaceHolderSize = contentSize,
+    placeholderSize: SharedTransitionScope.PlaceholderSize = ContentSize,
     renderInOverlayDuringTransition: Boolean = true,
     zIndexInOverlay: Float = 0f,
     clipInOverlayDuringTransition: OverlayClip = ParentClip,
@@ -44,7 +43,7 @@ fun Modifier.enhancedSharedElement(
                 sharedContentState = sharedContentState,
                 animatedVisibilityScope = animatedVisibilityScope,
                 boundsTransform = boundsTransform,
-                placeHolderSize = placeHolderSize,
+                placeholderSize = placeholderSize,
                 renderInOverlayDuringTransition = renderInOverlayDuringTransition,
                 zIndexInOverlay = zIndexInOverlay,
                 clipInOverlayDuringTransition = clipInOverlayDuringTransition,
@@ -64,7 +63,7 @@ fun Modifier.enhancedSharedBounds(
     exit: ExitTransition = fadeOut(),
     boundsTransform: BoundsTransform = BoundsTransform { _, _ -> spring(stiffness = StiffnessMediumLow, visibilityThreshold = Rect.VisibilityThreshold) },
     resizeMode: ResizeMode = ResizeMode.scaleToBounds(ContentScale.FillWidth, Center),
-    placeHolderSize: PlaceHolderSize = contentSize,
+    placeholderSize: SharedTransitionScope.PlaceholderSize = ContentSize,
     renderInOverlayDuringTransition: Boolean = true,
     zIndexInOverlay: Float = 0f,
     clipInOverlayDuringTransition: OverlayClip = ParentClip,
@@ -78,7 +77,7 @@ fun Modifier.enhancedSharedBounds(
                 exit = exit,
                 boundsTransform = boundsTransform,
                 resizeMode = resizeMode,
-                placeHolderSize = placeHolderSize,
+                placeholderSize = placeholderSize,
                 renderInOverlayDuringTransition = renderInOverlayDuringTransition,
                 zIndexInOverlay = zIndexInOverlay,
                 clipInOverlayDuringTransition = clipInOverlayDuringTransition,

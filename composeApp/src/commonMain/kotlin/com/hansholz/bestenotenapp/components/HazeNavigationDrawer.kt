@@ -264,6 +264,7 @@ internal fun DrawerPredictiveBackHandler(
         maxScaleYDistance = PredictiveBackDrawerMaxScaleYDistance.toPx()
     }
 
+    @Suppress("DEPRECATION")
     PredictiveBackHandler(enabled = drawerState.isOpen) { progress ->
         try {
             progress.collect { backEvent ->

@@ -69,7 +69,3 @@ fun Vibrator.enhancedVibrate(vibration: EnhancedVibrations) {
         )
     }
 }
-
-// TODO: Use official function when available
-val Vibrator.isAvailable: Boolean
-    get() = listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform()) // this::class.simpleName != "StubVibrator"

@@ -276,6 +276,7 @@ fun Timetable(
 
                     var backProgress by remember { mutableFloatStateOf(0f) }
                     var isBackInProgress by remember { mutableStateOf(false) }
+                    @Suppress("DEPRECATION")
                     PredictiveBackHandler(enabled = timetableViewModel.toolbarState != 0) { progressFlow ->
                         try {
                             isBackInProgress = true

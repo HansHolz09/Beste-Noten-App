@@ -58,7 +58,6 @@ import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
-import com.hansholz.bestenotenapp.components.enhanced.isAvailable
 import com.hansholz.bestenotenapp.components.icons.Github
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
@@ -252,9 +251,9 @@ fun Settings(
                 },
                 text = "Hintergrundbild",
                 icon = Icons.Outlined.Texture,
-                position = if (vibrator.isAvailable) PreferencePosition.Middle else PreferencePosition.Bottom,
+                position = if (vibrator.isVibrationSupported) PreferencePosition.Middle else PreferencePosition.Bottom,
             )
-            if (vibrator.isAvailable) {
+            if (vibrator.isVibrationSupported) {
                 settingsToggleItem(
                     checked = hapticsEnabled,
                     onCheckedChange = {

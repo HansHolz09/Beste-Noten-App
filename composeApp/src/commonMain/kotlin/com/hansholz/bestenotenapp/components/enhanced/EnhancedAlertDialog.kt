@@ -223,6 +223,7 @@ fun BasicEnhancedAlertDialog(
                 }
             }
 
+            @Suppress("DEPRECATION")
             PredictiveBackHandler(enabled = visible) { progress ->
                 try {
                     progress.collect { event ->
