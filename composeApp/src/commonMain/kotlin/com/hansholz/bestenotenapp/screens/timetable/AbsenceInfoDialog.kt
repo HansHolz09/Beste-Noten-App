@@ -40,7 +40,7 @@ fun AbsenceInfoDialog(
             }
         },
         icon = { Icon(Icons.Outlined.HowToReg, null) },
-        title = { Text(absence.type.name) },
+        title = { Text(absence.type.name, color = colorScheme.error) },
         text = {
             val createdBy =
                 absence.histories

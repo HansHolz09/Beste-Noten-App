@@ -132,7 +132,8 @@ fun DailyScheduleLayout(
                                         maxLines = 1,
                                         color =
                                             if (absences.any {
-                                                    LocalDate.parse(it.from.take(10)) == date &&
+                                                    LocalDate.parse(it.from.take(10)) <= date &&
+                                                        LocalDate.parse(it.to.take(10)) >= date &&
                                                         SimpleTime.parse(it.from.takeLast(8)) <= SimpleTime.parse(lesson.time?.from ?: "00:00") &&
                                                         SimpleTime.parse(it.to.takeLast(8)) >= SimpleTime.parse(lesson.time?.to ?: "23:59")
                                                 }

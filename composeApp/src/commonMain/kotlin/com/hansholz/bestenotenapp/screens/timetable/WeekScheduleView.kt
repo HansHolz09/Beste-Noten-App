@@ -274,6 +274,18 @@ fun WeekScheduleView(
                             Text(
                                 text = selectedLesson?.subject?.localId ?: "?",
                                 modifier = Modifier.align(Alignment.Center).skipToLookaheadSize(),
+                                color =
+                                    if (absences.any {
+                                            LocalDate.parse(it.from.take(10)) <= selectedDay &&
+                                                LocalDate.parse(it.to.take(10)) >= selectedDay &&
+                                                SimpleTime.parse(it.from.takeLast(8)) <= SimpleTime.parse(selectedLesson?.time?.from ?: "00:00") &&
+                                                SimpleTime.parse(it.to.takeLast(8)) >= SimpleTime.parse(selectedLesson?.time?.to ?: "23:59")
+                                        }
+                                    ) {
+                                        colorScheme.error
+                                    } else {
+                                        Color.Unspecified
+                                    },
                                 style = typography.headlineLarge,
                             )
                         }
@@ -385,14 +397,15 @@ fun WeekScheduleView(
                         }
                         absences
                             .filter {
-                                LocalDate.parse(it.from.take(10)) == selectedDay &&
+                                LocalDate.parse(it.from.take(10)) <= selectedDay &&
+                                    LocalDate.parse(it.to.take(10)) >= selectedDay &&
                                     SimpleTime.parse(it.from.takeLast(8)) <= SimpleTime.parse(selectedLesson?.time?.from ?: "00:00") &&
                                     SimpleTime.parse(it.to.takeLast(8)) >= SimpleTime.parse(selectedLesson?.time?.to ?: "23:59")
                             }.forEach { absence ->
                                 val dialogShown = remember { mutableStateOf(false) }
                                 HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
                                 ListItem(
-                                    headlineContent = { Text(absence.type.name) },
+                                    headlineContent = { Text(absence.type.name, color = colorScheme.error) },
                                     overlineContent = { Text("Abwesenheit durch") },
                                     modifier =
                                         Modifier
