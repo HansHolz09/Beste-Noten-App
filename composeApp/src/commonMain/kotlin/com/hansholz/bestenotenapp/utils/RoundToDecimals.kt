@@ -1,10 +1,9 @@
 package com.hansholz.bestenotenapp.utils
 
+import kotlin.math.pow
 import kotlin.math.roundToInt
 
 fun Float.roundToDecimals(decimals: Int): Float {
-    var dotAt = 1
-    repeat(decimals) { dotAt *= 10 }
-    val roundedValue = (this * dotAt).roundToInt()
-    return (roundedValue / dotAt) + (roundedValue % dotAt).toFloat() / dotAt
+    val factor = 10.0.pow(decimals).toFloat()
+    return (this * factor).roundToInt() / factor
 }
