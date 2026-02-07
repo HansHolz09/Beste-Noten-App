@@ -1,27 +1,47 @@
 package com.hansholz.bestenotenapp.screens.timetable
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Article
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.hansholz.bestenotenapp.api.models.JournalNote
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.main.LocalShowNotes
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
+import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 @Composable
-fun DayHeader(date: LocalDate) {
+fun DayHeader(
+    date: LocalDate,
+    notes: List<JournalNote>?,
+) {
+    val vibrator = rememberVibrator()
+    val showNotes by LocalShowNotes.current
+
     fun getDayAbbreviation(dayOfWeek: DayOfWeek): String =
         when (dayOfWeek) {
             DayOfWeek.MONDAY -> "Mo"
@@ -45,12 +65,27 @@ fun DayHeader(date: LocalDate) {
     val dayAbbreviation = getDayAbbreviation(date.dayOfWeek)
     val formattedDate = "${date.day.toString().padStart(2, '0')}.${date.month.number.toString().padStart(2, '0')}."
 
+    val isNotesDialogShown = remember { mutableStateOf(false) }
+
     Column(
-        modifier = Modifier.padding(vertical = 8.dp),
+        modifier =
+            Modifier
+                .padding(vertical = 8.dp)
+                .clickable(null, null) {
+                    vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                    isNotesDialogShown.value = true
+                },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text(text = dayAbbreviation, color = color ?: Color.Unspecified, fontWeight = FontWeight.Bold)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(text = dayAbbreviation, color = color ?: Color.Unspecified, fontWeight = FontWeight.Bold)
+            if (!notes.isNullOrEmpty() && showNotes) {
+                Icon(Icons.AutoMirrored.Outlined.Article, null, Modifier.padding(vertical = 4.dp).padding(start = 5.dp).size(16.dp))
+            }
+        }
         Text(text = formattedDate, color = color ?: Color.Gray)
     }
+
+    NotesDialog(isNotesDialogShown, notes, formattedDate)
 }

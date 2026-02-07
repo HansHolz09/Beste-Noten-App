@@ -13,6 +13,7 @@ import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Animation
+import androidx.compose.material.icons.outlined.Article
 import androidx.compose.material.icons.outlined.BlurOn
 import androidx.compose.material.icons.outlined.Brightness4
 import androidx.compose.material.icons.outlined.BrightnessAuto
@@ -73,6 +74,7 @@ import com.hansholz.bestenotenapp.main.LocalShowCurrentLesson
 import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
 import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
+import com.hansholz.bestenotenapp.main.LocalShowNotes
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.LocalShowYearProgress
 import com.hansholz.bestenotenapp.main.ViewModel
@@ -130,6 +132,7 @@ fun Settings(
     var showAllSubjects by LocalShowAllSubjects.current
     var showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
     var showAbsences by LocalShowAbsences.current
+    var showNotes by LocalShowNotes.current
     var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
     val settings = Settings()
@@ -442,6 +445,17 @@ fun Settings(
                     },
                     text = "Abwesenheits-Einträge anzeigen",
                     icon = Icons.Outlined.HowToReg,
+                    position = PreferencePosition.Top,
+                )
+                settingsToggleItem(
+                    checked = showNotes,
+                    onCheckedChange = {
+                        showNotes = it
+                        settings["showNotes"] = it
+                    },
+                    text = "Tages-Notizen anzeigen",
+                    icon = Icons.Outlined.Article,
+                    position = PreferencePosition.Bottom,
                 )
                 item {
                     PreferenceCategory("Fächer und Lehrer", Modifier.padding(horizontal = 15.dp))

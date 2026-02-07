@@ -42,6 +42,7 @@ fun PreferenceItem(
     modifier: Modifier = Modifier,
     textModifier: Modifier = Modifier,
     iconTint: Color = LocalContentColor.current,
+    titleMaxLines: Int = 2,
     position: PreferencePosition = PreferencePosition.Single,
     trailingContent: @Composable (() -> Unit)? = null,
 ) {
@@ -116,7 +117,7 @@ fun PreferenceItem(
                     text = title,
                     modifier = textModifier,
                     style = MaterialTheme.typography.bodyLarge,
-                    maxLines = 2,
+                    maxLines = titleMaxLines,
                     overflow = TextOverflow.Ellipsis,
                 )
 

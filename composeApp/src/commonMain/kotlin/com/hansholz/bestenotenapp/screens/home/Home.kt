@@ -18,6 +18,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,10 +30,12 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Note
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.ListItem
@@ -81,6 +85,7 @@ import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalShowCurrentLesson
 import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
+import com.hansholz.bestenotenapp.main.LocalShowNotes
 import com.hansholz.bestenotenapp.main.LocalShowYearProgress
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.navigation.Fragment
@@ -129,6 +134,7 @@ fun Home(
         val showGreetings by LocalShowGreetings.current
         val showNewestGrades by LocalShowNewestGrades.current
         val showCurrentLesson by LocalShowCurrentLesson.current
+        val showNotes by LocalShowNotes.current
         val showYearProgress by LocalShowYearProgress.current
 
         UpdateOnNewDay {
@@ -477,6 +483,25 @@ fun Home(
                                                                             style = typography.bodyMedium,
                                                                         )
                                                                     }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    if (showNotes) {
+                                                        val notes =
+                                                            viewModel.currentJournalDay.value
+                                                                ?.notes
+                                                                ?.filter { it.description != null }
+                                                        if (!notes.isNullOrEmpty()) Spacer(Modifier.height(5.dp))
+                                                        notes?.forEach { note ->
+                                                            Column {
+                                                                HorizontalDivider(Modifier.fillMaxWidth().padding(top = 5.dp), 2.dp, colorScheme.outline)
+                                                                Row(
+                                                                    modifier = Modifier.padding(top = 5.dp),
+                                                                    verticalAlignment = Alignment.CenterVertically,
+                                                                ) {
+                                                                    Icon(Icons.AutoMirrored.Outlined.Note, null, Modifier.padding(end = 10.dp))
+                                                                    Text(note.description ?: "Keine Beschreibung vorhanden")
                                                                 }
                                                             }
                                                         }

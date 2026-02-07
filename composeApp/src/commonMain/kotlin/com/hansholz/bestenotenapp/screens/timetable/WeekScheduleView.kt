@@ -172,7 +172,7 @@ fun WeekScheduleView(
                             modifier = Modifier.weight(1f).fillMaxHeight(),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
-                            DayHeader(currentDate)
+                            DayHeader(currentDate, day.notes?.filter { it.description != null })
                             DailyScheduleLayout(
                                 lessons = day.lessons,
                                 absences = absences,
