@@ -2,21 +2,19 @@
 agp = "8.12.0"
 aboutLibraries = "13.2.1"
 adaptive = "1.3.0-alpha02"
-advancedMenubar = "0.1.0-alpha02"
+advancedMenubar = "0.1.0-alpha03"
 androidx-activity = "1.12.3"
 androidx-lifecycle = "2.10.0-alpha06"
 androidx-crypto = "1.1.0"
 androidx-biometric = "1.4.0-alpha02"
 animateCompose = "0.0.1"
 buildconfig = "6.0.7"
-componentsResources = "1.10.0"
 confettikit = "0.7.0"
 coreSplashscreen = "1.2.0"
 #noinspection NewerVersionAvailable
 credential-storage = "1.0.0"
-composeMultiplatform = "1.10.0"
+composeMultiplatform = "1.10.1"
 emoji = "2.3.0"
-foundation = "1.10.0"
 haze = "1.7.0"
 koalaplotCore = "0.9.1"
 kotlin = "2.3.10"
@@ -26,21 +24,20 @@ kotlinxDatetime = "0.7.1"
 kotlinx-coroutines = "1.10.2"
 kotlinxSerializationJson = "1.10.0"
 ktorClientCore = "3.4.0"
-jbrApi = "1.10.0"
+jbrApi = "1.10.1"
 jetlime = "4.1.1"
-jna = "5.18.1"
 material3 = "1.10.0-alpha05"
 materialIconsExtended = "1.7.3"
 materialyou = "0.3.0"
 multihapticCompose = "0.3.0"
 permission = "0.13.0"
 platformtools = "0.7.5"
+proguard = "7.8.2"
 navigationCompose = "2.9.1"
 materialKolor = "4.1.1"
 multiplatformSettings = "1.3.0"
 #noinspection NewerVersionAvailable
 oidc = "0.15.3"
-runtime = "1.10.0"
 smartspacer-sdk = "1.1"
 sonner = "0.3.9"
 
@@ -51,6 +48,8 @@ appVersionCode = "6"
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "36"
+macos-minSdk = "15.0"
+macos-targetSdk = "26.0"
 
 [libraries]
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
@@ -60,11 +59,11 @@ adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", versi
 advanced-menubar = { module = "dev.hansholz:advanced-menubar", version.ref = "advancedMenubar" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 animate-compose = { module = "com.nomanr:animate-compose", version.ref = "animateCompose" }
-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "componentsResources" }
+components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
 confettikit = { module = "io.github.vinceglb:confettikit", version.ref = "confettikit" }
 credential-secure-storage = { module = "com.microsoft:credential-secure-storage", version.ref = "credential-storage" }
 emoji-compose-m3 = { module = "org.kodein.emoji:emoji-compose-m3", version.ref = "emoji" }
-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "foundation" }
+foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
 haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 koalaplot-core = { module = "io.github.koalaplot:koalaplot-core", version.ref = "koalaplotCore" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -94,13 +93,12 @@ permission = { module = "tech.kotlinlang:permission", version.ref = "permission"
 platformtools-darkmodedetector = { module = "io.github.kdroidfilter:platformtools.darkmodedetector", version.ref = "platformtools" }
 jbr-api = { module = "org.jetbrains.runtime:jbr-api", version.ref = "jbrApi" }
 jetlime = { module = "io.github.pushpalroy:jetlime", version.ref = "jetlime" }
-jna-core = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 material3-adaptive-layout = { module = "org.jetbrains.compose.material3.adaptive:adaptive-layout", version.ref = "adaptive" }
 material3-adaptive-navigation = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation", version.ref = "adaptive" }
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatformSettings" }
 multiplatform-settings-no-arg = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "multiplatformSettings" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "runtime" }
+runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
 ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
 ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "composeMultiplatform" }
 smartspacer-sdk = { module = "com.kieronquinn.smartspacer:sdk-plugin", version.ref = "smartspacer-sdk" }

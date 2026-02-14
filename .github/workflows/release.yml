@@ -10,8 +10,8 @@ permissions:
 
 env:
   MODULE_PATH: composeApp
-  JBR_VERSION: "21.0.9"
-  JBR_BUILD: "b1163.78"
+  JBR_VERSION: "25.0.2"
+  JBR_BUILD: "b315.62"
 
 jobs:
   android:
@@ -133,11 +133,7 @@ jobs:
           path: artifacts/windows-arm64.exe
 
   macos:
-    strategy:
-      fail-fast: false
-      matrix:
-        runner: [macos-15-intel, macos-15]
-    runs-on: ${{ matrix.runner }}
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
 
@@ -146,8 +142,7 @@ jobs:
         run: |
           set -e
           BASE="https://cache-redirector.jetbrains.com/intellij-jbr"
-          if [[ "${{ matrix.runner }}" == "macos-15-intel" ]]; then ARCH="x64"; else ARCH="aarch64"; fi
-          FILE="jbrsdk_jcef-${JBR_VERSION}-osx-${ARCH}-${JBR_BUILD}.tar.gz"
+          FILE="jbrsdk_jcef-${JBR_VERSION}-osx-aarch64-${JBR_BUILD}.tar.gz"
           curl -fsSL "$BASE/$FILE" -o "$RUNNER_TEMP/jbr.tar.gz"
           mkdir -p "$RUNNER_TEMP/jbr"
           tar -xzf "$RUNNER_TEMP/jbr.tar.gz" -C "$RUNNER_TEMP/jbr" --strip-components=1
@@ -157,18 +152,17 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v3
 
-      - name: Build DMG
+      - name: Build DMG (Apple Silicon)
         run: |
           set -e
           ./gradlew :${MODULE_PATH}:createReleaseDmg
           mkdir -p artifacts
           DMG=$(find "${MODULE_PATH}/build" -type f -name "*.dmg" | head -n1)
-          if [[ "${{ matrix.runner }}" == "macos-15-intel" ]]; then SUFFIX="x64"; else SUFFIX="arm64"; fi
-          cp "$DMG" "artifacts/macos-${SUFFIX}.dmg"
+          cp "$DMG" "artifacts/macos-arm64.dmg"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: macos-${{ matrix.runner }}-dmg
+          name: macos-arm64-dmg
           path: artifacts/*.dmg
 
   linux:
@@ -288,7 +282,6 @@ jobs:
           [ -f android-universal.apk ] && mv android-universal.apk "${REPO}-${APP_VERSION}-android-universal.apk"
           [ -f windows-x64.exe ]      && mv windows-x64.exe      "${REPO}-${APP_VERSION}-windows-x64.exe"
           [ -f windows-arm64.exe ]    && mv windows-arm64.exe    "${REPO}-${APP_VERSION}-windows-arm64.exe"
-          [ -f macos-x64.dmg ]        && mv macos-x64.dmg        "${REPO}-${APP_VERSION}-macos-x64.dmg"
           [ -f macos-arm64.dmg ]      && mv macos-arm64.dmg      "${REPO}-${APP_VERSION}-macos-arm64.dmg"
           [ -f linux-x64.deb ]        && mv linux-x64.deb        "${REPO}-${APP_VERSION}-linux-x64.deb"
           [ -f linux-arm64.deb ]      && mv linux-arm64.deb      "${REPO}-${APP_VERSION}-linux-arm64.deb"

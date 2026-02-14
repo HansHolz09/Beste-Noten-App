@@ -2,13 +2,13 @@
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule.GROUP
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Properties
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -55,6 +55,7 @@ kotlin {
     }
 
     jvm("desktop")
+    jvmToolchain(25)
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
@@ -125,7 +126,6 @@ kotlin {
             implementation(libs.jbr.api)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.ktor.client.apache5)
-            implementation(libs.jna.core)
             implementation(libs.credential.secure.storage)
             implementation(libs.materialyou)
             implementation(libs.advanced.menubar)
@@ -231,6 +231,7 @@ compose.desktop {
 
             appResourcesRootDir = layout.projectDirectory.dir("src/desktopMain/assets")
             jvmArgs += $$"-splash:$APPDIR/resources/splash.png"
+            jvmArgs += "--enable-native-access=ALL-UNNAMED"
 
             modules += "jdk.unsupported"
 
@@ -271,6 +272,7 @@ compose.desktop {
         }
 
         buildTypes.release.proguard {
+            version = libs.versions.proguard.get()
             isEnabled = true
             obfuscate = true
             optimize = true
@@ -304,10 +306,59 @@ val copyAssetsCarToMacResources =
         from(layout.projectDirectory.file("src/desktopMain/assets/Assets.car"))
         into(layout.buildDirectory.dir("compose/binaries/main-release/app/${libs.versions.appName.get()}.app/Contents").map { it.dir("Resources") })
     }
+val patchMacosBinary =
+    tasks.register("patchMacosBinary") {
+        notCompatibleWithConfigurationCache("Caching because of ProcessBuilder disabled")
+        mustRunAfter(copyAssetsCarToMacResources)
+
+        val appName = libs.versions.appName.get()
+        val appFolder = "$appName.app"
+        doLast {
+            val buildDir = layout.buildDirectory.get().asFile
+            val binaryPath = File(buildDir, "compose/binaries/main-release/app/$appFolder/Contents/MacOS/$appName")
+            val appBundlePath = File(buildDir, "compose/binaries/main-release/app/$appFolder")
+            val patchedFile = File(binaryPath.parentFile, "${binaryPath.name}_patched")
+            if (binaryPath.exists()) {
+                try {
+                    val vtoolProcess =
+                        ProcessBuilder(
+                            "vtool",
+                            "-set-build-version",
+                            "macos",
+                            libs.versions.macos.minSdk
+                                .get(),
+                            libs.versions.macos.targetSdk
+                                .get(),
+                            "-output",
+                            patchedFile.absolutePath,
+                            binaryPath.absolutePath,
+                        ).inheritIO().start()
+                    if (vtoolProcess.waitFor() == 0 && patchedFile.exists()) {
+                        binaryPath.delete()
+                        patchedFile.renameTo(binaryPath)
+                        binaryPath.setExecutable(true)
+                        val codesignProcess =
+                            ProcessBuilder(
+                                "codesign",
+                                "--force",
+                                "--deep",
+                                "--sign",
+                                "-",
+                                appBundlePath.absolutePath,
+                            ).inheritIO().start()
+                        codesignProcess.waitFor()
+                    }
+                } catch (e: Exception) {
+                    println("Error patching DMG: ${e.message}")
+                    println("Xcode/vtool should be installed")
+                }
+            }
+        }
+    }
 tasks.register("createReleaseDmg") {
     group = "packaging"
-    description = "Creates DMG for MacOS with MacOS 26 Icon"
-    dependsOn(copyAssetsCarToMacResources)
+    description = "Creates DMG with macOS 26 icon and bigger traffic lights"
+    dependsOn(copyAssetsCarToMacResources, patchMacosBinary)
     finalizedBy("packageReleaseDmg")
 }
 
