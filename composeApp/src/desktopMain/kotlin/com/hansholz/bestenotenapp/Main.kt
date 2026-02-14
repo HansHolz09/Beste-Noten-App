@@ -3,6 +3,7 @@ package com.hansholz.bestenotenapp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ComponentOverrideApi
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,8 +63,10 @@ fun main() {
                 },
             )
             val density = LocalDensity.current
-            window.minimumSize = Dimension(with(density) { 700.toDp().roundToPx() }, with(density) { 500.toDp().roundToPx() })
-            val titleBarHeight = remember { mutableStateOf(20.dp) }
+            LaunchedEffect(Unit) {
+                window.minimumSize = Dimension(with(density) { 700.toDp().roundToPx() }, with(density) { 500.toDp().roundToPx() })
+            }
+            val titleBarHeight = remember { mutableStateOf(64.dp) }
             var isDark by remember { mutableStateOf(false) }
             CompositionLocalProvider(
                 LocalTitleBarModifier provides Modifier.onGloballyPositioned { titleBarHeight.value = with(density) { it.size.height.toDp() } },

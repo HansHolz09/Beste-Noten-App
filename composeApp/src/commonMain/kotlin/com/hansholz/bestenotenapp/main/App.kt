@@ -7,7 +7,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -34,8 +33,7 @@ fun App(
     colors: (ColorScheme) -> Unit = {},
     onNavHostReady: suspend (NavController) -> Unit = {},
 ) {
-    AppTheme {
-        colors(colorScheme)
+    AppTheme(colors) {
         val isDark = LocalThemeIsDark.current
         isDark(isDark)
         ProvideCupertinoOverscrollEffect(getPlatform() != Platform.DESKTOP) {

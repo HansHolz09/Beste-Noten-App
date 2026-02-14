@@ -7,6 +7,7 @@ import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,7 +30,10 @@ internal val LocalBlurEnabled = compositionLocalOf { mutableStateOf(false) }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-internal fun AppTheme(content: @Composable () -> Unit) {
+internal fun AppTheme(
+    finalTheme: (ColorScheme) -> Unit = {},
+    content: @Composable () -> Unit,
+) {
     val settings = Settings()
 
     val useSystemIsDark = remember { mutableStateOf(settings.getBoolean("useSystemIsDark", true)) }
@@ -61,6 +65,9 @@ internal fun AppTheme(content: @Composable () -> Unit) {
                 isDark = isDark,
                 specVersion = ColorSpec.SpecVersion.SPEC_2025,
             )
+        LaunchedEffect(colorScheme) {
+            finalTheme(colorScheme)
+        }
         MaterialExpressiveTheme(
             colorScheme = animateColorScheme(colorScheme, { tween(750) }),
             typography = AppTypography(),
