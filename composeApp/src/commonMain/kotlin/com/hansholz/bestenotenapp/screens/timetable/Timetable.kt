@@ -13,8 +13,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -25,7 +29,9 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -38,7 +44,12 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.EventBusy
+import androidx.compose.material.icons.outlined.IosShare
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Save
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ContainedLoadingIndicator
@@ -61,8 +72,10 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -75,15 +88,22 @@ import androidx.compose.ui.backhandler.PredictiveBackHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import bestenotenapp.composeapp.generated.resources.Res
+import bestenotenapp.composeapp.generated.resources.logo
+import com.dokar.sonner.Toast
+import com.dokar.sonner.ToastType
 import com.hansholz.bestenotenapp.api.models.JournalWeek
 import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
@@ -96,16 +116,26 @@ import com.hansholz.bestenotenapp.main.LocalShowAbsences
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getPlatform
+import com.hansholz.bestenotenapp.theme.FontFamilies
+import com.hansholz.bestenotenapp.utils.captureAsyncAndSaveOrShare
 import dev.chrisbanes.haze.hazeSource
+import dev.wonddak.capturable.capturable
+import dev.wonddak.capturable.controller.rememberCaptureController
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.format
+import kotlinx.datetime.format.FormatStringsInDatetimeFormats
+import kotlinx.datetime.format.byUnicodePattern
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.imageResource
 import top.ltfan.multihaptic.compose.rememberVibrator
+import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -115,6 +145,7 @@ import kotlin.time.Instant
     ExperimentalMaterial3ExpressiveApi::class,
     ExperimentalComposeUiApi::class,
     ExperimentalMaterial3Api::class,
+    FormatStringsInDatetimeFormats::class,
 )
 @Composable
 fun Timetable(
@@ -173,12 +204,14 @@ fun Timetable(
                 val lessonPopupShown = remember { mutableStateOf(false) }
                 val pagerState = rememberEnhancedPagerState(Int.MAX_VALUE, Int.MAX_VALUE / 2)
                 val contentBlurRadius = animateDpAsState(if (timetableViewModel.contentBlurred) 10.dp else 0.dp)
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier.hazeSource(viewModel.hazeBackgroundState).enhancedHazeEffect(blurRadius = contentBlurRadius.value),
-                    beyondViewportPageCount = 1,
-                    userScrollEnabled = timetableViewModel.userScrollEnabled && !lessonPopupShown.value,
-                ) { currentPage ->
+                var refreshTick by remember { mutableStateOf(0) }
+
+                @Composable
+                fun pageContent(
+                    currentPage: Int,
+                    captureOnly: Boolean = false,
+                    isLoaded: (Boolean) -> Unit = {},
+                ) {
                     var isLoading by remember { mutableStateOf(false) }
                     var weekDate = remember { timetableViewModel.startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK) }
                     var week by remember { mutableStateOf<JournalWeek?>(null) }
@@ -188,25 +221,31 @@ fun Timetable(
                         weekDate = timetableViewModel.startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK)
                         week = viewModel.getJournalWeek(weekDate, getAbsences = showAbsences && pagerState.currentPage == currentPage)
                         isLoading = false
+                        if (week?.days?.all { it.lessons.isNullOrEmpty() } ?: true) isLoaded(false)
                     }
                     var isRefreshLoading by remember { mutableStateOf(false) }
-                    val pullToRefreshState = rememberPullToRefreshState()
-                    PullToRefreshBox(
-                        isRefreshing = isRefreshLoading,
-                        onRefresh = {
-                            if (timetableViewModel.userScrollEnabled && !lessonPopupShown.value && getPlatform() != Platform.DESKTOP) {
-                                scope.launch {
+                    LaunchedEffect(refreshTick) {
+                        scope.launch {
+                            if (refreshTick != 0 && currentPage == pagerState.currentPage) {
+                                refreshTick = 0
+                                if (timetableViewModel.userScrollEnabled && !lessonPopupShown.value) {
                                     vibrator.enhancedVibrate(EnhancedVibrations.SPIN)
                                     isRefreshLoading = true
+                                    delay(1000)
                                     week = viewModel.getJournalWeek(weekDate, false, showAbsences)
                                     isRefreshLoading = false
                                     vibrator.enhancedVibrate(EnhancedVibrations.QUICK_FALL)
                                 }
                             }
-                        },
+                        }
+                    }
+                    val pullToRefreshState = rememberPullToRefreshState()
+                    PullToRefreshBox(
+                        isRefreshing = isRefreshLoading,
+                        onRefresh = { if (getPlatform() != Platform.DESKTOP) refreshTick++ },
                         state = pullToRefreshState,
                         indicator = {
-                            if (timetableViewModel.userScrollEnabled && !lessonPopupShown.value && getPlatform() != Platform.DESKTOP) {
+                            if (timetableViewModel.userScrollEnabled && !lessonPopupShown.value) {
                                 PullToRefreshDefaults.LoadingIndicator(
                                     modifier = Modifier.align(Alignment.TopCenter).padding(topPadding),
                                     isRefreshing = isRefreshLoading,
@@ -223,10 +262,10 @@ fun Timetable(
                                     modifier = Modifier.fillParentMaxSize(),
                                     contentAlignment = Alignment.Center,
                                 ) {
-                                    AnimatedContent(isLoading || week?.days?.all { it.lessons.isNullOrEmpty() } ?: true) { targetState ->
+                                    EnhancedAnimatedContent(isLoading || week?.days?.all { it.lessons.isNullOrEmpty() } ?: true, animationEnabled = !captureOnly) { targetState ->
                                         Box(Modifier.fillMaxSize()) {
                                             if (targetState) {
-                                                AnimatedContent(isLoading) { isLoading ->
+                                                EnhancedAnimatedContent(isLoading, animationEnabled = !captureOnly) { isLoading ->
                                                     if (isLoading) {
                                                         Box(
                                                             modifier = Modifier.padding(contentPadding).fillMaxSize(),
@@ -243,12 +282,17 @@ fun Timetable(
                                                     }
                                                 }
                                             } else {
+                                                if (captureOnly) {
+                                                    LaunchedEffect(Unit) {
+                                                        isLoaded(true)
+                                                    }
+                                                }
                                                 WeekScheduleView(
                                                     week = week,
                                                     absences = if (showAbsences) viewModel.absences.flatMap { it.second } else emptyList(),
                                                     lessonPopupShown = lessonPopupShown,
                                                     isCurrentPage = currentPage == pagerState.currentPage,
-                                                    contentPadding = contentPadding,
+                                                    contentPadding = if (captureOnly) PaddingValues() else contentPadding,
                                                     modifier = Modifier.padding(bottom = 10.dp).padding(horizontal = 6.dp),
                                                     enabled = timetableViewModel.userScrollEnabled,
                                                 )
@@ -260,6 +304,13 @@ fun Timetable(
                         }
                     }
                 }
+
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.hazeSource(viewModel.hazeBackgroundState).enhancedHazeEffect(blurRadius = contentBlurRadius.value),
+                    beyondViewportPageCount = 1,
+                    userScrollEnabled = timetableViewModel.userScrollEnabled && !lessonPopupShown.value,
+                ) { pageContent(it) }
                 topAppBarBackground(innerPadding.calculateTopPadding())
 
                 SharedTransitionLayout(
@@ -359,8 +410,82 @@ fun Timetable(
                                                     tint = colorScheme.onPrimaryContainer,
                                                 )
                                             }
+                                            var showCaptureArea by remember { mutableStateOf(false) }
+                                            val captureController = rememberCaptureController()
+                                            if (showCaptureArea) {
+                                                Box(Modifier.size(0.dp).graphicsLayer(alpha = 0f)) {
+                                                    key(pagerState.currentPage) {
+                                                        CompositionLocalProvider(LocalDensity provides Density(4f, 2f)) {
+                                                            Column(Modifier.requiredSize(750.dp, 1000.dp).capturable(captureController).background(colorScheme.background)) {
+                                                                Row(
+                                                                    Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                                                    verticalAlignment = Alignment.CenterVertically,
+                                                                ) {
+                                                                    Image(imageResource(Res.drawable.logo), null, Modifier.size(40.dp))
+                                                                    Text(
+                                                                        text = "Beste-Noten-App",
+                                                                        modifier = Modifier.padding(start = 10.dp),
+                                                                        color = colorScheme.onSurface,
+                                                                        fontFamily = FontFamilies.KeaniaOne(),
+                                                                        maxLines = 1,
+                                                                    )
+                                                                }
+                                                                pageContent(pagerState.currentPage, true) { containsDays ->
+                                                                    if (containsDays) {
+                                                                        scope.launch {
+                                                                            val formattedDate =
+                                                                                Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).format(
+                                                                                    LocalDateTime.Format {
+                                                                                        byUnicodePattern("dd.MM.yyyy")
+                                                                                    },
+                                                                                )
+                                                                            captureController.captureAsyncAndSaveOrShare("Stundenplan vom $formattedDate")
+                                                                            showCaptureArea = false
+                                                                        }
+                                                                    } else {
+                                                                        viewModel.toaster.show(
+                                                                            Toast(
+                                                                                message = "Keine Stunden für diese Woche gefunden",
+                                                                                type = ToastType.Warning,
+                                                                            ),
+                                                                        )
+                                                                        showCaptureArea = false
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            EnhancedIconButton(
+                                                onClick = { showCaptureArea = true },
+                                                enabled = !lessonPopupShown.value,
+                                            ) {
+                                                Icon(
+                                                    imageVector =
+                                                        when (getPlatform()) {
+                                                            Platform.ANDROID -> Icons.Outlined.Share
+                                                            Platform.IOS -> Icons.Outlined.IosShare
+                                                            Platform.DESKTOP -> Icons.Outlined.Save
+                                                            Platform.WEB -> Icons.Outlined.Download
+                                                        },
+                                                    contentDescription = null,
+                                                    tint = colorScheme.onPrimaryContainer,
+                                                )
+                                            }
                                         },
                                         trailingContent = {
+                                            EnhancedIconButton(
+                                                onClick = { refreshTick++ },
+                                                enabled = !lessonPopupShown.value,
+                                                hapticEnabled = false,
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Outlined.Refresh,
+                                                    contentDescription = null,
+                                                    tint = colorScheme.onPrimaryContainer,
+                                                )
+                                            }
                                             EnhancedIconButton(
                                                 onClick = {
                                                     scope.launch {

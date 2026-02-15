@@ -2,13 +2,13 @@
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule.GROUP
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Properties
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -104,6 +104,8 @@ kotlin {
             implementation(libs.confettikit)
             implementation(libs.emoji.compose.m3)
             implementation(libs.sonner)
+            implementation(libs.capturable)
+            implementation(libs.capturable.extension)
         }
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)

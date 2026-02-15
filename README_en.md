@@ -89,6 +89,7 @@ This cross-platform school app makes everyday school life more organized and is 
 - [ConfettiKit](https://github.com/vinceglb/confettikit) - MIT - Confetti animations (Easter eggs)
 - [Emoji.kt](https://github.com/kosi-libs/Emoji.kt) - Support for animated emojis
 - [Compose Sonner](https://github.com/dokar3/compose-sonner) - Apache 2.0 - Toast component
+- [Capturable](https://github.com/jmseb3/Capturable) - MIT - Share/save Composables as images
 - [Alarmee](https://github.com/Tweener/alarmee) - Apache 2.0 - Notifications for Android and iOS
 - [KMM Permission](https://github.com/reyazoct/Kmm-Permissions) - MIT - Requesting notification permissions
 - [multihaptic](https://github.com/xfqwdsj/multihaptic) - MIT - Highly customizable haptic feedback

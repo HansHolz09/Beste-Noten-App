@@ -9,6 +9,7 @@ androidx-crypto = "1.1.0"
 androidx-biometric = "1.4.0-alpha02"
 animateCompose = "0.0.1"
 buildconfig = "6.0.7"
+capturable = "2.0.1"
 confettikit = "0.7.0"
 coreSplashscreen = "1.2.0"
 #noinspection NewerVersionAvailable
@@ -59,6 +60,8 @@ adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", versi
 advanced-menubar = { module = "dev.hansholz:advanced-menubar", version.ref = "advancedMenubar" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 animate-compose = { module = "com.nomanr:animate-compose", version.ref = "animateCompose" }
+capturable = { module = "io.github.jmseb3:capturable", version.ref = "capturable" }
+capturable-extension = { module = "io.github.jmseb3:capturableExtension", version.ref = "capturable" }
 components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
 confettikit = { module = "io.github.vinceglb:confettikit", version.ref = "confettikit" }
 credential-secure-storage = { module = "com.microsoft:credential-secure-storage", version.ref = "credential-storage" }
