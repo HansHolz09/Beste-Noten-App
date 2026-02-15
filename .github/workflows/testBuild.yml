@@ -1,0 +1,36 @@
+name: Test Build Compose Multiplatform
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-compose.yml
+    with:
+      upload_wasm_as_pages_artifact: false
+    secrets: inherit
+
+  bundle:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: test_assets
+          merge-multiple: true
+
+      - name: Create one zip for download
+        run: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y zip
+          cd test_assets
+          zip -r "../test-build-${GITHUB_SHA}.zip" .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test-build-zip
+          path: test-build-${{ github.sha }}.zip
