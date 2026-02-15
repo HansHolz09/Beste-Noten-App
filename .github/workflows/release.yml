@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build:
-    uses: ./.github/workflows/build-compose.yml
+    uses: ./.github/workflows/buildCompose.yml
     with:
       upload_wasm_as_pages_artifact: true
     secrets: inherit
