@@ -245,14 +245,14 @@ fun Home(
                                 .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
                                 .fillMaxWidth()
                                 .padding(10.dp)
-                                .clip(RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(24.dp))
                                 .background(colorScheme.surfaceContainerHighest.copy(0.7f))
                                 .repeatingBackground(
                                     imageBitmap = imageBitmap,
                                     alpha = backgroundAlpha.value,
                                     scale = 0.75f,
                                     offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = 0f) },
-                                ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
+                                ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
                                 .clickable {
                                     scope.launch {
                                         vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
@@ -349,14 +349,14 @@ fun Home(
                                 .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
                                 .fillMaxWidth()
                                 .padding(10.dp)
-                                .clip(RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(24.dp))
                                 .background(colorScheme.surfaceContainerHighest.copy(0.7f))
                                 .repeatingBackground(
                                     imageBitmap = imageBitmap,
                                     alpha = backgroundAlpha.value,
                                     scale = 0.6f,
                                     offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = -50f) },
-                                ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
+                                ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
                                 .clickable {
                                     scope.launch {
                                         vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
@@ -536,14 +536,14 @@ fun Home(
                                 .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
                                 .fillMaxWidth()
                                 .padding(10.dp)
-                                .clip(RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(24.dp))
                                 .background(colorScheme.surfaceContainerHighest.copy(0.7f))
                                 .repeatingBackground(
                                     imageBitmap = imageBitmap,
                                     alpha = backgroundAlpha.value,
                                     scale = 0.6f,
                                     offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = -100f) },
-                                ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
+                                ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
                                 .clickable {
                                     scope.launch {
                                         vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
@@ -594,7 +594,7 @@ fun Home(
                                     .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
                                     .fillMaxWidth()
                                     .padding(10.dp)
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .clip(RoundedCornerShape(24.dp))
                                     .background(colorScheme.surfaceContainerHighest.copy(0.7f))
                                     .repeatingBackground(
                                         imageBitmap = imageBitmap,
@@ -602,7 +602,7 @@ fun Home(
                                         scale = 0.5f,
                                         offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = 0f) },
                                         cropPx = 30,
-                                    ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(12.dp))
+                                    ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
                                     .clickable {
                                         homeViewModel.isStatsDialogShown = true
                                         vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
