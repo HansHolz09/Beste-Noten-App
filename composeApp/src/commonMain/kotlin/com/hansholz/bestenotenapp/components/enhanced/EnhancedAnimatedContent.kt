@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,9 +28,7 @@ fun <S> EnhancedAnimatedContent(
     animationEnabled: Boolean = true,
     label: String = "AnimatedContent",
     contentKey: (targetState: S) -> Any? = { it },
-    content:
-        @Composable()
-        (targetState: S) -> Unit,
+    content: @Composable (targetState: S) -> Unit,
 ) {
     if (LocalAnimationsEnabled.current.value && animationEnabled) {
         AnimatedContent(
@@ -43,6 +42,8 @@ fun <S> EnhancedAnimatedContent(
             content(it)
         }
     } else {
-        content(targetState)
+        Box(modifier) {
+            content(targetState)
+        }
     }
 }

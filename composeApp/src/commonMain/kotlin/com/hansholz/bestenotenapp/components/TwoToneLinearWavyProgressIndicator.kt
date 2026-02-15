@@ -5,11 +5,14 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.WavyProgressIndicatorDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.unit.dp
+import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -20,6 +23,9 @@ fun TwoToneLinearWavyProgressIndicator(
     secondColor: Color = WavyProgressIndicatorDefaults.indicatorColor,
     modifier: Modifier = Modifier,
 ) {
+    val animationsEnabled by LocalAnimationsEnabled.current
+    val waveSpeed = if (animationsEnabled) WavyProgressIndicatorDefaults.LinearDeterminateWavelength else 0.dp
+
     val p = progress.coerceIn(0f, 1f)
     val s = split.coerceIn(0f, 1f)
 
@@ -36,6 +42,7 @@ fun TwoToneLinearWavyProgressIndicator(
                             this@outer.drawContent()
                         }
                     },
+            waveSpeed = waveSpeed,
         )
 
         LinearWavyProgressIndicator(
@@ -50,6 +57,7 @@ fun TwoToneLinearWavyProgressIndicator(
                             this@outer.drawContent()
                         }
                     },
+            waveSpeed = waveSpeed,
         )
 
         LinearWavyProgressIndicator(
@@ -65,6 +73,7 @@ fun TwoToneLinearWavyProgressIndicator(
                             this@outer.drawContent()
                         }
                     },
+            waveSpeed = waveSpeed,
         )
 
         LinearWavyProgressIndicator(
@@ -81,6 +90,7 @@ fun TwoToneLinearWavyProgressIndicator(
                             this@outer.drawContent()
                         }
                     },
+            waveSpeed = waveSpeed,
         )
     }
 }

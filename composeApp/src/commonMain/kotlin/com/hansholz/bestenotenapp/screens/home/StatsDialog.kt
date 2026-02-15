@@ -1,7 +1,5 @@
 package com.hansholz.bestenotenapp.screens.home
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -34,6 +32,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.main.ViewModel
@@ -96,7 +96,7 @@ fun StatsDialog(
             }
         },
         dismissButton = {
-            AnimatedVisibility(!homeViewModel.isStatsDialogLoading) {
+            EnhancedAnimatedVisibility(!homeViewModel.isStatsDialogLoading) {
                 EnhancedOutlinedButton(
                     onClick = {
                         viewModel.viewModelScope.launch {
@@ -161,7 +161,7 @@ fun StatsDialog(
                 tryRemember(lessonData) {
                     lessonData?.notPresentCount!! - lessonData.notPresentWithAbsenceCount!!
                 }
-            AnimatedContent(homeViewModel.isStatsDialogLoading) { isLoading ->
+            EnhancedAnimatedContent(homeViewModel.isStatsDialogLoading) { isLoading ->
                 if (isLoading) {
                     ContainedLoadingIndicator(Modifier.padding(100.dp))
                 } else {

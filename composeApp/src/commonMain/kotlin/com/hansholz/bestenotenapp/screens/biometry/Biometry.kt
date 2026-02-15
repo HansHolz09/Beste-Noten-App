@@ -1,6 +1,5 @@
 package com.hansholz.bestenotenapp.screens.biometry
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -19,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.navigation.Screen
@@ -43,7 +43,7 @@ fun Biometry(
         EmptyStateMessage(
             title = "Gesperrt",
             button = {
-                AnimatedVisibility(
+                EnhancedAnimatedVisibility(
                     visible = biometryViewModel.isFailure,
                     enter = fadeIn() + expandVertically(),
                     exit = fadeOut() + shrinkVertically(),

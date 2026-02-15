@@ -2,7 +2,6 @@
 
 package com.hansholz.bestenotenapp.screens.subjectsAndTeachers
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -54,6 +53,7 @@ import com.hansholz.bestenotenapp.api.models.Teacher
 import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
@@ -121,7 +121,7 @@ fun SubjectsAndTeachers(
 
             val pagerState = rememberEnhancedPagerState(2)
             HorizontalPager(pagerState, Modifier.hazeSource(viewModel.hazeBackgroundState)) {
-                AnimatedContent(subjectsAndTeachersViewModel.isLoading) { targetState ->
+                EnhancedAnimatedContent(subjectsAndTeachersViewModel.isLoading) { targetState ->
                     Box(Modifier.fillMaxSize()) {
                         if (targetState) {
                             ContainedLoadingIndicator(Modifier.padding(contentPadding).align(Alignment.Center))

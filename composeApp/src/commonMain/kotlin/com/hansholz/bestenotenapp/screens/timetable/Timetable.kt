@@ -581,7 +581,7 @@ fun Timetable(
                                                 ),
                                             title = null,
                                             headline = {
-                                                AnimatedContent(datePickerState.selectedDateMillis) { selectedDateMillis ->
+                                                EnhancedAnimatedContent(datePickerState.selectedDateMillis) { selectedDateMillis ->
                                                     ProvideTextStyle(LocalTextStyle.current.copy(fontSize = 22.sp)) {
                                                         DatePickerDefaults.DatePickerHeadline(
                                                             selectedDateMillis = selectedDateMillis,

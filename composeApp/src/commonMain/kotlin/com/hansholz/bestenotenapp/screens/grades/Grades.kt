@@ -105,6 +105,7 @@ import com.hansholz.bestenotenapp.components.GradeValueBox
 import com.hansholz.bestenotenapp.components.PreferencePosition
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
@@ -120,6 +121,7 @@ import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
 import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.utils.filterHistory
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.isScrollingUp
@@ -159,6 +161,7 @@ fun Grades(
         @Suppress("DEPRECATION")
         val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
+        val animationsEnabled by LocalAnimationsEnabled.current
         var showGradeHistory by LocalShowGradeHistory.current
         var showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
         var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
@@ -228,10 +231,10 @@ fun Grades(
                     modifier = Modifier.hazeSource(viewModel.hazeBackgroundState).enhancedHazeEffect(blurRadius = contentBlurRadius.value),
                     userScrollEnabled = gradesViewModel.userScrollEnabled,
                 ) { currentPage ->
-                    AnimatedContent(gradesViewModel.isLoading || items.isEmpty()) { targetState ->
+                    EnhancedAnimatedContent(gradesViewModel.isLoading || items.isEmpty()) { targetState ->
                         Box(Modifier.fillMaxSize()) {
                             if (targetState) {
-                                AnimatedContent(gradesViewModel.isLoading) { isLoading ->
+                                EnhancedAnimatedContent(gradesViewModel.isLoading) { isLoading ->
                                     if (isLoading) {
                                         Box(
                                             modifier = Modifier.padding(contentPadding).fillMaxSize(),
@@ -529,7 +532,7 @@ fun Grades(
                                     contentAlignment = Alignment.BottomCenter,
                                 ) {
                                     HorizontalFloatingToolbar(
-                                        expanded = currentLazyListState.isScrollingUp(),
+                                        expanded = if (animationsEnabled) currentLazyListState.isScrollingUp() else true,
                                         modifier =
                                             Modifier
                                                 .enhancedSharedBounds(
@@ -772,7 +775,7 @@ fun Grades(
                                             enabled = !gradesViewModel.isLoading,
                                             modifier = Modifier.padding(10.dp).align(Alignment.End),
                                         ) {
-                                            AnimatedContent(gradesViewModel.isLoading) {
+                                            EnhancedAnimatedContent(gradesViewModel.isLoading) {
                                                 if (it) {
                                                     CircularWavyProgressIndicator()
                                                 } else {

@@ -69,7 +69,7 @@ internal fun AppTheme(
             finalTheme(colorScheme)
         }
         MaterialExpressiveTheme(
-            colorScheme = animateColorScheme(colorScheme, { tween(750) }),
+            colorScheme = animateColorScheme(colorScheme, { tween(if (LocalAnimationsEnabled.current.value) 750 else 0) }),
             typography = AppTypography(),
             content = { Surface(content = content) },
         )

@@ -2,7 +2,6 @@
 
 package com.hansholz.bestenotenapp.navigation
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -45,6 +44,7 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.hansholz.bestenotenapp.components.ConfettiPresets
 import com.hansholz.bestenotenapp.components.NavigationDrawer
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
@@ -135,7 +135,7 @@ fun AppNavigationDrawer(
                 }
                 Spacer(Modifier.height(15.dp))
                 Fragment.entries.forEach { screen ->
-                    AnimatedContent(
+                    EnhancedAnimatedContent(
                         targetState = currentRoute?.destination?.route == screen.route,
                         transitionSpec = {
                             fadeIn(animationSpec = tween(500))
@@ -165,7 +165,7 @@ fun AppNavigationDrawer(
                     }
                 }
                 HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
-                AnimatedContent(
+                EnhancedAnimatedContent(
                     targetState = currentRoute?.destination?.route == Fragment.Settings.route,
                     transitionSpec = {
                         fadeIn(animationSpec = tween(500))

@@ -2,8 +2,6 @@
 
 package com.hansholz.bestenotenapp.screens.home
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -75,6 +73,8 @@ import com.hansholz.bestenotenapp.components.GradeValueBox
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.TwoToneLinearWavyProgressIndicator
 import com.hansholz.bestenotenapp.components.UpdateOnNewDay
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
@@ -90,6 +90,7 @@ import com.hansholz.bestenotenapp.main.LocalShowYearProgress
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.navigation.Fragment
 import com.hansholz.bestenotenapp.theme.FontFamilies
+import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.utils.SimpleTime
 import com.hansholz.bestenotenapp.utils.formateDate
@@ -131,6 +132,7 @@ fun Home(
 
         val backgroundAlpha = animateFloatAsState(if (LocalBackgroundEnabled.current.value) 0.2f else 0f, tween(750))
 
+        val animationsEnabled by LocalAnimationsEnabled.current
         val showGreetings by LocalShowGreetings.current
         val showNewestGrades by LocalShowNewestGrades.current
         val showCurrentLesson by LocalShowCurrentLesson.current
@@ -169,7 +171,7 @@ fun Home(
                 ) {
                     if (showGreetings) {
                         item {
-                            AnimatedContent(viewModel.isBesteSchuleNotReachable.value) { notReachable ->
+                            EnhancedAnimatedContent(viewModel.isBesteSchuleNotReachable.value) { notReachable ->
                                 if (notReachable) {
                                     Text(
                                         text =
@@ -191,36 +193,46 @@ fun Home(
                                             greeting = getGreeting(student.forename ?: "du")
                                         }
                                     }
-                                    AnimatedContent(greeting) {
-                                        TextWithNotoAnimatedEmoji(
-                                            text = it,
-                                            modifier =
-                                                Modifier
-                                                    .animateItem()
-                                                    .animateContentSize()
-                                                    .padding(20.dp)
-                                                    .clickable(
-                                                        interactionSource = null,
-                                                        indication = null,
-                                                        enabled = !viewModel.isBesteSchuleNotReachable.value,
-                                                    ) {
-                                                        var newGreeting = greeting
-                                                        while (newGreeting == greeting) {
-                                                            newGreeting =
-                                                                getGreeting(
-                                                                    viewModel.user.value
-                                                                        ?.students
-                                                                        ?.firstOrNull()
-                                                                        ?.forename ?: "du",
-                                                                )
-                                                        }
-                                                        greeting = newGreeting
-                                                        vibrator.enhancedVibrate(EnhancedVibrations.SPIN)
-                                                    },
-                                            textAlign = TextAlign.Center,
-                                            fontFamily = FontFamilies.Schoolbell(),
-                                            style = typography.titleLarge,
-                                        )
+                                    EnhancedAnimatedContent(greeting) {
+                                        val textModifier =
+                                            Modifier
+                                                .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
+                                                .padding(20.dp)
+                                                .clickable(
+                                                    interactionSource = null,
+                                                    indication = null,
+                                                    enabled = !viewModel.isBesteSchuleNotReachable.value,
+                                                ) {
+                                                    var newGreeting = greeting
+                                                    while (newGreeting == greeting) {
+                                                        newGreeting =
+                                                            getGreeting(
+                                                                viewModel.user.value
+                                                                    ?.students
+                                                                    ?.firstOrNull()
+                                                                    ?.forename ?: "du",
+                                                            )
+                                                    }
+                                                    greeting = newGreeting
+                                                    vibrator.enhancedVibrate(EnhancedVibrations.SPIN)
+                                                }
+                                        if (animationsEnabled) {
+                                            TextWithNotoAnimatedEmoji(
+                                                text = it,
+                                                modifier = textModifier,
+                                                textAlign = TextAlign.Center,
+                                                fontFamily = FontFamilies.Schoolbell(),
+                                                style = typography.titleLarge,
+                                            )
+                                        } else {
+                                            Text(
+                                                text = it,
+                                                modifier = textModifier,
+                                                textAlign = TextAlign.Center,
+                                                fontFamily = FontFamilies.Schoolbell(),
+                                                style = typography.titleLarge,
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -230,8 +242,7 @@ fun Home(
                         val imageBitmap = imageResource(Res.drawable.grades)
                         Box(
                             Modifier
-                                .animateItem()
-                                .animateContentSize()
+                                .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
                                 .fillMaxWidth()
                                 .padding(10.dp)
                                 .clip(RoundedCornerShape(12.dp))
@@ -280,7 +291,7 @@ fun Home(
                                         modifier = Modifier.align(Alignment.CenterEnd),
                                         enabled = !homeViewModel.isGradesLoading && showNewestGrades,
                                     ) {
-                                        this@Column.AnimatedVisibility(
+                                        this@Column.EnhancedAnimatedVisibility(
                                             visible = !homeViewModel.isGradesLoading && showNewestGrades,
                                             enter = scaleIn(),
                                             exit = scaleOut(),
@@ -290,7 +301,7 @@ fun Home(
                                     }
                                 }
                                 if (showNewestGrades) {
-                                    AnimatedContent(homeViewModel.isGradesLoading) { targetState ->
+                                    EnhancedAnimatedContent(homeViewModel.isGradesLoading) { targetState ->
                                         if (targetState) {
                                             Box(Modifier.fillMaxWidth().sizeIn(minHeight = 100.dp)) {
                                                 ContainedLoadingIndicator(Modifier.align(Alignment.Center))
@@ -335,8 +346,7 @@ fun Home(
                         val imageBitmap = imageResource(Res.drawable.timetable)
                         Box(
                             Modifier
-                                .animateItem()
-                                .animateContentSize()
+                                .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
                                 .fillMaxWidth()
                                 .padding(10.dp)
                                 .clip(RoundedCornerShape(12.dp))
@@ -385,7 +395,7 @@ fun Home(
                                         modifier = Modifier.align(Alignment.CenterEnd),
                                         enabled = !homeViewModel.isTimetableLoading && showCurrentLesson,
                                     ) {
-                                        this@Column.AnimatedVisibility(
+                                        this@Column.EnhancedAnimatedVisibility(
                                             visible = !homeViewModel.isTimetableLoading && showCurrentLesson,
                                             enter = scaleIn(),
                                             exit = scaleOut(),
@@ -395,7 +405,7 @@ fun Home(
                                     }
                                 }
                                 if (showCurrentLesson) {
-                                    AnimatedContent(homeViewModel.isTimetableLoading) { targetState ->
+                                    EnhancedAnimatedContent(homeViewModel.isTimetableLoading) { targetState ->
                                         if (targetState) {
                                             Box(Modifier.fillMaxWidth().sizeIn(minHeight = 100.dp)) {
                                                 ContainedLoadingIndicator(Modifier.align(Alignment.Center))
@@ -523,8 +533,7 @@ fun Home(
                         val imageBitmap = imageResource(Res.drawable.subjectsAndTeachers)
                         Box(
                             Modifier
-                                .animateItem()
-                                .animateContentSize()
+                                .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
                                 .fillMaxWidth()
                                 .padding(10.dp)
                                 .clip(RoundedCornerShape(12.dp))
@@ -582,8 +591,7 @@ fun Home(
                             val imageBitmap = imageResource(Res.drawable.stats)
                             Box(
                                 Modifier
-                                    .animateItem()
-                                    .animateContentSize()
+                                    .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
                                     .fillMaxWidth()
                                     .padding(10.dp)
                                     .clip(RoundedCornerShape(12.dp))
@@ -614,7 +622,7 @@ fun Home(
                                             modifier = Modifier.align(Alignment.CenterEnd),
                                             enabled = !homeViewModel.isStatsLoading && showYearProgress,
                                         ) {
-                                            this@Column.AnimatedVisibility(
+                                            this@Column.EnhancedAnimatedVisibility(
                                                 visible = !homeViewModel.isStatsLoading && showYearProgress,
                                                 enter = scaleIn(),
                                                 exit = scaleOut(),
@@ -624,7 +632,7 @@ fun Home(
                                         }
                                     }
                                     if (showYearProgress) {
-                                        AnimatedContent(homeViewModel.isStatsLoading || viewModel.intervals.isEmpty()) {
+                                        EnhancedAnimatedContent(homeViewModel.isStatsLoading || viewModel.intervals.isEmpty()) {
                                             if (it) {
                                                 LinearWavyProgressIndicator(Modifier.height(40.dp).fillMaxWidth().padding(10.dp))
                                             } else {

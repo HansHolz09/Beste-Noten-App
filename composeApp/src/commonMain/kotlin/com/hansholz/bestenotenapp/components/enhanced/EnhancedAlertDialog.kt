@@ -1,6 +1,5 @@
 package components.dialogs
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
@@ -51,6 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.components.FullscreenDialog
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
@@ -163,7 +163,7 @@ fun BasicEnhancedAlertDialog(
             ) {
                 var animateIn by rememberSaveable { mutableStateOf(false) }
                 LaunchedEffect(Unit) { animateIn = true }
-                AnimatedVisibility(
+                EnhancedAnimatedVisibility(
                     visible = animateIn && visible,
                     enter = fadeIn(),
                     exit = fadeOut(),
@@ -182,7 +182,7 @@ fun BasicEnhancedAlertDialog(
                                 .fillMaxSize(),
                     )
                 }
-                AnimatedVisibility(
+                EnhancedAnimatedVisibility(
                     visible = animateIn && visible,
                     enter =
                         fadeIn(tween(300)) +

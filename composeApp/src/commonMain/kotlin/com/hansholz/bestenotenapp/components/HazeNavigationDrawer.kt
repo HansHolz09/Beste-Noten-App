@@ -3,7 +3,6 @@ package com.hansholz.bestenotenapp.components
 import androidx.annotation.FloatRange
 import androidx.annotation.IntDef
 import androidx.annotation.RestrictTo
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animate
@@ -54,6 +53,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.launch
@@ -67,7 +67,7 @@ fun CloseableNavigationDrawer(
 ) {
     Row(modifier.fillMaxSize()) {
         val isOpen = drawerState.targetValue == DrawerValue.Open
-        AnimatedVisibility(
+        EnhancedAnimatedVisibility(
             visible = isOpen,
             enter =
                 fadeIn() +

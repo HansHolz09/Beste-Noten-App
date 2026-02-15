@@ -1,6 +1,5 @@
 package com.hansholz.bestenotenapp.components
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -44,7 +44,7 @@ fun EmptyStateMessage(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            AnimatedContent(
+            EnhancedAnimatedContent(
                 targetState = icon,
                 contentAlignment = Alignment.Center,
                 modifier =
@@ -64,7 +64,7 @@ fun EmptyStateMessage(
                 }
             }
 
-            AnimatedContent(title) {
+            EnhancedAnimatedContent(title) {
                 Text(
                     text = it,
                     style = MaterialTheme.typography.headlineMedium,
