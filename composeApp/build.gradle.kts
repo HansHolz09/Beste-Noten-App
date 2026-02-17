@@ -2,7 +2,8 @@
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule.GROUP
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import io.github.kdroidfilter.nucleus.desktop.application.dsl.CompressionLevel
+import io.github.kdroidfilter.nucleus.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -15,6 +16,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.nucleus)
     alias(libs.plugins.serialization)
     alias(libs.plugins.buildConfig)
     alias(libs.plugins.aboutLibraries)
@@ -125,6 +127,7 @@ kotlin {
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
+            implementation(libs.nucleus.core.runtime)
             implementation(libs.jbr.api)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.ktor.client.apache5)
@@ -219,67 +222,99 @@ android {
     }
 }
 
-compose.desktop {
-    application {
-        mainClass = "com.hansholz.bestenotenapp.MainKt"
+nucleus.application {
+    mainClass = "com.hansholz.bestenotenapp.MainKt"
 
-        nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Exe, TargetFormat.Deb)
-            packageName = libs.versions.appName.get()
-            packageVersion = libs.versions.appVersion.get()
-            description = libs.versions.appName.get()
-            copyright = "© ${SimpleDateFormat("yyyy").format(Date())} Franz Scholz. All rights reserved."
-            vendor = "Franz Scholz"
+    val appName = libs.versions.appName.get()
+    val appVersion = libs.versions.appVersion.get()
 
-            appResourcesRootDir = layout.projectDirectory.dir("src/desktopMain/assets")
-            jvmArgs += $$"-splash:$APPDIR/resources/splash.png"
-            jvmArgs += "--enable-native-access=ALL-UNNAMED"
+    nativeDistributions {
+        targetFormats(TargetFormat.Dmg, TargetFormat.Nsis, TargetFormat.Deb)
+        packageName = appName
+        packageVersion = appVersion
+        description = appName
+        copyright = "© ${SimpleDateFormat("yyyy").format(Date())} Franz Scholz. Alle Rechte vorbehalten."
+        vendor = "Franz Scholz"
+        homepage = "https://hansholz.dev/"
 
-            modules += "jdk.unsupported"
+        appResourcesRootDir = layout.projectDirectory.dir("src/desktopMain/assets")
+        splashImage = "splash.png"
+        jvmArgs += "--enable-native-access=ALL-UNNAMED"
 
-            windows {
-                iconFile = project.file("src/desktopMain/icons/icon.ico")
-                menuGroup = libs.versions.appName.get()
-                upgradeUuid = "a9bdc510-b2a5-4c39-8b69-27c754eea3ff"
-                console = false
-                dirChooser = false
-                perUserInstall = true
-                shortcut = true
-            }
+        modules += "jdk.unsupported"
 
-            linux {
-                iconFile = project.file("src/commonMain/composeResources/drawable/logo.png")
-                appRelease = libs.versions.appVersionCode.get()
-                shortcut = true
-            }
+        compressionLevel = CompressionLevel.Maximum
+        cleanupNativeLibs = true
+        enableAotCache = false // TODO: Implement AOT Cache
 
-            macOS {
-                iconFile = project.file("src/desktopMain/icons/icon.icns")
-                dockName = libs.versions.appName.get()
-                packageBuildVersion = libs.versions.appVersionCode.get()
-                jvmArgs("-Dapple.awt.application.appearance=system")
-                infoPlist {
-                    extraKeysRawXml =
-                        """
-                        <key>CFBundleLocalizations</key>
-                        <array>
-                            <string>de</string>
-                            <string>en</string>
-                        </array>
-                        <key>CFBundleIconName</key>
-                        <string>Beste-Noten-App</string>
-                        """.trimIndent()
-                }
+        windows {
+            iconFile = project.file("src/desktopMain/icons/icon.ico")
+            menuGroup = appName
+            upgradeUuid = "a9bdc510-b2a5-4c39-8b69-27c754eea3ff"
+            console = false
+
+            nsis {
+                oneClick = false
+                allowElevation = false
+                perMachine = false
+                allowToChangeInstallationDirectory = false
+                createDesktopShortcut = true
+                createStartMenuShortcut = true
+                runAfterFinish = true
+                deleteAppDataOnUninstall = true
+                multiLanguageInstaller = true
+                installerLanguages = listOf("en_US", "de_DE")
+                installerIcon = iconFile
+                uninstallerIcon = iconFile
             }
         }
 
-        buildTypes.release.proguard {
-            version = libs.versions.proguard.get()
-            isEnabled = true
-            obfuscate = true
-            optimize = true
-            configurationFiles.from(project.file("src/desktopMain/compose-desktop.pro"))
+        linux {
+            iconFile = project.file("src/commonMain/composeResources/drawable/logo.png")
+            debPackageVersion = libs.versions.appVersionCode.get()
+            debMaintainer = "HansHolz09 <mail@hansholz.dev>"
+            shortcut = true
         }
+
+        macOS {
+            iconFile = project.file("src/desktopMain/icons/icon.icns")
+            val layeredIcons = layout.projectDirectory.dir("src/desktopMain/icons/macos-layered-icon/Beste-Noten-App.icon")
+            if (layeredIcons.asFile.exists()) {
+                layeredIconDir.set(layeredIcons)
+            }
+            dockName = appName
+            packageBuildVersion = libs.versions.appVersionCode.get()
+            minimumSystemVersion =
+                libs.versions.macos.minSdk
+                    .get()
+            jvmArgs += "-Dapple.awt.application.appearance=system"
+            infoPlist {
+                extraKeysRawXml =
+                    """
+                    <key>CFBundleLocalizations</key>
+                    <array>
+                        <string>de</string>
+                        <string>en</string>
+                    </array>
+                    <key>CFBundleIconName</key>
+                    <string>Beste-Noten-App</string>
+                    """.trimIndent()
+            }
+
+            dmg {
+                title = "$appName $appVersion Installieren"
+                badgeIcon = iconFile
+                iconSize = 128
+            }
+        }
+    }
+
+    buildTypes.release.proguard {
+        version = libs.versions.proguard.get()
+        isEnabled = true
+        obfuscate = true
+        optimize = true
+        configurationFiles.from(project.file("src/desktopMain/compose-desktop.pro"))
     }
 }
 
@@ -302,16 +337,10 @@ ktlint {
     tasks.preBuild.dependsOn(tasks.ktlintFormat)
 }
 
-val copyAssetsCarToMacResources =
-    tasks.register<Copy>("copyAssetsCarToMacResources") {
-        dependsOn("createReleaseDistributable")
-        from(layout.projectDirectory.file("src/desktopMain/assets/Assets.car"))
-        into(layout.buildDirectory.dir("compose/binaries/main-release/app/${libs.versions.appName.get()}.app/Contents").map { it.dir("Resources") })
-    }
 val patchMacosBinary =
     tasks.register("patchMacosBinary") {
         notCompatibleWithConfigurationCache("Caching because of ProcessBuilder disabled")
-        mustRunAfter(copyAssetsCarToMacResources)
+        dependsOn("createReleaseDistributable")
 
         val appName = libs.versions.appName.get()
         val appFolder = "$appName.app"
@@ -359,8 +388,8 @@ val patchMacosBinary =
     }
 tasks.register("createReleaseDmg") {
     group = "packaging"
-    description = "Creates DMG with macOS 26 icon and bigger traffic lights"
-    dependsOn(copyAssetsCarToMacResources, patchMacosBinary)
+    description = "Creates DMG with macOS 26 SDK"
+    dependsOn(patchMacosBinary)
     finalizedBy("packageReleaseDmg")
 }
 

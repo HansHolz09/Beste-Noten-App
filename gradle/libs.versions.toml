@@ -31,6 +31,7 @@ material3 = "1.10.0-alpha05"
 materialIconsExtended = "1.7.3"
 materialyou = "0.3.0"
 multihapticCompose = "0.3.0"
+nucleus = "1.0.2"
 permission = "0.13.0"
 platformtools = "0.7.5"
 proguard = "7.8.2"
@@ -91,6 +92,7 @@ material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "m
 material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
 materialyou = { module = "dev.zwander:materialyou", version.ref = "materialyou" }
 multihaptic-compose = { module = "top.ltfan.multihaptic:multihaptic-compose", version.ref = "multihapticCompose" }
+nucleus-core-runtime = { module = "io.github.kdroidfilter:nucleus.core-runtime", version.ref = "nucleus" }
 oidc-appsupport = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-appsupport", version.ref = "oidc" }
 permission = { module = "tech.kotlinlang:permission", version.ref = "permission" }
 platformtools-darkmodedetector = { module = "io.github.kdroidfilter:platformtools.darkmodedetector", version.ref = "platformtools" }
@@ -115,5 +117,6 @@ buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildconfig
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+nucleus = { id = "io.github.kdroidfilter.nucleus", version.ref = "nucleus" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
