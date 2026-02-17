@@ -69,9 +69,7 @@ jobs:
           path: artifacts/android-universal.apk
 
   ios:
-    runs-on: macos-26
-    steps:
-      - uses: ./.github/workflows/buildIos.yml
+    uses: ./.github/workflows/buildIos.yml
 
   windows-x64:
     runs-on: windows-latest

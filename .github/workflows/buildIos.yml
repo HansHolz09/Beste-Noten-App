@@ -2,6 +2,7 @@ name: Build iOS (Unsigned)
 
 on:
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   ios-build:
