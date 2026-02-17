@@ -64,6 +64,7 @@ jobs:
           REPO="${GITHUB_REPOSITORY##*/}"
           cd release_assets
           [ -f android-universal.apk ] && mv android-universal.apk "${REPO}-${APP_VERSION}-android-universal.apk"
+          [ -f ios-unsigned.ipa ]     && mv ios-unsigned.ipa     "${REPO}-${APP_VERSION}-ios-unsigned.ipa"
           [ -f windows-x64.exe ]      && mv windows-x64.exe      "${REPO}-${APP_VERSION}-windows-x64.exe"
           [ -f windows-arm64.exe ]    && mv windows-arm64.exe    "${REPO}-${APP_VERSION}-windows-arm64.exe"
           [ -f macos-arm64.dmg ]      && mv macos-arm64.dmg      "${REPO}-${APP_VERSION}-macos-arm64.dmg"
