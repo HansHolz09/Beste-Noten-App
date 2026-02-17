@@ -128,6 +128,7 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.nucleus.core.runtime)
+            implementation(libs.nucleus.aot.runtime)
             implementation(libs.jbr.api)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.ktor.client.apache5)
@@ -245,7 +246,7 @@ nucleus.application {
 
         compressionLevel = CompressionLevel.Maximum
         cleanupNativeLibs = true
-        enableAotCache = false // TODO: Implement AOT Cache
+        enableAotCache = true
 
         windows {
             iconFile = project.file("src/desktopMain/icons/icon.ico")
@@ -254,7 +255,7 @@ nucleus.application {
             console = false
 
             nsis {
-                oneClick = false
+                oneClick = true
                 allowElevation = false
                 perMachine = false
                 allowToChangeInstallationDirectory = false

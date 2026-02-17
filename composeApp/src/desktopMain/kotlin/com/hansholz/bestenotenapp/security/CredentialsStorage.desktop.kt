@@ -3,16 +3,21 @@ package com.hansholz.bestenotenapp.security
 import com.microsoft.credentialstorage.SecretStore
 import com.microsoft.credentialstorage.StorageProvider
 import com.microsoft.credentialstorage.model.StoredCredential
+import io.github.kdroidfilter.nucleus.aot.runtime.AotRuntime
 
 class DesktopCredentialsStorage : CredentialsStorage {
-    private var credentialsStorage: SecretStore<StoredCredential> =
-        StorageProvider.getCredentialStorage(
-            true,
-            StorageProvider.SecureOption.REQUIRED,
-        )
+    private var credentialsStorage: SecretStore<StoredCredential>? =
+        if (AotRuntime.isTraining()) {
+            null
+        } else {
+            StorageProvider.getCredentialStorage(
+                true,
+                StorageProvider.SecureOption.REQUIRED,
+            )
+        }
 
     private fun getValueOrNull(key: String): String? {
-        val passwordArray = credentialsStorage.get(key)?.password ?: return null
+        val passwordArray = credentialsStorage?.get(key)?.password ?: return null
         return passwordArray.concatToString()
     }
 
@@ -20,11 +25,11 @@ class DesktopCredentialsStorage : CredentialsStorage {
         key: String,
         value: String,
     ) {
-        if (credentialsStorage.get(key) != null) {
-            credentialsStorage.delete(key)
+        if (credentialsStorage?.get(key) != null) {
+            credentialsStorage?.delete(key)
         }
 
-        credentialsStorage.add(key, StoredCredential(key, value.toCharArray()))
+        credentialsStorage?.add(key, StoredCredential(key, value.toCharArray()))
     }
 
     override fun getString(key: String): String? = getValueOrNull(key)
