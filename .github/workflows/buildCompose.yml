@@ -93,13 +93,18 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v3
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
       - name: Build EXE (x64)
         shell: bash
         run: |
           set -e
           ./gradlew :${MODULE_PATH}:packageReleaseNsis
           mkdir -p artifacts
-          EXE=$(find "${MODULE_PATH}/build" -type f -name "*.exe" | head -n1)
+          EXE=$(find "${MODULE_PATH}/build/compose/binaries/main-release/nsis" -type f -name "*.exe" | head -n1)
           echo "$EXE"
           cp "$EXE" artifacts/windows-x64.exe
 
@@ -130,13 +135,18 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v3
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
       - name: Build EXE (arm64)
         shell: bash
         run: |
           set -e
           ./gradlew :${MODULE_PATH}:packageReleaseNsis
           mkdir -p artifacts
-          EXE=$(find "${MODULE_PATH}/build" -type f -name "*.exe" | head -n1)
+          EXE=$(find "${MODULE_PATH}/build/compose/binaries/main-release/nsis" -type f -name "*.exe" | head -n1)
           echo "$EXE"
           cp "$EXE" artifacts/windows-arm64.exe
 
@@ -164,6 +174,11 @@ jobs:
           java -version
 
       - uses: gradle/actions/setup-gradle@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
 
       - name: Build DMG (Apple Silicon)
         run: |
@@ -207,6 +222,11 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v3
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
       - name: Build DEB
         run: |
           set -e
@@ -232,6 +252,11 @@ jobs:
           java-version: "21"
 
       - uses: gradle/actions/setup-gradle@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
 
       - name: Build WASM Distribution
         run: |

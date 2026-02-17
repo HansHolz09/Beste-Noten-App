@@ -4,13 +4,13 @@ import com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule.GROUP
 import io.github.kdroidfilter.nucleus.desktop.application.dsl.CompressionLevel
 import io.github.kdroidfilter.nucleus.desktop.application.dsl.TargetFormat
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Properties
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -247,7 +247,7 @@ nucleus.application {
 
         compressionLevel = CompressionLevel.Maximum
         cleanupNativeLibs = true
-        enableAotCache = !Os.isFamily(Os.FAMILY_MAC)
+        enableAotCache = Os.isFamily(Os.FAMILY_WINDOWS)
 
         windows {
             iconFile = project.file("src/desktopMain/icons/icon.ico")
