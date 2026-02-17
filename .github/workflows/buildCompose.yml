@@ -68,6 +68,11 @@ jobs:
           name: android-universal-apk
           path: artifacts/android-universal.apk
 
+  ios:
+    runs-on: macos-26
+    steps:
+      - uses: ./.github/workflows/buildIos.yml
+
   windows-x64:
     runs-on: windows-latest
     steps:
@@ -130,7 +135,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          ./gradlew :${MODULE_PATH}:packageReleaseExe
+          ./gradlew :${MODULE_PATH}:packageReleaseNsis
           mkdir -p artifacts
           EXE=$(find "${MODULE_PATH}/build" -type f -name "*.exe" | head -n1)
           cp "$EXE" artifacts/windows-arm64.exe
