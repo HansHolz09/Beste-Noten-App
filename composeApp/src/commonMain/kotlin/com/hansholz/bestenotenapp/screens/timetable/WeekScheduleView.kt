@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
@@ -249,6 +250,7 @@ fun WeekScheduleView(
                                         spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
                                     },
                                 ).clickable(null, null) {},
+                        shape = RoundedCornerShape(24.dp),
                         colors =
                             CardDefaults.outlinedCardColors(
                                 containerColor =
@@ -268,6 +270,8 @@ fun WeekScheduleView(
                                     lessonPopupShown.value = false
                                     contentBlurred = false
                                 },
+                                modifier = Modifier.padding(start = 2.dp, top = 2.dp),
+                                isExpressive = false,
                             ) {
                                 Icon(Icons.Outlined.Close, null)
                             }

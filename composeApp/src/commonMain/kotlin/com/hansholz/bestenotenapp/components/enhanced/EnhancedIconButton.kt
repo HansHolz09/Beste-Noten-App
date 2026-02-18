@@ -1,6 +1,7 @@
 package com.hansholz.bestenotenapp.components.enhanced
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
@@ -16,6 +17,7 @@ fun EnhancedIconButton(
     enabled: Boolean = true,
     isFilled: Boolean = false,
     colors: IconButtonColors = if (isFilled) IconButtonDefaults.filledIconButtonColors() else IconButtonDefaults.iconButtonColors(),
+    isExpressive: Boolean = true,
     hapticEnabled: Boolean = true,
     interactionSource: MutableInteractionSource? = null,
     content: @Composable (enabled: Boolean) -> Unit,
@@ -30,7 +32,12 @@ fun EnhancedIconButton(
                 vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
             }
         },
-        shapes = IconButtonDefaults.shapes(),
+        shapes =
+            if (isExpressive) {
+                IconButtonDefaults.shapes()
+            } else {
+                IconButtonDefaults.shapes(CircleShape, CircleShape)
+            },
         modifier = modifier,
         enabled = enabled,
         colors = colors,
