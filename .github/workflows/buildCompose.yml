@@ -11,7 +11,7 @@ on:
         default: "25.0.2"
       jbr_build:
         type: string
-        default: "b315.62"
+        default: "b329.66"
       upload_wasm_as_pages_artifact:
         type: boolean
         default: false
@@ -134,8 +134,8 @@ jobs:
       - name: Upload iOS Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ios-sideload-ipa
-          path: artifacts/ios-unsigned.ipa
+          name: ios-unsigned-ipa
+          path: ios-unsigned.ipa
 
   windows-x64:
     if: ${{ inputs.build_windows_x64 }}
