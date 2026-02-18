@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import com.russhwolf.settings.Settings
+import com.hansholz.bestenotenapp.security.kSafe
 import dev.chrisbanes.haze.HazeState
 
 internal val LocalBackgroundEnabled = compositionLocalOf { mutableStateOf(false) }
@@ -35,24 +35,24 @@ internal val LocalNavigationDrawerTopPadding = compositionLocalOf<Dp?> { null }
 
 @Composable
 fun SettingsProvider(content: @Composable () -> Unit) {
-    val settings = Settings()
+    val kSafe = remember { kSafe() }
 
-    val backgroundEnabledState = remember { mutableStateOf(settings.getBoolean("backgroundEnabled", true)) }
-    val hapticsEnabledState = remember { mutableStateOf(settings.getBoolean("hapticsEnabled", listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform()))) }
-    val showGreetingsState = remember { mutableStateOf(settings.getBoolean("showGreetings", true)) }
-    val showNewestGradesState = remember { mutableStateOf(settings.getBoolean("showNewestGrades", true)) }
-    val showCurrentLessonState = remember { mutableStateOf(settings.getBoolean("showCurrentLesson", true)) }
-    val showYearProgress = remember { mutableStateOf(settings.getBoolean("showYearProgress", true)) }
-    val showGradeHistoryState = remember { mutableStateOf(settings.getBoolean("showGradeHistory", false)) }
-    val showAllSubjectsState = remember { mutableStateOf(settings.getBoolean("showAllSubjects", false)) }
-    val showCollectionsWithoutGradesState = remember { mutableStateOf(settings.getBoolean("showCollectionsWithoutGrades", false)) }
-    val showAbsences = remember { mutableStateOf(settings.getBoolean("showAbsences", true)) }
-    val showNotes = remember { mutableStateOf(settings.getBoolean("showNotes", true)) }
-    val showTeachersWithFirstnameState = remember { mutableStateOf(settings.getBoolean("showTeachersWithFirstname", false)) }
-    val gradeNotificationsEnabledState = remember { mutableStateOf(settings.getBoolean("gradeNotificationsEnabled", false)) }
-    val gradeNotificationIntervalState = remember { mutableStateOf(settings.getLong("gradeNotificationsIntervalMinutes", 60L)) }
-    val gradeNotificationsWifiOnlyState = remember { mutableStateOf(settings.getBoolean("gradeNotificationsWifiOnly", false)) }
-    val requireBiometricAuthentificationState = remember { mutableStateOf(settings.getBoolean("requireBiometricAuthentification", false)) }
+    val backgroundEnabledState = remember { mutableStateOf(kSafe.getDirect("backgroundEnabled", true)) }
+    val hapticsEnabledState = remember { mutableStateOf(kSafe.getDirect("hapticsEnabled", listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform()))) }
+    val showGreetingsState = remember { mutableStateOf(kSafe.getDirect("showGreetings", true)) }
+    val showNewestGradesState = remember { mutableStateOf(kSafe.getDirect("showNewestGrades", true)) }
+    val showCurrentLessonState = remember { mutableStateOf(kSafe.getDirect("showCurrentLesson", true)) }
+    val showYearProgress = remember { mutableStateOf(kSafe.getDirect("showYearProgress", true)) }
+    val showGradeHistoryState = remember { mutableStateOf(kSafe.getDirect("showGradeHistory", false)) }
+    val showAllSubjectsState = remember { mutableStateOf(kSafe.getDirect("showAllSubjects", false)) }
+    val showCollectionsWithoutGradesState = remember { mutableStateOf(kSafe.getDirect("showCollectionsWithoutGrades", false)) }
+    val showAbsences = remember { mutableStateOf(kSafe.getDirect("showAbsences", true)) }
+    val showNotes = remember { mutableStateOf(kSafe.getDirect("showNotes", true)) }
+    val showTeachersWithFirstnameState = remember { mutableStateOf(kSafe.getDirect("showTeachersWithFirstname", false)) }
+    val gradeNotificationsEnabledState = remember { mutableStateOf(kSafe.getDirect("gradeNotificationsEnabled", false)) }
+    val gradeNotificationIntervalState = remember { mutableStateOf(kSafe.getDirect("gradeNotificationsIntervalMinutes", 60L)) }
+    val gradeNotificationsWifiOnlyState = remember { mutableStateOf(kSafe.getDirect("gradeNotificationsWifiOnly", false)) }
+    val requireBiometricAuthentificationState = remember { mutableStateOf(kSafe.getDirect("requireBiometricAuthentification", false)) }
     CompositionLocalProvider(
         LocalBackgroundEnabled provides backgroundEnabledState,
         LocalHapticsEnabled provides hapticsEnabledState,

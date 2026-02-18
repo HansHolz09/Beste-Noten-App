@@ -13,10 +13,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import com.hansholz.bestenotenapp.security.kSafe
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.ktx.animateColorScheme
 import com.materialkolor.rememberDynamicColorScheme
-import com.russhwolf.settings.Settings
 import dev.chrisbanes.haze.HazeDefaults
 import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
 
@@ -34,15 +34,15 @@ internal fun AppTheme(
     finalTheme: (ColorScheme) -> Unit = {},
     content: @Composable () -> Unit,
 ) {
-    val settings = Settings()
+    val kSafe = remember { kSafe() }
 
-    val useSystemIsDark = remember { mutableStateOf(settings.getBoolean("useSystemIsDark", true)) }
-    val isDark = remember { mutableStateOf(settings.getBoolean("isDark", false)) }
+    val useSystemIsDark = remember { mutableStateOf(kSafe.getDirect("useSystemIsDark", true)) }
+    val isDark = remember { mutableStateOf(kSafe.getDirect("isDark", false)) }
     val isDarkState = if (useSystemIsDark.value) isSystemInDarkMode() else isDark.value
-    val useCustomColorSchemeState = remember { mutableStateOf(settings.getBoolean("useCustomColorScheme", false)) }
+    val useCustomColorSchemeState = remember { mutableStateOf(kSafe.getDirect("useCustomColorScheme", false)) }
     val supportsCustomColorSchemeState = remember { mutableStateOf(false) }
-    val animationsEnabledState = remember { mutableStateOf(settings.getBoolean("animationsEnabled", true)) }
-    val blurEnabledState = remember { mutableStateOf(settings.getBoolean("blurEnabled", HazeDefaults.blurEnabled())) }
+    val animationsEnabledState = remember { mutableStateOf(kSafe.getDirect("animationsEnabled", true)) }
+    val blurEnabledState = remember { mutableStateOf(kSafe.getDirect("blurEnabled", HazeDefaults.blurEnabled())) }
     CompositionLocalProvider(
         LocalUseSystemIsDark provides useSystemIsDark,
         LocalIsDark provides isDark,

@@ -38,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -61,12 +62,12 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.components.rotateForever
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
+import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
-import com.hansholz.bestenotenapp.security.BindBiometryAuthenticatorEffect
+import com.hansholz.bestenotenapp.main.getPlatform
+import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
-import com.russhwolf.settings.Settings
-import com.russhwolf.settings.set
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -89,9 +90,7 @@ fun Login(
     val clipboard = LocalClipboardManager.current
     val animationsEnabled by LocalAnimationsEnabled.current
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
-    val settings = Settings()
-
-    BindBiometryAuthenticatorEffect(loginViewModel.biometryAuthenticator)
+    val kSafe = remember { kSafe() }
 
     TopAppBarScaffold(
         title = "Login",
@@ -254,7 +253,7 @@ fun Login(
                                 modifier =
                                     modifier
                                         .clip(shapes.medium)
-                                        .clickable(viewModel.authTokenManager.isAvailable) {
+                                        .clickable {
                                             val newValue = !stayLoggedIn
                                             stayLoggedIn = newValue
                                             vibrator.enhancedVibrate(
@@ -276,10 +275,9 @@ fun Login(
                                 EnhancedCheckbox(
                                     checked = stayLoggedIn,
                                     onCheckedChange = { stayLoggedIn = it },
-                                    enabled = viewModel.authTokenManager.isAvailable,
                                 )
                             }
-                            if (loginViewModel.biometryAuthenticator.isBiometricAvailable()) {
+                            if (listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())) {
                                 Row(
                                     modifier =
                                         modifier
@@ -287,19 +285,15 @@ fun Login(
                                             .clickable {
                                                 val newValue = !requireBiometricAuthentification
                                                 if (newValue) {
-                                                    loginViewModel.biometryAuthenticator.checkBiometryAuthentication(
-                                                        requestTitle = "Bestätigen",
-                                                        requestReason = "Bestätige, um die biometrische Authentifizierung beim Start zu aktiven",
-                                                        scope = scope,
-                                                    ) { isSuccessful ->
+                                                    kSafe.verifyBiometricDirect("Bestätige, um die biometrische Authentifizierung beim Start zu aktiven.") { isSuccessful ->
                                                         if (isSuccessful) {
                                                             requireBiometricAuthentification = newValue
-                                                            settings["requireBiometricAuthentification"] = newValue
+                                                            kSafe.putDirect("requireBiometricAuthentification", newValue)
                                                         }
                                                     }
                                                 } else {
                                                     requireBiometricAuthentification = newValue
-                                                    settings["requireBiometricAuthentification"] = newValue
+                                                    kSafe.putDirect("requireBiometricAuthentification", newValue)
                                                 }
                                                 vibrator.enhancedVibrate(
                                                     if (newValue) {
@@ -321,19 +315,15 @@ fun Login(
                                         checked = requireBiometricAuthentification,
                                         onCheckedChange = {
                                             if (it) {
-                                                loginViewModel.biometryAuthenticator.checkBiometryAuthentication(
-                                                    requestTitle = "Bestätigen",
-                                                    requestReason = "Bestätige, um die biometrische Authentifizierung beim Start zu aktiven",
-                                                    scope = scope,
-                                                ) { isSuccessful ->
+                                                kSafe.verifyBiometricDirect("Bestätige, um die biometrische Authentifizierung beim Start zu aktiven.") { isSuccessful ->
                                                     if (isSuccessful) {
                                                         requireBiometricAuthentification = it
-                                                        settings["requireBiometricAuthentification"] = it
+                                                        kSafe.putDirect("requireBiometricAuthentification", it)
                                                     }
                                                 }
                                             } else {
                                                 requireBiometricAuthentification = it
-                                                settings["requireBiometricAuthentification"] = it
+                                                kSafe.putDirect("requireBiometricAuthentification", it)
                                             }
                                         },
                                     )

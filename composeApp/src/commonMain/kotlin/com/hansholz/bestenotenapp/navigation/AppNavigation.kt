@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -15,7 +16,8 @@ import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.screens.biometry.Biometry
 import com.hansholz.bestenotenapp.screens.login.Login
-import com.russhwolf.settings.Settings
+import com.hansholz.bestenotenapp.security.kSafe
+import eu.anifantakis.lib.ksafe.compose.mutableStateOf
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -23,13 +25,14 @@ fun AppNavigation(
     viewModel: ViewModel,
     onNavHostReady: suspend (NavController) -> Unit = {},
 ) {
-    val settings = Settings()
+    val kSafe = remember { kSafe() }
     val requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
-    val token = rememberSaveable { viewModel.authTokenManager.getToken() ?: "" }
+    val token by kSafe.mutableStateOf("", "authToken")
+    val studentId by kSafe.mutableStateOf("", "studentId")
     val startDestination =
         rememberSaveable {
             when {
-                token.isEmpty() || !settings.hasKey("studentId") -> Screen.Login.route
+                token.isEmpty() || studentId.isEmpty() -> Screen.Login.route
                 requireBiometricAuthentification -> Screen.Biometry.route
                 else -> Screen.Main.route
             }

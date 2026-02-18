@@ -4,7 +4,7 @@ import androidx.compose.runtime.mutableStateOf
 import com.hansholz.bestenotenapp.api.BesteSchuleApi
 import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.models.JournalDay
-import com.hansholz.bestenotenapp.security.AuthTokenManager
+import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.utils.weekOfYear
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
@@ -13,14 +13,14 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 class LessonsTargetRepository {
-    private val tokenManager = AuthTokenManager()
+    private val kSafe = kSafe()
     private val httpClient = createHttpClient()
 
     private val tokenState = mutableStateOf<String?>(null)
     private val api = BesteSchuleApi(httpClient, tokenState)
 
     fun ensureToken(): Boolean {
-        tokenState.value = tokenManager.getToken()
+        tokenState.value = kSafe.getDirect("authToken", null)
         return !tokenState.value.isNullOrEmpty()
     }
 

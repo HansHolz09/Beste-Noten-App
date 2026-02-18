@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.russhwolf.settings.Settings
+import com.hansholz.bestenotenapp.security.kSafe
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
@@ -16,7 +16,7 @@ import kotlin.time.ExperimentalTime
 class HomeViewModel(
     viewModel: com.hansholz.bestenotenapp.main.ViewModel,
 ) : ViewModel() {
-    private val settings = Settings()
+    private val kSafe = kSafe()
 
     var isGradesLoading by mutableStateOf(false)
     var isTimetableLoading by mutableStateOf(false)
@@ -67,7 +67,7 @@ class HomeViewModel(
 
     init {
         viewModelScope.launch {
-            if (settings.getBoolean("showNewestGrades", true)) {
+            if (kSafe.getDirect("showNewestGrades", true)) {
                 isGradesLoading = true
                 if (viewModel.startGradeCollections.isEmpty()) {
                     viewModel.getCollections()?.let { viewModel.startGradeCollections.addAll(it) }
@@ -76,7 +76,7 @@ class HomeViewModel(
             }
         }
         viewModelScope.launch {
-            if (settings.getBoolean("showCurrentLesson", true)) {
+            if (kSafe.getDirect("showCurrentLesson", true)) {
                 isTimetableLoading = true
                 if (viewModel.currentJournalDay.value == null) {
                     @OptIn(ExperimentalTime::class)
@@ -95,7 +95,7 @@ class HomeViewModel(
             }
         }
         viewModelScope.launch {
-            if (settings.getBoolean("showYearProgress", true)) {
+            if (kSafe.getDirect("showYearProgress", true)) {
                 isStatsLoading = true
                 if (viewModel.intervals.isEmpty()) {
                     viewModel.getIntervals()?.let { viewModel.intervals.addAll(it) }

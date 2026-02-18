@@ -77,10 +77,11 @@ import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
 import com.hansholz.bestenotenapp.main.LocalShowNotes
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.LocalShowYearProgress
+import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
-import com.hansholz.bestenotenapp.security.BindBiometryAuthenticatorEffect
-import com.hansholz.bestenotenapp.security.BiometryAuthenticator
+import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalIsDark
@@ -88,10 +89,9 @@ import com.hansholz.bestenotenapp.theme.LocalSupportsCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseSystemIsDark
 import com.hansholz.bestenotenapp.utils.formateInterval
-import com.russhwolf.settings.Settings
-import com.russhwolf.settings.set
 import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.hazeSource
+import eu.anifantakis.lib.ksafe.compose.mutableStateOf
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
@@ -135,10 +135,8 @@ fun Settings(
     var showNotes by LocalShowNotes.current
     var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
-    val settings = Settings()
-
-    val biometryAuthenticator = remember { BiometryAuthenticator() }
-    BindBiometryAuthenticatorEffect(biometryAuthenticator)
+    val kSafe = remember { kSafe() }
+    val authToken by kSafe.mutableStateOf("", "authToken")
 
     TopAppBarScaffold(
         title = "Einstellungen",
@@ -176,7 +174,7 @@ fun Settings(
                             checked = useSystemIsDark,
                             onCheckedChange = {
                                 useSystemIsDark = it
-                                settings["useSystemIsDark"] = it
+                                kSafe.putDirect("useSystemIsDark", it)
                                 vibrator.enhancedVibrate(EnhancedVibrations.SLOW_RISE)
                             },
                             shapes = IconButtonDefaults.toggleableShapes(),
@@ -187,9 +185,9 @@ fun Settings(
                             checked = !useSystemIsDark && !isDark,
                             onCheckedChange = {
                                 useSystemIsDark = !it
-                                settings["useSystemIsDark"] = !it
+                                kSafe.putDirect("useSystemIsDark", !it)
                                 isDark = !it
-                                settings["isDark"] = !it
+                                kSafe.putDirect("isDark", !it)
                                 vibrator.enhancedVibrate(EnhancedVibrations.SLOW_RISE)
                             },
                             shapes = IconButtonDefaults.toggleableShapes(),
@@ -200,9 +198,9 @@ fun Settings(
                             checked = !useSystemIsDark && isDark,
                             onCheckedChange = {
                                 useSystemIsDark = !it
-                                settings["useSystemIsDark"] = !it
+                                kSafe.putDirect("useSystemIsDark", !it)
                                 isDark = it
-                                settings["isDark"] = it
+                                kSafe.putDirect("isDark", it)
                                 vibrator.enhancedVibrate(EnhancedVibrations.SLOW_RISE)
                             },
                             shapes = IconButtonDefaults.toggleableShapes(),
@@ -217,7 +215,7 @@ fun Settings(
                     checked = useCustomColorScheme,
                     onCheckedChange = {
                         useCustomColorScheme = it
-                        settings["useCustomColorScheme"] = it
+                        kSafe.putDirect("useCustomColorScheme", it)
                     },
                     text = "Material-You",
                     icon = Icons.Outlined.InvertColors,
@@ -228,7 +226,7 @@ fun Settings(
                 checked = animationsEnabled,
                 onCheckedChange = {
                     animationsEnabled = it
-                    settings["animationsEnabled"] = it
+                    kSafe.putDirect("animationsEnabled", it)
                 },
                 text = "Animationen",
                 icon = Icons.Outlined.Animation,
@@ -239,7 +237,7 @@ fun Settings(
                     checked = blurEnabled,
                     onCheckedChange = {
                         blurEnabled = it
-                        settings["blurEnabled"] = it
+                        kSafe.putDirect("blurEnabled", it)
                     },
                     text = "Unschärfe-Effekt",
                     icon = Icons.Outlined.BlurOn,
@@ -250,7 +248,7 @@ fun Settings(
                 checked = backgroundEnabled,
                 onCheckedChange = {
                     backgroundEnabled = it
-                    settings["backgroundEnabled"] = it
+                    kSafe.putDirect("backgroundEnabled", it)
                 },
                 text = "Hintergrundbild",
                 icon = Icons.Outlined.Texture,
@@ -261,14 +259,16 @@ fun Settings(
                     checked = hapticsEnabled,
                     onCheckedChange = {
                         hapticsEnabled = it
-                        settings["hapticsEnabled"] = it
+                        kSafe.putDirect("hapticsEnabled", it)
+                        if (it) vibrator.enhancedVibrate(EnhancedVibrations.TOGGLE_ON, true)
                     },
                     text = "Haptisches Feedback",
                     icon = Icons.Outlined.Vibration,
                     position = PreferencePosition.Bottom,
+                    hapticsEnabled = false,
                 )
             }
-            if (GradeNotifications.isSupported && !viewModel.isDemoAccount.value && !viewModel.authTokenManager.getToken().isNullOrEmpty()) {
+            if (GradeNotifications.isSupported && !viewModel.isDemoAccount.value && authToken.isNotEmpty()) {
                 item {
                     PreferenceCategory("Benachrichtigungen", Modifier.padding(horizontal = 15.dp))
                 }
@@ -279,10 +279,10 @@ fun Settings(
                             if (it) {
                                 val granted = GradeNotifications.requestPermission()
                                 notificationsEnabled = granted
-                                settings["gradeNotificationsEnabled"] = granted
+                                kSafe.putDirect("gradeNotificationsEnabled", it)
                             } else {
                                 notificationsEnabled = false
-                                settings["gradeNotificationsEnabled"] = false
+                                kSafe.putDirect("gradeNotificationsEnabled", it)
                             }
                             GradeNotifications.onSettingsUpdated()
                         }
@@ -298,7 +298,7 @@ fun Settings(
                             return@settingsToggleItem
                         }
                         notificationsWifiOnly = enabled
-                        settings["gradeNotificationsWifiOnly"] = enabled
+                        kSafe.putDirect("gradeNotificationsWifiOnly", enabled)
                         GradeNotifications.onSettingsUpdated()
                     },
                     text = "Nur mit WLAN überprüfen",
@@ -333,7 +333,7 @@ fun Settings(
                 checked = showGreetings,
                 onCheckedChange = {
                     showGreetings = it
-                    settings["showGreetings"] = it
+                    kSafe.putDirect("showGreetings", it)
                 },
                 text = "Begrüßung anzeigen",
                 icon = Icons.Outlined.WavingHand,
@@ -343,7 +343,7 @@ fun Settings(
                 checked = showNewestGrades,
                 onCheckedChange = {
                     showNewestGrades = it
-                    settings["showNewestGrades"] = it
+                    kSafe.putDirect("showNewestGrades", it)
 
                     scope.launch {
                         if (it && viewModel.startGradeCollections.isEmpty()) {
@@ -359,7 +359,7 @@ fun Settings(
                 checked = showCurrentLesson,
                 onCheckedChange = {
                     showCurrentLesson = it
-                    settings["showCurrentLesson"] = it
+                    kSafe.putDirect("showCurrentLesson", it)
 
                     scope.launch {
                         if (it && viewModel.currentJournalDay.value == null) {
@@ -386,7 +386,7 @@ fun Settings(
                     checked = showYearProgress,
                     onCheckedChange = {
                         showYearProgress = it
-                        settings["showYearProgress"] = it
+                        kSafe.putDirect("showYearProgress", it)
 
                         scope.launch {
                             if (it && viewModel.intervals.isEmpty()) {
@@ -406,7 +406,7 @@ fun Settings(
                 checked = showGradeHistory,
                 onCheckedChange = {
                     showGradeHistory = it
-                    settings["showGradeHistory"] = it
+                    kSafe.putDirect("showGradeHistory", it)
                 },
                 text = "Noten-Historien anzeigen",
                 icon = Icons.Outlined.History,
@@ -417,7 +417,7 @@ fun Settings(
                     checked = showCollectionsWithoutGrades,
                     onCheckedChange = {
                         showCollectionsWithoutGrades = it
-                        settings["showCollectionsWithoutGrades"] = it
+                        kSafe.putDirect("showCollectionsWithoutGrades", it)
                     },
                     text = "Leistungen ohne Noten anzeigen",
                     icon = Icons.Outlined.DisabledVisible,
@@ -430,7 +430,7 @@ fun Settings(
                     checked = showAbsences,
                     onCheckedChange = {
                         showAbsences = it
-                        settings["showAbsences"] = it
+                        kSafe.putDirect("showAbsences", it)
 
                         scope.launch {
                             if (it && viewModel.absences.isEmpty()) {
@@ -451,7 +451,7 @@ fun Settings(
                     checked = showNotes,
                     onCheckedChange = {
                         showNotes = it
-                        settings["showNotes"] = it
+                        kSafe.putDirect("showNotes", it)
                     },
                     text = "Tages-Notizen anzeigen",
                     icon = Icons.Outlined.Article,
@@ -464,7 +464,7 @@ fun Settings(
                     checked = showAllSubjects,
                     onCheckedChange = {
                         showAllSubjects = it
-                        settings["showAllSubjects"] = it
+                        kSafe.putDirect("showAllSubjects", it)
                     },
                     text = "Alle Fächer der Schule anzeigen",
                     icon = Icons.Outlined.Subject,
@@ -476,13 +476,13 @@ fun Settings(
                     checked = showTeachersWithFirstname,
                     onCheckedChange = {
                         showTeachersWithFirstname = it
-                        settings["showTeachersWithFirstname"] = it
+                        kSafe.putDirect("showTeachersWithFirstname", it)
                     },
                     text = "Lehrer mit Vornamen anzeigen",
                     icon = Icons.Outlined.Title,
                 )
             }
-            if (biometryAuthenticator.isBiometricAvailable()) {
+            if (listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())) {
                 item {
                     PreferenceCategory("Sicherheit", Modifier.padding(horizontal = 15.dp))
                 }
@@ -490,19 +490,15 @@ fun Settings(
                     checked = requireBiometricAuthentification,
                     onCheckedChange = {
                         if (it) {
-                            biometryAuthenticator.checkBiometryAuthentication(
-                                requestTitle = "Bestätigen",
-                                requestReason = "Bestätige, um die biometrische Authentifizierung beim Start zu aktiven",
-                                scope = scope,
-                            ) { isSuccessful ->
+                            kSafe.verifyBiometricDirect("Bestätige, um die biometrische Authentifizierung beim Start zu aktiven.") { isSuccessful ->
                                 if (isSuccessful) {
                                     requireBiometricAuthentification = it
-                                    settings["requireBiometricAuthentification"] = it
+                                    kSafe.putDirect("requireBiometricAuthentification", it)
                                 }
                             }
                         } else {
                             requireBiometricAuthentification = it
-                            settings["requireBiometricAuthentification"] = it
+                            kSafe.putDirect("requireBiometricAuthentification", it)
                         }
                     },
                     text = "Biometrische Authentifizierung erforderlich",
@@ -516,7 +512,7 @@ fun Settings(
                 PreferenceItem(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     title = "Angemeldet als ${viewModel.user.value?.username ?: "Unbekannt"}",
-                    subtitle = remember { if (viewModel.authTokenManager.getToken().isNullOrEmpty()) "(Temporär angemeldet)" else "(Anmeldung gespeichert)" },
+                    subtitle = remember { if (authToken.isEmpty()) "(Temporär angemeldet)" else "(Anmeldung gespeichert)" },
                     icon = Icons.Outlined.AccountCircle,
                     position = PreferencePosition.Top,
                 )

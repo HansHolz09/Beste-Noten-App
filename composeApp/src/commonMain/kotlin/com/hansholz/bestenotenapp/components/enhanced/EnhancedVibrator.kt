@@ -2,7 +2,7 @@ package com.hansholz.bestenotenapp.components.enhanced
 
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
-import com.russhwolf.settings.Settings
+import com.hansholz.bestenotenapp.security.kSafe
 import top.ltfan.multihaptic.DelayType
 import top.ltfan.multihaptic.HapticEffect
 import top.ltfan.multihaptic.PrimitiveType
@@ -25,8 +25,11 @@ enum class EnhancedVibrations {
     LOGO_RAIN,
 }
 
-fun Vibrator.enhancedVibrate(vibration: EnhancedVibrations) {
-    if (Settings().getBoolean("hapticsEnabled", listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform()))) {
+fun Vibrator.enhancedVibrate(
+    vibration: EnhancedVibrations,
+    forceVibration: Boolean = false,
+) {
+    if (kSafe().getDirect("hapticsEnabled", listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())) || forceVibration) {
         vibrate(
             HapticEffect {
                 when (vibration) {

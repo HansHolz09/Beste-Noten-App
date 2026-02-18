@@ -15,6 +15,11 @@
 -keep class com.jetbrains.JBR* { *; }
 -keepnames class com.jetbrains.** { *; }
 
+# KSafe
+-keep class dev.whyoleg.cryptography.*
+-keep class dev.whyoleg.cryptography.providers.jdk.*
+-keep class androidx.datastore.** { *; }
+
 # For MaterialYou
 -keep class dev.zwander.jfa.** { *; } #  for macOS
 -keep class dev.zwander.compose.util.** { *; } # for Linux

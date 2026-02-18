@@ -121,14 +121,13 @@ import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
 import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.utils.filterHistory
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.isScrollingUp
 import com.hansholz.bestenotenapp.utils.translateHistoryBody
 import com.nomanr.animate.compose.presets.zoomingextrances.ZoomIn
-import com.russhwolf.settings.Settings
-import com.russhwolf.settings.set
 import dev.chrisbanes.haze.hazeSource
 import io.github.koalaplot.core.util.ExperimentalKoalaPlotApi
 import kotlinx.coroutines.CancellationException
@@ -165,7 +164,7 @@ fun Grades(
         var showGradeHistory by LocalShowGradeHistory.current
         var showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
         var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
-        val settings = Settings()
+        val kSafe = remember { kSafe() }
 
         TopAppBarScaffold(
             modifier =
@@ -823,7 +822,7 @@ fun Grades(
                                                     checked = showGradeHistory,
                                                     onCheckedChange = {
                                                         showGradeHistory = it
-                                                        settings["showGradeHistory"] = it
+                                                        kSafe.putDirect("showGradeHistory", it)
                                                     },
                                                     text = "Noten-Historien anzeigen",
                                                     icon = Icons.Outlined.History,
@@ -835,7 +834,7 @@ fun Grades(
                                                         checked = showCollectionsWithoutGrades,
                                                         onCheckedChange = {
                                                             showCollectionsWithoutGrades = it
-                                                            settings["showCollectionsWithoutGrades"] = it
+                                                            kSafe.putDirect("showCollectionsWithoutGrades", it)
                                                         },
                                                         text = "Leistungen ohne Noten anzeigen",
                                                         icon = Icons.Outlined.DisabledVisible,
@@ -846,7 +845,7 @@ fun Grades(
                                                         checked = showTeachersWithFirstname,
                                                         onCheckedChange = {
                                                             showTeachersWithFirstname = it
-                                                            settings["showTeachersWithFirstname"] = it
+                                                            kSafe.putDirect("showTeachersWithFirstname", it)
                                                         },
                                                         text = "Lehrer mit Vornamen anzeigen",
                                                         icon = Icons.Outlined.Title,

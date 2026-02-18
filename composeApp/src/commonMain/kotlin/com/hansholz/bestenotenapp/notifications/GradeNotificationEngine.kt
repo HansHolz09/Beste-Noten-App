@@ -6,8 +6,7 @@ import com.hansholz.bestenotenapp.api.BesteSchuleApi
 import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.models.Grade
 import com.hansholz.bestenotenapp.api.models.GradeCollection
-import com.hansholz.bestenotenapp.security.AuthTokenManager
-import com.russhwolf.settings.Settings
+import com.hansholz.bestenotenapp.security.kSafe
 import io.ktor.client.plugins.ClientRequestException
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.Serializable
@@ -24,27 +23,25 @@ internal object GradeNotificationEngine {
     private const val KEY_KNOWN_GRADE_IDS = "gradeNotificationsKnownGradeIds"
 
     private val json = Json { ignoreUnknownKeys = true }
-    private val settings = Settings()
-    private val authTokenManager = AuthTokenManager()
+    private val kSafe = kSafe()
 
-    fun isEnabled(): Boolean = settings.getBoolean("gradeNotificationsEnabled", false)
+    fun isEnabled(): Boolean = kSafe.getDirect("gradeNotificationsEnabled", false)
 
-    fun getIntervalMinutes(): Long = settings.getLong("gradeNotificationsIntervalMinutes", 60L)
+    fun getIntervalMinutes(): Long = kSafe.getDirect("gradeNotificationsIntervalMinutes", 60L)
 
-    fun isWifiOnlyEnabled(): Boolean = settings.getBoolean("gradeNotificationsWifiOnly", false)
+    fun isWifiOnlyEnabled(): Boolean = kSafe.getDirect("gradeNotificationsWifiOnly", false)
 
     fun shouldSchedule(): Boolean = isEnabled() && hasCredentials()
 
     fun clearKnownGrades() {
-        settings.remove(KEY_KNOWN_GRADE_IDS)
+        kSafe.deleteDirect(KEY_KNOWN_GRADE_IDS)
     }
 
     suspend fun runCheck(): GradeNotificationOutcome {
         if (!shouldSchedule()) return GradeNotificationOutcome.Success
 
-        val studentId = settings.getStringOrNull("studentId") ?: return GradeNotificationOutcome.Success
-        val token = authTokenManager.getToken()
-        if (token.isNullOrBlank()) return GradeNotificationOutcome.Success
+        val studentId = kSafe.getDirect<String?>("studentId", null) ?: return GradeNotificationOutcome.Success
+        val token = kSafe.getDirect<String?>("authToken", null) ?: return GradeNotificationOutcome.Success
 
         val httpClient = createHttpClient()
         return try {
@@ -88,8 +85,8 @@ internal object GradeNotificationEngine {
     }
 
     private fun hasCredentials(): Boolean {
-        val studentId = settings.getStringOrNull("studentId")
-        val token = authTokenManager.getToken()
+        val studentId = kSafe.getDirect<String?>("studentId", null)
+        val token = kSafe.getDirect<String?>("authToken", null)
         return !studentId.isNullOrBlank() && !token.isNullOrBlank()
     }
 
@@ -126,13 +123,13 @@ internal object GradeNotificationEngine {
     }
 
     private fun loadKnownGradeIds(): Set<Int> {
-        val raw = settings.getStringOrNull(KEY_KNOWN_GRADE_IDS) ?: return emptySet()
+        val raw = kSafe.getDirect<String?>(KEY_KNOWN_GRADE_IDS, null) ?: return emptySet()
         return runCatching { json.decodeFromString<KnownGrades>(raw).ids.toSet() }.getOrElse { emptySet() }
     }
 
     private fun storeKnownGradeIds(ids: Set<Int>) {
         val payload = json.encodeToString(KnownGrades(ids.toList()))
-        settings.putString(KEY_KNOWN_GRADE_IDS, payload)
+        kSafe.putDirect(KEY_KNOWN_GRADE_IDS, payload)
     }
 
     @Serializable

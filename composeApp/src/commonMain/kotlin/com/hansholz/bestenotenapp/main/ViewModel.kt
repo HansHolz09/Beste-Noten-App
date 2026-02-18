@@ -31,9 +31,8 @@ import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.api.oidcClient
 import com.hansholz.bestenotenapp.demo.DemoDataGenerator
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
-import com.hansholz.bestenotenapp.security.AuthTokenManager
+import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.utils.weekOfYear
-import com.russhwolf.settings.Settings
 import dev.chrisbanes.haze.HazeState
 import io.ktor.utils.io.CancellationException
 import kotlinx.coroutines.delay
@@ -53,11 +52,10 @@ class ViewModel(
     toasterState: ToasterState,
 ) : ViewModel() {
     val toaster = toasterState
-    val settings = Settings()
+    val kSafe = kSafe()
 
     private val httpClient = createHttpClient()
 
-    val authTokenManager = AuthTokenManager()
     val authToken = mutableStateOf<String?>(null)
     private val authFlow = codeAuthFlowFactory.createAuthFlow(DefaultOpenIdConnectClient(httpClient, oidcClient.config))
 
@@ -155,12 +153,12 @@ class ViewModel(
                 user.students.size.let {
                     if (it > 1) {
                         chooseStudent(user.students) {
-                            settings.putString("studentId", it)
+                            kSafe.putDirect("studentId", it)
                             studentId.value = it
                             GradeNotifications.onLogin()
                         }
                     } else {
-                        settings.putString(
+                        kSafe.putDirect(
                             "studentId",
                             user.students
                                 .first()
@@ -176,7 +174,7 @@ class ViewModel(
                     }
                 }
                 if (stayLoggedIn) {
-                    authTokenManager.saveToken(authToken.value!!)
+                    kSafe.putDirect("authToken", authToken.value!!)
                 }
                 onNavigateHome()
                 toaster.show(
@@ -230,9 +228,9 @@ class ViewModel(
 
     fun logout() {
         studentId.value = null
-        settings.remove("studentId")
+        kSafe.deleteDirect("studentId")
         authToken.value = null
-        authTokenManager.deleteToken()
+        kSafe.deleteDirect("authToken")
         isDemoAccount.value = false
         demoWeekPlan = emptyList()
         GradeNotifications.onLogout()
@@ -523,8 +521,8 @@ class ViewModel(
     init {
         viewModelScope.launch {
             try {
-                studentId.value = settings.getStringOrNull("studentId")
-                authToken.value = authTokenManager.getToken()
+                studentId.value = kSafe.getDirect<String?>("studentId", null)
+                authToken.value = kSafe.getDirect<String?>("authToken", null)
                 init()
                 GradeNotifications.onLogin()
             } catch (e: Exception) {

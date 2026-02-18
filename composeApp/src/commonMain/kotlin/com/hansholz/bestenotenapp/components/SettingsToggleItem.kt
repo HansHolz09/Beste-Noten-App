@@ -27,6 +27,7 @@ fun LazyListScope.settingsToggleItem(
     position: PreferencePosition = PreferencePosition.Single,
     checkedIcon: ImageVector = Icons.Outlined.Done,
     uncheckedIcon: ImageVector = Icons.Outlined.Close,
+    hapticsEnabled: Boolean = true,
 ) {
     item {
         PreferenceItem(
@@ -42,13 +43,15 @@ fun LazyListScope.settingsToggleItem(
                 checked = checked,
                 onCheckedChange = {
                     onCheckedChange(it)
-                    vibrator.enhancedVibrate(
-                        if (it) {
-                            EnhancedVibrations.TOGGLE_ON
-                        } else {
-                            EnhancedVibrations.TOGGLE_OFF
-                        },
-                    )
+                    if (hapticsEnabled) {
+                        vibrator.enhancedVibrate(
+                            if (it) {
+                                EnhancedVibrations.TOGGLE_ON
+                            } else {
+                                EnhancedVibrations.TOGGLE_OFF
+                            },
+                        )
+                    }
                 },
                 thumbContent =
                     if (checked) {

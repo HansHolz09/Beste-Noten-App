@@ -6,7 +6,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.russhwolf.settings.Settings
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.DayOfWeek
@@ -52,7 +51,7 @@ class TimetableViewModel(
             if (viewModel.years.isEmpty()) {
                 viewModel.getYears()?.let { viewModel.years.addAll(it) }
             }
-            if (viewModel.absences.isEmpty() && Settings().getBoolean("showAbsences", true)) {
+            if (viewModel.absences.isEmpty() && viewModel.kSafe.getDirect("showAbsences", true)) {
                 val currentYearId =
                     viewModel.years
                         .last()

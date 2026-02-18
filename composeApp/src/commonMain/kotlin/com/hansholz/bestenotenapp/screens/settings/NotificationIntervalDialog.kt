@@ -27,8 +27,8 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationIntervalMinutes
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
+import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.utils.formateInterval
-import com.russhwolf.settings.Settings
 import components.dialogs.EnhancedAlertDialog
 import top.ltfan.multihaptic.compose.rememberVibrator
 
@@ -37,7 +37,7 @@ fun NotificationIntervalDialog(settingsViewModel: SettingsViewModel) {
     val vibrator = rememberVibrator()
 
     var notificationIntervalMinutes by LocalGradeNotificationIntervalMinutes.current
-    val settings = Settings()
+    val kSafe = remember { kSafe() }
 
     val intervalOptions = remember { listOf(15L, 30L, 60L, 120L, 360L, 720L, 1440L) }
     EnhancedAlertDialog(
@@ -59,7 +59,7 @@ fun NotificationIntervalDialog(settingsViewModel: SettingsViewModel) {
                                     onClick = {
                                         vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                                         notificationIntervalMinutes = option
-                                        settings.putLong("gradeNotificationsIntervalMinutes", option)
+                                        kSafe.putDirect("gradeNotificationsIntervalMinutes", option)
                                         GradeNotifications.onSettingsUpdated()
                                         settingsViewModel.showIntervalDialog = false
                                     },

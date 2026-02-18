@@ -13,6 +13,7 @@ import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -22,7 +23,6 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.navigation.Screen
-import com.hansholz.bestenotenapp.security.BindBiometryAuthenticatorEffect
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -32,7 +32,7 @@ fun Biometry(
 ) {
     val biometryViewModel = viewModel { BiometryViewModel() }
 
-    BindBiometryAuthenticatorEffect(biometryViewModel.biometryAuthenticator) {
+    LaunchedEffect(Unit) {
         biometryViewModel.tryBiometricAuthentication(viewModel, onNavigateToScreen)
     }
 

@@ -92,7 +92,7 @@ kotlin {
             implementation(libs.oidc.appsupport)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
-            implementation(libs.multiplatform.settings.no.arg)
+            implementation(libs.ksafe.compose)
             implementation(libs.aboutlibraries.core)
             implementation(libs.aboutlibraries.compose.core)
             implementation(libs.aboutlibraries.compose.m3)
@@ -121,7 +121,6 @@ kotlin {
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
-            implementation(libs.multiplatform.settings)
             implementation(libs.permission)
             implementation(libs.alarmee)
         }
