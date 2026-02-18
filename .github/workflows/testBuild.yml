@@ -2,6 +2,39 @@ name: Test Build Compose Multiplatform
 
 on:
   workflow_dispatch:
+    inputs:
+      build_android:
+        description: "Android"
+        type: boolean
+        default: true
+      build_ios:
+        description: "iOS"
+        type: boolean
+        default: false
+      build_windows_x64:
+        description: "Windows x64"
+        type: boolean
+        default: true
+      build_windows_arm64:
+        description: "Windows arm64"
+        type: boolean
+        default: false
+      build_macos_arm64:
+        description: "macOS arm64"
+        type: boolean
+        default: false
+      build_linux_x64:
+        description: "Linux x64"
+        type: boolean
+        default: true
+      build_linux_arm64:
+        description: "Linux arm64"
+        type: boolean
+        default: false
+      build_wasm:
+        description: "WASM"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -11,6 +44,14 @@ jobs:
     uses: ./.github/workflows/buildCompose.yml
     with:
       upload_wasm_as_pages_artifact: false
+      build_android: ${{ inputs.build_android }}
+      build_ios: ${{ inputs.build_ios }}
+      build_windows_x64: ${{ inputs.build_windows_x64 }}
+      build_windows_arm64: ${{ inputs.build_windows_arm64 }}
+      build_macos_arm64: ${{ inputs.build_macos_arm64 }}
+      build_linux_x64: ${{ inputs.build_linux_x64 }}
+      build_linux_arm64: ${{ inputs.build_linux_arm64 }}
+      build_wasm: ${{ inputs.build_wasm }}
     secrets: inherit
 
   bundle:

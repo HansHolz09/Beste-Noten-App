@@ -4,7 +4,6 @@ import com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule.GROUP
 import io.github.kdroidfilter.nucleus.desktop.application.dsl.CompressionLevel
 import io.github.kdroidfilter.nucleus.desktop.application.dsl.TargetFormat
-import org.apache.tools.ant.taskdefs.condition.Os
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -130,12 +129,12 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.nucleus.core.runtime)
             implementation(libs.nucleus.aot.runtime)
-            implementation(libs.jbr.api)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.ktor.client.apache5)
             implementation(libs.credential.secure.storage)
             implementation(libs.materialyou)
             implementation(libs.advanced.menubar)
+            compileOnly(libs.jbr.api)
         }
         wasmJsMain.dependencies {
             implementation(libs.ktor.client.js)
@@ -247,7 +246,7 @@ nucleus.application {
 
         compressionLevel = CompressionLevel.Maximum
         cleanupNativeLibs = true
-        enableAotCache = Os.isFamily(Os.FAMILY_WINDOWS)
+        enableAotCache = true
 
         windows {
             iconFile = project.file("src/desktopMain/icons/icon.ico")
