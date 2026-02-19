@@ -632,6 +632,7 @@ fun Grades(
                                                     backProgress = 0f
                                                 },
                                                 enabled = !gradesViewModel.isLoading,
+                                                isExpressive = false,
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Outlined.Search,
@@ -678,6 +679,7 @@ fun Grades(
                                                     gradesViewModel.contentBlurred = true
                                                 },
                                                 enabled = !gradesViewModel.isLoading,
+                                                isExpressive = false,
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Outlined.Settings,
@@ -704,6 +706,7 @@ fun Grades(
                                                     containerColor = colorScheme.primary.copy(0.5f),
                                                     disabledContainerColor = Color.Transparent,
                                                 ),
+                                            isExpressive = if (animationsEnabled) currentLazyListState.isScrollingUp() else true,
                                         ) { enabled ->
                                             Icon(
                                                 imageVector = Icons.Outlined.BarChart,
@@ -732,12 +735,12 @@ fun Grades(
                                                 ).then(backHandlingModifier)
                                                 .padding(horizontal = 12.dp)
                                                 .sizeIn(maxWidth = 500.dp)
-                                                .clip(RoundedCornerShape(16.dp))
+                                                .clip(RoundedCornerShape(28.dp))
                                                 .enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
                                         colors = CardDefaults.cardColors(Color.Transparent),
                                     ) {
                                         Row(
-                                            modifier = Modifier.fillMaxWidth(),
+                                            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
                                             verticalAlignment = Alignment.CenterVertically,
                                         ) {
                                             val focusRequester = remember { FocusRequester() }
@@ -767,6 +770,7 @@ fun Grades(
                                                     gradesViewModel.searchQuery = ""
                                                     gradesViewModel.closeToolbar()
                                                 },
+                                                isExpressive = false,
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Outlined.Close,
@@ -796,7 +800,7 @@ fun Grades(
                                                 ).then(backHandlingModifier)
                                                 .padding(horizontal = 12.dp)
                                                 .sizeIn(maxWidth = 500.dp)
-                                                .clip(RoundedCornerShape(16.dp))
+                                                .clip(RoundedCornerShape(28.dp))
                                                 .enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
                                         colors = CardDefaults.cardColors(Color.Transparent),
                                     ) {
@@ -850,7 +854,7 @@ fun Grades(
                                                 gradesViewModel.closeToolbar()
                                             },
                                             enabled = !gradesViewModel.isLoading,
-                                            modifier = Modifier.padding(10.dp).align(Alignment.End),
+                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp).align(Alignment.End),
                                         ) {
                                             EnhancedAnimatedContent(gradesViewModel.isLoading) {
                                                 if (it) {
@@ -881,7 +885,7 @@ fun Grades(
                                                 ).then(backHandlingModifier)
                                                 .padding(horizontal = 12.dp)
                                                 .sizeIn(maxWidth = 500.dp)
-                                                .clip(RoundedCornerShape(16.dp))
+                                                .clip(RoundedCornerShape(28.dp))
                                                 .enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
                                         colors = CardDefaults.cardColors(Color.Transparent),
                                     ) {
@@ -969,7 +973,7 @@ fun Grades(
                                             onClick = {
                                                 gradesViewModel.closeToolbar()
                                             },
-                                            modifier = Modifier.padding(10.dp).align(Alignment.End),
+                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp).align(Alignment.End),
                                         ) {
                                             Text("Schließen")
                                         }
@@ -994,7 +998,7 @@ fun Grades(
                                                 ).then(backHandlingModifier)
                                                 .padding(horizontal = 12.dp)
                                                 .sizeIn(maxWidth = 600.dp)
-                                                .clip(RoundedCornerShape(16.dp))
+                                                .clip(RoundedCornerShape(28.dp))
                                                 .enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.surfaceContainerHighest),
                                         colors = CardDefaults.cardColors(Color.Transparent),
                                     ) {

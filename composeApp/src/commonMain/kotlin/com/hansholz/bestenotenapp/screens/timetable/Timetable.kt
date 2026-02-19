@@ -403,6 +403,7 @@ fun Timetable(
                                                 },
                                                 enabled = !lessonPopupShown.value,
                                                 hapticEnabled = false,
+                                                isExpressive = false,
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
@@ -494,6 +495,7 @@ fun Timetable(
                                                 },
                                                 enabled = !lessonPopupShown.value,
                                                 hapticEnabled = false,
+                                                isExpressive = false,
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
@@ -548,7 +550,7 @@ fun Timetable(
                                                 ).then(backHandlingModifier)
                                                 .padding(horizontal = 12.dp)
                                                 .sizeIn(maxWidth = 500.dp)
-                                                .clip(RoundedCornerShape(16.dp))
+                                                .clip(RoundedCornerShape(28.dp))
                                                 .verticalScroll(rememberScrollState()),
                                         colors = CardDefaults.cardColors(colorScheme.primaryContainer),
                                     ) {
@@ -611,7 +613,7 @@ fun Timetable(
                                                 }
                                             },
                                             enabled = datePickerState.selectedDateMillis != null,
-                                            modifier = Modifier.padding(10.dp).align(Alignment.End),
+                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp).align(Alignment.End),
                                         ) {
                                             Text("Wählen")
                                         }

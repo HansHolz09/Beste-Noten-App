@@ -709,7 +709,7 @@ fun GradeDiagrams(
                         if (gradesViewModel.toolbarState == 0) gradesViewModel.userScrollEnabled = true
                     }
                 },
-                modifier = Modifier.padding(10.dp).align(Alignment.CenterEnd),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp).align(Alignment.CenterEnd),
             ) {
                 Text("Schließen")
             }
