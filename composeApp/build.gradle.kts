@@ -134,15 +134,6 @@ kotlin {
             implementation(libs.materialyou)
             implementation(libs.advanced.menubar)
             implementation(libs.jbr.api)
-            configurations.all {
-                resolutionStrategy.componentSelection {
-                    all {
-                        if (candidate.group == "org.jetbrains.runtime" && candidate.module == "jbr-api" && candidate.version == "1.5.0") {
-                            reject("Version 1.5.0 causes sealing violations in JBR 25")
-                        }
-                    }
-                }
-            }
         }
         wasmJsMain.dependencies {
             implementation(libs.ktor.client.js)

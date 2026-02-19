@@ -12,6 +12,12 @@ on:
       jbr_build:
         type: string
         default: "b329.66"
+      temurin_version:
+        type: string
+        default: "21"
+      node_version:
+        type: string
+        default: "20"
       upload_wasm_as_pages_artifact:
         type: boolean
         default: false
@@ -76,7 +82,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: ${{ inputs.temurin_version }}
 
       - uses: gradle/actions/setup-gradle@v3
 
@@ -103,8 +109,8 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '21'
+          distribution: temurin
+          java-version: ${{ inputs.temurin_version }}
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
@@ -140,10 +146,6 @@ jobs:
   windows-x64:
     if: ${{ inputs.build_windows_x64 }}
     runs-on: windows-latest
-    env:
-      NPM_CONFIG_PACKAGE_LOCK: "false"
-      NPM_CONFIG_AUDIT: "false"
-      NPM_CONFIG_UPDATE_NOTIFIER: "false"
     steps:
       - uses: actions/checkout@v4
 
@@ -151,7 +153,6 @@ jobs:
         shell: bash
         run: |
           set -e
-          export npm_config_package_lock=false
           BASE="https://cache-redirector.jetbrains.com/intellij-jbr"
           FILE="jbrsdk-${JBR_VERSION}-windows-x64-${JBR_BUILD}.tar.gz"
           curl -fsSL "$BASE/$FILE" -o "$RUNNER_TEMP/jbr.tar.gz"
@@ -168,7 +169,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: ${{ inputs.node_version }}
 
       - name: Build EXE (x64)
         shell: bash
@@ -177,7 +178,6 @@ jobs:
           ./gradlew :${MODULE_PATH}:packageReleaseNsis
           mkdir -p artifacts
           EXE=$(find "${MODULE_PATH}/build/compose/binaries/main-release/nsis" -type f -name "*.exe" | head -n1)
-          echo "$EXE"
           cp "$EXE" artifacts/windows-x64.exe
 
       - uses: actions/upload-artifact@v4
@@ -188,10 +188,6 @@ jobs:
   windows-arm64:
     if: ${{ inputs.build_windows_arm64 }}
     runs-on: windows-11-arm
-    env:
-      NPM_CONFIG_PACKAGE_LOCK: "false"
-      NPM_CONFIG_AUDIT: "false"
-      NPM_CONFIG_UPDATE_NOTIFIER: "false"
     steps:
       - uses: actions/checkout@v4
 
@@ -199,7 +195,6 @@ jobs:
         shell: bash
         run: |
           set -e
-          export npm_config_package_lock=false
           BASE="https://cache-redirector.jetbrains.com/intellij-jbr"
           FILE="jbrsdk-${JBR_VERSION}-windows-aarch64-${JBR_BUILD}.tar.gz"
           curl -fsSL "$BASE/$FILE" -o "$RUNNER_TEMP/jbr.tar.gz"
@@ -216,7 +211,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: ${{ inputs.node_version }}
 
       - name: Build EXE (arm64)
         shell: bash
@@ -225,7 +220,6 @@ jobs:
           ./gradlew :${MODULE_PATH}:packageReleaseNsis
           mkdir -p artifacts
           EXE=$(find "${MODULE_PATH}/build/compose/binaries/main-release/nsis" -type f -name "*.exe" | head -n1)
-          echo "$EXE"
           cp "$EXE" artifacts/windows-arm64.exe
 
       - uses: actions/upload-artifact@v4
@@ -257,7 +251,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: ${{ inputs.node_version }}
 
       - name: Build DMG (Apple Silicon)
         run: |
@@ -300,7 +294,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: ${{ inputs.node_version }}
 
       - name: Build DEB
         run: |
@@ -343,7 +337,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: ${{ inputs.node_version }}
 
       - name: Build DEB
         run: |
@@ -367,14 +361,14 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: ${{ inputs.temurin_version }}
 
       - uses: gradle/actions/setup-gradle@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: ${{ inputs.node_version }}
 
       - name: Build WASM Distribution
         run: |
