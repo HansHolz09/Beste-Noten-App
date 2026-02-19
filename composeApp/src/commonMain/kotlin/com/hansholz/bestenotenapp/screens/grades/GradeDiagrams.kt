@@ -26,7 +26,6 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -49,6 +48,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedFilterChip
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.main.ViewModel
@@ -666,14 +666,14 @@ fun GradeDiagrams(
 
             EnhancedAnimatedVisibility(gradesViewModel.filterSubjects && gradesViewModel.filterShown) {
                 FlowRow(
-                    modifier = Modifier.padding(horizontal = 15.dp),
+                    modifier = Modifier.padding(horizontal = 15.dp).padding(bottom = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     (if (gradesViewModel.analyzeYears) allFilteredGrades.toList() else filteredGrades)
                         .map { it.subject?.name ?: "" }
                         .toSet()
                         .forEach { subject ->
-                            FilterChip(
+                            EnhancedFilterChip(
                                 selected = !gradesViewModel.deselectedSubjects.contains(subject),
                                 onClick = {
                                     if (gradesViewModel.deselectedSubjects.contains(subject)) {

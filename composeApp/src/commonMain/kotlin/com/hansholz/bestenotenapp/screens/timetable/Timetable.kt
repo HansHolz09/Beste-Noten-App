@@ -426,7 +426,7 @@ fun Timetable(
                                                                         text = "Beste-Noten-App",
                                                                         modifier = Modifier.padding(start = 10.dp),
                                                                         color = colorScheme.onSurface,
-                                                                        fontFamily = FontFamilies.KeaniaOne(),
+                                                                        fontFamily = FontFamilies.KeaniaOne,
                                                                         maxLines = 1,
                                                                     )
                                                                 }

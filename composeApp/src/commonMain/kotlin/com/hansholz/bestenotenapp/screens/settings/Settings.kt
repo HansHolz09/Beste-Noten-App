@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Animation
 import androidx.compose.material.icons.outlined.Article
+import androidx.compose.material.icons.outlined.Balance
 import androidx.compose.material.icons.outlined.BlurOn
 import androidx.compose.material.icons.outlined.Brightness4
 import androidx.compose.material.icons.outlined.BrightnessAuto
@@ -60,8 +61,11 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.components.icons.Github
+import com.hansholz.bestenotenapp.components.icons.MathAvg
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
+import com.hansholz.bestenotenapp.main.LocalGradeAverageEnabled
+import com.hansholz.bestenotenapp.main.LocalGradeAverageUseWeighting
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationIntervalMinutes
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationsEnabled
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationsWifiOnly
@@ -81,6 +85,7 @@ import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
+import com.hansholz.bestenotenapp.screens.grades.convertStoredSubjectWeightingsMode
 import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
@@ -129,6 +134,8 @@ fun Settings(
     var showCurrentLesson by LocalShowCurrentLesson.current
     var showYearProgress by LocalShowYearProgress.current
     var showGradeHistory by LocalShowGradeHistory.current
+    var gradeAverageEnabled by LocalGradeAverageEnabled.current
+    var gradeAverageUseWeighting by LocalGradeAverageUseWeighting.current
     var showAllSubjects by LocalShowAllSubjects.current
     var showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
     var showAbsences by LocalShowAbsences.current
@@ -259,7 +266,7 @@ fun Settings(
                     checked = hapticsEnabled,
                     onCheckedChange = {
                         hapticsEnabled = it
-                        kSafe.putDirect("hapticsEnabled", it)
+                        kSafe.putDirect("hapticsEnabled", it, false)
                         if (it) vibrator.enhancedVibrate(EnhancedVibrations.TOGGLE_ON, true)
                     },
                     text = "Haptisches Feedback",
@@ -403,6 +410,32 @@ fun Settings(
                 PreferenceCategory("Noten", Modifier.padding(horizontal = 15.dp))
             }
             settingsToggleItem(
+                checked = gradeAverageEnabled,
+                onCheckedChange = {
+                    gradeAverageEnabled = it
+                    kSafe.putDirect("gradeAverageEnabled", it)
+                },
+                text = "Durchschnittsberechnung aktiv",
+                icon = MathAvg,
+                position = PreferencePosition.Top,
+            )
+            settingsToggleItem(
+                checked = gradeAverageUseWeighting,
+                onCheckedChange = {
+                    if (gradeAverageUseWeighting != it) {
+                        gradeAverageUseWeighting = it
+                        kSafe.putDirect("gradeAverageUseWeighting", it)
+                        convertStoredSubjectWeightingsMode(
+                            kSafe = kSafe,
+                            useWeightingInsteadOfPercent = it,
+                        )
+                    }
+                },
+                text = "Mit Gewichtungen statt Prozenten rechnen",
+                icon = Icons.Outlined.Balance,
+                position = PreferencePosition.Middle,
+            )
+            settingsToggleItem(
                 checked = showGradeHistory,
                 onCheckedChange = {
                     showGradeHistory = it
@@ -410,7 +443,7 @@ fun Settings(
                 },
                 text = "Noten-Historien anzeigen",
                 icon = Icons.Outlined.History,
-                position = if (viewModel.isDemoAccount.value) PreferencePosition.Single else PreferencePosition.Top,
+                position = if (viewModel.isDemoAccount.value) PreferencePosition.Bottom else PreferencePosition.Middle,
             )
             if (!viewModel.isDemoAccount.value) {
                 settingsToggleItem(

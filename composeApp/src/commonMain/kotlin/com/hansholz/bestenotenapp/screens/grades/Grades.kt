@@ -14,6 +14,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.indication
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,6 +46,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.outlined.Balance
 import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Close
@@ -72,10 +78,12 @@ import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -91,6 +99,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -115,13 +124,17 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
+import com.hansholz.bestenotenapp.components.icons.MathAvg
 import com.hansholz.bestenotenapp.components.rememberLazyListScrollSpeedState
 import com.hansholz.bestenotenapp.components.settingsToggleItem
+import com.hansholz.bestenotenapp.main.LocalGradeAverageEnabled
+import com.hansholz.bestenotenapp.main.LocalGradeAverageUseWeighting
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
 import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.security.kSafe
+import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.utils.filterHistory
 import com.hansholz.bestenotenapp.utils.formateDate
@@ -161,10 +174,16 @@ fun Grades(
         val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
 
         val animationsEnabled by LocalAnimationsEnabled.current
+        var gradeAverageEnabled by LocalGradeAverageEnabled.current
+        var gradeAverageUseWeighting by LocalGradeAverageUseWeighting.current
         var showGradeHistory by LocalShowGradeHistory.current
         var showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
         var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
         val kSafe = remember { kSafe() }
+
+        val subjectWeightings = remember { mutableStateMapOf<String, SubjectWeightingConfig>() }
+        var weightingDialogState by remember { mutableStateOf<SubjectWeightingDialogState?>(null) }
+        var weightingDialogVisible by remember { mutableStateOf(false) }
 
         TopAppBarScaffold(
             modifier =
@@ -318,7 +337,7 @@ fun Grades(
                                                 .sortedWith(compareBy({ it.subject?.name }, { it.givenAt }, { it.name }))
                                                 .groupBy { it.subject?.name }
                                                 .toList()
-                                                .forEach { (title, items) ->
+                                                .forEach { (title, subjectItems) ->
                                                     stickyHeader {
                                                         EnhancedAnimated(
                                                             preset = ZoomIn(),
@@ -329,10 +348,56 @@ fun Grades(
                                                                     vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
                                                                 }
                                                             }
+                                                            val subjectKey = remember(title, subjectItems) { subjectWeightingKey(title, subjectItems) }
+                                                            val averageText =
+                                                                remember(gradeAverageEnabled, subjectKey, subjectWeightings.toMap(), gradeAverageUseWeighting) {
+                                                                    if (gradeAverageEnabled) {
+                                                                        val typeNames = subjectTypeNames(subjectItems)
+                                                                        val subjectWeighting =
+                                                                            subjectWeightings[subjectKey] ?: loadSubjectWeighting(
+                                                                                kSafe = kSafe,
+                                                                                subjectKey = subjectKey,
+                                                                                typeNames = typeNames,
+                                                                                useWeightingInsteadOfPercent = gradeAverageUseWeighting,
+                                                                            )
+                                                                        formatAverageLabel(
+                                                                            calculateSubjectAverage(
+                                                                                collections = subjectItems,
+                                                                                weighting = subjectWeighting,
+                                                                                useWeightingInsteadOfPercent = gradeAverageUseWeighting,
+                                                                            ),
+                                                                        )
+                                                                    } else {
+                                                                        null
+                                                                    }
+                                                                }
+                                                            val interactionSource = remember { MutableInteractionSource() }
                                                             Column(
                                                                 Modifier
                                                                     .fillMaxWidth()
-                                                                    .height(56.dp),
+                                                                    .height(56.dp)
+                                                                    .hoverable(interactionSource)
+                                                                    .indication(interactionSource, ripple())
+                                                                    .pointerInput(Unit) {
+                                                                        detectTapGestures(
+                                                                            onPress = { offset ->
+                                                                                val press = PressInteraction.Press(offset)
+                                                                                interactionSource.emit(press)
+                                                                                tryAwaitRelease()
+                                                                                interactionSource.emit(PressInteraction.Release(press))
+                                                                            },
+                                                                            onTap = {
+                                                                                vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                                                                                weightingDialogState =
+                                                                                    SubjectWeightingDialogState(
+                                                                                        subjectTitle = title ?: "Kein Fach",
+                                                                                        subjectKey = subjectKey,
+                                                                                        subjectCollections = subjectItems,
+                                                                                    )
+                                                                                weightingDialogVisible = true
+                                                                            },
+                                                                        )
+                                                                    },
                                                             ) {
                                                                 HorizontalDivider(thickness = 1.dp)
                                                                 Box(Modifier.weight(1f)) {
@@ -347,20 +412,33 @@ fun Grades(
                                                                                     )
                                                                             },
                                                                     )
-                                                                    Text(
-                                                                        text = title ?: "Kein Fach",
-                                                                        modifier =
-                                                                            Modifier
-                                                                                .align(Alignment.CenterStart)
-                                                                                .padding(start = 16.dp),
-                                                                        style = typography.titleMedium,
-                                                                    )
+                                                                    Row(
+                                                                        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                                                                        verticalAlignment = Alignment.CenterVertically,
+                                                                    ) {
+                                                                        Text(
+                                                                            text = title ?: "Kein Fach",
+                                                                            modifier = Modifier.weight(1f),
+                                                                            style = typography.titleMedium,
+                                                                            maxLines = 1,
+                                                                            overflow = TextOverflow.Ellipsis,
+                                                                        )
+                                                                        if (averageText != null) {
+                                                                            Text(
+                                                                                text = averageText,
+                                                                                style = typography.titleMedium,
+                                                                                fontFamily = FontFamilies.Sniglet,
+                                                                                maxLines = 1,
+                                                                                overflow = TextOverflow.Ellipsis,
+                                                                            )
+                                                                        }
+                                                                    }
                                                                 }
                                                                 HorizontalDivider(thickness = 1.dp)
                                                             }
                                                         }
                                                     }
-                                                    items(items) {
+                                                    items(subjectItems) {
                                                         EnhancedAnimated(
                                                             modifier = Modifier.padding(verticalPadding),
                                                             preset = ZoomIn(),
@@ -819,6 +897,38 @@ fun Grades(
                                                 verticalArrangement = Arrangement.spacedBy(2.dp),
                                             ) {
                                                 settingsToggleItem(
+                                                    checked = gradeAverageEnabled,
+                                                    onCheckedChange = {
+                                                        gradeAverageEnabled = it
+                                                        kSafe.putDirect("gradeAverageEnabled", it)
+                                                        if (!it) {
+                                                            weightingDialogVisible = false
+                                                        }
+                                                    },
+                                                    text = "Durchschnittsberechnung aktiv",
+                                                    icon = MathAvg,
+                                                    textModifier = Modifier.skipToLookaheadSize(),
+                                                    position = PreferencePosition.Top,
+                                                )
+                                                settingsToggleItem(
+                                                    checked = gradeAverageUseWeighting,
+                                                    onCheckedChange = {
+                                                        if (gradeAverageUseWeighting != it) {
+                                                            gradeAverageUseWeighting = it
+                                                            kSafe.putDirect("gradeAverageUseWeighting", it)
+                                                            convertStoredSubjectWeightingsMode(
+                                                                kSafe = kSafe,
+                                                                useWeightingInsteadOfPercent = it,
+                                                            )
+                                                            subjectWeightings.clear()
+                                                        }
+                                                    },
+                                                    text = "Mit Gewichtungen statt Prozenten rechnen",
+                                                    icon = Icons.Outlined.Balance,
+                                                    textModifier = Modifier.skipToLookaheadSize(),
+                                                    position = PreferencePosition.Middle,
+                                                )
+                                                settingsToggleItem(
                                                     checked = showGradeHistory,
                                                     onCheckedChange = {
                                                         showGradeHistory = it
@@ -827,7 +937,7 @@ fun Grades(
                                                     text = "Noten-Historien anzeigen",
                                                     icon = Icons.Outlined.History,
                                                     textModifier = Modifier.skipToLookaheadSize(),
-                                                    position = if (viewModel.isDemoAccount.value) PreferencePosition.Single else PreferencePosition.Top,
+                                                    position = if (viewModel.isDemoAccount.value) PreferencePosition.Bottom else PreferencePosition.Middle,
                                                 )
                                                 if (!viewModel.isDemoAccount.value) {
                                                     settingsToggleItem(
@@ -896,6 +1006,72 @@ fun Grades(
                     }
                 }
             }
+        }
+
+        weightingDialogState?.let { dialogState ->
+            val dialogTypeNames = subjectTypeNames(dialogState.subjectCollections)
+            val currentWeighting =
+                subjectWeightings[dialogState.subjectKey] ?: loadSubjectWeighting(
+                    kSafe = kSafe,
+                    subjectKey = dialogState.subjectKey,
+                    typeNames = dialogTypeNames,
+                    useWeightingInsteadOfPercent = gradeAverageUseWeighting,
+                )
+
+            GradeWeightingDialog(
+                visible = weightingDialogVisible && gradeAverageEnabled,
+                subjectTitle = dialogState.subjectTitle,
+                collections = dialogState.subjectCollections,
+                weighting = currentWeighting,
+                useWeightingInsteadOfPercent = gradeAverageUseWeighting,
+                onDismissRequest = {
+                    scope.launch {
+                        weightingDialogVisible = false
+                        delay(300)
+                        weightingDialogState = null
+                    }
+                },
+                onCategoryWeightChanged = { categoryId, weight ->
+                    val latestWeighting =
+                        subjectWeightings[dialogState.subjectKey] ?: loadSubjectWeighting(
+                            kSafe = kSafe,
+                            subjectKey = dialogState.subjectKey,
+                            typeNames = dialogTypeNames,
+                            useWeightingInsteadOfPercent = gradeAverageUseWeighting,
+                        )
+                    val updatedWeighting = latestWeighting.withCategoryWeight(categoryId, weight)
+                    subjectWeightings[dialogState.subjectKey] = updatedWeighting
+                    persistSubjectWeighting(
+                        kSafe = kSafe,
+                        subjectKey = dialogState.subjectKey,
+                        weighting = updatedWeighting,
+                    )
+                },
+                onTypeCategoryChanged = { typeName, categoryId ->
+                    val latestWeighting =
+                        subjectWeightings[dialogState.subjectKey] ?: loadSubjectWeighting(
+                            kSafe = kSafe,
+                            subjectKey = dialogState.subjectKey,
+                            typeNames = dialogTypeNames,
+                            useWeightingInsteadOfPercent = gradeAverageUseWeighting,
+                        )
+                    val updatedWeighting = latestWeighting.withTypeCategory(typeName, categoryId)
+                    subjectWeightings[dialogState.subjectKey] = updatedWeighting
+                    persistSubjectWeighting(
+                        kSafe = kSafe,
+                        subjectKey = dialogState.subjectKey,
+                        weighting = updatedWeighting,
+                    )
+                },
+                onResetToDefault = {
+                    subjectWeightings[dialogState.subjectKey] = defaultSubjectWeightingConfig(gradeAverageUseWeighting)
+                    clearSubjectWeighting(
+                        kSafe = kSafe,
+                        subjectKey = dialogState.subjectKey,
+                        typeNames = dialogTypeNames,
+                    )
+                },
+            )
         }
     }
 }

@@ -28,7 +28,7 @@ import org.publicvalue.multiplatform.oidc.appsupport.PlatformCodeAuthFlow
 )
 fun main() {
     ComposeViewport(document.body!!) {
-        FontFamilies.allFontResources().forEach {
+        FontFamilies.allFontResources.forEach {
             preloadFont(it)
         }
         if (!Url(window.location.href).parameters.isEmpty()) {

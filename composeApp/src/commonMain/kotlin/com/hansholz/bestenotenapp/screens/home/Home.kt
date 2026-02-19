@@ -221,7 +221,7 @@ fun Home(
                                                 text = it,
                                                 modifier = textModifier,
                                                 textAlign = TextAlign.Center,
-                                                fontFamily = FontFamilies.Schoolbell(),
+                                                fontFamily = FontFamilies.Schoolbell,
                                                 style = typography.titleLarge,
                                             )
                                         } else {
@@ -229,7 +229,7 @@ fun Home(
                                                 text = it,
                                                 modifier = textModifier,
                                                 textAlign = TextAlign.Center,
-                                                fontFamily = FontFamilies.Schoolbell(),
+                                                fontFamily = FontFamilies.Schoolbell,
                                                 style = typography.titleLarge,
                                             )
                                         }
@@ -573,7 +573,7 @@ fun Home(
                                                     sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-title"),
                                                     animatedVisibilityScope = animatedVisibilityScope,
                                                 ).skipToLookaheadSize(),
-                                        fontFamily = FontFamilies.KeaniaOne(),
+                                        fontFamily = FontFamilies.KeaniaOne,
                                         style = typography.headlineSmall,
                                     )
                                     EnhancedIconButton(onClick = {}, enabled = false) {}

@@ -141,7 +141,7 @@ fun Login(
                             Text(
                                 text = "Melde dich mit deinem Account von beste.schule an",
                                 modifier = modifier,
-                                fontFamily = FontFamilies.Schoolbell(),
+                                fontFamily = FontFamilies.Schoolbell,
                                 textAlign = TextAlign.Center,
                                 style = typography.headlineMedium,
                             )

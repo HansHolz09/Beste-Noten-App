@@ -106,7 +106,7 @@ fun AppNavigationDrawer(
                                 },
                         color = colorScheme.onSurface,
                         autoSize = TextAutoSize.StepBased(10.sp),
-                        fontFamily = FontFamilies.KeaniaOne(),
+                        fontFamily = FontFamilies.KeaniaOne,
                         maxLines = 1,
                     )
                 }
@@ -129,7 +129,7 @@ fun AppNavigationDrawer(
                                 },
                         color = colorScheme.onSurface,
                         autoSize = TextAutoSize.StepBased(5.sp),
-                        fontFamily = FontFamilies.Schoolbell(),
+                        fontFamily = FontFamilies.Schoolbell,
                         maxLines = 1,
                     )
                 }

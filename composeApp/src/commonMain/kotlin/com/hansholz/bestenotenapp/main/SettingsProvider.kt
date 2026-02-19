@@ -17,6 +17,8 @@ internal val LocalShowNewestGrades = compositionLocalOf { mutableStateOf(false) 
 internal val LocalShowCurrentLesson = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowYearProgress = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowGradeHistory = compositionLocalOf { mutableStateOf(false) }
+internal val LocalGradeAverageEnabled = compositionLocalOf { mutableStateOf(true) }
+internal val LocalGradeAverageUseWeighting = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowAllSubjects = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowCollectionsWithoutGrades = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowAbsences = compositionLocalOf { mutableStateOf(false) }
@@ -38,12 +40,14 @@ fun SettingsProvider(content: @Composable () -> Unit) {
     val kSafe = remember { kSafe() }
 
     val backgroundEnabledState = remember { mutableStateOf(kSafe.getDirect("backgroundEnabled", true)) }
-    val hapticsEnabledState = remember { mutableStateOf(kSafe.getDirect("hapticsEnabled", listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform()))) }
+    val hapticsEnabledState = remember { mutableStateOf(kSafe.getDirect("hapticsEnabled", listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform()), false)) }
     val showGreetingsState = remember { mutableStateOf(kSafe.getDirect("showGreetings", true)) }
     val showNewestGradesState = remember { mutableStateOf(kSafe.getDirect("showNewestGrades", true)) }
     val showCurrentLessonState = remember { mutableStateOf(kSafe.getDirect("showCurrentLesson", true)) }
     val showYearProgress = remember { mutableStateOf(kSafe.getDirect("showYearProgress", true)) }
     val showGradeHistoryState = remember { mutableStateOf(kSafe.getDirect("showGradeHistory", false)) }
+    val gradeAverageEnabledState = remember { mutableStateOf(kSafe.getDirect("gradeAverageEnabled", true)) }
+    val gradeAverageUseWeightingState = remember { mutableStateOf(kSafe.getDirect("gradeAverageUseWeighting", false)) }
     val showAllSubjectsState = remember { mutableStateOf(kSafe.getDirect("showAllSubjects", false)) }
     val showCollectionsWithoutGradesState = remember { mutableStateOf(kSafe.getDirect("showCollectionsWithoutGrades", false)) }
     val showAbsences = remember { mutableStateOf(kSafe.getDirect("showAbsences", true)) }
@@ -61,6 +65,8 @@ fun SettingsProvider(content: @Composable () -> Unit) {
         LocalShowCurrentLesson provides showCurrentLessonState,
         LocalShowYearProgress provides showYearProgress,
         LocalShowGradeHistory provides showGradeHistoryState,
+        LocalGradeAverageEnabled provides gradeAverageEnabledState,
+        LocalGradeAverageUseWeighting provides gradeAverageUseWeightingState,
         LocalShowAllSubjects provides showAllSubjectsState,
         LocalShowCollectionsWithoutGrades provides showCollectionsWithoutGradesState,
         LocalShowAbsences provides showAbsences,

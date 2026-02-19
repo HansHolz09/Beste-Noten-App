@@ -9,7 +9,7 @@ import com.hansholz.bestenotenapp.theme.FontFamilies
 @Composable
 fun AnnotatedString.Builder.appendWithSymbols(
     text: String,
-    symbolFont: FontFamily = FontFamilies.Symbols(),
+    symbolFont: FontFamily = FontFamilies.Symbols,
     symbolRegex: Regex = Regex("[➞➔➜➡➤▶↳]"),
 ) {
     val startOffset = this.length

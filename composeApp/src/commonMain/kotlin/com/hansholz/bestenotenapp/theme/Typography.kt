@@ -12,20 +12,15 @@ import bestenotenapp.composeapp.generated.resources.Sniglet_Regular
 import org.jetbrains.compose.resources.Font
 
 object FontFamilies {
-    @Composable
-    fun Sniglet() = FontFamily(Font(Res.font.Sniglet_Regular))
+    val Sniglet @Composable get() = FontFamily(Font(Res.font.Sniglet_Regular))
 
-    @Composable
-    fun KeaniaOne() = FontFamily(Font(Res.font.KeaniaOne_Regular))
+    val KeaniaOne @Composable get() = FontFamily(Font(Res.font.KeaniaOne_Regular))
 
-    @Composable
-    fun Schoolbell() = FontFamily(Font(Res.font.Schoolbell_Regular, weight = FontWeight.Normal))
+    val Schoolbell @Composable get() = FontFamily(Font(Res.font.Schoolbell_Regular, weight = FontWeight.Normal))
 
-    @Composable
-    fun Symbols() = FontFamily(Font(Res.font.Segoe_UI_Symbol))
+    val Symbols @Composable get() = FontFamily(Font(Res.font.Segoe_UI_Symbol))
 
-    @Composable
-    fun allFontResources() =
+    val allFontResources @Composable get() =
         listOf(
             Res.font.Sniglet_Regular,
             Res.font.KeaniaOne_Regular,
@@ -34,26 +29,26 @@ object FontFamilies {
         )
 }
 
-@Composable
-fun AppTypography() =
-    Typography().run {
-        val fontFamily = FontFamilies.Sniglet()
-        val alternativeFontFamily = FontFamilies.KeaniaOne()
-        copy(
-            displayLarge = displayLarge.copy(fontFamily = alternativeFontFamily),
-            displayMedium = displayMedium.copy(fontFamily = alternativeFontFamily),
-            displaySmall = displaySmall.copy(fontFamily = alternativeFontFamily),
-            headlineLarge = headlineLarge.copy(fontFamily = alternativeFontFamily),
-            headlineMedium = headlineMedium.copy(fontFamily = alternativeFontFamily),
-            headlineSmall = headlineSmall.copy(fontFamily = alternativeFontFamily),
-            titleLarge = titleLarge.copy(fontFamily = alternativeFontFamily),
-            titleMedium = titleMedium.copy(fontFamily = alternativeFontFamily),
-            titleSmall = titleSmall.copy(fontFamily = alternativeFontFamily),
-            bodyLarge = bodyLarge.copy(fontFamily = fontFamily),
-            bodyMedium = bodyMedium.copy(fontFamily = fontFamily),
-            bodySmall = bodySmall.copy(fontFamily = fontFamily),
-            labelLarge = labelLarge.copy(fontFamily = fontFamily),
-            labelMedium = labelMedium.copy(fontFamily = fontFamily),
-            labelSmall = labelSmall.copy(fontFamily = fontFamily),
-        )
-    }
+val AppTypography
+    @Composable get() =
+        Typography().run {
+            val fontFamily = FontFamilies.Sniglet
+            val alternativeFontFamily = FontFamilies.KeaniaOne
+            copy(
+                displayLarge = displayLarge.copy(fontFamily = alternativeFontFamily),
+                displayMedium = displayMedium.copy(fontFamily = alternativeFontFamily),
+                displaySmall = displaySmall.copy(fontFamily = alternativeFontFamily),
+                headlineLarge = headlineLarge.copy(fontFamily = alternativeFontFamily),
+                headlineMedium = headlineMedium.copy(fontFamily = alternativeFontFamily),
+                headlineSmall = headlineSmall.copy(fontFamily = alternativeFontFamily),
+                titleLarge = titleLarge.copy(fontFamily = alternativeFontFamily),
+                titleMedium = titleMedium.copy(fontFamily = alternativeFontFamily),
+                titleSmall = titleSmall.copy(fontFamily = alternativeFontFamily),
+                bodyLarge = bodyLarge.copy(fontFamily = fontFamily),
+                bodyMedium = bodyMedium.copy(fontFamily = fontFamily),
+                bodySmall = bodySmall.copy(fontFamily = fontFamily),
+                labelLarge = labelLarge.copy(fontFamily = fontFamily),
+                labelMedium = labelMedium.copy(fontFamily = fontFamily),
+                labelSmall = labelSmall.copy(fontFamily = fontFamily),
+            )
+        }

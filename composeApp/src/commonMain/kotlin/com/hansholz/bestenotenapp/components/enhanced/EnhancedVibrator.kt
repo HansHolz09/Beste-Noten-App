@@ -29,7 +29,7 @@ fun Vibrator.enhancedVibrate(
     vibration: EnhancedVibrations,
     forceVibration: Boolean = false,
 ) {
-    if (kSafe().getDirect("hapticsEnabled", listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())) || forceVibration) {
+    if (kSafe().getDirect("hapticsEnabled", listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform()), false) || forceVibration) {
         vibrate(
             HapticEffect {
                 when (vibration) {
