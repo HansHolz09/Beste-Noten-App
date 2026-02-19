@@ -9,6 +9,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.ComposeViewport
 import androidx.navigation.ExperimentalBrowserHistoryApi
 import androidx.navigation.bindToBrowserNavigation
+import bestenotenapp.composeapp.generated.resources.Res
+import bestenotenapp.composeapp.generated.resources.logo
 import com.hansholz.bestenotenapp.main.App
 import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.theme.FontFamilies
@@ -17,6 +19,7 @@ import kotlinx.browser.document
 import kotlinx.browser.window
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.preloadFont
+import org.jetbrains.compose.resources.preloadImageBitmap
 import org.publicvalue.multiplatform.oidc.ExperimentalOpenIdConnect
 import org.publicvalue.multiplatform.oidc.appsupport.PlatformCodeAuthFlow
 
@@ -31,6 +34,7 @@ fun main() {
         FontFamilies.allFontResources.forEach {
             preloadFont(it)
         }
+        preloadImageBitmap(Res.drawable.logo)
         if (!Url(window.location.href).parameters.isEmpty()) {
             LaunchedEffect(Unit) {
                 PlatformCodeAuthFlow.handleRedirect()
