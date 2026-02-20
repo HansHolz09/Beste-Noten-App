@@ -107,13 +107,13 @@ This cross-platform school app makes everyday school life more organized and is 
 ## Building/Running the App
 
 1. Clone the source code
-2. Open it with [Android Studio](https://developer.android.com/studio) or [IntelliJ IDEA (Community Edition)](https://www.jetbrains.com/idea/download)
+2. Open it with [Android Studio](https://developer.android.com/studio) or [IntelliJ IDEA](https://www.jetbrains.com/idea/download)
 3. To build or run the iOS/iPadOS app, open `/iosApp` in Xcode (macOS only)
 4. Run any of the following configurations in Android Studio/IntelliJ IDEA:
     - Run Desktop App / `./gradlew run`
     - Run Web App / `./gradlew wasmJsBrowserDevelopmentRun`
     - Run Android App
     - Package Release as DMG / `./gradlew createReleaseDmg` (macOS only)
-    - Package Release as EXE / `./gradlew packageReleaseExe` (Windows only)
+    - Package Release as EXE / `./gradlew packageReleaseNsis` (Windows only)
     - Package Release as DEB / `./gradlew packageReleaseDeb` (Linux only)
     - Package Web App / `./gradlew wasmJsBrowserDistribution`

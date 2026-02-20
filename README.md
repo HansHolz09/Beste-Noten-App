@@ -108,13 +108,13 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 ## Bauen/Starten der App
 
 1. Klone den Quellcode
-2. Öffne ihn mit [Android Studio](https://developer.android.com/studio) oder [Intellij IDEA (Community Edition)](https://www.jetbrains.com/idea/download)
+2. Öffne ihn mit [Android Studio](https://developer.android.com/studio) oder [Intellij IDEA](https://www.jetbrains.com/idea/download)
 3. Zum bauen bzw. starten der iOS/iPadOS App öffne `/iosApp` in XCode (Nur unter macOS)
 4. Starte eine beliebige Konfiguration in Android Studio/Intellij IDEA:
     - Run Desktop App / `./gradlew run`
     - Run Web App / `./gradlew wasmJsBrowserDevelopmentRun`
     - Run Android App
     - Package Release as DMG / `./gradlew createReleaseDmg` (Nur unter macOS)
-    - Package Release as EXE / `./gradlew packageReleaseExe` (Nur unter Windows)
+    - Package Release as EXE / `./gradlew packageReleaseNsis` (Nur unter Windows)
     - Package Release as DEB / `./gradlew packageReleaseDeb` (Nur unter Linux)
     - Package Web App / `./gradlew wasmJsBrowserDistribution`
