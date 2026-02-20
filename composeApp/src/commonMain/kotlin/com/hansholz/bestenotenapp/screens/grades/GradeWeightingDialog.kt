@@ -50,17 +50,18 @@ internal fun GradeWeightingDialog(
     visible: Boolean,
     subjectTitle: String,
     collections: List<GradeCollection>,
-    weighting: SubjectWeightingConfig,
+    weighting: GradeAverageCalculator.SubjectWeightingConfig,
     useWeightingInsteadOfPercent: Boolean,
     onDismissRequest: () -> Unit,
     onCategoryWeightChanged: (categoryId: Int, weight: Int) -> Unit,
     onTypeCategoryChanged: (typeName: String, categoryId: Int) -> Unit,
     onResetToDefault: () -> Unit,
 ) {
-    val typeNames = remember(collections) { subjectTypeNames(collections) }
+    val gradeAverageCalculator = remember { GradeAverageCalculator() }
+    val typeNames = remember(collections) { gradeAverageCalculator.subjectTypeNames(collections) }
     val averageResult =
         remember(collections, weighting, useWeightingInsteadOfPercent) {
-            calculateSubjectAverage(
+            gradeAverageCalculator.calculateSubjectAverage(
                 collections = collections,
                 weighting = weighting,
                 useWeightingInsteadOfPercent = useWeightingInsteadOfPercent,
@@ -80,7 +81,7 @@ internal fun GradeWeightingDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "Aktueller Schnitt: ${formatAverageLabel(averageResult)}",
+                    text = "Aktueller Schnitt: ${gradeAverageCalculator.formatAverageLabel(averageResult)}",
                     color = colorScheme.onSurface.copy(alpha = 0.9f),
                     textAlign = TextAlign.Center,
                 )
@@ -105,13 +106,13 @@ internal fun GradeWeightingDialog(
                         label = "KA/Klausur",
                         value = weighting.examWeight,
                         useWeightingInsteadOfPercent = useWeightingInsteadOfPercent,
-                        onValueChange = { onCategoryWeightChanged(CATEGORY_EXAM, it) },
+                        onValueChange = { onCategoryWeightChanged(GradeAverageCalculator.CATEGORY_EXAM, it) },
                     )
                     WeightControlRow(
                         label = "Sonstige",
                         value = weighting.otherWeight,
                         useWeightingInsteadOfPercent = useWeightingInsteadOfPercent,
-                        onValueChange = { onCategoryWeightChanged(CATEGORY_OTHER, it) },
+                        onValueChange = { onCategoryWeightChanged(GradeAverageCalculator.CATEGORY_OTHER, it) },
                     )
                 }
                 if (typeNames.isNotEmpty()) {
@@ -239,14 +240,14 @@ private fun TypeCategoryRow(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             EnhancedFilterChip(
-                selected = selectedCategory == CATEGORY_EXAM,
-                onClick = { onCategorySelected(CATEGORY_EXAM) },
+                selected = selectedCategory == GradeAverageCalculator.CATEGORY_EXAM,
+                onClick = { onCategorySelected(GradeAverageCalculator.CATEGORY_EXAM) },
                 label = { Text("KA/Klausur") },
             )
             Spacer(Modifier.width(8.dp))
             EnhancedFilterChip(
-                selected = selectedCategory == CATEGORY_OTHER,
-                onClick = { onCategorySelected(CATEGORY_OTHER) },
+                selected = selectedCategory == GradeAverageCalculator.CATEGORY_OTHER,
+                onClick = { onCategorySelected(GradeAverageCalculator.CATEGORY_OTHER) },
                 label = { Text("Sonstige") },
             )
         }

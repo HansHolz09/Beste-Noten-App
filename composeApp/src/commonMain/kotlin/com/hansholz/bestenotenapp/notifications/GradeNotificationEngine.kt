@@ -6,6 +6,8 @@ import com.hansholz.bestenotenapp.api.BesteSchuleApi
 import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.models.Grade
 import com.hansholz.bestenotenapp.api.models.GradeCollection
+import com.hansholz.bestenotenapp.main.Platform
+import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.security.kSafe
 import io.ktor.client.plugins.ClientRequestException
 import kotlinx.coroutines.CancellationException
@@ -25,7 +27,7 @@ internal object GradeNotificationEngine {
     private val json = Json { ignoreUnknownKeys = true }
     private val kSafe = kSafe()
 
-    fun isEnabled(): Boolean = kSafe.getDirect("gradeNotificationsEnabled", false)
+    fun isEnabled(): Boolean = kSafe.getDirect("gradeNotificationsEnabled", false) && listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())
 
     fun getIntervalMinutes(): Long = kSafe.getDirect("gradeNotificationsIntervalMinutes", 60L)
 

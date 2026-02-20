@@ -14,6 +14,9 @@ sealed class Screen(
 
     @Serializable
     data object Main : Screen("main")
+
+    @Serializable
+    data object Grades : Screen("grades")
 }
 
 @Serializable

@@ -108,6 +108,7 @@ kotlin {
             implementation(libs.sonner)
             implementation(libs.capturable)
             implementation(libs.capturable.extension)
+            implementation(libs.filekit.dialogs)
         }
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
@@ -274,6 +275,8 @@ nucleus.application {
             debPackageVersion = appVersion
             debMaintainer = "HansHolz09 <mail@hansholz.dev>"
             shortcut = true
+
+            modules += "jdk.security.auth"
         }
 
         macOS {

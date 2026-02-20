@@ -29,14 +29,22 @@ import com.hansholz.bestenotenapp.api.models.TimeTable
 import com.hansholz.bestenotenapp.api.models.User
 import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.api.oidcClient
-import com.hansholz.bestenotenapp.demo.DemoDataGenerator
+import com.hansholz.bestenotenapp.data.DemoDataGenerator
+import com.hansholz.bestenotenapp.data.ExportData
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.security.kSafe
+import com.hansholz.bestenotenapp.utils.IO
 import com.hansholz.bestenotenapp.utils.weekOfYear
 import dev.chrisbanes.haze.HazeState
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.openFilePicker
+import io.github.vinceglb.filekit.readString
 import io.ktor.utils.io.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -53,6 +61,13 @@ class ViewModel(
 ) : ViewModel() {
     val toaster = toasterState
     val kSafe = kSafe()
+
+    private val json =
+        Json {
+            prettyPrint = true
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+        }
 
     private val httpClient = createHttpClient()
 
@@ -224,6 +239,49 @@ class ViewModel(
         } finally {
             isLoading(false)
         }
+    }
+
+    suspend fun openGradesFromJson(onNavigateToGrades: () -> Unit) =
+        withContext(Dispatchers.IO) {
+            try {
+                val file =
+                    FileKit.openFilePicker(
+                        type = FileKitType.File("json"),
+                        title = "JSON mit Notendaten wählen",
+                    )
+                file?.let { file ->
+                    val data = json.decodeFromString<ExportData>(file.readString())
+                    if (data.containsGradeYears != true || data.gradeYears?.first.isNullOrEmpty()) {
+                        toaster.show(
+                            Toast(
+                                message = "JSON-Datei enthält keine Noten",
+                                type = ToastType.Error,
+                            ),
+                        )
+                        return@withContext
+                    }
+                    gradeCollections.clear()
+                    years.clear()
+                    gradeCollections.addAll(data.gradeYears.first)
+                    years.addAll(data.gradeYears.second)
+                    allGradeCollectionsLoaded.value = true
+                    onNavigateToGrades()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                toaster.show(
+                    Toast(
+                        message = "Beim Öffnen ist ein Fehler aufgetreten",
+                        type = ToastType.Error,
+                    ),
+                )
+            }
+        }
+
+    fun clearOpenedGrades() {
+        gradeCollections.clear()
+        years.clear()
+        allGradeCollectionsLoaded.value = false
     }
 
     fun logout() {

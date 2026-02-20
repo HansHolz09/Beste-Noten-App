@@ -16,6 +16,7 @@ coreSplashscreen = "1.2.0"
 credential-storage = "1.0.0"
 composeMultiplatform = "1.10.1"
 emoji = "2.3.0"
+filekit = "0.12.0"
 haze = "1.7.0"
 koalaplotCore = "0.9.1"
 kotlin = "2.3.10"
@@ -67,6 +68,7 @@ components-resources = { module = "org.jetbrains.compose.components:components-r
 confettikit = { module = "io.github.vinceglb:confettikit", version.ref = "confettikit" }
 credential-secure-storage = { module = "com.microsoft:credential-secure-storage", version.ref = "credential-storage" }
 emoji-compose-m3 = { module = "org.kodein.emoji:emoji-compose-m3", version.ref = "emoji" }
+filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekit" }
 foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
 haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 koalaplot-core = { module = "io.github.koalaplot:koalaplot-core", version.ref = "koalaplotCore" }

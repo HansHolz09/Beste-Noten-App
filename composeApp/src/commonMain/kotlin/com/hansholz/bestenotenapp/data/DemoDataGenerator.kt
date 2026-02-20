@@ -1,4 +1,4 @@
-package com.hansholz.bestenotenapp.demo
+package com.hansholz.bestenotenapp.data
 
 import com.hansholz.bestenotenapp.api.models.Conductor
 import com.hansholz.bestenotenapp.api.models.Grade

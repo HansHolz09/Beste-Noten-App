@@ -79,6 +79,7 @@ import top.ltfan.multihaptic.compose.rememberVibrator
 fun Login(
     viewModel: ViewModel,
     onNavigateHome: () -> Unit,
+    onNavigateToGrades: () -> Unit,
 ) {
     val loginViewModel = viewModel { LoginViewModel() }
 
@@ -234,7 +235,16 @@ fun Login(
                             ) {
                                 Text("Login über beste.schule")
                             }
-                            Text("oder")
+                            EnhancedButton(
+                                onClick = {
+                                    scope.launch {
+                                        viewModel.openGradesFromJson(onNavigateToGrades)
+                                    }
+                                },
+                                modifier = modifier,
+                            ) {
+                                Text("Noten aus JSON öffnen")
+                            }
                             EnhancedButton(
                                 onClick = {
                                     scope.launch {

@@ -13,6 +13,7 @@ import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Animation
+import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.Article
 import androidx.compose.material.icons.outlined.Balance
 import androidx.compose.material.icons.outlined.BlurOn
@@ -31,6 +32,7 @@ import androidx.compose.material.icons.outlined.LocalLibrary
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Percent
+import androidx.compose.material.icons.outlined.SettingsBackupRestore
 import androidx.compose.material.icons.outlined.Subject
 import androidx.compose.material.icons.outlined.Texture
 import androidx.compose.material.icons.outlined.Title
@@ -85,7 +87,7 @@ import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
-import com.hansholz.bestenotenapp.screens.grades.convertStoredSubjectWeightingsMode
+import com.hansholz.bestenotenapp.screens.grades.GradeAverageCalculator
 import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
@@ -425,7 +427,7 @@ fun Settings(
                     if (gradeAverageUseWeighting != it) {
                         gradeAverageUseWeighting = it
                         kSafe.putDirect("gradeAverageUseWeighting", it)
-                        convertStoredSubjectWeightingsMode(
+                        GradeAverageCalculator().convertStoredSubjectWeightingsMode(
                             kSafe = kSafe,
                             useWeightingInsteadOfPercent = it,
                         )
@@ -539,6 +541,82 @@ fun Settings(
                 )
             }
             item {
+                PreferenceCategory("Datensicherung", Modifier.padding(horizontal = 15.dp))
+            }
+            item {
+                PreferenceItem(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    title = "Daten als JSON exportieren",
+                    icon = Icons.Outlined.Archive,
+                    onClick = {
+                        settingsViewModel.showExportConfigDialog = true
+                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                    },
+                    position = PreferencePosition.Top,
+                )
+            }
+            item {
+                PreferenceItem(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    title = "Daten aus JSON wiederherstellen",
+                    icon = Icons.Outlined.SettingsBackupRestore,
+                    onClick = {
+                        scope.launch {
+                            settingsViewModel.importJson(viewModel) { appSettings ->
+                                useSystemIsDark = appSettings.useSystemIsDark
+                                isDark = appSettings.isDark
+                                useCustomColorScheme = appSettings.useCustomColorScheme
+                                animationsEnabled = appSettings.animationsEnabled
+                                blurEnabled = appSettings.blurEnabled
+                                backgroundEnabled = appSettings.backgroundEnabled
+                                hapticsEnabled = appSettings.hapticsEnabled
+                                showGreetings = appSettings.showGreetings
+                                showNewestGrades = appSettings.showNewestGrades
+                                showCurrentLesson = appSettings.showCurrentLesson
+                                showYearProgress = appSettings.showYearProgress
+                                showGradeHistory = appSettings.showGradeHistory
+                                gradeAverageEnabled = appSettings.gradeAverageEnabled
+                                gradeAverageUseWeighting = appSettings.gradeAverageUseWeighting
+                                showAllSubjects = appSettings.showAllSubjects
+                                showCollectionsWithoutGrades = appSettings.showCollectionsWithoutGrades
+                                showAbsences = appSettings.showAbsences
+                                showNotes = appSettings.showNotes
+                                showTeachersWithFirstname = appSettings.showTeachersWithFirstname
+                                notificationsEnabled = appSettings.gradeNotificationsEnabled
+                                notificationIntervalMinutes = appSettings.gradeNotificationsIntervalMinutes
+                                notificationsWifiOnly = appSettings.gradeNotificationsWifiOnly
+                                requireBiometricAuthentification = appSettings.requireBiometricAuthentification
+                                kSafe.putDirect("useSystemIsDark", appSettings.useSystemIsDark)
+                                kSafe.putDirect("isDark", appSettings.isDark)
+                                kSafe.putDirect("useCustomColorScheme", appSettings.useCustomColorScheme)
+                                kSafe.putDirect("animationsEnabled", appSettings.animationsEnabled)
+                                kSafe.putDirect("blurEnabled", appSettings.blurEnabled)
+                                kSafe.putDirect("backgroundEnabled", appSettings.backgroundEnabled)
+                                kSafe.putDirect("hapticsEnabled", appSettings.hapticsEnabled, false)
+                                kSafe.putDirect("showGreetings", appSettings.showGreetings)
+                                kSafe.putDirect("showNewestGrades", appSettings.showNewestGrades)
+                                kSafe.putDirect("showCurrentLesson", appSettings.showCurrentLesson)
+                                kSafe.putDirect("showYearProgress", appSettings.showYearProgress)
+                                kSafe.putDirect("showGradeHistory", appSettings.showGradeHistory)
+                                kSafe.putDirect("gradeAverageEnabled", appSettings.gradeAverageEnabled)
+                                kSafe.putDirect("gradeAverageUseWeighting", appSettings.gradeAverageUseWeighting)
+                                kSafe.putDirect("showAllSubjects", appSettings.showAllSubjects)
+                                kSafe.putDirect("showCollectionsWithoutGrades", appSettings.showCollectionsWithoutGrades)
+                                kSafe.putDirect("showAbsences", appSettings.showAbsences)
+                                kSafe.putDirect("showNotes", appSettings.showNotes)
+                                kSafe.putDirect("showTeachersWithFirstname", appSettings.showTeachersWithFirstname)
+                                kSafe.putDirect("gradeNotificationsEnabled", appSettings.gradeNotificationsEnabled)
+                                kSafe.putDirect("gradeNotificationsIntervalMinutes", appSettings.gradeNotificationsIntervalMinutes)
+                                kSafe.putDirect("gradeNotificationsWifiOnly", appSettings.gradeNotificationsWifiOnly)
+                                kSafe.putDirect("requireBiometricAuthentification", appSettings.requireBiometricAuthentification)
+                                GradeNotifications.onSettingsUpdated()
+                            }
+                        }
+                    },
+                    position = PreferencePosition.Bottom,
+                )
+            }
+            item {
                 PreferenceCategory("Account", Modifier.padding(horizontal = 15.dp))
             }
             item {
@@ -619,6 +697,7 @@ fun Settings(
     }
 
     NotificationIntervalDialog(settingsViewModel)
+    ExportConfigDialog(settingsViewModel, viewModel)
     LibrariesDialog(settingsViewModel)
     ConfettiEasterEgg(settingsViewModel)
 }

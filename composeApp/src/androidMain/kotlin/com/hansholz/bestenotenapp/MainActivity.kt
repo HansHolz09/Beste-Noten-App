@@ -10,6 +10,8 @@ import com.hansholz.bestenotenapp.main.App
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.utils.AndroidContext
 import eu.anifantakis.lib.ksafe.BiometricHelper
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.dialogs.init
 import tech.kotlinlang.permission.PermissionInitiation
 
 class MainActivity : FragmentActivity() {
@@ -20,6 +22,7 @@ class MainActivity : FragmentActivity() {
         AndroidContext.init(this)
         GradeNotifications.initialize(this)
         PermissionInitiation.setActivity(this)
+        FileKit.init(this)
         androidCodeAuthFlowFactory.registerActivity(this)
         BiometricHelper.promptTitle = "Authentifizieren"
         setContent {
