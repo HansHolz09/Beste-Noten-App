@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.KeyboardActionHandler
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -209,6 +210,7 @@ fun Login(
                                         }
                                     },
                                 lineLimits = TextFieldLineLimits.SingleLine,
+                                shape = RoundedCornerShape(18.dp),
                             )
                             Text("oder")
                             EnhancedButton(
