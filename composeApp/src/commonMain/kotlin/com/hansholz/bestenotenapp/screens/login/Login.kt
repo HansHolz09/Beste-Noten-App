@@ -25,9 +25,6 @@ import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Login
-import androidx.compose.material.icons.outlined.ContentPaste
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
@@ -53,6 +50,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.logo
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Content_paste
+import com.composables.icons.materialsymbols.rounded.Login
 import com.hansholz.bestenotenapp.components.CurvedText
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
@@ -160,7 +160,7 @@ fun Login(
                                             }
                                         },
                                     ) {
-                                        Icon(Icons.Outlined.ContentPaste, null)
+                                        Icon(MaterialSymbols.Rounded.Content_paste, null)
                                     }
                                 },
                                 trailingIcon = {
@@ -185,7 +185,7 @@ fun Login(
                                         },
                                         enabled = textFieldState.text.isNotEmpty(),
                                     ) {
-                                        Icon(Icons.AutoMirrored.Outlined.Login, null)
+                                        Icon(MaterialSymbols.Rounded.Login, null)
                                     }
                                 },
                                 placeholder = { Text("Private-Access-Token") },

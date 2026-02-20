@@ -21,9 +21,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -44,6 +41,9 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Add
+import com.composables.icons.materialsymbols.rounded.Remove
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
@@ -655,9 +655,9 @@ fun GradeDiagrams(
                     ) {
                         EnhancedAnimatedContent(gradesViewModel.filterShown) {
                             if (it) {
-                                Icon(Icons.Outlined.Remove, null)
+                                Icon(MaterialSymbols.Rounded.Remove, null)
                             } else {
-                                Icon(Icons.Outlined.Add, null)
+                                Icon(MaterialSymbols.Rounded.Add, null)
                             }
                         }
                     }

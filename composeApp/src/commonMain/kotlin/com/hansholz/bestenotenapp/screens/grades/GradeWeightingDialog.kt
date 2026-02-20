@@ -16,10 +16,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Balance
-import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -37,6 +33,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Add
+import com.composables.icons.materialsymbols.rounded.Balance
+import com.composables.icons.materialsymbols.rounded.Remove
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
@@ -71,7 +71,7 @@ internal fun GradeWeightingDialog(
     EnhancedAlertDialog(
         visible = visible,
         onDismissRequest = onDismissRequest,
-        icon = { Icon(Icons.Outlined.Balance, null) },
+        icon = { Icon(MaterialSymbols.Rounded.Balance, null) },
         title = { Text("Gewichtungen für $subjectTitle") },
         modifier = Modifier.width(IntrinsicSize.Min),
         text = {
@@ -176,7 +176,7 @@ private fun WeightControlRow(
                     onValueChange((value - step).coerceAtLeast(0))
                 },
             ) {
-                Icon(Icons.Outlined.Remove, null)
+                Icon(MaterialSymbols.Rounded.Remove, null)
             }
             BasicTextField(
                 value = if (useWeightingInsteadOfPercent) textFieldValue else "$textFieldValue%",
@@ -212,7 +212,7 @@ private fun WeightControlRow(
                     onValueChange((value + step).coerceAtMost(100))
                 },
             ) {
-                Icon(Icons.Outlined.Add, null)
+                Icon(MaterialSymbols.Rounded.Add, null)
             }
         }
     }

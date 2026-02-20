@@ -1,7 +1,5 @@
 package com.hansholz.bestenotenapp.screens.timetable
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.HowToReg
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
@@ -13,6 +11,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.How_to_reg
 import com.hansholz.bestenotenapp.api.models.Absence
 import com.hansholz.bestenotenapp.api.models.Conductor
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
@@ -39,7 +39,7 @@ fun AbsenceInfoDialog(
                 Text("Schließen")
             }
         },
-        icon = { Icon(Icons.Outlined.HowToReg, null) },
+        icon = { Icon(MaterialSymbols.Rounded.How_to_reg, null) },
         title = { Text(absence.type.name, color = colorScheme.error) },
         text = {
             val createdBy =

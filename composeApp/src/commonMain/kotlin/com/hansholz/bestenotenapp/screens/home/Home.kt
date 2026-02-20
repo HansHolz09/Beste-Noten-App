@@ -27,10 +27,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Note
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
@@ -68,6 +64,10 @@ import bestenotenapp.composeapp.generated.resources.grades
 import bestenotenapp.composeapp.generated.resources.stats
 import bestenotenapp.composeapp.generated.resources.subjectsAndTeachers
 import bestenotenapp.composeapp.generated.resources.timetable
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Menu
+import com.composables.icons.materialsymbols.rounded.News
+import com.composables.icons.materialsymbols.rounded.Refresh
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.components.GradeValueBox
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
@@ -155,7 +155,7 @@ fun Home(
                         }
                     },
                 ) {
-                    Icon(Icons.Filled.Menu, null)
+                    Icon(MaterialSymbols.Rounded.Menu, null)
                 }
             },
             sideMenuExpanded = viewModel.mediumExpandedDrawerState.value.isOpen,
@@ -296,7 +296,7 @@ fun Home(
                                             enter = scaleIn(),
                                             exit = scaleOut(),
                                         ) {
-                                            Icon(Icons.Outlined.Refresh, null)
+                                            Icon(MaterialSymbols.Rounded.Refresh, null)
                                         }
                                     }
                                 }
@@ -400,7 +400,7 @@ fun Home(
                                             enter = scaleIn(),
                                             exit = scaleOut(),
                                         ) {
-                                            Icon(Icons.Outlined.Refresh, null)
+                                            Icon(MaterialSymbols.Rounded.Refresh, null)
                                         }
                                     }
                                 }
@@ -510,7 +510,7 @@ fun Home(
                                                                     modifier = Modifier.padding(top = 5.dp),
                                                                     verticalAlignment = Alignment.CenterVertically,
                                                                 ) {
-                                                                    Icon(Icons.AutoMirrored.Outlined.Note, null, Modifier.padding(end = 10.dp))
+                                                                    Icon(MaterialSymbols.Rounded.News, null, Modifier.padding(end = 10.dp))
                                                                     Text(note.description ?: "Keine Beschreibung vorhanden")
                                                                 }
                                                             }
@@ -627,7 +627,7 @@ fun Home(
                                                 enter = scaleIn(),
                                                 exit = scaleOut(),
                                             ) {
-                                                Icon(Icons.Outlined.Refresh, null)
+                                                Icon(MaterialSymbols.Rounded.Refresh, null)
                                             }
                                         }
                                     }

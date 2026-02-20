@@ -14,6 +14,7 @@ confettikit = "0.7.0"
 coreSplashscreen = "1.2.0"
 #noinspection NewerVersionAvailable
 credential-storage = "1.0.0"
+composeIcons = "2.2.1"
 composeMultiplatform = "1.10.1"
 emoji = "2.3.0"
 filekit = "0.12.0"
@@ -30,7 +31,6 @@ ktorClientCore = "3.4.0"
 jbrApi = "1.10.1"
 jetlime = "4.1.1"
 material3 = "1.10.0-alpha05"
-materialIconsExtended = "1.7.3"
 materialyou = "0.3.0"
 multihapticCompose = "0.3.0"
 nucleus = "1.2.2"
@@ -71,6 +71,7 @@ emoji-compose-m3 = { module = "org.kodein.emoji:emoji-compose-m3", version.ref =
 filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekit" }
 foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
 haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
+material-symbols-rounded = { module = "com.composables:icons-material-symbols-rounded-cmp", version.ref = "composeIcons" }
 koalaplot-core = { module = "io.github.koalaplot:koalaplot-core", version.ref = "koalaplotCore" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 alarmee = { module = "io.github.tweener:alarmee", version.ref = "alarmee" }
@@ -90,7 +91,6 @@ ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorCli
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktorClientCore" }
 ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktorClientCore" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorClientCore" }
-material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
 materialyou = { module = "dev.zwander:materialyou", version.ref = "materialyou" }

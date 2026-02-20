@@ -5,11 +5,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.CloseFullscreen
-import androidx.compose.material.icons.outlined.OpenInFull
-import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -21,6 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Close
+import com.composables.icons.materialsymbols.rounded.Close_fullscreen
+import com.composables.icons.materialsymbols.rounded.Open_in_full
+import com.composables.icons.materialsymbols.rounded.Remove
 import java.awt.Frame
 import java.awt.event.WindowEvent
 
@@ -53,7 +53,7 @@ internal fun DecoratedWindowScope.TitleBarOnLinux(
                 },
                 colors = colors,
             ) {
-                Icon(Icons.Outlined.Remove, null)
+                Icon(MaterialSymbols.Rounded.Remove, null)
             }
             FilledIconButton(
                 onClick = {
@@ -65,7 +65,7 @@ internal fun DecoratedWindowScope.TitleBarOnLinux(
                 },
                 colors = colors,
             ) {
-                Icon(if (state.isMaximized) Icons.Outlined.CloseFullscreen else Icons.Outlined.OpenInFull, null)
+                Icon(if (state.isMaximized) MaterialSymbols.Rounded.Close_fullscreen else MaterialSymbols.Rounded.Open_in_full, null)
             }
             FilledIconButton(
                 onClick = {
@@ -73,7 +73,7 @@ internal fun DecoratedWindowScope.TitleBarOnLinux(
                 },
                 colors = colors,
             ) {
-                Icon(Icons.Outlined.Close, null)
+                Icon(MaterialSymbols.Rounded.Close, null)
             }
         }
     }

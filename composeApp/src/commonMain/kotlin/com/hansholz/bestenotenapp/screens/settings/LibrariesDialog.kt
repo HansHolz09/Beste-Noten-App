@@ -1,7 +1,5 @@
 package com.hansholz.bestenotenapp.screens.settings
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.LocalLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
@@ -9,6 +7,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import bestenotenapp.composeapp.generated.resources.Res
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Local_library
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.mikepenz.aboutlibraries.ui.compose.DefaultChipColors
 import com.mikepenz.aboutlibraries.ui.compose.LibraryDefaults
@@ -34,7 +34,7 @@ fun LibrariesDialog(settingsViewModel: SettingsViewModel) {
                 Text("Schließen")
             }
         },
-        icon = { Icon(Icons.Outlined.LocalLibrary, null) },
+        icon = { Icon(MaterialSymbols.Rounded.Local_library, null) },
         title = { Text("Open-Source-Lizenzen") },
         text = {
             LibrariesContainer(

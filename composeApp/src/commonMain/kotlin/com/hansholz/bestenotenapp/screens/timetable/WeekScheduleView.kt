@@ -29,8 +29,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
@@ -57,6 +55,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Close
 import com.hansholz.bestenotenapp.api.models.Absence
 import com.hansholz.bestenotenapp.api.models.JournalLesson
 import com.hansholz.bestenotenapp.api.models.JournalWeek
@@ -273,7 +273,7 @@ fun WeekScheduleView(
                                 modifier = Modifier.padding(start = 2.dp, top = 2.dp),
                                 isExpressive = false,
                             ) {
-                                Icon(Icons.Outlined.Close, null)
+                                Icon(MaterialSymbols.Rounded.Close, null)
                             }
                             Text(
                                 text = selectedLesson?.subject?.localId ?: "?",

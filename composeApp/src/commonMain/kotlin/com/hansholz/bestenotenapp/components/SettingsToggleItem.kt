@@ -3,15 +3,15 @@ package com.hansholz.bestenotenapp.components
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Done
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Close
+import com.composables.icons.materialsymbols.rounded.Done
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import top.ltfan.multihaptic.compose.rememberVibrator
@@ -25,8 +25,8 @@ fun LazyListScope.settingsToggleItem(
     modifier: Modifier = Modifier,
     textModifier: Modifier = Modifier,
     position: PreferencePosition = PreferencePosition.Single,
-    checkedIcon: ImageVector = Icons.Outlined.Done,
-    uncheckedIcon: ImageVector = Icons.Outlined.Close,
+    checkedIcon: ImageVector = MaterialSymbols.Rounded.Done,
+    uncheckedIcon: ImageVector = MaterialSymbols.Rounded.Close,
     hapticsEnabled: Boolean = true,
 ) {
     item {

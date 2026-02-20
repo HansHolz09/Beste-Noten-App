@@ -44,22 +44,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.outlined.ArrowBackIosNew
-import androidx.compose.material.icons.outlined.Balance
-import androidx.compose.material.icons.outlined.BarChart
-import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.DisabledVisible
-import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.outlined.PlaylistRemove
-import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.SearchOff
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.Title
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
@@ -110,6 +94,22 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Arrow_back
+import com.composables.icons.materialsymbols.rounded.Arrow_back_ios_new
+import com.composables.icons.materialsymbols.rounded.Balance
+import com.composables.icons.materialsymbols.rounded.Bar_chart
+import com.composables.icons.materialsymbols.rounded.Calendar_month
+import com.composables.icons.materialsymbols.rounded.Close
+import com.composables.icons.materialsymbols.rounded.Disabled_visible
+import com.composables.icons.materialsymbols.rounded.History
+import com.composables.icons.materialsymbols.rounded.Menu
+import com.composables.icons.materialsymbols.rounded.Playlist_remove
+import com.composables.icons.materialsymbols.rounded.Refresh
+import com.composables.icons.materialsymbols.rounded.Search
+import com.composables.icons.materialsymbols.rounded.Search_off
+import com.composables.icons.materialsymbols.rounded.Settings
+import com.composables.icons.materialsymbols.rounded.Title
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.GradeValueBox
@@ -215,9 +215,9 @@ fun Grades(
                         Icon(
                             imageVector =
                                 if (listOf(ExactPlatform.IOS, ExactPlatform.MACOS).contains(getExactPlatform())) {
-                                    Icons.Outlined.ArrowBackIosNew
+                                    MaterialSymbols.Rounded.Arrow_back_ios_new
                                 } else {
-                                    Icons.AutoMirrored.Filled.ArrowBack
+                                    MaterialSymbols.Rounded.Arrow_back
                                 },
                             contentDescription = null,
                         )
@@ -230,7 +230,7 @@ fun Grades(
                             }
                         },
                     ) {
-                        Icon(Icons.Filled.Menu, null)
+                        Icon(MaterialSymbols.Rounded.Menu, null)
                     }
                 }
             },
@@ -286,7 +286,7 @@ fun Grades(
                                     } else {
                                         EmptyStateMessage(
                                             title = if (gradesViewModel.searchQuery.isEmpty()) "Keine Noten vorhanden" else "Keine Noten gefunden",
-                                            icon = if (gradesViewModel.searchQuery.isEmpty()) Icons.Outlined.PlaylistRemove else Icons.Outlined.SearchOff,
+                                            icon = if (gradesViewModel.searchQuery.isEmpty()) MaterialSymbols.Rounded.Playlist_remove else MaterialSymbols.Rounded.Search_off,
                                             modifier = Modifier.padding(contentPadding).consumeWindowInsets(contentPadding).imePadding(),
                                         )
                                     }
@@ -665,7 +665,7 @@ fun Grades(
                                                 isExpressive = false,
                                             ) {
                                                 Icon(
-                                                    imageVector = Icons.Outlined.Search,
+                                                    imageVector = MaterialSymbols.Rounded.Search,
                                                     contentDescription = null,
                                                     tint = colorScheme.onPrimaryContainer,
                                                 )
@@ -681,7 +681,7 @@ fun Grades(
                                                 enabled = viewModel.years.isNotEmpty() && !gradesViewModel.isLoading,
                                             ) {
                                                 Icon(
-                                                    imageVector = Icons.Outlined.CalendarMonth,
+                                                    imageVector = MaterialSymbols.Rounded.Calendar_month,
                                                     contentDescription = null,
                                                     tint = colorScheme.onPrimaryContainer,
                                                 )
@@ -710,7 +710,7 @@ fun Grades(
                                                 enabled = viewModel.years.isNotEmpty() && !gradesViewModel.isLoading,
                                             ) {
                                                 Icon(
-                                                    imageVector = Icons.Outlined.Refresh,
+                                                    imageVector = MaterialSymbols.Rounded.Refresh,
                                                     contentDescription = null,
                                                     tint = colorScheme.onPrimaryContainer,
                                                 )
@@ -727,7 +727,7 @@ fun Grades(
                                                 isExpressive = false,
                                             ) {
                                                 Icon(
-                                                    imageVector = Icons.Outlined.Settings,
+                                                    imageVector = MaterialSymbols.Rounded.Settings,
                                                     contentDescription = null,
                                                     tint = colorScheme.onPrimaryContainer,
                                                 )
@@ -754,7 +754,7 @@ fun Grades(
                                             isExpressive = if (animationsEnabled) currentLazyListState.isScrollingUp() else true,
                                         ) { enabled ->
                                             Icon(
-                                                imageVector = Icons.Outlined.BarChart,
+                                                imageVector = MaterialSymbols.Rounded.Bar_chart,
                                                 contentDescription = null,
                                                 tint = if (enabled) colorScheme.onPrimary else colorScheme.onPrimaryContainer,
                                             )
@@ -797,7 +797,7 @@ fun Grades(
                                                 enabled = false,
                                             ) {
                                                 Icon(
-                                                    imageVector = Icons.Outlined.Search,
+                                                    imageVector = MaterialSymbols.Rounded.Search,
                                                     contentDescription = null,
                                                     tint = colorScheme.onPrimaryContainer,
                                                 )
@@ -818,7 +818,7 @@ fun Grades(
                                                 isExpressive = false,
                                             ) {
                                                 Icon(
-                                                    imageVector = Icons.Outlined.Close,
+                                                    imageVector = MaterialSymbols.Rounded.Close,
                                                     contentDescription = null,
                                                     tint = colorScheme.onPrimaryContainer,
                                                 )
@@ -974,7 +974,7 @@ fun Grades(
                                                             }
                                                         },
                                                         text = "Mit Gewichtungen statt Prozenten rechnen",
-                                                        icon = Icons.Outlined.Balance,
+                                                        icon = MaterialSymbols.Rounded.Balance,
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Middle,
                                                     )
@@ -986,7 +986,7 @@ fun Grades(
                                                         kSafe.putDirect("showGradeHistory", it)
                                                     },
                                                     text = "Noten-Historien anzeigen",
-                                                    icon = Icons.Outlined.History,
+                                                    icon = MaterialSymbols.Rounded.History,
                                                     textModifier = Modifier.skipToLookaheadSize(),
                                                     position =
                                                         if (viewModel.isDemoAccount.value) {
@@ -1005,7 +1005,7 @@ fun Grades(
                                                             kSafe.putDirect("showCollectionsWithoutGrades", it)
                                                         },
                                                         text = "Leistungen ohne Noten anzeigen",
-                                                        icon = Icons.Outlined.DisabledVisible,
+                                                        icon = MaterialSymbols.Rounded.Disabled_visible,
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Middle,
                                                     )
@@ -1016,7 +1016,7 @@ fun Grades(
                                                             kSafe.putDirect("showTeachersWithFirstname", it)
                                                         },
                                                         text = "Lehrer mit Vornamen anzeigen",
-                                                        icon = Icons.Outlined.Title,
+                                                        icon = MaterialSymbols.Rounded.Title,
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Bottom,
                                                     )

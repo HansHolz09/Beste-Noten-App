@@ -15,8 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -41,6 +39,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.window.core.layout.WindowWidthSizeClass
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Settings
 import com.hansholz.bestenotenapp.components.ConfettiPresets
 import com.hansholz.bestenotenapp.components.NavigationDrawer
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
@@ -186,7 +186,7 @@ fun AppNavigationDrawer(
                             Modifier.padding(10.dp).then(
                                 if (isCurrentScreen) Modifier.border(2.dp, colorScheme.onSurface, shapes.extraExtraLarge) else Modifier,
                             ),
-                        icon = { Icon(Icons.Outlined.Settings, null) },
+                        icon = { Icon(MaterialSymbols.Rounded.Settings, null) },
                         colors =
                             NavigationDrawerItemDefaults.colors(
                                 selectedContainerColor = colorScheme.secondaryContainer.copy(0.7f),

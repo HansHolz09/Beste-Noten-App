@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialShapes.Companion.Cookie6Sided
@@ -26,6 +24,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Block
 import org.kodein.emoji.compose.m3.TextWithNotoImageEmoji
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -61,7 +61,7 @@ fun GradeValueBox(gradeValue: String?) {
                 fontSize = 20.sp,
             )
         } ?: Icon(
-            imageVector = Icons.Outlined.Block,
+            imageVector = MaterialSymbols.Rounded.Block,
             contentDescription = null,
             modifier = Modifier.fillMaxSize().padding(3.dp),
             tint = colorScheme.onErrorContainer,

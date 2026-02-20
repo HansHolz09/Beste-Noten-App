@@ -8,37 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Logout
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.Animation
-import androidx.compose.material.icons.outlined.Archive
-import androidx.compose.material.icons.outlined.Article
-import androidx.compose.material.icons.outlined.Balance
-import androidx.compose.material.icons.outlined.BlurOn
-import androidx.compose.material.icons.outlined.Brightness4
-import androidx.compose.material.icons.outlined.BrightnessAuto
-import androidx.compose.material.icons.outlined.DarkMode
-import androidx.compose.material.icons.outlined.DisabledVisible
-import androidx.compose.material.icons.outlined.FiberNew
-import androidx.compose.material.icons.outlined.FormatListBulleted
-import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.outlined.HowToReg
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.InvertColors
-import androidx.compose.material.icons.outlined.LightMode
-import androidx.compose.material.icons.outlined.LocalLibrary
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Percent
-import androidx.compose.material.icons.outlined.SettingsBackupRestore
-import androidx.compose.material.icons.outlined.Subject
-import androidx.compose.material.icons.outlined.Texture
-import androidx.compose.material.icons.outlined.Title
-import androidx.compose.material.icons.outlined.Vibration
-import androidx.compose.material.icons.outlined.WavingHand
-import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
@@ -55,6 +24,37 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import bestenotenapp.composeApp.BuildConfig
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Account_circle
+import com.composables.icons.materialsymbols.rounded.Animation
+import com.composables.icons.materialsymbols.rounded.Article
+import com.composables.icons.materialsymbols.rounded.Balance
+import com.composables.icons.materialsymbols.rounded.Blur_on
+import com.composables.icons.materialsymbols.rounded.Brightness_4
+import com.composables.icons.materialsymbols.rounded.Brightness_auto
+import com.composables.icons.materialsymbols.rounded.Dark_mode
+import com.composables.icons.materialsymbols.rounded.Disabled_visible
+import com.composables.icons.materialsymbols.rounded.Fiber_new
+import com.composables.icons.materialsymbols.rounded.File_export
+import com.composables.icons.materialsymbols.rounded.Format_list_bulleted
+import com.composables.icons.materialsymbols.rounded.History
+import com.composables.icons.materialsymbols.rounded.How_to_reg
+import com.composables.icons.materialsymbols.rounded.Info
+import com.composables.icons.materialsymbols.rounded.Invert_colors
+import com.composables.icons.materialsymbols.rounded.Light_mode
+import com.composables.icons.materialsymbols.rounded.Local_library
+import com.composables.icons.materialsymbols.rounded.Lock
+import com.composables.icons.materialsymbols.rounded.Logout
+import com.composables.icons.materialsymbols.rounded.Menu
+import com.composables.icons.materialsymbols.rounded.Notifications
+import com.composables.icons.materialsymbols.rounded.Percent
+import com.composables.icons.materialsymbols.rounded.Settings_backup_restore
+import com.composables.icons.materialsymbols.rounded.Subject
+import com.composables.icons.materialsymbols.rounded.Texture
+import com.composables.icons.materialsymbols.rounded.Title
+import com.composables.icons.materialsymbols.rounded.Vibration
+import com.composables.icons.materialsymbols.rounded.Waving_hand
+import com.composables.icons.materialsymbols.rounded.Wifi
 import com.hansholz.bestenotenapp.components.PreferenceCategory
 import com.hansholz.bestenotenapp.components.PreferenceItem
 import com.hansholz.bestenotenapp.components.PreferencePosition
@@ -157,7 +157,7 @@ fun Settings(
                     }
                 },
             ) {
-                Icon(Icons.Filled.Menu, null)
+                Icon(MaterialSymbols.Rounded.Menu, null)
             }
         },
         sideMenuExpanded = viewModel.mediumExpandedDrawerState.value.isOpen,
@@ -175,7 +175,7 @@ fun Settings(
                 PreferenceItem(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     title = "Nachtmodus",
-                    icon = Icons.Outlined.Brightness4,
+                    icon = MaterialSymbols.Rounded.Brightness_4,
                     position = PreferencePosition.Top,
                 ) {
                     Row {
@@ -188,7 +188,7 @@ fun Settings(
                             },
                             shapes = IconButtonDefaults.toggleableShapes(),
                         ) {
-                            Icon(Icons.Outlined.BrightnessAuto, null)
+                            Icon(MaterialSymbols.Rounded.Brightness_auto, null)
                         }
                         FilledIconToggleButton(
                             checked = !useSystemIsDark && !isDark,
@@ -201,7 +201,7 @@ fun Settings(
                             },
                             shapes = IconButtonDefaults.toggleableShapes(),
                         ) {
-                            Icon(Icons.Outlined.LightMode, null)
+                            Icon(MaterialSymbols.Rounded.Light_mode, null)
                         }
                         FilledIconToggleButton(
                             checked = !useSystemIsDark && isDark,
@@ -214,7 +214,7 @@ fun Settings(
                             },
                             shapes = IconButtonDefaults.toggleableShapes(),
                         ) {
-                            Icon(Icons.Outlined.DarkMode, null)
+                            Icon(MaterialSymbols.Rounded.Dark_mode, null)
                         }
                     }
                 }
@@ -227,7 +227,7 @@ fun Settings(
                         kSafe.putDirect("useCustomColorScheme", it)
                     },
                     text = "Material-You",
-                    icon = Icons.Outlined.InvertColors,
+                    icon = MaterialSymbols.Rounded.Invert_colors,
                     position = PreferencePosition.Middle,
                 )
             }
@@ -238,7 +238,7 @@ fun Settings(
                     kSafe.putDirect("animationsEnabled", it)
                 },
                 text = "Animationen",
-                icon = Icons.Outlined.Animation,
+                icon = MaterialSymbols.Rounded.Animation,
                 position = PreferencePosition.Middle,
             )
             if (HazeDefaults.blurEnabled()) {
@@ -249,7 +249,7 @@ fun Settings(
                         kSafe.putDirect("blurEnabled", it)
                     },
                     text = "Unschärfe-Effekt",
-                    icon = Icons.Outlined.BlurOn,
+                    icon = MaterialSymbols.Rounded.Blur_on,
                     position = PreferencePosition.Middle,
                 )
             }
@@ -260,7 +260,7 @@ fun Settings(
                     kSafe.putDirect("backgroundEnabled", it)
                 },
                 text = "Hintergrundbild",
-                icon = Icons.Outlined.Texture,
+                icon = MaterialSymbols.Rounded.Texture,
                 position = if (vibrator.isVibrationSupported) PreferencePosition.Middle else PreferencePosition.Bottom,
             )
             if (vibrator.isVibrationSupported) {
@@ -272,7 +272,7 @@ fun Settings(
                         if (it) vibrator.enhancedVibrate(EnhancedVibrations.TOGGLE_ON, true)
                     },
                     text = "Haptisches Feedback",
-                    icon = Icons.Outlined.Vibration,
+                    icon = MaterialSymbols.Rounded.Vibration,
                     position = PreferencePosition.Bottom,
                     hapticsEnabled = false,
                 )
@@ -297,7 +297,7 @@ fun Settings(
                         }
                     },
                     text = "Benachrichtigungen über neue Noten",
-                    icon = Icons.Outlined.Notifications,
+                    icon = MaterialSymbols.Rounded.Notifications,
                     position = PreferencePosition.Top,
                 )
                 settingsToggleItem(
@@ -311,7 +311,7 @@ fun Settings(
                         GradeNotifications.onSettingsUpdated()
                     },
                     text = "Nur mit WLAN überprüfen",
-                    icon = Icons.Outlined.Wifi,
+                    icon = MaterialSymbols.Rounded.Wifi,
                     enabled = notificationsEnabled,
                     position = PreferencePosition.Middle,
                 )
@@ -320,7 +320,7 @@ fun Settings(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         title = "Überprüfungsintervall",
                         subtitle = "Aktuell: ${formateInterval(notificationIntervalMinutes)}",
-                        icon = Icons.Outlined.History,
+                        icon = MaterialSymbols.Rounded.History,
                         enabled = notificationsEnabled,
                         onClick =
                             if (notificationsEnabled) {
@@ -345,7 +345,7 @@ fun Settings(
                     kSafe.putDirect("showGreetings", it)
                 },
                 text = "Begrüßung anzeigen",
-                icon = Icons.Outlined.WavingHand,
+                icon = MaterialSymbols.Rounded.Waving_hand,
                 position = PreferencePosition.Top,
             )
             settingsToggleItem(
@@ -361,7 +361,7 @@ fun Settings(
                     }
                 },
                 text = "Neuste Noten anzeigen",
-                icon = Icons.Outlined.FiberNew,
+                icon = MaterialSymbols.Rounded.Fiber_new,
                 position = PreferencePosition.Middle,
             )
             settingsToggleItem(
@@ -387,7 +387,7 @@ fun Settings(
                     }
                 },
                 text = "Aktuellen Schultag anzeigen",
-                icon = Icons.Outlined.FormatListBulleted,
+                icon = MaterialSymbols.Rounded.Format_list_bulleted,
                 position = if (viewModel.isDemoAccount.value) PreferencePosition.Bottom else PreferencePosition.Middle,
             )
             if (!viewModel.isDemoAccount.value) {
@@ -404,7 +404,7 @@ fun Settings(
                         }
                     },
                     text = "Schuljahres-Fortschritt anzeigen",
-                    icon = Icons.Outlined.Percent,
+                    icon = MaterialSymbols.Rounded.Percent,
                     position = PreferencePosition.Bottom,
                 )
             }
@@ -434,7 +434,7 @@ fun Settings(
                     }
                 },
                 text = "Mit Gewichtungen statt Prozenten rechnen",
-                icon = Icons.Outlined.Balance,
+                icon = MaterialSymbols.Rounded.Balance,
                 position = PreferencePosition.Middle,
             )
             settingsToggleItem(
@@ -444,7 +444,7 @@ fun Settings(
                     kSafe.putDirect("showGradeHistory", it)
                 },
                 text = "Noten-Historien anzeigen",
-                icon = Icons.Outlined.History,
+                icon = MaterialSymbols.Rounded.History,
                 position = if (viewModel.isDemoAccount.value) PreferencePosition.Bottom else PreferencePosition.Middle,
             )
             if (!viewModel.isDemoAccount.value) {
@@ -455,7 +455,7 @@ fun Settings(
                         kSafe.putDirect("showCollectionsWithoutGrades", it)
                     },
                     text = "Leistungen ohne Noten anzeigen",
-                    icon = Icons.Outlined.DisabledVisible,
+                    icon = MaterialSymbols.Rounded.Disabled_visible,
                     position = PreferencePosition.Bottom,
                 )
                 item {
@@ -479,7 +479,7 @@ fun Settings(
                         }
                     },
                     text = "Abwesenheits-Einträge anzeigen",
-                    icon = Icons.Outlined.HowToReg,
+                    icon = MaterialSymbols.Rounded.How_to_reg,
                     position = PreferencePosition.Top,
                 )
                 settingsToggleItem(
@@ -489,7 +489,7 @@ fun Settings(
                         kSafe.putDirect("showNotes", it)
                     },
                     text = "Tages-Notizen anzeigen",
-                    icon = Icons.Outlined.Article,
+                    icon = MaterialSymbols.Rounded.Article,
                     position = PreferencePosition.Bottom,
                 )
                 item {
@@ -502,7 +502,7 @@ fun Settings(
                         kSafe.putDirect("showAllSubjects", it)
                     },
                     text = "Alle Fächer der Schule anzeigen",
-                    icon = Icons.Outlined.Subject,
+                    icon = MaterialSymbols.Rounded.Subject,
                 )
                 item {
                     PreferenceCategory("Allgemein", Modifier.padding(horizontal = 15.dp))
@@ -514,7 +514,7 @@ fun Settings(
                         kSafe.putDirect("showTeachersWithFirstname", it)
                     },
                     text = "Lehrer mit Vornamen anzeigen",
-                    icon = Icons.Outlined.Title,
+                    icon = MaterialSymbols.Rounded.Title,
                 )
             }
             if (listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())) {
@@ -537,7 +537,7 @@ fun Settings(
                         }
                     },
                     text = "Biometrische Authentifizierung erforderlich",
-                    icon = Icons.Outlined.Lock,
+                    icon = MaterialSymbols.Rounded.Lock,
                 )
             }
             item {
@@ -547,7 +547,7 @@ fun Settings(
                 PreferenceItem(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     title = "Daten als JSON exportieren",
-                    icon = Icons.Outlined.Archive,
+                    icon = MaterialSymbols.Rounded.File_export,
                     onClick = {
                         settingsViewModel.showExportConfigDialog = true
                         vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
@@ -559,7 +559,7 @@ fun Settings(
                 PreferenceItem(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     title = "Daten aus JSON wiederherstellen",
-                    icon = Icons.Outlined.SettingsBackupRestore,
+                    icon = MaterialSymbols.Rounded.Settings_backup_restore,
                     onClick = {
                         scope.launch {
                             settingsViewModel.importJson(viewModel) { appSettings ->
@@ -624,7 +624,7 @@ fun Settings(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     title = "Angemeldet als ${viewModel.user.value?.username ?: "Unbekannt"}",
                     subtitle = remember { if (authToken.isEmpty()) "(Temporär angemeldet)" else "(Anmeldung gespeichert)" },
-                    icon = Icons.Outlined.AccountCircle,
+                    icon = MaterialSymbols.Rounded.Account_circle,
                     position = PreferencePosition.Top,
                 )
             }
@@ -632,7 +632,7 @@ fun Settings(
                 PreferenceItem(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     title = "Abmelden",
-                    icon = Icons.AutoMirrored.Outlined.Logout,
+                    icon = MaterialSymbols.Rounded.Logout,
                     onClick = {
                         viewModel.logout()
                         onNavigateToLogin()
@@ -661,7 +661,7 @@ fun Settings(
                 PreferenceItem(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     title = "Open-Source-Lizenzen",
-                    icon = Icons.Outlined.LocalLibrary,
+                    icon = MaterialSymbols.Rounded.Local_library,
                     onClick = {
                         settingsViewModel.showLicenseDialog = true
                         vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
@@ -684,7 +684,7 @@ fun Settings(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     title = "Beste-Noten-App",
                     subtitle = "Version ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
-                    icon = Icons.Outlined.Info,
+                    icon = MaterialSymbols.Rounded.Info,
                     onClick = onClick,
                     position = PreferencePosition.Bottom,
                 )

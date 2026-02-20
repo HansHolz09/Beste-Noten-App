@@ -39,17 +39,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.automirrored.outlined.ArrowForward
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.EventBusy
-import androidx.compose.material.icons.outlined.IosShare
-import androidx.compose.material.icons.outlined.Refresh
-import androidx.compose.material.icons.outlined.Save
-import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ContainedLoadingIndicator
@@ -98,6 +87,17 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.logo
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Arrow_back
+import com.composables.icons.materialsymbols.rounded.Arrow_forward
+import com.composables.icons.materialsymbols.rounded.Calendar_month
+import com.composables.icons.materialsymbols.rounded.Download
+import com.composables.icons.materialsymbols.rounded.Event_busy
+import com.composables.icons.materialsymbols.rounded.Ios_share
+import com.composables.icons.materialsymbols.rounded.Menu
+import com.composables.icons.materialsymbols.rounded.Refresh
+import com.composables.icons.materialsymbols.rounded.Save
+import com.composables.icons.materialsymbols.rounded.Share
 import com.dokar.sonner.Toast
 import com.dokar.sonner.ToastType
 import com.hansholz.bestenotenapp.api.models.JournalWeek
@@ -189,7 +189,7 @@ fun Timetable(
                         }
                     },
                 ) {
-                    Icon(Icons.Filled.Menu, null)
+                    Icon(MaterialSymbols.Rounded.Menu, null)
                 }
             },
             sideMenuExpanded = viewModel.mediumExpandedDrawerState.value.isOpen,
@@ -276,7 +276,7 @@ fun Timetable(
                                                     } else {
                                                         EmptyStateMessage(
                                                             title = "Keine Stunden für diese Woche gefunden",
-                                                            icon = Icons.Outlined.EventBusy,
+                                                            icon = MaterialSymbols.Rounded.Event_busy,
                                                             modifier = Modifier.padding(contentPadding).consumeWindowInsets(contentPadding).imePadding(),
                                                         )
                                                     }
@@ -406,7 +406,7 @@ fun Timetable(
                                                 isExpressive = false,
                                             ) {
                                                 Icon(
-                                                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                                                    imageVector = MaterialSymbols.Rounded.Arrow_back,
                                                     contentDescription = null,
                                                     tint = colorScheme.onPrimaryContainer,
                                                 )
@@ -465,10 +465,10 @@ fun Timetable(
                                                 Icon(
                                                     imageVector =
                                                         when (getPlatform()) {
-                                                            Platform.ANDROID -> Icons.Outlined.Share
-                                                            Platform.IOS -> Icons.Outlined.IosShare
-                                                            Platform.DESKTOP -> Icons.Outlined.Save
-                                                            Platform.WEB -> Icons.Outlined.Download
+                                                            Platform.ANDROID -> MaterialSymbols.Rounded.Share
+                                                            Platform.IOS -> MaterialSymbols.Rounded.Ios_share
+                                                            Platform.DESKTOP -> MaterialSymbols.Rounded.Save
+                                                            Platform.WEB -> MaterialSymbols.Rounded.Download
                                                         },
                                                     contentDescription = null,
                                                     tint = colorScheme.onPrimaryContainer,
@@ -482,7 +482,7 @@ fun Timetable(
                                                 hapticEnabled = false,
                                             ) {
                                                 Icon(
-                                                    imageVector = Icons.Outlined.Refresh,
+                                                    imageVector = MaterialSymbols.Rounded.Refresh,
                                                     contentDescription = null,
                                                     tint = colorScheme.onPrimaryContainer,
                                                 )
@@ -498,7 +498,7 @@ fun Timetable(
                                                 isExpressive = false,
                                             ) {
                                                 Icon(
-                                                    imageVector = Icons.AutoMirrored.Outlined.ArrowForward,
+                                                    imageVector = MaterialSymbols.Rounded.Arrow_forward,
                                                     contentDescription = null,
                                                     tint = colorScheme.onPrimaryContainer,
                                                 )
@@ -524,7 +524,7 @@ fun Timetable(
                                                 ),
                                         ) { enabled ->
                                             Icon(
-                                                imageVector = Icons.Outlined.CalendarMonth,
+                                                imageVector = MaterialSymbols.Rounded.Calendar_month,
                                                 contentDescription = null,
                                                 tint = if (enabled) colorScheme.onPrimary else colorScheme.onPrimaryContainer,
                                             )

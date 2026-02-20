@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Article
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
@@ -20,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Article
 import com.hansholz.bestenotenapp.api.models.JournalNote
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
@@ -81,7 +81,7 @@ fun DayHeader(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(text = dayAbbreviation, color = color ?: Color.Unspecified, fontWeight = FontWeight.Bold)
             if (!notes.isNullOrEmpty() && showNotes) {
-                Icon(Icons.AutoMirrored.Outlined.Article, null, Modifier.padding(vertical = 4.dp).padding(start = 5.dp).size(16.dp))
+                Icon(MaterialSymbols.Rounded.Article, null, Modifier.padding(vertical = 4.dp).padding(start = 5.dp).size(16.dp))
             }
         }
         Text(text = formattedDate, color = color ?: Color.Gray)

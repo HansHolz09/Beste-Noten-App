@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -28,6 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Archive
 import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
@@ -98,7 +98,7 @@ fun ExportConfigDialog(
                 Text("Abbrechen")
             }
         },
-        icon = { Icon(Icons.Outlined.Archive, null) },
+        icon = { Icon(MaterialSymbols.Rounded.Archive, null) },
         title = { Text("Daten als JSON exportieren") },
         text = {
             EnhancedAnimatedContent(settingsViewModel.isExporting) { isExporting ->

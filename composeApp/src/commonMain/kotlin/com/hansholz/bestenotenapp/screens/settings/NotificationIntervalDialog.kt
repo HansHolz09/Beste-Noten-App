@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.History
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.RadioButton
@@ -22,6 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.History
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
@@ -43,7 +43,7 @@ fun NotificationIntervalDialog(settingsViewModel: SettingsViewModel) {
     EnhancedAlertDialog(
         visible = GradeNotifications.isSupported && settingsViewModel.showIntervalDialog,
         onDismissRequest = { settingsViewModel.showIntervalDialog = false },
-        icon = { Icon(Icons.Outlined.History, null) },
+        icon = { Icon(MaterialSymbols.Rounded.History, null) },
         title = { Text("Überprüfungsintervall") },
         text = {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {

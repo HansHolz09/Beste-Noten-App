@@ -16,8 +16,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -48,6 +46,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Menu
 import com.hansholz.bestenotenapp.api.models.Subject
 import com.hansholz.bestenotenapp.api.models.Teacher
 import com.hansholz.bestenotenapp.components.EmptyStateMessage
@@ -111,7 +111,7 @@ fun SubjectsAndTeachers(
                         }
                     },
                 ) {
-                    Icon(Icons.Filled.Menu, null)
+                    Icon(MaterialSymbols.Rounded.Menu, null)
                 }
             },
             sideMenuExpanded = viewModel.mediumExpandedDrawerState.value.isOpen,

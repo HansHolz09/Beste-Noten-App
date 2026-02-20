@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.PlaylistRemove
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialShapes.Companion.Cookie9Sided
@@ -22,6 +20,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Playlist_remove
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -31,7 +31,7 @@ fun EmptyStateMessage(
     description: String? = null,
     button: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier,
-    icon: ImageVector? = Icons.Outlined.PlaylistRemove,
+    icon: ImageVector? = MaterialSymbols.Rounded.Playlist_remove,
 ) {
     Box(
         modifier =

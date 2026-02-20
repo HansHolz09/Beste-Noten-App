@@ -77,7 +77,7 @@ kotlin {
             implementation(libs.foundation)
             implementation(libs.material3)
             implementation(libs.ui)
-            implementation(libs.material.icons.extended)
+            implementation(libs.material.symbols.rounded)
             implementation(libs.components.resources)
             implementation(libs.adaptive)
             implementation(libs.material3.adaptive.layout)

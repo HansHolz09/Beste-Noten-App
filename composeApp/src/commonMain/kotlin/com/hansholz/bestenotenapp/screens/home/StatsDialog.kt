@@ -7,9 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Insights
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -32,6 +29,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Insights
+import com.composables.icons.materialsymbols.rounded.Refresh
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
@@ -117,11 +117,11 @@ fun StatsDialog(
                         }
                     },
                 ) {
-                    Icon(Icons.Outlined.Refresh, null)
+                    Icon(MaterialSymbols.Rounded.Refresh, null)
                 }
             }
         },
-        icon = { Icon(Icons.Outlined.Insights, null) },
+        icon = { Icon(MaterialSymbols.Rounded.Insights, null) },
         title = { Text("Jahresinformationen") },
         text = {
             val dayData = remember(viewModel.dayStudentCount.value) { viewModel.dayStudentCount.value }
