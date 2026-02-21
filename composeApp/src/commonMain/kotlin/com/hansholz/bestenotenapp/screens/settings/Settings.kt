@@ -567,7 +567,7 @@ fun Settings(
                                 isDark = appSettings.isDark
                                 useCustomColorScheme = appSettings.useCustomColorScheme
                                 animationsEnabled = appSettings.animationsEnabled
-                                blurEnabled = appSettings.blurEnabled
+                                blurEnabled = appSettings.blurEnabled && HazeDefaults.blurEnabled()
                                 backgroundEnabled = appSettings.backgroundEnabled
                                 hapticsEnabled = appSettings.hapticsEnabled
                                 showGreetings = appSettings.showGreetings
@@ -590,7 +590,7 @@ fun Settings(
                                 kSafe.putDirect("isDark", appSettings.isDark)
                                 kSafe.putDirect("useCustomColorScheme", appSettings.useCustomColorScheme)
                                 kSafe.putDirect("animationsEnabled", appSettings.animationsEnabled)
-                                kSafe.putDirect("blurEnabled", appSettings.blurEnabled)
+                                kSafe.putDirect("blurEnabled", appSettings.blurEnabled && HazeDefaults.blurEnabled())
                                 kSafe.putDirect("backgroundEnabled", appSettings.backgroundEnabled)
                                 kSafe.putDirect("hapticsEnabled", appSettings.hapticsEnabled, false)
                                 kSafe.putDirect("showGreetings", appSettings.showGreetings)

@@ -10,7 +10,6 @@ import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import dev.chrisbanes.haze.ExperimentalHazeApi
-import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.HazeEffectScope
 import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.HazeState
@@ -26,7 +25,7 @@ fun Modifier.enhancedHazeEffect(
     fallbackAlpha: Float = 1f,
     block: (HazeEffectScope.() -> Unit)? = null,
 ): Modifier {
-    val blurEnabled = LocalBlurEnabled.current.value && HazeDefaults.blurEnabled()
+    val blurEnabled = LocalBlurEnabled.current.value
     val blurScale = if (getPlatform() == Platform.ANDROID) 3 else 1
     return if (hazeState != null) {
         this.hazeEffect(hazeState) {
