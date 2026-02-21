@@ -3,11 +3,9 @@ agp = "8.12.0"
 aboutLibraries = "13.2.1"
 adaptive = "1.3.0-alpha02"
 advancedMenubar = "0.1.0-alpha03"
-androidx-activity = "1.12.3"
 androidx-lifecycle = "2.10.0-alpha06"
-androidx-crypto = "1.1.0"
-androidx-biometric = "1.4.0-alpha02"
 animateCompose = "0.0.1"
+animation = "1.10.3"
 buildconfig = "6.0.7"
 capturable = "2.0.1"
 confettikit = "0.7.0"
@@ -18,6 +16,7 @@ composeIcons = "2.2.1"
 composeMultiplatform = "1.10.1"
 emoji = "2.3.0"
 filekit = "0.12.0"
+fragment = "1.8.9"
 haze = "1.7.0"
 koalaplotCore = "0.9.1"
 kotlin = "2.3.10"
@@ -60,7 +59,9 @@ aboutlibraries-compose-core = { module = "com.mikepenz:aboutlibraries-compose-co
 aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }
 adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
 advanced-menubar = { module = "dev.hansholz:advanced-menubar", version.ref = "advancedMenubar" }
+androidx-animation = { module = "androidx.compose.animation:animation", version.ref = "animation" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
+androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
 animate-compose = { module = "com.nomanr:animate-compose", version.ref = "animateCompose" }
 capturable = { module = "io.github.jmseb3:capturable", version.ref = "capturable" }
 capturable-extension = { module = "io.github.jmseb3:capturableExtension", version.ref = "capturable" }
@@ -75,12 +76,9 @@ material-symbols-rounded = { module = "com.composables:icons-material-symbols-ro
 koalaplot-core = { module = "io.github.koalaplot:koalaplot-core", version.ref = "koalaplotCore" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 alarmee = { module = "io.github.tweener:alarmee", version.ref = "alarmee" }
-androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 ksafe-compose = { module = "eu.anifantakis:ksafe-compose", version.ref = "ksafe" }
 lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
-androidx-security-crypto = { module = "androidx.security:security-crypto-ktx", version.ref = "androidx-crypto" }
-androidx-biometric = { module = "androidx.biometric:biometric-ktx", version.ref = "androidx-biometric" }
 kotlinx-coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }

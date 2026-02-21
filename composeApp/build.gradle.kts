@@ -111,9 +111,8 @@ kotlin {
             implementation(libs.filekit.dialogs)
         }
         androidMain.dependencies {
-            implementation(libs.androidx.activity.compose)
-            implementation(libs.androidx.security.crypto)
-            implementation(libs.androidx.biometric)
+            implementation(libs.androidx.animation) // TODO: Remove if CMP 1.10.2 is out
+            implementation(libs.androidx.fragment)
             implementation(libs.androidx.core.splashscreen)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.smartspacer.sdk)
