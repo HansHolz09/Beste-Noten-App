@@ -39,8 +39,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.window.core.layout.WindowWidthSizeClass
-import com.composables.icons.materialsymbols.MaterialSymbols
-import com.composables.icons.materialsymbols.rounded.Settings
 import com.hansholz.bestenotenapp.components.ConfettiPresets
 import com.hansholz.bestenotenapp.components.NavigationDrawer
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
@@ -156,6 +154,7 @@ fun AppNavigationDrawer(
                                 Modifier.padding(10.dp).then(
                                     if (isCurrentScreen) Modifier.border(2.dp, colorScheme.onSurface, shapes.extraExtraLarge) else Modifier,
                                 ),
+                            icon = { Icon(screen.icon, null) },
                             colors =
                                 NavigationDrawerItemDefaults.colors(
                                     selectedContainerColor = colorScheme.secondaryContainer.copy(0.7f),
@@ -186,7 +185,7 @@ fun AppNavigationDrawer(
                             Modifier.padding(10.dp).then(
                                 if (isCurrentScreen) Modifier.border(2.dp, colorScheme.onSurface, shapes.extraExtraLarge) else Modifier,
                             ),
-                        icon = { Icon(MaterialSymbols.Rounded.Settings, null) },
+                        icon = { Icon(Fragment.Settings.icon, null) },
                         colors =
                             NavigationDrawerItemDefaults.colors(
                                 selectedContainerColor = colorScheme.secondaryContainer.copy(0.7f),
