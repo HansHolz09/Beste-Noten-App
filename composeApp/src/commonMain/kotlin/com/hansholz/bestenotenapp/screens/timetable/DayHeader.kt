@@ -71,7 +71,7 @@ fun DayHeader(
         modifier =
             Modifier
                 .padding(vertical = 8.dp)
-                .clickable(null, null) {
+                .clickable(null, null, !notes.isNullOrEmpty()) {
                     vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                     isNotesDialogShown.value = true
                 },
