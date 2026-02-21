@@ -1,6 +1,5 @@
 package components.dialogs
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -121,8 +120,7 @@ fun EnhancedAlertDialog(
                             minWidth = DialogMinWidth,
                             maxWidth = maxWidth ?: DialogMaxWidth,
                         ).then(if (maxWidth == Dp.Unspecified && getPlatform() == Platform.DESKTOP) Modifier.padding(top = 30.dp) else Modifier)
-                        .then(Modifier.semantics { paneTitle = "Dialog" })
-                        .animateContentSize(),
+                        .then(Modifier.semantics { paneTitle = "Dialog" }),
             )
         },
     )

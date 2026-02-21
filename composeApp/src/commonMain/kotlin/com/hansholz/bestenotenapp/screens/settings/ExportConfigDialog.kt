@@ -1,7 +1,12 @@
 package com.hansholz.bestenotenapp.screens.settings
 
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -162,45 +167,55 @@ fun ExportConfigDialog(
                             )
                         }
                         item {
-                            EnhancedAnimatedVisibility(yearsLoading) {
+                            EnhancedAnimatedVisibility(
+                                visible = yearsLoading,
+                                enter = fadeIn() + expandVertically(),
+                                exit = fadeOut() + shrinkVertically(),
+                            ) {
                                 Box(Modifier.fillMaxWidth().padding(16.dp)) {
                                     ContainedLoadingIndicator(Modifier.align(Alignment.Center))
                                 }
                             }
                         }
-                        viewModel.years.forEach { year ->
-                            item {
-                                EnhancedAnimatedVisibility(!yearsLoading) {
-                                    Row(
-                                        Modifier
-                                            .fillMaxWidth()
-                                            .height(56.dp)
-                                            .clip(RoundedCornerShape(12.dp))
-                                            .clickable {
-                                                if (gradeYears.contains(year)) {
-                                                    gradeYears.remove(year)
-                                                } else {
-                                                    gradeYears.add(year)
-                                                }
-                                                vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
-                                            }.padding(horizontal = 16.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        EnhancedCheckbox(
-                                            checked = gradeYears.contains(year),
-                                            onCheckedChange = {
-                                                if (it) {
-                                                    gradeYears.add(year)
-                                                } else {
-                                                    gradeYears.remove(year)
-                                                }
-                                            },
-                                        )
-                                        Text(
-                                            text = "${year.name} (${formateDate(year.from)} - ${formateDate(year.to)})",
-                                            style = typography.bodyLarge,
-                                            modifier = Modifier.padding(start = 16.dp),
-                                        )
+                        item {
+                            EnhancedAnimatedVisibility(
+                                visible = !yearsLoading && viewModel.years.isNotEmpty(),
+                                enter = fadeIn() + expandVertically(),
+                                exit = fadeOut() + shrinkVertically(),
+                            ) {
+                                Column {
+                                    viewModel.years.forEach { year ->
+                                        Row(
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .height(56.dp)
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .clickable {
+                                                    if (gradeYears.contains(year)) {
+                                                        gradeYears.remove(year)
+                                                    } else {
+                                                        gradeYears.add(year)
+                                                    }
+                                                    vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                                                }.padding(horizontal = 16.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                        ) {
+                                            EnhancedCheckbox(
+                                                checked = gradeYears.contains(year),
+                                                onCheckedChange = {
+                                                    if (it) {
+                                                        gradeYears.add(year)
+                                                    } else {
+                                                        gradeYears.remove(year)
+                                                    }
+                                                },
+                                            )
+                                            Text(
+                                                text = "${year.name} (${formateDate(year.from)} - ${formateDate(year.to)})",
+                                                style = typography.bodyLarge,
+                                                modifier = Modifier.padding(start = 16.dp),
+                                            )
+                                        }
                                     }
                                 }
                             }
