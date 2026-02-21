@@ -89,7 +89,9 @@ import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.logo
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Arrow_back
+import com.composables.icons.materialsymbols.rounded.Arrow_back_ios_new
 import com.composables.icons.materialsymbols.rounded.Arrow_forward
+import com.composables.icons.materialsymbols.rounded.Arrow_forward_ios
 import com.composables.icons.materialsymbols.rounded.Calendar_month
 import com.composables.icons.materialsymbols.rounded.Download
 import com.composables.icons.materialsymbols.rounded.Event_busy
@@ -112,9 +114,11 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
+import com.hansholz.bestenotenapp.main.ExactPlatform
 import com.hansholz.bestenotenapp.main.LocalShowAbsences
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.utils.captureAsyncAndSaveOrShare
@@ -406,7 +410,12 @@ fun Timetable(
                                                 isExpressive = false,
                                             ) {
                                                 Icon(
-                                                    imageVector = MaterialSymbols.Rounded.Arrow_back,
+                                                    imageVector =
+                                                        if (listOf(ExactPlatform.IOS, ExactPlatform.MACOS).contains(getExactPlatform())) {
+                                                            MaterialSymbols.Rounded.Arrow_back_ios_new
+                                                        } else {
+                                                            MaterialSymbols.Rounded.Arrow_back
+                                                        },
                                                     contentDescription = null,
                                                     tint = colorScheme.onPrimaryContainer,
                                                 )
@@ -498,7 +507,12 @@ fun Timetable(
                                                 isExpressive = false,
                                             ) {
                                                 Icon(
-                                                    imageVector = MaterialSymbols.Rounded.Arrow_forward,
+                                                    imageVector =
+                                                        if (listOf(ExactPlatform.IOS, ExactPlatform.MACOS).contains(getExactPlatform())) {
+                                                            MaterialSymbols.Rounded.Arrow_forward_ios
+                                                        } else {
+                                                            MaterialSymbols.Rounded.Arrow_forward
+                                                        },
                                                     contentDescription = null,
                                                     tint = colorScheme.onPrimaryContainer,
                                                 )
