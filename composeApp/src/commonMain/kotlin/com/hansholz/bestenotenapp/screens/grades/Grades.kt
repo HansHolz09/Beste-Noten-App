@@ -400,9 +400,7 @@ fun Grades(
                                                                     .fillMaxWidth()
                                                                     .height(56.dp)
                                                                     .then(
-                                                                        if (isOpened) {
-                                                                            Modifier
-                                                                        } else {
+                                                                        if (gradeAverageEnabled && !isOpened) {
                                                                             Modifier
                                                                                 .hoverable(interactionSource)
                                                                                 .indication(interactionSource, ripple())
@@ -426,6 +424,8 @@ fun Grades(
                                                                                         },
                                                                                     )
                                                                                 }
+                                                                        } else {
+                                                                            Modifier
                                                                         },
                                                                     ),
                                                             ) {
