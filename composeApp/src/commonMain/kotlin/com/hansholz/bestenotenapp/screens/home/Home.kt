@@ -586,91 +586,89 @@ fun Home(
                             }
                         }
                     }
-                    if (!viewModel.isDemoAccount.value) {
-                        item {
-                            val imageBitmap = imageResource(Res.drawable.stats)
-                            Box(
-                                Modifier
-                                    .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
-                                    .fillMaxWidth()
-                                    .padding(10.dp)
-                                    .clip(RoundedCornerShape(24.dp))
-                                    .background(colorScheme.surfaceContainerHighest.copy(0.7f))
-                                    .repeatingBackground(
-                                        imageBitmap = imageBitmap,
-                                        alpha = backgroundAlpha.value,
-                                        scale = 0.5f,
-                                        offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = 0f) },
-                                        cropPx = 30,
-                                    ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
-                                    .clickable {
-                                        homeViewModel.isStatsDialogShown = true
-                                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
-                                    },
-                            ) {
-                                Column(Modifier.fillMaxWidth()) {
-                                    Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
-                                        Text(
-                                            text = "Jahresinformationen",
-                                            modifier = Modifier.align(Alignment.Center),
-                                            style = typography.headlineSmall,
-                                        )
-                                        EnhancedIconButton(
-                                            onClick = {
-                                                homeViewModel.refreshStats(viewModel)
-                                            },
-                                            modifier = Modifier.align(Alignment.CenterEnd),
-                                            enabled = !homeViewModel.isStatsLoading && showYearProgress,
-                                        ) {
-                                            this@Column.EnhancedAnimatedVisibility(
-                                                visible = !homeViewModel.isStatsLoading && showYearProgress,
-                                                enter = scaleIn(),
-                                                exit = scaleOut(),
-                                            ) {
-                                                Icon(MaterialSymbols.Rounded.Refresh, null)
-                                            }
-                                        }
-                                    }
-                                    if (showYearProgress) {
-                                        EnhancedAnimatedContent(homeViewModel.isStatsLoading || viewModel.intervals.isEmpty()) {
-                                            if (it) {
-                                                LinearWavyProgressIndicator(Modifier.height(40.dp).fillMaxWidth().padding(10.dp))
-                                            } else {
-                                                val firstIntervalFrom = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[0].from) }
-                                                val firstIntervalTo = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[0].to) }
-                                                val secondIntervalFrom = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[1].from) }
-                                                val secondIntervalTo = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[1].to) }
-                                                val progress =
-                                                    remember(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo) {
-                                                        percentOfSchoolYearAt(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo)
-                                                    }
-                                                val split =
-                                                    remember(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo) {
-                                                        switchPercent(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo)
-                                                    }
-                                                Column {
-                                                    TwoToneLinearWavyProgressIndicator(
-                                                        progress = progress,
-                                                        split = split,
-                                                        firstColor = colorScheme.primary,
-                                                        secondColor = colorScheme.inversePrimary,
-                                                        modifier = Modifier.height(40.dp).fillMaxWidth().padding(10.dp),
-                                                    )
-                                                    Text(
-                                                        text = "Du hast aktuell ${(progress * 100).roundToInt()}% des Schuljahres geschafft",
-                                                        modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
-                                                        textAlign = TextAlign.Center,
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
+                    item {
+                        val imageBitmap = imageResource(Res.drawable.stats)
+                        Box(
+                            Modifier
+                                .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
+                                .fillMaxWidth()
+                                .padding(10.dp)
+                                .clip(RoundedCornerShape(24.dp))
+                                .background(colorScheme.surfaceContainerHighest.copy(0.7f))
+                                .repeatingBackground(
+                                    imageBitmap = imageBitmap,
+                                    alpha = backgroundAlpha.value,
+                                    scale = 0.5f,
+                                    offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = 0f) },
+                                    cropPx = 30,
+                                ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
+                                .clickable {
+                                    homeViewModel.isStatsDialogShown = true
+                                    vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                                },
+                        ) {
+                            Column(Modifier.fillMaxWidth()) {
+                                Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
                                     Text(
-                                        text = "Tippen, um Informationen zum aktuellen Schuljahr zu erhalten",
-                                        modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
-                                        textAlign = TextAlign.Center,
+                                        text = "Jahresinformationen",
+                                        modifier = Modifier.align(Alignment.Center),
+                                        style = typography.headlineSmall,
                                     )
+                                    EnhancedIconButton(
+                                        onClick = {
+                                            homeViewModel.refreshStats(viewModel)
+                                        },
+                                        modifier = Modifier.align(Alignment.CenterEnd),
+                                        enabled = !homeViewModel.isStatsLoading && showYearProgress,
+                                    ) {
+                                        this@Column.EnhancedAnimatedVisibility(
+                                            visible = !homeViewModel.isStatsLoading && showYearProgress,
+                                            enter = scaleIn(),
+                                            exit = scaleOut(),
+                                        ) {
+                                            Icon(MaterialSymbols.Rounded.Refresh, null)
+                                        }
+                                    }
                                 }
+                                if (showYearProgress) {
+                                    EnhancedAnimatedContent(homeViewModel.isStatsLoading || viewModel.intervals.isEmpty()) {
+                                        if (it) {
+                                            LinearWavyProgressIndicator(Modifier.height(40.dp).fillMaxWidth().padding(10.dp))
+                                        } else {
+                                            val firstIntervalFrom = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[0].from) }
+                                            val firstIntervalTo = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[0].to) }
+                                            val secondIntervalFrom = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[1].from) }
+                                            val secondIntervalTo = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[1].to) }
+                                            val progress =
+                                                remember(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo) {
+                                                    percentOfSchoolYearAt(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo)
+                                                }
+                                            val split =
+                                                remember(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo) {
+                                                    switchPercent(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo)
+                                                }
+                                            Column {
+                                                TwoToneLinearWavyProgressIndicator(
+                                                    progress = progress,
+                                                    split = split,
+                                                    firstColor = colorScheme.primary,
+                                                    secondColor = colorScheme.inversePrimary,
+                                                    modifier = Modifier.height(40.dp).fillMaxWidth().padding(10.dp),
+                                                )
+                                                Text(
+                                                    text = "Du hast aktuell ${(progress * 100).roundToInt()}% des Schuljahres geschafft",
+                                                    modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                                    textAlign = TextAlign.Center,
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                                Text(
+                                    text = "Tippen, um Informationen zum aktuellen Schuljahr zu erhalten",
+                                    modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                    textAlign = TextAlign.Center,
+                                )
                             }
                         }
                     }

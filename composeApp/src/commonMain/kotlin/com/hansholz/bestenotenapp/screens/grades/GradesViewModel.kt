@@ -35,16 +35,21 @@ class GradesViewModel(
     fun refreshGrades(viewModel: com.hansholz.bestenotenapp.main.ViewModel) {
         viewModelScope.launch {
             isLoading = true
-            viewModel.gradeCollections.clear()
-            if (viewModel.allGradeCollectionsLoaded.value) {
-                viewModel.getCollections(viewModel.years)?.let {
-                    viewModel.gradeCollections.addAll(it)
-                    isLoading = false
-                }
+            if (viewModel.isDemoAccount.value) {
+                delay(1000)
+                isLoading = false
             } else {
-                viewModel.getCollections(listOf(viewModel.years.last()))?.let {
-                    viewModel.gradeCollections.addAll(it)
-                    isLoading = false
+                viewModel.gradeCollections.clear()
+                if (viewModel.allGradeCollectionsLoaded.value) {
+                    viewModel.getCollections(viewModel.years)?.let {
+                        viewModel.gradeCollections.addAll(it)
+                        isLoading = false
+                    }
+                } else {
+                    viewModel.getCollections(listOf(viewModel.years.last()))?.let {
+                        viewModel.gradeCollections.addAll(it)
+                        isLoading = false
+                    }
                 }
             }
         }

@@ -1,12 +1,17 @@
 package com.hansholz.bestenotenapp.data
 
+import com.hansholz.bestenotenapp.api.models.Absence
+import com.hansholz.bestenotenapp.api.models.AbsenceType
+import com.hansholz.bestenotenapp.api.models.AbsenceVerification
 import com.hansholz.bestenotenapp.api.models.Conductor
 import com.hansholz.bestenotenapp.api.models.Grade
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.api.models.History
 import com.hansholz.bestenotenapp.api.models.Interval
 import com.hansholz.bestenotenapp.api.models.JournalDay
+import com.hansholz.bestenotenapp.api.models.JournalDayStudentCount
 import com.hansholz.bestenotenapp.api.models.JournalLesson
+import com.hansholz.bestenotenapp.api.models.JournalLessonStudentCount
 import com.hansholz.bestenotenapp.api.models.JournalNote
 import com.hansholz.bestenotenapp.api.models.JournalNoteType
 import com.hansholz.bestenotenapp.api.models.JournalWeek
@@ -20,11 +25,13 @@ import com.hansholz.bestenotenapp.api.models.TimeTableTimeLesson
 import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.utils.weekOfYear
 import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.daysUntil
 import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.minus
+import kotlinx.datetime.number
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlin.random.Random
@@ -41,6 +48,25 @@ object DemoDataGenerator {
         val currentGrade: Int,
         val weekPlan: List<List<Subject>>,
         val student: Student,
+        val intervalsByYear: Map<Int, List<Interval>>,
+        val absencesByYear: Map<Int, List<Absence>>,
+        val dayStudentCountsByYear: Map<Int, JournalDayStudentCount>,
+        val lessonStudentCountsByYear: Map<Int, JournalLessonStudentCount>,
+        val totalDayStudentCount: JournalDayStudentCount,
+        val totalLessonStudentCount: JournalLessonStudentCount,
+    )
+
+    private data class DemoAttendanceData(
+        val schoolDays: Int,
+        val lessonCount: Int,
+        val notPresentDaysWithAbsence: Int,
+        val notPresentDaysWithoutAbsence: Int,
+        val notPresentLessonsWithAbsence: Int,
+        val notPresentLessonsWithoutAbsence: Int,
+        val tooLateSum: Int,
+        val tooEarlySum: Int,
+        val missingHomeworkSum: Int,
+        val missingEquipmentSum: Int,
     )
 
     private val timeSlots =
@@ -159,8 +185,10 @@ object DemoDataGenerator {
                 .now()
                 .toLocalDateTime(TimeZone.currentSystemDefault())
                 .date
+        val currentSchoolYearStart = if (now.month.number < 8) now.year - 1 else now.year
         val numYears = Random.nextInt(3, 7)
         val startGrade = Random.nextInt(4, 11 - numYears)
+        val firstSchoolYearStart = currentSchoolYearStart - (numYears - 1)
         val years = mutableListOf<Year>()
         val subjects = mutableListOf<Subject>()
         val gradeCollections = mutableListOf<GradeCollection>()
@@ -179,7 +207,7 @@ object DemoDataGenerator {
 
         for (i in 0 until numYears) {
             val grade = startGrade + i
-            val startYear = now.year - (numYears - 1 - i)
+            val startYear = firstSchoolYearStart + i
             val from = LocalDate(startYear, 8, 1)
             val to = LocalDate(startYear + 1, 7, 31)
             val year =
@@ -307,7 +335,56 @@ object DemoDataGenerator {
                         TimeTableLesson(0, 0, it.nr, it.subject, null, it.teachers, it.rooms)
                     },
             )
-        return DemoInitData(years, subjects, gradeCollections, timeTable, startGrade + numYears - 1, weekPlan, student)
+
+        val intervalsByYear = years.associate { year -> year.id to generateIntervalsForYear(year) }
+        val absencesByYear = years.associate { year -> year.id to generateAbsencesForYear(year, student, subjects, weekPlan, now) }
+
+        val dayStudentCountsByYear = mutableMapOf<Int, JournalDayStudentCount>()
+        val lessonStudentCountsByYear = mutableMapOf<Int, JournalLessonStudentCount>()
+        years.forEachIndexed { index, year ->
+            val attendanceData = generateAttendanceData(isCurrentYear = index == years.lastIndex)
+            dayStudentCountsByYear[year.id] = attendanceData.toDayStudentCount(student)
+            lessonStudentCountsByYear[year.id] = attendanceData.toLessonStudentCount(student)
+        }
+
+        val totalDayStudentCount =
+            JournalDayStudentCount(
+                count = dayStudentCountsByYear.values.sumOf { it.count ?: 0 },
+                lessonsCount = lessonStudentCountsByYear.values.sumOf { it.count ?: 0 }.toString(),
+                notPresentCount = dayStudentCountsByYear.values.sumOf { it.notPresentCount ?: 0 },
+                notPresentWithAbsenceCount = dayStudentCountsByYear.values.sumOf { it.notPresentWithAbsenceCount ?: 0 },
+                notPresentWithoutAbsenceCount = dayStudentCountsByYear.values.sumOf { it.notPresentWithoutAbsenceCount ?: 0 },
+                studentId = student.id,
+                student = student,
+            )
+        val totalLessonStudentCount =
+            JournalLessonStudentCount(
+                count = lessonStudentCountsByYear.values.sumOf { it.count ?: 0 },
+                notPresentCount = lessonStudentCountsByYear.values.sumOf { it.notPresentCount ?: 0 },
+                notPresentWithAbsenceCount = lessonStudentCountsByYear.values.sumOf { it.notPresentWithAbsenceCount ?: 0 },
+                tooLateSum = lessonStudentCountsByYear.values.sumOf { it.tooLateSum ?: 0 },
+                tooEarlySum = lessonStudentCountsByYear.values.sumOf { it.tooEarlySum ?: 0 },
+                missingHomeworkSum = lessonStudentCountsByYear.values.sumOf { it.missingHomeworkSum ?: 0 },
+                missingEquipmentSum = lessonStudentCountsByYear.values.sumOf { it.missingEquipmentSum ?: 0 },
+                studentId = student.id,
+                student = student,
+            )
+
+        return DemoInitData(
+            years = years,
+            subjects = subjects,
+            gradeCollections = gradeCollections,
+            timeTable = timeTable,
+            currentGrade = startGrade + numYears - 1,
+            weekPlan = weekPlan,
+            student = student,
+            intervalsByYear = intervalsByYear,
+            absencesByYear = absencesByYear,
+            dayStudentCountsByYear = dayStudentCountsByYear,
+            lessonStudentCountsByYear = lessonStudentCountsByYear,
+            totalDayStudentCount = totalDayStudentCount,
+            totalLessonStudentCount = totalLessonStudentCount,
+        )
     }
 
     @OptIn(ExperimentalTime::class)
@@ -324,19 +401,68 @@ object DemoDataGenerator {
         val days = mutableListOf<JournalDay>()
         weekPlan.forEachIndexed { dayIndex, plan ->
             val dayDate = monday.plus(dayIndex, DateTimeUnit.DAY)
+            val dayRnd = Random.nextInt(100)
+            val dayNotes =
+                when {
+                    dayRnd < 25 ->
+                        listOf(
+                            JournalNote(
+                                description =
+                                    listOf(
+                                        "Die Programmier-AG muss heute leider ausfallen.",
+                                        "Die Informatik-AG muss heute leider ausfallen.",
+                                        "Die Robotik-AG muss heute leider ausfallen.",
+                                        "Heute findet ab 15:00 Uhr der Nachschreibetermin im Zimmer R100 statt.",
+                                        "Diese Woche entfällt der Nachschreibetermin.",
+                                        "Aufgrund einer Schulveranstaltung kann es heute vermehrt zu Ausfällen kommen.",
+                                    ).random(),
+                            ),
+                        )
+                    dayRnd < 40 ->
+                        listOf(
+                            JournalNote(
+                                description =
+                                    listOf(
+                                        "Die Programmier-AG muss heute leider ausfallen.",
+                                        "Die Informatik-AG muss heute leider ausfallen.",
+                                        "Die Robotik-AG muss heute leider ausfallen.",
+                                        "Heute findet ab 15 Uhr der Nachschreibetermin im Zimmer R100 statt.",
+                                        "Diese Woche entfällt der Nachschreibetermin.",
+                                        "Aufgrund einer Schulveranstaltung kann es heute vermehrt zu Ausfällen kommen.",
+                                    ).random(),
+                            ),
+                            JournalNote(
+                                description =
+                                    listOf(
+                                        "Heute ist der Fotograf in Mittagspause im Schulclub am Hauptstandort. Schülerinnen und Schüler, " +
+                                            "die sich noch nicht fotografieren lassen konnten, haben nun die Chance, dies nachzuholen.",
+                                        "Der Schulclub ist heute geschlossen.",
+                                    ).random(),
+                            ),
+                        )
+                    else -> emptyList()
+                }
             val lessons =
                 plan.mapIndexed { lessonIndex, subject ->
                     val slot = timeSlots[lessonIndex]
+                    val rndStatus = Random.nextInt(100)
                     val status =
                         if (dayDate < nowDate) {
-                            if (Random.nextInt(100) < 90) "hold" else "canceled"
-                        } else if (dayDate > nowDate) {
-                            if (Random.nextInt(100) < 90) "planned" else "canceled"
-                        } else {
-                            val rnd = Random.nextInt(100)
                             when {
-                                rnd < 70 -> "hold"
-                                rnd < 80 -> "canceled"
+                                rndStatus < 90 -> "hold"
+                                rndStatus < 98 -> "canceled"
+                                else -> "initial"
+                            }
+                        } else if (dayDate > nowDate) {
+                            when {
+                                rndStatus < 85 -> "initial"
+                                rndStatus < 92 -> "planned"
+                                else -> "canceled"
+                            }
+                        } else {
+                            when {
+                                rndStatus < 70 -> "hold"
+                                rndStatus < 80 -> "canceled"
                                 else -> "planned"
                             }
                         }
@@ -398,6 +524,7 @@ object DemoDataGenerator {
                     id = "day-$dayIndex",
                     date = dayDate.toString(),
                     lessons = lessons,
+                    notes = dayNotes,
                 ),
             )
         }
@@ -408,5 +535,415 @@ object DemoDataGenerator {
             nr = monday.weekOfYear,
             days = days,
         )
+    }
+
+    private fun generateIntervalsForYear(year: Year): List<Interval> {
+        val yearStart = LocalDate.parse(year.from)
+        val firstHalfEnd = LocalDate(yearStart.year + 1, 1, 31)
+        val secondHalfStart = LocalDate(yearStart.year + 1, 2, 1)
+
+        val firstId = year.id * 10 + 1
+        val secondId = year.id * 10 + 2
+        val allIds = listOf(firstId.toString(), secondId.toString())
+
+        return listOf(
+            Interval(
+                id = firstId,
+                name = "1.HJ ${year.name}",
+                type = "half_year",
+                from = year.from,
+                to = firstHalfEnd.toString(),
+                editableTo = firstHalfEnd.toString(),
+                intervalIds = allIds,
+                yearId = year.id,
+            ),
+            Interval(
+                id = secondId,
+                name = "2.HJ ${year.name}",
+                type = "half_year",
+                from = secondHalfStart.toString(),
+                to = year.to,
+                editableTo = year.to,
+                intervalIds = allIds,
+                yearId = year.id,
+            ),
+        )
+    }
+
+    private fun generateAttendanceData(isCurrentYear: Boolean): DemoAttendanceData {
+        val schoolDays = if (isCurrentYear) Random.nextInt(72, 138) else Random.nextInt(170, 196)
+        val lessonsPerDay = Random.nextInt(5, 8)
+        val lessonCount = (schoolDays * lessonsPerDay + Random.nextInt(-8, 13)).coerceAtLeast(1)
+
+        val notPresentDaysWithAbsence = if (isCurrentYear) Random.nextInt(1, 8) else Random.nextInt(2, 13)
+        val notPresentDaysWithoutAbsence = Random.nextInt(0, if (isCurrentYear) 3 else 5)
+
+        var notPresentLessonsWithAbsence =
+            (notPresentDaysWithAbsence * lessonsPerDay + Random.nextInt(0, lessonsPerDay + 2))
+                .coerceAtMost(lessonCount - 1)
+        var notPresentLessonsWithoutAbsence =
+            (notPresentDaysWithoutAbsence * lessonsPerDay + Random.nextInt(0, 4))
+                .coerceAtMost(lessonCount - 1)
+        if (notPresentLessonsWithAbsence + notPresentLessonsWithoutAbsence >= lessonCount) {
+            notPresentLessonsWithoutAbsence =
+                (lessonCount - notPresentLessonsWithAbsence - 1)
+                    .coerceAtLeast(0)
+        }
+        if (notPresentLessonsWithAbsence + notPresentLessonsWithoutAbsence >= lessonCount) {
+            notPresentLessonsWithAbsence = (lessonCount - 1).coerceAtLeast(0)
+            notPresentLessonsWithoutAbsence = 0
+        }
+
+        return DemoAttendanceData(
+            schoolDays = schoolDays,
+            lessonCount = lessonCount,
+            notPresentDaysWithAbsence = notPresentDaysWithAbsence,
+            notPresentDaysWithoutAbsence = notPresentDaysWithoutAbsence,
+            notPresentLessonsWithAbsence = notPresentLessonsWithAbsence,
+            notPresentLessonsWithoutAbsence = notPresentLessonsWithoutAbsence,
+            tooLateSum = Random.nextInt(0, if (isCurrentYear) 8 else 16),
+            tooEarlySum = Random.nextInt(0, if (isCurrentYear) 4 else 9),
+            missingHomeworkSum = Random.nextInt(0, if (isCurrentYear) 5 else 13),
+            missingEquipmentSum = Random.nextInt(0, if (isCurrentYear) 4 else 9),
+        )
+    }
+
+    private fun DemoAttendanceData.toDayStudentCount(student: Student): JournalDayStudentCount =
+        JournalDayStudentCount(
+            count = schoolDays,
+            lessonsCount = lessonCount.toString(),
+            notPresentCount = notPresentDaysWithAbsence + notPresentDaysWithoutAbsence,
+            notPresentWithAbsenceCount = notPresentDaysWithAbsence,
+            notPresentWithoutAbsenceCount = notPresentDaysWithoutAbsence,
+            studentId = student.id,
+            student = student,
+        )
+
+    private fun DemoAttendanceData.toLessonStudentCount(student: Student): JournalLessonStudentCount =
+        JournalLessonStudentCount(
+            count = lessonCount,
+            notPresentCount = notPresentLessonsWithAbsence + notPresentLessonsWithoutAbsence,
+            notPresentWithAbsenceCount = notPresentLessonsWithAbsence,
+            tooLateSum = tooLateSum,
+            tooEarlySum = tooEarlySum,
+            missingHomeworkSum = missingHomeworkSum,
+            missingEquipmentSum = missingEquipmentSum,
+            studentId = student.id,
+            student = student,
+        )
+
+    private fun generateAbsencesForYear(
+        year: Year,
+        student: Student,
+        subjects: List<Subject>,
+        weekPlan: List<List<Subject>>,
+        nowDate: LocalDate,
+    ): List<Absence> {
+        val fromDate = LocalDate.parse(year.from)
+        val toDate = LocalDate.parse(year.to)
+        val teacherPool = subjects.flatMap { it.teachers.orEmpty() }
+
+        fun lessonTime(lessonIndex: Int): Pair<String, String> {
+            val safeLessonIndex = lessonIndex.coerceIn(0, timeSlots.lastIndex)
+            val slot = timeSlots[safeLessonIndex]
+            return "${slot.first}:00" to "${slot.second}:00"
+        }
+
+        fun randomSchoolDay(): LocalDate {
+            val span = fromDate.daysUntil(toDate).coerceAtLeast(1)
+            var date = fromDate.plus(Random.nextInt(span + 1), DateTimeUnit.DAY)
+            while (date.dayOfWeek == DayOfWeek.SATURDAY || date.dayOfWeek == DayOfWeek.SUNDAY) {
+                date = date.plus(1, DateTimeUnit.DAY)
+                if (date > toDate) date = date.minus(3, DateTimeUnit.DAY)
+            }
+            return date
+        }
+
+        fun addSchoolDays(
+            date: LocalDate,
+            days: Int,
+        ): LocalDate {
+            var current = date
+            var remaining = days
+            while (remaining > 0) {
+                current = current.plus(1, DateTimeUnit.DAY)
+                if (current.dayOfWeek != DayOfWeek.SATURDAY && current.dayOfWeek != DayOfWeek.SUNDAY) {
+                    remaining--
+                }
+            }
+            return current
+        }
+
+        val entries = mutableListOf<Absence>()
+        val entriesCount = Random.nextInt(20, 30)
+        repeat(entriesCount) { index ->
+            val id = (year.id * 1000) + index + 1
+            val teacher = teacherPool.random()
+            val conductor =
+                Conductor(
+                    id = teacher.id ?: 0,
+                    localId = teacher.localId,
+                    forename = teacher.forename,
+                    name = teacher.name,
+                )
+
+            val kindRoll = Random.nextInt(100)
+            val startDate = randomSchoolDay()
+            val from: String
+            val to: String
+            when {
+                kindRoll < 40 -> {
+                    val duration =
+                        when (Random.nextInt(100)) {
+                            in 0..61 -> 1
+                            in 62..89 -> 2
+                            else -> 3
+                        }
+                    var endDate = addSchoolDays(startDate, duration - 1)
+                    if (endDate > toDate) endDate = toDate
+                    from = "$startDate 00:00:00"
+                    to = "$endDate 23:59:59"
+                }
+                kindRoll < 70 -> {
+                    val dayIndex = startDate.dayOfWeek.isoDayNumber.let { (it - 1).coerceIn(0, 4) }
+                    val lessonsPerDay = weekPlan.getOrNull(dayIndex)?.size ?: 6
+                    val startLessonUpperBound = (lessonsPerDay - 1).coerceAtLeast(1)
+                    val startLesson = Random.nextInt(0, startLessonUpperBound)
+                    val endLesson = (startLesson + Random.nextInt(1, 4)).coerceAtMost(lessonsPerDay - 1)
+                    val (startTime, _) = lessonTime(startLesson)
+                    val (_, endTime) = lessonTime(endLesson)
+                    from = "$startDate $startTime"
+                    to = "$startDate $endTime"
+                }
+                else -> {
+                    val dayIndex = startDate.dayOfWeek.isoDayNumber.let { (it - 1).coerceIn(0, 4) }
+                    val lessonsPerDay = weekPlan.getOrNull(dayIndex)?.size ?: 6
+                    val lesson = Random.nextInt(0, lessonsPerDay.coerceAtLeast(1))
+                    val (startTime, endTime) = lessonTime(lesson)
+                    from = "$startDate $startTime"
+                    to = "$startDate $endTime"
+                }
+            }
+
+            val typeName =
+                if (kindRoll >= 40) {
+                    "Schulveranstaltung"
+                } else {
+                    when (Random.nextInt(100)) {
+                        in 0..59 -> "Krank"
+                        in 60..84 -> "Schulveranstaltung"
+                        else -> "Entschuldigt"
+                    }
+                }
+
+            val absenceType =
+                AbsenceType(
+                    id = 0,
+                    name = typeName,
+                    default = 0,
+                    editableAs = "absence",
+                )
+
+            val recordedDate = startDate.minus(Random.nextInt(0, 3), DateTimeUnit.DAY)
+            val recordedAt = "$recordedDate ${listOf("07:10:00", "07:25:00", "08:05:00", "12:15:00").random()}"
+            val confirmed = Random.nextInt(100) < 82
+            val verificationRecordedAt =
+                if (confirmed) {
+                    "$startDate ${listOf("08:00:00", "10:20:00", "13:45:00").random()}"
+                } else {
+                    null
+                }
+
+            val histories =
+                buildList {
+                    add(
+                        History(
+                            id = id * 10,
+                            historyEntryType = "absence",
+                            historyEntryId = id,
+                            body = "Created",
+                            action = "created",
+                            conductorType = "teacher",
+                            conductor = conductor,
+                        ),
+                    )
+                    if (confirmed) {
+                        add(
+                            History(
+                                id = id * 10 + 1,
+                                historyEntryType = "absence_verification",
+                                historyEntryId = id,
+                                body = "Created",
+                                action = "created",
+                                conductorType = "teacher",
+                                conductor = conductor,
+                            ),
+                        )
+                    }
+                }
+
+            entries.add(
+                Absence(
+                    id = id,
+                    from = from,
+                    to = to,
+                    recordedAt = recordedAt,
+                    type = absenceType,
+                    teacher = teacher,
+                    student = student,
+                    verification =
+                        AbsenceVerification(
+                            id = id.toString(),
+                            confirmed = confirmed,
+                            recordedAt = verificationRecordedAt,
+                            teacher = teacher,
+                        ),
+                    histories = histories,
+                ),
+            )
+        }
+
+        if (nowDate in fromDate..toDate) {
+            fun toSchoolDay(date: LocalDate): LocalDate {
+                var result = date
+                if (result.dayOfWeek == DayOfWeek.SATURDAY) result = result.plus(2, DateTimeUnit.DAY)
+                if (result.dayOfWeek == DayOfWeek.SUNDAY) result = result.plus(1, DateTimeUnit.DAY)
+                if (result < fromDate) result = fromDate
+                if (result > toDate) result = toDate
+                while (result.dayOfWeek == DayOfWeek.SATURDAY || result.dayOfWeek == DayOfWeek.SUNDAY) {
+                    result = result.minus(1, DateTimeUnit.DAY)
+                    if (result < fromDate) {
+                        result = result.plus(3, DateTimeUnit.DAY)
+                    }
+                }
+                return result
+            }
+
+            val teacher = teacherPool.random()
+            val conductor =
+                Conductor(
+                    id = teacher.id ?: 0,
+                    localId = teacher.localId,
+                    forename = teacher.forename,
+                    name = teacher.name,
+                )
+            val referenceDate = toSchoolDay(nowDate)
+            val fullDayDuration = Random.nextInt(1, 3)
+            var fullDayTo = addSchoolDays(referenceDate, fullDayDuration - 1)
+            if (fullDayTo > toDate) fullDayTo = toDate
+
+            val ensuredIdBase = year.id * 1000 + entriesCount + 200
+            entries.add(
+                Absence(
+                    id = ensuredIdBase,
+                    from = "$referenceDate 00:00:00",
+                    to = "$fullDayTo 23:59:59",
+                    recordedAt = "${referenceDate.minus(1, DateTimeUnit.DAY)} 07:20:00",
+                    type = AbsenceType(id = 1, name = "Krankheit", default = 0, editableAs = "absence"),
+                    teacher = teacher,
+                    student = student,
+                    verification =
+                        AbsenceVerification(
+                            id = ensuredIdBase.toString(),
+                            confirmed = true,
+                            recordedAt = "$referenceDate 08:00:00",
+                            teacher = teacher,
+                        ),
+                    histories =
+                        listOf(
+                            History(
+                                id = ensuredIdBase * 10,
+                                historyEntryType = "absence",
+                                historyEntryId = ensuredIdBase,
+                                body = "Created",
+                                action = "created",
+                                conductorType = "teacher",
+                                conductor = conductor,
+                            ),
+                            History(
+                                id = ensuredIdBase * 10 + 1,
+                                historyEntryType = "absence_verification",
+                                historyEntryId = ensuredIdBase,
+                                body = "Created",
+                                action = "created",
+                                conductorType = "teacher",
+                                conductor = conductor,
+                            ),
+                        ),
+                ),
+            )
+
+            val monday = referenceDate.minus(referenceDate.dayOfWeek.isoDayNumber - 1, DateTimeUnit.DAY)
+
+            fun pickSchoolDayForPartial(): LocalDate {
+                var day = monday.plus(Random.nextInt(0, 5), DateTimeUnit.DAY)
+                if (day < fromDate) day = fromDate
+                if (day > toDate) day = toDate
+                var tries = 0
+                while (day in referenceDate..fullDayTo && tries < 6) {
+                    day = day.plus(1, DateTimeUnit.DAY)
+                    if (day.dayOfWeek == DayOfWeek.SATURDAY || day.dayOfWeek == DayOfWeek.SUNDAY || day > toDate) {
+                        day = monday.plus(Random.nextInt(0, 5), DateTimeUnit.DAY)
+                    }
+                    tries++
+                }
+                while (day.dayOfWeek == DayOfWeek.SATURDAY || day.dayOfWeek == DayOfWeek.SUNDAY) {
+                    day = day.minus(1, DateTimeUnit.DAY)
+                }
+                if (day < fromDate) return fromDate
+                if (day > toDate) return toDate
+                return day
+            }
+
+            fun addPartialAbsence(
+                id: Int,
+                date: LocalDate,
+                forceMultiHour: Boolean = false,
+            ) {
+                val lessonsPerDay = weekPlan.getOrNull((date.dayOfWeek.isoDayNumber - 1).coerceIn(0, 4))?.size ?: 6
+                val lessonIndex =
+                    if (forceMultiHour) {
+                        val upperBound = (lessonsPerDay - 1).coerceAtLeast(1)
+                        Random.nextInt(0, upperBound)
+                    } else {
+                        Random.nextInt(0, lessonsPerDay.coerceAtLeast(1))
+                    }
+                val endLessonIndex =
+                    if (forceMultiHour) {
+                        (lessonIndex + Random.nextInt(1, 3)).coerceAtMost(lessonsPerDay - 1)
+                    } else {
+                        (lessonIndex + Random.nextInt(0, 2)).coerceAtMost(lessonsPerDay - 1)
+                    }
+                val (fromTime, _) = lessonTime(lessonIndex)
+                val (_, toTime) = lessonTime(endLessonIndex)
+                entries.add(
+                    Absence(
+                        id = id,
+                        from = "$date $fromTime",
+                        to = "$date $toTime",
+                        recordedAt = "$date 07:25:00",
+                        type = AbsenceType(id = 2, name = "Schulveranstaltung", default = 0, editableAs = "absence"),
+                        teacher = teacher,
+                        student = student,
+                        histories =
+                            listOf(
+                                History(
+                                    id = id * 10,
+                                    historyEntryType = "absence",
+                                    historyEntryId = id,
+                                    body = "Created",
+                                    action = "created",
+                                    conductorType = "teacher",
+                                    conductor = conductor,
+                                ),
+                            ),
+                    ),
+                )
+            }
+
+            addPartialAbsence(ensuredIdBase + 1, pickSchoolDayForPartial(), forceMultiHour = true)
+        }
+
+        return entries.sortedByDescending { it.from }
     }
 }

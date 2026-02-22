@@ -106,6 +106,12 @@ class ViewModel(
 
     val isDemoAccount = mutableStateOf(false)
     private var demoWeekPlan: List<List<Subject>> = emptyList()
+    private var demoIntervalsByYear: Map<Int, List<Interval>> = emptyMap()
+    private var demoAbsencesByYear: Map<Int, List<Absence>> = emptyMap()
+    private var demoDayStudentCountsByYear: Map<Int, JournalDayStudentCount> = emptyMap()
+    private var demoLessonStudentCountsByYear: Map<Int, JournalLessonStudentCount> = emptyMap()
+    private var demoTotalDayStudentCount: JournalDayStudentCount? = null
+    private var demoTotalLessonStudentCount: JournalLessonStudentCount? = null
 
     val isBesteSchuleNotReachable = mutableStateOf(false)
 
@@ -226,6 +232,12 @@ class ViewModel(
             allGradeCollectionsLoaded.value = true
             currentTimetable.value = data.timeTable
             demoWeekPlan = data.weekPlan
+            demoIntervalsByYear = data.intervalsByYear
+            demoAbsencesByYear = data.absencesByYear
+            demoDayStudentCountsByYear = data.dayStudentCountsByYear
+            demoLessonStudentCountsByYear = data.lessonStudentCountsByYear
+            demoTotalDayStudentCount = data.totalDayStudentCount
+            demoTotalLessonStudentCount = data.totalLessonStudentCount
             user.value = User(id = 0, username = "${data.student.forename} (Demo)", role = "student", students = listOf(data.student))
             studentId.value = data.student.id.toString()
             isDemoAccount.value = true
@@ -290,7 +302,6 @@ class ViewModel(
         authToken.value = null
         kSafe.deleteDirect("authToken")
         isDemoAccount.value = false
-        demoWeekPlan = emptyList()
         GradeNotifications.onLogout()
         onCleared()
     }
@@ -323,7 +334,7 @@ class ViewModel(
 
     suspend fun getYears(): List<Year>? {
         if (isDemoAccount.value) {
-            return years
+            return years.toList()
         }
         try {
             val data = api.yearIndex().data
@@ -338,7 +349,8 @@ class ViewModel(
 
     suspend fun getIntervals(): List<Interval>? {
         if (isDemoAccount.value) {
-            return emptyList()
+            delay(250)
+            return years.lastOrNull()?.let { demoIntervalsByYear[it.id] }.orEmpty()
         }
         try {
             val data = api.studentsShow(studentId.value!!, listOf("intervals")).data.intervals
@@ -353,8 +365,8 @@ class ViewModel(
 
     suspend fun getDayStudentCount(year: Year? = null): JournalDayStudentCount? {
         if (isDemoAccount.value) {
-            delay(500)
-            return null
+            delay(250)
+            return year?.let { demoDayStudentCountsByYear[it.id] } ?: demoTotalDayStudentCount
         }
         try {
             val data =
@@ -371,8 +383,8 @@ class ViewModel(
 
     suspend fun getLessonStudentCount(year: Year? = null): JournalLessonStudentCount? {
         if (isDemoAccount.value) {
-            delay(500)
-            return null
+            delay(250)
+            return year?.let { demoLessonStudentCountsByYear[it.id] } ?: demoTotalLessonStudentCount
         }
         try {
             val data =
@@ -563,7 +575,11 @@ class ViewModel(
     suspend fun getAbsences(filterYear: String? = null): List<Absence>? {
         if (isDemoAccount.value) {
             delay(500)
-            return emptyList()
+            return if (filterYear != null) {
+                demoAbsencesByYear[filterYear.toIntOrNull()] ?: emptyList()
+            } else {
+                demoAbsencesByYear.values.flatten()
+            }
         }
         try {
             val data = api.absencesIndex(filterYear = filterYear).data
@@ -605,6 +621,7 @@ class ViewModel(
         years.clear()
         journalWeeks.clear()
         currentTimetable.value = null
+        absences.clear()
         subjectsAndTeachers.clear()
         teachersAndSubjects.clear()
         currentJournalDay.value = null
@@ -613,5 +630,12 @@ class ViewModel(
         lessonStudentCount.value = null
         currentDayStudentCount.value = null
         currentLessonStudentCount.value = null
+        demoWeekPlan = emptyList()
+        demoIntervalsByYear = emptyMap()
+        demoAbsencesByYear = emptyMap()
+        demoDayStudentCountsByYear = emptyMap()
+        demoLessonStudentCountsByYear = emptyMap()
+        demoTotalDayStudentCount = null
+        demoTotalLessonStudentCount = null
     }
 }

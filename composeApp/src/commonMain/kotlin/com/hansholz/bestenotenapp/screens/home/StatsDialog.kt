@@ -19,9 +19,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -211,9 +215,44 @@ fun StatsDialog(
                             color = colorScheme.onSurface.copy(0.8f),
                         )
                         Spacer(Modifier.height(25.dp))
+                        val annotatedString =
+                            buildAnnotatedString {
+                                append("Hinweis: Obwohl diese Daten direkt von ")
+                                if (viewModel.isDemoAccount.value) {
+                                    pushStringAnnotation(tag = "strikethrough_tag", annotation = "thick_line")
+                                    append("beste.schule")
+                                    pop()
+                                    append(" Demodaten ")
+                                } else {
+                                    append("beste.schule ")
+                                }
+                                append("stammen, besteht keine Sicherheit, dass alle der Informationen korrekt sind.")
+                            }
+                        var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
+                        val strikeThroughColor = colorScheme.onSurfaceVariant
                         Text(
-                            text = "Hinweis: Obwohl diese Daten direkt von beste.schule stammen, besteht keine Sicherheit, dass alle der Informationen korrekt sind.",
-                            modifier = Modifier.width(width),
+                            text = annotatedString,
+                            modifier =
+                                Modifier
+                                    .width(width)
+                                    .drawBehind {
+                                        textLayoutResult?.let { layout ->
+                                            annotatedString
+                                                .getStringAnnotations("strikethrough_tag", 0, annotatedString.length)
+                                                .forEach { annotation ->
+                                                    val path = layout.getPathForRange(annotation.start, annotation.end)
+                                                    val rect = path.getBounds()
+                                                    drawLine(
+                                                        color = strikeThroughColor,
+                                                        start = Offset(rect.left + 5, rect.center.y),
+                                                        end = Offset(rect.right, rect.center.y),
+                                                        strokeWidth = 1.5.dp.toPx(),
+                                                        cap = StrokeCap.Round,
+                                                    )
+                                                }
+                                        }
+                                    },
+                            onTextLayout = { textLayoutResult = it },
                             fontStyle = FontStyle.Italic,
                             textAlign = TextAlign.Center,
                         )
