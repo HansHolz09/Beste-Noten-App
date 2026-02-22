@@ -12,12 +12,15 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.hansholz.bestenotenapp.main.AppHazeState
 import com.hansholz.bestenotenapp.security.kSafe
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.ktx.animateColorScheme
 import com.materialkolor.rememberDynamicColorScheme
 import dev.chrisbanes.haze.HazeDefaults
+import dev.chrisbanes.haze.hazeSource
 import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
 
 internal val LocalUseSystemIsDark = compositionLocalOf { mutableStateOf(true) }
@@ -71,7 +74,12 @@ internal fun AppTheme(
         MaterialExpressiveTheme(
             colorScheme = animateColorScheme(colorScheme, { tween(if (LocalAnimationsEnabled.current.value) 750 else 0) }),
             typography = AppTypography,
-            content = { Surface(content = content) },
+            content = {
+                Surface(
+                    modifier = Modifier.hazeSource(AppHazeState.current.value),
+                    content = content,
+                )
+            },
         )
     }
 }

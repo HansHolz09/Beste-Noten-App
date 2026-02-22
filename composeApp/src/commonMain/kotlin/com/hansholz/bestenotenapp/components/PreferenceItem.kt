@@ -41,6 +41,7 @@ fun PreferenceItem(
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     textModifier: Modifier = Modifier,
+    backgroundColor: Color = MaterialTheme.colorScheme.surfaceContainerHighest,
     iconTint: Color = LocalContentColor.current,
     titleMaxLines: Int = 2,
     position: PreferencePosition = PreferencePosition.Single,
@@ -78,7 +79,7 @@ fun PreferenceItem(
                         Modifier
                     },
                 ),
-        color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(0.7f),
+        color = backgroundColor.copy(0.7f),
         shape = shape,
     ) {
         Row(

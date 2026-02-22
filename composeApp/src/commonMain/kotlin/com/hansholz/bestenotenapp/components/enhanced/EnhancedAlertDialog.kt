@@ -49,6 +49,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.components.FullscreenDialog
+import com.hansholz.bestenotenapp.components.clippedShadow
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
@@ -76,7 +77,7 @@ fun EnhancedAlertDialog(
     iconContentColor: Color = AlertDialogDefaults.iconContentColor,
     titleContentColor: Color = AlertDialogDefaults.titleContentColor,
     textContentColor: Color = AlertDialogDefaults.textContentColor,
-    tonalElevation: Dp = AlertDialogDefaults.TonalElevation,
+    shadowElevation: Dp = ShadowElevation,
 ) {
     BasicEnhancedAlertDialog(
         visible = visible,
@@ -105,7 +106,7 @@ fun EnhancedAlertDialog(
                 text = text,
                 shape = shape,
                 containerColor = containerColor,
-                tonalElevation = tonalElevation,
+                shadowElevation = shadowElevation,
                 // Note that a button content color is provided here from the dialog's token, but in
                 // most cases, TextButtons should be used for dismiss and confirm buttons.
                 // TextButtons will not consume this provided content color value, and will used their
@@ -250,7 +251,7 @@ private fun EnhancedAlertDialogContent(
     text: @Composable (() -> Unit)?,
     shape: Shape,
     containerColor: Color,
-    tonalElevation: Dp,
+    shadowElevation: Dp,
     buttonContentColor: Color,
     iconContentColor: Color,
     titleContentColor: Color,
@@ -259,10 +260,9 @@ private fun EnhancedAlertDialogContent(
     val blurEnabled = LocalBlurEnabled.current
 
     Surface(
-        modifier = modifier,
+        modifier = modifier.clippedShadow(shadowElevation, shape),
         shape = shape,
         color = containerColor.copy(if (blurEnabled.value) 0.7f else 1f),
-        tonalElevation = tonalElevation,
     ) {
         Column(modifier = Modifier.padding(DialogPadding)) {
             icon?.let {
@@ -350,3 +350,5 @@ private val DialogPadding = PaddingValues(all = 24.dp)
 private val IconPadding = PaddingValues(bottom = 16.dp)
 private val TitlePadding = PaddingValues(bottom = 16.dp)
 private val TextPadding = PaddingValues(bottom = 24.dp)
+
+private val ShadowElevation = 8.dp

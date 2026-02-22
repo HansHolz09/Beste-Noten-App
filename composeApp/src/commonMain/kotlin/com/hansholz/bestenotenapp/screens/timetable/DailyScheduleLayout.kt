@@ -98,7 +98,7 @@ fun DailyScheduleLayout(
                                                 "hold" -> if (isDark) Color(48, 99, 57) else Color(226, 251, 232)
                                                 "canceled" -> colorScheme.errorContainer
                                                 "initial" -> if (isDark) Color.DarkGray else Color.LightGray
-                                                "planned" -> if (isDark) Color(38, 63, 168) else Color(222, 233, 252)
+                                                "planned" -> if (isDark) Color(38, 63, 168) else Color(160, 182, 238)
                                                 else -> colorScheme.surface
                                             }.copy(0.7f),
                                     ),
