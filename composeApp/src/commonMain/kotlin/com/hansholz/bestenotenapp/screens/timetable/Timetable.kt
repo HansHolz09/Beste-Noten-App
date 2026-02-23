@@ -299,6 +299,7 @@ fun Timetable(
                                                     contentPadding = if (captureOnly) PaddingValues() else contentPadding,
                                                     modifier = Modifier.padding(bottom = 10.dp).padding(horizontal = 6.dp),
                                                     enabled = timetableViewModel.userScrollEnabled,
+                                                    captureOnly = captureOnly,
                                                 )
                                             }
                                         }

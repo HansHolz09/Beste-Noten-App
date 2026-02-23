@@ -97,6 +97,7 @@ fun WeekScheduleView(
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    captureOnly: Boolean = false,
 ) {
     val scope = rememberCoroutineScope()
     val vibrator = rememberVibrator()
@@ -173,7 +174,15 @@ fun WeekScheduleView(
                             modifier = Modifier.weight(1f).fillMaxHeight(),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
-                            DayHeader(currentDate, day.notes?.filter { it.description != null })
+                            DayHeader(
+                                date = currentDate,
+                                notes =
+                                    if (captureOnly) {
+                                        null
+                                    } else {
+                                        day.notes?.filter { it.description != null }
+                                    },
+                            )
                             DailyScheduleLayout(
                                 lessons = day.lessons,
                                 absences = absences,
