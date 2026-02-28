@@ -9,6 +9,7 @@ import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.navigation.Screen
 import com.hansholz.bestenotenapp.security.kSafe
+import com.hansholz.bestenotenapp.security.kSafeProvider
 import kotlinx.coroutines.launch
 
 class BiometryViewModel : ViewModel() {
@@ -19,13 +20,13 @@ class BiometryViewModel : ViewModel() {
     fun tryBiometricAuthentication(
         viewModel: com.hansholz.bestenotenapp.main.ViewModel,
         onNavigateToScreen: (Screen) -> Unit,
-    ) {
+    ) = kSafeProvider(kSafe) {
         if (listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())) {
             kSafe.verifyBiometricDirect("Authentifiziere dich, um Einblicke in deine Noten zu erhalten.") { isSuccessful ->
                 viewModelScope.launch {
                     if (isSuccessful) {
                         onNavigateToScreen(
-                            if (kSafe.getDirect("authToken", "").isEmpty()) {
+                            if (getSecure("authToken", "").isEmpty()) {
                                 Screen.Login
                             } else {
                                 Screen.Main

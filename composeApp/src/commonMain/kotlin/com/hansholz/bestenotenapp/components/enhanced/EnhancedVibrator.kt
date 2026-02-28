@@ -3,6 +3,7 @@ package com.hansholz.bestenotenapp.components.enhanced
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.security.kSafe
+import com.hansholz.bestenotenapp.security.kSafeProvider
 import top.ltfan.multihaptic.DelayType
 import top.ltfan.multihaptic.HapticEffect
 import top.ltfan.multihaptic.PrimitiveType
@@ -29,7 +30,7 @@ fun Vibrator.enhancedVibrate(
     vibration: EnhancedVibrations,
     forceVibration: Boolean = false,
 ) {
-    if (kSafe().getDirect("hapticsEnabled", listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform()), false) || forceVibration) {
+    if (kSafeProvider(kSafe()) { get("hapticsEnabled", listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())) } || forceVibration) {
         vibrate(
             HapticEffect {
                 when (vibration) {

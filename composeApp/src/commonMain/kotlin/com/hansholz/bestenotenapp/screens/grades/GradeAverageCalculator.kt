@@ -1,6 +1,7 @@
 package com.hansholz.bestenotenapp.screens.grades
 
 import com.hansholz.bestenotenapp.api.models.GradeCollection
+import com.hansholz.bestenotenapp.security.kSafeProvider
 import eu.anifantakis.lib.ksafe.KSafe
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
@@ -258,14 +259,12 @@ class GradeAverageCalculator {
         return "$integerPart,$decimalPart"
     }
 
-    private fun loadStore(kSafe: KSafe): GradeWeightingStore = kSafe.getDirect(WEIGHTING_STORAGE_KEY, GradeWeightingStore())
+    private fun loadStore(kSafe: KSafe): GradeWeightingStore = kSafeProvider(kSafe) { get(WEIGHTING_STORAGE_KEY, GradeWeightingStore()) }
 
     fun saveStore(
         kSafe: KSafe,
         store: GradeWeightingStore,
-    ) {
-        kSafe.putDirect(WEIGHTING_STORAGE_KEY, store)
-    }
+    ) = kSafeProvider(kSafe) { put(WEIGHTING_STORAGE_KEY, store) }
 
     private fun SubjectWeightingConfig.toStored(): StoredSubjectWeightingConfig =
         StoredSubjectWeightingConfig(

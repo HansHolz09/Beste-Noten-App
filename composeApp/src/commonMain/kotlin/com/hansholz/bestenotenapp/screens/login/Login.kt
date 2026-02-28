@@ -36,7 +36,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -66,7 +65,7 @@ import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getPlatform
-import com.hansholz.bestenotenapp.security.kSafe
+import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import dev.chrisbanes.haze.hazeSource
@@ -81,7 +80,7 @@ fun Login(
     viewModel: ViewModel,
     onNavigateHome: () -> Unit,
     onNavigateToGrades: () -> Unit,
-) {
+) = kSafeProvider(viewModel.kSafe) {
     val loginViewModel = viewModel { LoginViewModel() }
 
     val scope = viewModel.viewModelScope
@@ -92,7 +91,6 @@ fun Login(
     val clipboard = LocalClipboardManager.current
     val animationsEnabled by LocalAnimationsEnabled.current
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
-    val kSafe = remember { kSafe() }
 
     TopAppBarScaffold(
         title = "Login",
@@ -300,12 +298,12 @@ fun Login(
                                                     kSafe.verifyBiometricDirect("Bestätige, um die biometrische Authentifizierung beim Start zu aktiven.") { isSuccessful ->
                                                         if (isSuccessful) {
                                                             requireBiometricAuthentification = newValue
-                                                            kSafe.putDirect("requireBiometricAuthentification", newValue)
+                                                            putSecure("requireBiometricAuthentification", newValue)
                                                         }
                                                     }
                                                 } else {
                                                     requireBiometricAuthentification = newValue
-                                                    kSafe.putDirect("requireBiometricAuthentification", newValue)
+                                                    putSecure("requireBiometricAuthentification", newValue)
                                                 }
                                                 vibrator.enhancedVibrate(
                                                     if (newValue) {
@@ -330,12 +328,12 @@ fun Login(
                                                 kSafe.verifyBiometricDirect("Bestätige, um die biometrische Authentifizierung beim Start zu aktiven.") { isSuccessful ->
                                                     if (isSuccessful) {
                                                         requireBiometricAuthentification = it
-                                                        kSafe.putDirect("requireBiometricAuthentification", it)
+                                                        putSecure("requireBiometricAuthentification", it)
                                                     }
                                                 }
                                             } else {
                                                 requireBiometricAuthentification = it
-                                                kSafe.putDirect("requireBiometricAuthentification", it)
+                                                putSecure("requireBiometricAuthentification", it)
                                             }
                                         },
                                     )

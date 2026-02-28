@@ -6,7 +6,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.navigation.NavController
@@ -20,8 +19,7 @@ import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.screens.biometry.Biometry
 import com.hansholz.bestenotenapp.screens.grades.Grades
 import com.hansholz.bestenotenapp.screens.login.Login
-import com.hansholz.bestenotenapp.security.kSafe
-import eu.anifantakis.lib.ksafe.compose.mutableStateOf
+import com.hansholz.bestenotenapp.security.kSafeProvider
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -29,12 +27,11 @@ import kotlinx.coroutines.launch
 fun AppNavigation(
     viewModel: ViewModel,
     onNavHostReady: suspend (NavController) -> Unit = {},
-) {
+) = kSafeProvider(viewModel.kSafe) {
     val scope = rememberCoroutineScope()
-    val kSafe = remember { kSafe() }
     val requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
-    val token by kSafe.mutableStateOf("", "authToken")
-    val studentId by kSafe.mutableStateOf("", "studentId")
+    val token by secureMutableStateOf("", "authToken")
+    val studentId by storedMutableStateOf("", "studentId")
     val startDestination =
         rememberSaveable {
             when {

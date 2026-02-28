@@ -8,6 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import com.hansholz.bestenotenapp.security.kSafe
+import com.hansholz.bestenotenapp.security.kSafeProvider
 import dev.chrisbanes.haze.HazeState
 
 internal val LocalBackgroundEnabled = compositionLocalOf { mutableStateOf(false) }
@@ -36,47 +37,46 @@ internal val LocalTitleBarModifier = compositionLocalOf<Modifier> { Modifier }
 internal val LocalNavigationDrawerTopPadding = compositionLocalOf<Dp?> { null }
 
 @Composable
-fun SettingsProvider(content: @Composable () -> Unit) {
-    val kSafe = remember { kSafe() }
-
-    val backgroundEnabledState = remember { mutableStateOf(kSafe.getDirect("backgroundEnabled", true)) }
-    val hapticsEnabledState = remember { mutableStateOf(kSafe.getDirect("hapticsEnabled", listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform()), false)) }
-    val showGreetingsState = remember { mutableStateOf(kSafe.getDirect("showGreetings", true)) }
-    val showNewestGradesState = remember { mutableStateOf(kSafe.getDirect("showNewestGrades", true)) }
-    val showCurrentLessonState = remember { mutableStateOf(kSafe.getDirect("showCurrentLesson", true)) }
-    val showYearProgress = remember { mutableStateOf(kSafe.getDirect("showYearProgress", true)) }
-    val showGradeHistoryState = remember { mutableStateOf(kSafe.getDirect("showGradeHistory", false)) }
-    val gradeAverageEnabledState = remember { mutableStateOf(kSafe.getDirect("gradeAverageEnabled", true)) }
-    val gradeAverageUseWeightingState = remember { mutableStateOf(kSafe.getDirect("gradeAverageUseWeighting", false)) }
-    val showAllSubjectsState = remember { mutableStateOf(kSafe.getDirect("showAllSubjects", false)) }
-    val showCollectionsWithoutGradesState = remember { mutableStateOf(kSafe.getDirect("showCollectionsWithoutGrades", false)) }
-    val showAbsences = remember { mutableStateOf(kSafe.getDirect("showAbsences", true)) }
-    val showNotes = remember { mutableStateOf(kSafe.getDirect("showNotes", true)) }
-    val showTeachersWithFirstnameState = remember { mutableStateOf(kSafe.getDirect("showTeachersWithFirstname", false)) }
-    val gradeNotificationsEnabledState = remember { mutableStateOf(kSafe.getDirect("gradeNotificationsEnabled", false)) }
-    val gradeNotificationIntervalState = remember { mutableStateOf(kSafe.getDirect("gradeNotificationsIntervalMinutes", 60L)) }
-    val gradeNotificationsWifiOnlyState = remember { mutableStateOf(kSafe.getDirect("gradeNotificationsWifiOnly", false)) }
-    val requireBiometricAuthentificationState = remember { mutableStateOf(kSafe.getDirect("requireBiometricAuthentification", false)) }
-    CompositionLocalProvider(
-        LocalBackgroundEnabled provides backgroundEnabledState,
-        LocalHapticsEnabled provides hapticsEnabledState,
-        LocalShowGreetings provides showGreetingsState,
-        LocalShowNewestGrades provides showNewestGradesState,
-        LocalShowCurrentLesson provides showCurrentLessonState,
-        LocalShowYearProgress provides showYearProgress,
-        LocalShowGradeHistory provides showGradeHistoryState,
-        LocalGradeAverageEnabled provides gradeAverageEnabledState,
-        LocalGradeAverageUseWeighting provides gradeAverageUseWeightingState,
-        LocalShowAllSubjects provides showAllSubjectsState,
-        LocalShowCollectionsWithoutGrades provides showCollectionsWithoutGradesState,
-        LocalShowAbsences provides showAbsences,
-        LocalShowNotes provides showNotes,
-        LocalShowTeachersWithFirstname provides showTeachersWithFirstnameState,
-        LocalGradeNotificationsEnabled provides gradeNotificationsEnabledState,
-        LocalGradeNotificationIntervalMinutes provides gradeNotificationIntervalState,
-        LocalGradeNotificationsWifiOnly provides gradeNotificationsWifiOnlyState,
-        LocalRequireBiometricAuthentification provides requireBiometricAuthentificationState,
-    ) {
-        content()
+fun SettingsProvider(content: @Composable () -> Unit) =
+    kSafeProvider(remember { kSafe() }) {
+        val backgroundEnabledState = remember { mutableStateOf(get("backgroundEnabled", true)) }
+        val hapticsEnabledState = remember { mutableStateOf(get("hapticsEnabled", listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform()))) }
+        val showGreetingsState = remember { mutableStateOf(get("showGreetings", true)) }
+        val showNewestGradesState = remember { mutableStateOf(get("showNewestGrades", true)) }
+        val showCurrentLessonState = remember { mutableStateOf(get("showCurrentLesson", true)) }
+        val showYearProgress = remember { mutableStateOf(get("showYearProgress", true)) }
+        val showGradeHistoryState = remember { mutableStateOf(get("showGradeHistory", false)) }
+        val gradeAverageEnabledState = remember { mutableStateOf(get("gradeAverageEnabled", true)) }
+        val gradeAverageUseWeightingState = remember { mutableStateOf(get("gradeAverageUseWeighting", false)) }
+        val showAllSubjectsState = remember { mutableStateOf(get("showAllSubjects", false)) }
+        val showCollectionsWithoutGradesState = remember { mutableStateOf(get("showCollectionsWithoutGrades", false)) }
+        val showAbsences = remember { mutableStateOf(get("showAbsences", true)) }
+        val showNotes = remember { mutableStateOf(get("showNotes", true)) }
+        val showTeachersWithFirstnameState = remember { mutableStateOf(get("showTeachersWithFirstname", false)) }
+        val gradeNotificationsEnabledState = remember { mutableStateOf(get("gradeNotificationsEnabled", false)) }
+        val gradeNotificationIntervalState = remember { mutableStateOf(get("gradeNotificationsIntervalMinutes", 60L)) }
+        val gradeNotificationsWifiOnlyState = remember { mutableStateOf(get("gradeNotificationsWifiOnly", false)) }
+        val requireBiometricAuthentificationState = remember { mutableStateOf(getSecure("requireBiometricAuthentification", false)) }
+        CompositionLocalProvider(
+            LocalBackgroundEnabled provides backgroundEnabledState,
+            LocalHapticsEnabled provides hapticsEnabledState,
+            LocalShowGreetings provides showGreetingsState,
+            LocalShowNewestGrades provides showNewestGradesState,
+            LocalShowCurrentLesson provides showCurrentLessonState,
+            LocalShowYearProgress provides showYearProgress,
+            LocalShowGradeHistory provides showGradeHistoryState,
+            LocalGradeAverageEnabled provides gradeAverageEnabledState,
+            LocalGradeAverageUseWeighting provides gradeAverageUseWeightingState,
+            LocalShowAllSubjects provides showAllSubjectsState,
+            LocalShowCollectionsWithoutGrades provides showCollectionsWithoutGradesState,
+            LocalShowAbsences provides showAbsences,
+            LocalShowNotes provides showNotes,
+            LocalShowTeachersWithFirstname provides showTeachersWithFirstnameState,
+            LocalGradeNotificationsEnabled provides gradeNotificationsEnabledState,
+            LocalGradeNotificationIntervalMinutes provides gradeNotificationIntervalState,
+            LocalGradeNotificationsWifiOnly provides gradeNotificationsWifiOnlyState,
+            LocalRequireBiometricAuthentification provides requireBiometricAuthentificationState,
+        ) {
+            content()
+        }
     }
-}

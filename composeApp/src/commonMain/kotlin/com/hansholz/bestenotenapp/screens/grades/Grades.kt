@@ -138,6 +138,7 @@ import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.hansholz.bestenotenapp.security.kSafe
+import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.utils.filterHistory
@@ -167,7 +168,7 @@ fun Grades(
     animatedVisibilityScope: AnimatedVisibilityScope,
     isOpened: Boolean = false,
     navigateBack: () -> Unit = {},
-) {
+) = kSafeProvider(viewModel.kSafe) {
     with(sharedTransitionScope) {
         val gradesViewModel = viewModel { GradesViewModel(viewModel) }
 
@@ -185,7 +186,6 @@ fun Grades(
         var showGradeHistory by LocalShowGradeHistory.current
         var showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
         var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
-        val kSafe = remember { kSafe() }
 
         val gradeAverageCalculator = remember { GradeAverageCalculator() }
         val subjectWeightings = remember { mutableStateMapOf<String, GradeAverageCalculator.SubjectWeightingConfig>() }
@@ -950,7 +950,7 @@ fun Grades(
                                                         checked = gradeAverageEnabled,
                                                         onCheckedChange = {
                                                             gradeAverageEnabled = it
-                                                            kSafe.putDirect("gradeAverageEnabled", it)
+                                                            put("gradeAverageEnabled", it)
                                                             if (!it) {
                                                                 weightingDialogVisible = false
                                                             }
@@ -965,7 +965,7 @@ fun Grades(
                                                         onCheckedChange = {
                                                             if (gradeAverageUseWeighting != it) {
                                                                 gradeAverageUseWeighting = it
-                                                                kSafe.putDirect("gradeAverageUseWeighting", it)
+                                                                put("gradeAverageUseWeighting", it)
                                                                 gradeAverageCalculator.convertStoredSubjectWeightingsMode(
                                                                     kSafe = kSafe,
                                                                     useWeightingInsteadOfPercent = it,
@@ -983,7 +983,7 @@ fun Grades(
                                                     checked = showGradeHistory,
                                                     onCheckedChange = {
                                                         showGradeHistory = it
-                                                        kSafe.putDirect("showGradeHistory", it)
+                                                        put("showGradeHistory", it)
                                                     },
                                                     text = "Noten-Historien anzeigen",
                                                     icon = MaterialSymbols.Rounded.History,
@@ -1002,7 +1002,7 @@ fun Grades(
                                                         checked = showCollectionsWithoutGrades,
                                                         onCheckedChange = {
                                                             showCollectionsWithoutGrades = it
-                                                            kSafe.putDirect("showCollectionsWithoutGrades", it)
+                                                            put("showCollectionsWithoutGrades", it)
                                                         },
                                                         text = "Leistungen ohne Noten anzeigen",
                                                         icon = MaterialSymbols.Rounded.Disabled_visible,
@@ -1013,7 +1013,7 @@ fun Grades(
                                                         checked = showTeachersWithFirstname,
                                                         onCheckedChange = {
                                                             showTeachersWithFirstname = it
-                                                            kSafe.putDirect("showTeachersWithFirstname", it)
+                                                            put("showTeachersWithFirstname", it)
                                                         },
                                                         text = "Lehrer mit Vornamen anzeigen",
                                                         icon = MaterialSymbols.Rounded.Title,

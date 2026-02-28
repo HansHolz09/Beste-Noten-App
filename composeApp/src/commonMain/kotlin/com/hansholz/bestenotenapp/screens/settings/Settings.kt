@@ -88,7 +88,7 @@ import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.screens.grades.GradeAverageCalculator
-import com.hansholz.bestenotenapp.security.kSafe
+import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalIsDark
@@ -98,7 +98,6 @@ import com.hansholz.bestenotenapp.theme.LocalUseSystemIsDark
 import com.hansholz.bestenotenapp.utils.formateInterval
 import dev.chrisbanes.haze.HazeDefaults
 import dev.chrisbanes.haze.hazeSource
-import eu.anifantakis.lib.ksafe.compose.mutableStateOf
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
@@ -112,7 +111,7 @@ import kotlin.time.ExperimentalTime
 fun Settings(
     viewModel: ViewModel,
     onNavigateToLogin: () -> Unit,
-) {
+) = kSafeProvider(viewModel.kSafe) {
     val settingsViewModel = viewModel { SettingsViewModel() }
 
     val scope = rememberCoroutineScope()
@@ -144,8 +143,7 @@ fun Settings(
     var showNotes by LocalShowNotes.current
     var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
-    val kSafe = remember { kSafe() }
-    val authToken by kSafe.mutableStateOf("", "authToken")
+    val authToken by secureMutableStateOf("", "authToken")
 
     TopAppBarScaffold(
         title = "Einstellungen",
@@ -183,7 +181,7 @@ fun Settings(
                             checked = useSystemIsDark,
                             onCheckedChange = {
                                 useSystemIsDark = it
-                                kSafe.putDirect("useSystemIsDark", it)
+                                put("useSystemIsDark", it)
                                 vibrator.enhancedVibrate(EnhancedVibrations.SLOW_RISE)
                             },
                             shapes = IconButtonDefaults.toggleableShapes(),
@@ -194,9 +192,9 @@ fun Settings(
                             checked = !useSystemIsDark && !isDark,
                             onCheckedChange = {
                                 useSystemIsDark = !it
-                                kSafe.putDirect("useSystemIsDark", !it)
+                                put("useSystemIsDark", !it)
                                 isDark = !it
-                                kSafe.putDirect("isDark", !it)
+                                put("isDark", !it)
                                 vibrator.enhancedVibrate(EnhancedVibrations.SLOW_RISE)
                             },
                             shapes = IconButtonDefaults.toggleableShapes(),
@@ -207,9 +205,9 @@ fun Settings(
                             checked = !useSystemIsDark && isDark,
                             onCheckedChange = {
                                 useSystemIsDark = !it
-                                kSafe.putDirect("useSystemIsDark", !it)
+                                put("useSystemIsDark", !it)
                                 isDark = it
-                                kSafe.putDirect("isDark", it)
+                                put("isDark", it)
                                 vibrator.enhancedVibrate(EnhancedVibrations.SLOW_RISE)
                             },
                             shapes = IconButtonDefaults.toggleableShapes(),
@@ -224,7 +222,7 @@ fun Settings(
                     checked = useCustomColorScheme,
                     onCheckedChange = {
                         useCustomColorScheme = it
-                        kSafe.putDirect("useCustomColorScheme", it)
+                        put("useCustomColorScheme", it)
                     },
                     text = "Material-You",
                     icon = MaterialSymbols.Rounded.Invert_colors,
@@ -235,7 +233,7 @@ fun Settings(
                 checked = animationsEnabled,
                 onCheckedChange = {
                     animationsEnabled = it
-                    kSafe.putDirect("animationsEnabled", it)
+                    put("animationsEnabled", it)
                 },
                 text = "Animationen",
                 icon = MaterialSymbols.Rounded.Animation,
@@ -246,7 +244,7 @@ fun Settings(
                     checked = blurEnabled,
                     onCheckedChange = {
                         blurEnabled = it
-                        kSafe.putDirect("blurEnabled", it)
+                        put("blurEnabled", it)
                     },
                     text = "Unschärfe-Effekt",
                     icon = MaterialSymbols.Rounded.Blur_on,
@@ -257,7 +255,7 @@ fun Settings(
                 checked = backgroundEnabled,
                 onCheckedChange = {
                     backgroundEnabled = it
-                    kSafe.putDirect("backgroundEnabled", it)
+                    put("backgroundEnabled", it)
                 },
                 text = "Hintergrundbild",
                 icon = MaterialSymbols.Rounded.Texture,
@@ -268,7 +266,7 @@ fun Settings(
                     checked = hapticsEnabled,
                     onCheckedChange = {
                         hapticsEnabled = it
-                        kSafe.putDirect("hapticsEnabled", it, false)
+                        put("hapticsEnabled", it)
                         if (it) vibrator.enhancedVibrate(EnhancedVibrations.TOGGLE_ON, true)
                     },
                     text = "Haptisches Feedback",
@@ -288,10 +286,10 @@ fun Settings(
                             if (it) {
                                 val granted = GradeNotifications.requestPermission()
                                 notificationsEnabled = granted
-                                kSafe.putDirect("gradeNotificationsEnabled", it)
+                                put("gradeNotificationsEnabled", it)
                             } else {
                                 notificationsEnabled = false
-                                kSafe.putDirect("gradeNotificationsEnabled", it)
+                                put("gradeNotificationsEnabled", it)
                             }
                             GradeNotifications.onSettingsUpdated()
                         }
@@ -307,7 +305,7 @@ fun Settings(
                             return@settingsToggleItem
                         }
                         notificationsWifiOnly = enabled
-                        kSafe.putDirect("gradeNotificationsWifiOnly", enabled)
+                        put("gradeNotificationsWifiOnly", enabled)
                         GradeNotifications.onSettingsUpdated()
                     },
                     text = "Nur mit WLAN überprüfen",
@@ -342,7 +340,7 @@ fun Settings(
                 checked = showGreetings,
                 onCheckedChange = {
                     showGreetings = it
-                    kSafe.putDirect("showGreetings", it)
+                    put("showGreetings", it)
                 },
                 text = "Begrüßung anzeigen",
                 icon = MaterialSymbols.Rounded.Waving_hand,
@@ -352,7 +350,7 @@ fun Settings(
                 checked = showNewestGrades,
                 onCheckedChange = {
                     showNewestGrades = it
-                    kSafe.putDirect("showNewestGrades", it)
+                    put("showNewestGrades", it)
 
                     scope.launch {
                         if (it && viewModel.startGradeCollections.isEmpty()) {
@@ -368,7 +366,7 @@ fun Settings(
                 checked = showCurrentLesson,
                 onCheckedChange = {
                     showCurrentLesson = it
-                    kSafe.putDirect("showCurrentLesson", it)
+                    put("showCurrentLesson", it)
 
                     scope.launch {
                         if (it && viewModel.currentJournalDay.value == null) {
@@ -395,7 +393,7 @@ fun Settings(
                     checked = showYearProgress,
                     onCheckedChange = {
                         showYearProgress = it
-                        kSafe.putDirect("showYearProgress", it)
+                        put("showYearProgress", it)
 
                         scope.launch {
                             if (it && viewModel.intervals.isEmpty()) {
@@ -415,7 +413,7 @@ fun Settings(
                 checked = gradeAverageEnabled,
                 onCheckedChange = {
                     gradeAverageEnabled = it
-                    kSafe.putDirect("gradeAverageEnabled", it)
+                    put("gradeAverageEnabled", it)
                 },
                 text = "Durchschnittsberechnung aktiv",
                 icon = MathAvg,
@@ -426,7 +424,7 @@ fun Settings(
                 onCheckedChange = {
                     if (gradeAverageUseWeighting != it) {
                         gradeAverageUseWeighting = it
-                        kSafe.putDirect("gradeAverageUseWeighting", it)
+                        put("gradeAverageUseWeighting", it)
                         GradeAverageCalculator().convertStoredSubjectWeightingsMode(
                             kSafe = kSafe,
                             useWeightingInsteadOfPercent = it,
@@ -441,7 +439,7 @@ fun Settings(
                 checked = showGradeHistory,
                 onCheckedChange = {
                     showGradeHistory = it
-                    kSafe.putDirect("showGradeHistory", it)
+                    put("showGradeHistory", it)
                 },
                 text = "Noten-Historien anzeigen",
                 icon = MaterialSymbols.Rounded.History,
@@ -452,7 +450,7 @@ fun Settings(
                     checked = showCollectionsWithoutGrades,
                     onCheckedChange = {
                         showCollectionsWithoutGrades = it
-                        kSafe.putDirect("showCollectionsWithoutGrades", it)
+                        put("showCollectionsWithoutGrades", it)
                     },
                     text = "Leistungen ohne Noten anzeigen",
                     icon = MaterialSymbols.Rounded.Disabled_visible,
@@ -465,7 +463,7 @@ fun Settings(
                     checked = showAbsences,
                     onCheckedChange = {
                         showAbsences = it
-                        kSafe.putDirect("showAbsences", it)
+                        put("showAbsences", it)
 
                         scope.launch {
                             if (it && viewModel.absences.isEmpty()) {
@@ -486,7 +484,7 @@ fun Settings(
                     checked = showNotes,
                     onCheckedChange = {
                         showNotes = it
-                        kSafe.putDirect("showNotes", it)
+                        put("showNotes", it)
                     },
                     text = "Tages-Notizen anzeigen",
                     icon = MaterialSymbols.Rounded.Article,
@@ -499,7 +497,7 @@ fun Settings(
                     checked = showAllSubjects,
                     onCheckedChange = {
                         showAllSubjects = it
-                        kSafe.putDirect("showAllSubjects", it)
+                        put("showAllSubjects", it)
                     },
                     text = "Alle Fächer der Schule anzeigen",
                     icon = MaterialSymbols.Rounded.Subject,
@@ -511,7 +509,7 @@ fun Settings(
                     checked = showTeachersWithFirstname,
                     onCheckedChange = {
                         showTeachersWithFirstname = it
-                        kSafe.putDirect("showTeachersWithFirstname", it)
+                        put("showTeachersWithFirstname", it)
                     },
                     text = "Lehrer mit Vornamen anzeigen",
                     icon = MaterialSymbols.Rounded.Title,
@@ -528,12 +526,12 @@ fun Settings(
                             kSafe.verifyBiometricDirect("Bestätige, um die biometrische Authentifizierung beim Start zu aktiven.") { isSuccessful ->
                                 if (isSuccessful) {
                                     requireBiometricAuthentification = it
-                                    kSafe.putDirect("requireBiometricAuthentification", it)
+                                    putSecure("requireBiometricAuthentification", it)
                                 }
                             }
                         } else {
                             requireBiometricAuthentification = it
-                            kSafe.putDirect("requireBiometricAuthentification", it)
+                            putSecure("requireBiometricAuthentification", it)
                         }
                     },
                     text = "Biometrische Authentifizierung erforderlich",
@@ -586,29 +584,29 @@ fun Settings(
                                 notificationIntervalMinutes = appSettings.gradeNotificationsIntervalMinutes
                                 notificationsWifiOnly = appSettings.gradeNotificationsWifiOnly
                                 requireBiometricAuthentification = appSettings.requireBiometricAuthentification
-                                kSafe.putDirect("useSystemIsDark", appSettings.useSystemIsDark)
-                                kSafe.putDirect("isDark", appSettings.isDark)
-                                kSafe.putDirect("useCustomColorScheme", appSettings.useCustomColorScheme)
-                                kSafe.putDirect("animationsEnabled", appSettings.animationsEnabled)
-                                kSafe.putDirect("blurEnabled", appSettings.blurEnabled && HazeDefaults.blurEnabled())
-                                kSafe.putDirect("backgroundEnabled", appSettings.backgroundEnabled)
-                                kSafe.putDirect("hapticsEnabled", appSettings.hapticsEnabled, false)
-                                kSafe.putDirect("showGreetings", appSettings.showGreetings)
-                                kSafe.putDirect("showNewestGrades", appSettings.showNewestGrades)
-                                kSafe.putDirect("showCurrentLesson", appSettings.showCurrentLesson)
-                                kSafe.putDirect("showYearProgress", appSettings.showYearProgress)
-                                kSafe.putDirect("showGradeHistory", appSettings.showGradeHistory)
-                                kSafe.putDirect("gradeAverageEnabled", appSettings.gradeAverageEnabled)
-                                kSafe.putDirect("gradeAverageUseWeighting", appSettings.gradeAverageUseWeighting)
-                                kSafe.putDirect("showAllSubjects", appSettings.showAllSubjects)
-                                kSafe.putDirect("showCollectionsWithoutGrades", appSettings.showCollectionsWithoutGrades)
-                                kSafe.putDirect("showAbsences", appSettings.showAbsences)
-                                kSafe.putDirect("showNotes", appSettings.showNotes)
-                                kSafe.putDirect("showTeachersWithFirstname", appSettings.showTeachersWithFirstname)
-                                kSafe.putDirect("gradeNotificationsEnabled", appSettings.gradeNotificationsEnabled)
-                                kSafe.putDirect("gradeNotificationsIntervalMinutes", appSettings.gradeNotificationsIntervalMinutes)
-                                kSafe.putDirect("gradeNotificationsWifiOnly", appSettings.gradeNotificationsWifiOnly)
-                                kSafe.putDirect("requireBiometricAuthentification", appSettings.requireBiometricAuthentification)
+                                put("useSystemIsDark", appSettings.useSystemIsDark)
+                                put("isDark", appSettings.isDark)
+                                put("useCustomColorScheme", appSettings.useCustomColorScheme)
+                                put("animationsEnabled", appSettings.animationsEnabled)
+                                put("blurEnabled", appSettings.blurEnabled && HazeDefaults.blurEnabled())
+                                put("backgroundEnabled", appSettings.backgroundEnabled)
+                                put("hapticsEnabled", appSettings.hapticsEnabled)
+                                put("showGreetings", appSettings.showGreetings)
+                                put("showNewestGrades", appSettings.showNewestGrades)
+                                put("showCurrentLesson", appSettings.showCurrentLesson)
+                                put("showYearProgress", appSettings.showYearProgress)
+                                put("showGradeHistory", appSettings.showGradeHistory)
+                                put("gradeAverageEnabled", appSettings.gradeAverageEnabled)
+                                put("gradeAverageUseWeighting", appSettings.gradeAverageUseWeighting)
+                                put("showAllSubjects", appSettings.showAllSubjects)
+                                put("showCollectionsWithoutGrades", appSettings.showCollectionsWithoutGrades)
+                                put("showAbsences", appSettings.showAbsences)
+                                put("showNotes", appSettings.showNotes)
+                                put("showTeachersWithFirstname", appSettings.showTeachersWithFirstname)
+                                put("gradeNotificationsEnabled", appSettings.gradeNotificationsEnabled)
+                                put("gradeNotificationsIntervalMinutes", appSettings.gradeNotificationsIntervalMinutes)
+                                put("gradeNotificationsWifiOnly", appSettings.gradeNotificationsWifiOnly)
+                                putSecure("requireBiometricAuthentification", appSettings.requireBiometricAuthentification)
                                 GradeNotifications.onSettingsUpdated()
                             }
                         }

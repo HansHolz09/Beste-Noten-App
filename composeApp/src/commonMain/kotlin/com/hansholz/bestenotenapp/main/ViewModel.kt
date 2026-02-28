@@ -33,6 +33,7 @@ import com.hansholz.bestenotenapp.data.DemoDataGenerator
 import com.hansholz.bestenotenapp.data.ExportData
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.security.kSafe
+import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.hansholz.bestenotenapp.utils.IO
 import com.hansholz.bestenotenapp.utils.weekOfYear
 import dev.chrisbanes.haze.HazeState
@@ -157,7 +158,7 @@ class ViewModel(
         onNavigateHome: () -> Unit,
         chooseStudent: suspend (List<Student>, (String) -> Unit) -> Unit,
         handleToken: suspend () -> Unit,
-    ) {
+    ) = kSafeProvider(kSafe) {
         isLoading(true)
         try {
             handleToken()
@@ -174,12 +175,12 @@ class ViewModel(
                 user.students.size.let {
                     if (it > 1) {
                         chooseStudent(user.students) {
-                            kSafe.putDirect("studentId", it)
+                            put("studentId", it)
                             studentId.value = it
                             GradeNotifications.onLogin()
                         }
                     } else {
-                        kSafe.putDirect(
+                        put(
                             "studentId",
                             user.students
                                 .first()
@@ -195,7 +196,7 @@ class ViewModel(
                     }
                 }
                 if (stayLoggedIn) {
-                    kSafe.putDirect("authToken", authToken.value!!)
+                    putSecure("authToken", authToken.value!!)
                 }
                 onNavigateHome()
                 toaster.show(
@@ -595,8 +596,10 @@ class ViewModel(
     init {
         viewModelScope.launch {
             try {
-                studentId.value = kSafe.getDirect<String?>("studentId", null)
-                authToken.value = kSafe.getDirect<String?>("authToken", null)
+                kSafeProvider(kSafe) {
+                    studentId.value = get<String?>("studentId", null)
+                    authToken.value = getSecure<String?>("authToken", null)
+                }
                 init()
                 GradeNotifications.onLogin()
             } catch (e: Exception) {

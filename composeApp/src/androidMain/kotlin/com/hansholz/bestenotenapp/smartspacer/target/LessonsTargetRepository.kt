@@ -5,6 +5,7 @@ import com.hansholz.bestenotenapp.api.BesteSchuleApi
 import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.models.JournalDay
 import com.hansholz.bestenotenapp.security.kSafe
+import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.hansholz.bestenotenapp.utils.weekOfYear
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
@@ -19,10 +20,11 @@ class LessonsTargetRepository {
     private val tokenState = mutableStateOf<String?>(null)
     private val api = BesteSchuleApi(httpClient, tokenState)
 
-    fun ensureToken(): Boolean {
-        tokenState.value = kSafe.getDirect("authToken", null)
-        return !tokenState.value.isNullOrEmpty()
-    }
+    fun ensureToken(): Boolean =
+        kSafeProvider(kSafe) {
+            tokenState.value = getSecure("authToken", null)
+            return !tokenState.value.isNullOrEmpty()
+        }
 
     @OptIn(ExperimentalTime::class)
     suspend fun getCurrentJournalDay(): JournalDay? {

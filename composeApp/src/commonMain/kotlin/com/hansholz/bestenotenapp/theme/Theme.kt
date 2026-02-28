@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.hansholz.bestenotenapp.main.AppHazeState
 import com.hansholz.bestenotenapp.security.kSafe
+import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.ktx.animateColorScheme
 import com.materialkolor.rememberDynamicColorScheme
@@ -36,16 +37,14 @@ internal val LocalBlurEnabled = compositionLocalOf { mutableStateOf(false) }
 internal fun AppTheme(
     finalTheme: (ColorScheme) -> Unit = {},
     content: @Composable () -> Unit,
-) {
-    val kSafe = remember { kSafe() }
-
-    val useSystemIsDark = remember { mutableStateOf(kSafe.getDirect("useSystemIsDark", true)) }
-    val isDark = remember { mutableStateOf(kSafe.getDirect("isDark", false)) }
+) = kSafeProvider(remember { kSafe() }) {
+    val useSystemIsDark = remember { mutableStateOf(get("useSystemIsDark", true)) }
+    val isDark = remember { mutableStateOf(get("isDark", false)) }
     val isDarkState = if (useSystemIsDark.value) isSystemInDarkMode() else isDark.value
-    val useCustomColorSchemeState = remember { mutableStateOf(kSafe.getDirect("useCustomColorScheme", false)) }
+    val useCustomColorSchemeState = remember { mutableStateOf(get("useCustomColorScheme", false)) }
     val supportsCustomColorSchemeState = remember { mutableStateOf(false) }
-    val animationsEnabledState = remember { mutableStateOf(kSafe.getDirect("animationsEnabled", true)) }
-    val blurEnabledState = remember { mutableStateOf(kSafe.getDirect("blurEnabled", HazeDefaults.blurEnabled())) }
+    val animationsEnabledState = remember { mutableStateOf(get("animationsEnabled", true)) }
+    val blurEnabledState = remember { mutableStateOf(get("blurEnabled", HazeDefaults.blurEnabled())) }
     CompositionLocalProvider(
         LocalUseSystemIsDark provides useSystemIsDark,
         LocalIsDark provides isDark,

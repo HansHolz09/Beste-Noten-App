@@ -10,7 +10,7 @@ import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.data.AppSettings
 import com.hansholz.bestenotenapp.data.ExportData
 import com.hansholz.bestenotenapp.screens.grades.GradeAverageCalculator
-import com.hansholz.bestenotenapp.security.kSafe
+import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.hansholz.bestenotenapp.utils.IO
 import dev.chrisbanes.haze.HazeDefaults
 import io.github.vinceglb.filekit.FileKit
@@ -34,7 +34,6 @@ class SettingsViewModel : ViewModel() {
             ignoreUnknownKeys = true
             encodeDefaults = true
         }
-    private val kSafe = kSafe()
     private val gradeAverageCalculator = GradeAverageCalculator()
 
     var showIntervalDialog by mutableStateOf(false)
@@ -51,76 +50,78 @@ class SettingsViewModel : ViewModel() {
         gradeYears: List<Year>?,
     ) = withContext(Dispatchers.IO) {
         try {
-            val appSettingsData =
-                if (appSettings) {
-                    AppSettings(
-                        useSystemIsDark = kSafe.getDirect("useSystemIsDark", true),
-                        isDark = kSafe.getDirect("isDark", false),
-                        useCustomColorScheme = kSafe.getDirect("useCustomColorScheme", false),
-                        animationsEnabled = kSafe.getDirect("animationsEnabled", true),
-                        blurEnabled = kSafe.getDirect("blurEnabled", HazeDefaults.blurEnabled()),
-                        backgroundEnabled = kSafe.getDirect("backgroundEnabled", true),
-                        hapticsEnabled = kSafe.getDirect("hapticsEnabled", false),
-                        showGreetings = kSafe.getDirect("showGreetings", true),
-                        showNewestGrades = kSafe.getDirect("showNewestGrades", true),
-                        showCurrentLesson = kSafe.getDirect("showCurrentLesson", true),
-                        showYearProgress = kSafe.getDirect("showYearProgress", true),
-                        showGradeHistory = kSafe.getDirect("showGradeHistory", false),
-                        gradeAverageEnabled = kSafe.getDirect("gradeAverageEnabled", true),
-                        gradeAverageUseWeighting = kSafe.getDirect("gradeAverageUseWeighting", false),
-                        showAllSubjects = kSafe.getDirect("showAllSubjects", false),
-                        showCollectionsWithoutGrades = kSafe.getDirect("showCollectionsWithoutGrades", false),
-                        showAbsences = kSafe.getDirect("showAbsences", true),
-                        showNotes = kSafe.getDirect("showNotes", true),
-                        showTeachersWithFirstname = kSafe.getDirect("showTeachersWithFirstname", false),
-                        gradeNotificationsEnabled = kSafe.getDirect("gradeNotificationsEnabled", false),
-                        gradeNotificationsIntervalMinutes = kSafe.getDirect("gradeNotificationsIntervalMinutes", 60L),
-                        gradeNotificationsWifiOnly = kSafe.getDirect("gradeNotificationsWifiOnly", false),
-                        requireBiometricAuthentification = kSafe.getDirect("requireBiometricAuthentification", false),
-                    )
-                } else {
-                    null
-                }
-            val gradeWeightsData =
-                if (gradeWeights) {
-                    kSafe.getDirect("gradeWeightingData", GradeAverageCalculator.GradeWeightingStore())
-                } else {
-                    null
-                }
-            val gradeCollections =
-                if (viewModel.years.toList() == gradeYears && viewModel.allGradeCollectionsLoaded.value) {
-                    viewModel.gradeCollections.toList()
-                } else if (!gradeYears.isNullOrEmpty()) {
-                    viewModel.getCollections(gradeYears)
-                } else {
-                    null
-                }
-            val gradeYearsData =
-                if (gradeCollections != null && gradeYears != null) {
-                    gradeCollections to gradeYears
-                } else {
-                    null
-                }
+            kSafeProvider(viewModel.kSafe) {
+                val appSettingsData =
+                    if (appSettings) {
+                        AppSettings(
+                            useSystemIsDark = get("useSystemIsDark", true),
+                            isDark = get("isDark", false),
+                            useCustomColorScheme = get("useCustomColorScheme", false),
+                            animationsEnabled = get("animationsEnabled", true),
+                            blurEnabled = get("blurEnabled", HazeDefaults.blurEnabled()),
+                            backgroundEnabled = get("backgroundEnabled", true),
+                            hapticsEnabled = get("hapticsEnabled", false),
+                            showGreetings = get("showGreetings", true),
+                            showNewestGrades = get("showNewestGrades", true),
+                            showCurrentLesson = get("showCurrentLesson", true),
+                            showYearProgress = get("showYearProgress", true),
+                            showGradeHistory = get("showGradeHistory", false),
+                            gradeAverageEnabled = get("gradeAverageEnabled", true),
+                            gradeAverageUseWeighting = get("gradeAverageUseWeighting", false),
+                            showAllSubjects = get("showAllSubjects", false),
+                            showCollectionsWithoutGrades = get("showCollectionsWithoutGrades", false),
+                            showAbsences = get("showAbsences", true),
+                            showNotes = get("showNotes", true),
+                            showTeachersWithFirstname = get("showTeachersWithFirstname", false),
+                            gradeNotificationsEnabled = get("gradeNotificationsEnabled", false),
+                            gradeNotificationsIntervalMinutes = get("gradeNotificationsIntervalMinutes", 60L),
+                            gradeNotificationsWifiOnly = get("gradeNotificationsWifiOnly", false),
+                            requireBiometricAuthentification = get("requireBiometricAuthentification", false),
+                        )
+                    } else {
+                        null
+                    }
+                val gradeWeightsData =
+                    if (gradeWeights) {
+                        get("gradeWeightingData", GradeAverageCalculator.GradeWeightingStore())
+                    } else {
+                        null
+                    }
+                val gradeCollections =
+                    if (viewModel.years.toList() == gradeYears && viewModel.allGradeCollectionsLoaded.value) {
+                        viewModel.gradeCollections.toList()
+                    } else if (!gradeYears.isNullOrEmpty()) {
+                        viewModel.getCollections(gradeYears)
+                    } else {
+                        null
+                    }
+                val gradeYearsData =
+                    if (gradeCollections != null && gradeYears != null) {
+                        gradeCollections to gradeYears
+                    } else {
+                        null
+                    }
 
-            val date =
-                Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.let {
-                    "${it.day.toString().padStart(2, '0')}.${it.month.number.toString().padStart(2, '0')}.${it.year}"
-                }
-            val exportDate =
-                ExportData(
-                    containsAppSettings = appSettings,
-                    containsGradeWeights = gradeWeights,
-                    containsGradeYears = gradeYears != null,
-                    appSettings = appSettingsData,
-                    gradeWeights = gradeWeightsData,
-                    gradeYears = gradeYearsData,
+                val date =
+                    Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.let {
+                        "${it.day.toString().padStart(2, '0')}.${it.month.number.toString().padStart(2, '0')}.${it.year}"
+                    }
+                val exportDate =
+                    ExportData(
+                        containsAppSettings = appSettings,
+                        containsGradeWeights = gradeWeights,
+                        containsGradeYears = gradeYears != null,
+                        appSettings = appSettingsData,
+                        gradeWeights = gradeWeightsData,
+                        gradeYears = gradeYearsData,
+                    )
+                @Suppress("DEPRECATION")
+                FileKit.openFileSaver(
+                    bytes = json.encodeToString(exportDate).toByteArray(),
+                    suggestedName = "BNA_Export_vom_$date",
+                    extension = "json",
                 )
-            @Suppress("DEPRECATION")
-            FileKit.openFileSaver(
-                bytes = json.encodeToString(exportDate).toByteArray(),
-                suggestedName = "BNA_Export_vom_$date",
-                extension = "json",
-            )
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             viewModel.toaster.show(
@@ -154,7 +155,7 @@ class SettingsViewModel : ViewModel() {
                     return@withContext
                 }
                 data.appSettings?.let { applySettings(it) }
-                data.gradeWeights?.let { gradeAverageCalculator.saveStore(kSafe, it) }
+                data.gradeWeights?.let { gradeAverageCalculator.saveStore(viewModel.kSafe, it) }
             }
         } catch (e: Exception) {
             e.printStackTrace()

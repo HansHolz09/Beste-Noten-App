@@ -28,63 +28,64 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationIntervalMinutes
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.security.kSafe
+import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.hansholz.bestenotenapp.utils.formateInterval
 import components.dialogs.EnhancedAlertDialog
 import top.ltfan.multihaptic.compose.rememberVibrator
 
 @Composable
-fun NotificationIntervalDialog(settingsViewModel: SettingsViewModel) {
-    val vibrator = rememberVibrator()
+fun NotificationIntervalDialog(settingsViewModel: SettingsViewModel) =
+    kSafeProvider(remember { kSafe() }) {
+        val vibrator = rememberVibrator()
 
-    var notificationIntervalMinutes by LocalGradeNotificationIntervalMinutes.current
-    val kSafe = remember { kSafe() }
+        var notificationIntervalMinutes by LocalGradeNotificationIntervalMinutes.current
 
-    val intervalOptions = remember { listOf(15L, 30L, 60L, 120L, 360L, 720L, 1440L) }
-    EnhancedAlertDialog(
-        visible = GradeNotifications.isSupported && settingsViewModel.showIntervalDialog,
-        onDismissRequest = { settingsViewModel.showIntervalDialog = false },
-        icon = { Icon(MaterialSymbols.Rounded.History, null) },
-        title = { Text("Überprüfungsintervall") },
-        text = {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                intervalOptions.forEach { option ->
-                    item {
-                        Row(
-                            Modifier
-                                .height(56.dp)
-                                .fillParentMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .selectable(
+        val intervalOptions = remember { listOf(15L, 30L, 60L, 120L, 360L, 720L, 1440L) }
+        EnhancedAlertDialog(
+            visible = GradeNotifications.isSupported && settingsViewModel.showIntervalDialog,
+            onDismissRequest = { settingsViewModel.showIntervalDialog = false },
+            icon = { Icon(MaterialSymbols.Rounded.History, null) },
+            title = { Text("Überprüfungsintervall") },
+            text = {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    intervalOptions.forEach { option ->
+                        item {
+                            Row(
+                                Modifier
+                                    .height(56.dp)
+                                    .fillParentMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .selectable(
+                                        selected = (notificationIntervalMinutes == option),
+                                        onClick = {
+                                            vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                                            notificationIntervalMinutes = option
+                                            put("gradeNotificationsIntervalMinutes", option)
+                                            GradeNotifications.onSettingsUpdated()
+                                            settingsViewModel.showIntervalDialog = false
+                                        },
+                                        role = Role.RadioButton,
+                                    ).padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                RadioButton(
                                     selected = (notificationIntervalMinutes == option),
-                                    onClick = {
-                                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
-                                        notificationIntervalMinutes = option
-                                        kSafe.putDirect("gradeNotificationsIntervalMinutes", option)
-                                        GradeNotifications.onSettingsUpdated()
-                                        settingsViewModel.showIntervalDialog = false
-                                    },
-                                    role = Role.RadioButton,
-                                ).padding(horizontal = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            RadioButton(
-                                selected = (notificationIntervalMinutes == option),
-                                onClick = null,
-                            )
-                            Text(
-                                text = formateInterval(option),
-                                style = typography.bodyLarge,
-                                modifier = Modifier.padding(start = 16.dp),
-                            )
+                                    onClick = null,
+                                )
+                                Text(
+                                    text = formateInterval(option),
+                                    style = typography.bodyLarge,
+                                    modifier = Modifier.padding(start = 16.dp),
+                                )
+                            }
                         }
                     }
                 }
-            }
-        },
-        confirmButton = {
-            EnhancedButton(onClick = { settingsViewModel.showIntervalDialog = false }) {
-                Text("Schließen")
-            }
-        },
-    )
-}
+            },
+            confirmButton = {
+                EnhancedButton(onClick = { settingsViewModel.showIntervalDialog = false }) {
+                    Text("Schließen")
+                }
+            },
+        )
+    }

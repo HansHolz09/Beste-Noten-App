@@ -9,6 +9,7 @@ import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.security.kSafe
+import com.hansholz.bestenotenapp.security.kSafeProvider
 import io.ktor.client.plugins.ClientRequestException
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.Serializable
@@ -27,11 +28,11 @@ internal object GradeNotificationEngine {
     private val json = Json { ignoreUnknownKeys = true }
     private val kSafe = kSafe()
 
-    fun isEnabled(): Boolean = kSafe.getDirect("gradeNotificationsEnabled", false) && listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())
+    fun isEnabled(): Boolean = kSafeProvider(kSafe) { get("gradeNotificationsEnabled", false) } && listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())
 
-    fun getIntervalMinutes(): Long = kSafe.getDirect("gradeNotificationsIntervalMinutes", 60L)
+    fun getIntervalMinutes(): Long = kSafeProvider(kSafe) { get("gradeNotificationsIntervalMinutes", 60L) }
 
-    fun isWifiOnlyEnabled(): Boolean = kSafe.getDirect("gradeNotificationsWifiOnly", false)
+    fun isWifiOnlyEnabled(): Boolean = kSafeProvider(kSafe) { get("gradeNotificationsWifiOnly", false) }
 
     fun shouldSchedule(): Boolean = isEnabled() && hasCredentials()
 
@@ -39,58 +40,60 @@ internal object GradeNotificationEngine {
         kSafe.deleteDirect(KEY_KNOWN_GRADE_IDS)
     }
 
-    suspend fun runCheck(): GradeNotificationOutcome {
-        if (!shouldSchedule()) return GradeNotificationOutcome.Success
+    suspend fun runCheck(): GradeNotificationOutcome =
+        kSafeProvider(kSafe) {
+            if (!shouldSchedule()) return GradeNotificationOutcome.Success
 
-        val studentId = kSafe.getDirect<String?>("studentId", null) ?: return GradeNotificationOutcome.Success
-        val token = kSafe.getDirect<String?>("authToken", null) ?: return GradeNotificationOutcome.Success
+            val studentId = get<String?>("studentId", null) ?: return GradeNotificationOutcome.Success
+            val token = getSecure<String?>("authToken", null) ?: return GradeNotificationOutcome.Success
 
-        val httpClient = createHttpClient()
-        return try {
-            val authState = mutableStateOf<String?>(token)
-            val studentState = mutableStateOf<String?>(studentId)
-            val api = BesteSchuleApi(httpClient, authState, studentState)
-            val collections = fetchAllCollections(api)
-            val currentIds = collections.flatMap { it.grades.orEmpty() }.map { it.id }.toSet()
+            val httpClient = createHttpClient()
+            return try {
+                val authState = mutableStateOf<String?>(token)
+                val studentState = mutableStateOf<String?>(studentId)
+                val api = BesteSchuleApi(httpClient, authState, studentState)
+                val collections = fetchAllCollections(api)
+                val currentIds = collections.flatMap { it.grades.orEmpty() }.map { it.id }.toSet()
 
-            val knownIds = loadKnownGradeIds()
-            val newIds = currentIds - knownIds
+                val knownIds = loadKnownGradeIds()
+                val newIds = currentIds - knownIds
 
-            if (newIds.isNotEmpty() && knownIds.isNotEmpty()) {
-                val newGrades =
-                    collections
-                        .flatMap { collection ->
-                            collection.grades
-                                .orEmpty()
-                                .filter { it.id in newIds }
-                                .map { it to collection }
-                        }.sortedBy { it.second.givenAt }
-                notifyNewGrades(newGrades)
-            }
+                if (newIds.isNotEmpty() && knownIds.isNotEmpty()) {
+                    val newGrades =
+                        collections
+                            .flatMap { collection ->
+                                collection.grades
+                                    .orEmpty()
+                                    .filter { it.id in newIds }
+                                    .map { it to collection }
+                            }.sortedBy { it.second.givenAt }
+                    notifyNewGrades(newGrades)
+                }
 
-            storeKnownGradeIds(currentIds)
-            GradeNotificationOutcome.Success
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: ClientRequestException) {
-            if (e.response.status.value == 401) {
+                storeKnownGradeIds(currentIds)
                 GradeNotificationOutcome.Success
-            } else {
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: ClientRequestException) {
+                if (e.response.status.value == 401) {
+                    GradeNotificationOutcome.Success
+                } else {
+                    GradeNotificationOutcome.Retry
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
                 GradeNotificationOutcome.Retry
+            } finally {
+                httpClient.close()
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            GradeNotificationOutcome.Retry
-        } finally {
-            httpClient.close()
         }
-    }
 
-    private fun hasCredentials(): Boolean {
-        val studentId = kSafe.getDirect<String?>("studentId", null)
-        val token = kSafe.getDirect<String?>("authToken", null)
-        return !studentId.isNullOrBlank() && !token.isNullOrBlank()
-    }
+    private fun hasCredentials(): Boolean =
+        kSafeProvider(kSafe) {
+            val studentId = get<String?>("studentId", null)
+            val token = getSecure<String?>("authToken", null)
+            return !studentId.isNullOrBlank() && !token.isNullOrBlank()
+        }
 
     private suspend fun fetchAllCollections(api: BesteSchuleApi): List<GradeCollection> {
         val includes = listOf("grades")
@@ -124,15 +127,17 @@ internal object GradeNotificationEngine {
         GradeNotificationNotifier.notifyNewGrades(notifications)
     }
 
-    private fun loadKnownGradeIds(): Set<Int> {
-        val raw = kSafe.getDirect<String?>(KEY_KNOWN_GRADE_IDS, null) ?: return emptySet()
-        return runCatching { json.decodeFromString<KnownGrades>(raw).ids.toSet() }.getOrElse { emptySet() }
-    }
+    private fun loadKnownGradeIds(): Set<Int> =
+        kSafeProvider(kSafe) {
+            val raw = get<String?>(KEY_KNOWN_GRADE_IDS, null) ?: return emptySet()
+            return runCatching { json.decodeFromString<KnownGrades>(raw).ids.toSet() }.getOrElse { emptySet() }
+        }
 
-    private fun storeKnownGradeIds(ids: Set<Int>) {
-        val payload = json.encodeToString(KnownGrades(ids.toList()))
-        kSafe.putDirect(KEY_KNOWN_GRADE_IDS, payload)
-    }
+    private fun storeKnownGradeIds(ids: Set<Int>) =
+        kSafeProvider(kSafe) {
+            val payload = json.encodeToString(KnownGrades(ids.toList()))
+            put(KEY_KNOWN_GRADE_IDS, payload)
+        }
 
     @Serializable
     private data class KnownGrades(
