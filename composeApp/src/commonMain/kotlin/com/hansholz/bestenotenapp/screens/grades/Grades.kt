@@ -129,15 +129,13 @@ import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.components.icons.MathAvg
 import com.hansholz.bestenotenapp.components.rememberLazyListScrollSpeedState
 import com.hansholz.bestenotenapp.components.settingsToggleItem
-import com.hansholz.bestenotenapp.main.ExactPlatform
 import com.hansholz.bestenotenapp.main.LocalGradeAverageEnabled
 import com.hansholz.bestenotenapp.main.LocalGradeAverageUseWeighting
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
 import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
-import com.hansholz.bestenotenapp.main.getExactPlatform
-import com.hansholz.bestenotenapp.security.kSafe
+import com.hansholz.bestenotenapp.main.isApplePlatform
 import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
@@ -214,7 +212,7 @@ fun Grades(
                     ) {
                         Icon(
                             imageVector =
-                                if (listOf(ExactPlatform.IOS, ExactPlatform.MACOS).contains(getExactPlatform())) {
+                                if (isApplePlatform()) {
                                     MaterialSymbols.Rounded.Arrow_back_ios_new
                                 } else {
                                     MaterialSymbols.Rounded.Arrow_back

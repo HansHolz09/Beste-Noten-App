@@ -19,6 +19,14 @@ enum class ExactPlatform {
     UNKNOWN,
 }
 
+fun isApplePlatform() =
+    listOf(
+        ExactPlatform.MACOS,
+        ExactPlatform.IOS,
+        ExactPlatform.IPADOS,
+        ExactPlatform.VISIONOS,
+    ).contains(getExactPlatform())
+
 expect fun getPlatform(): Platform
 
 expect fun getExactPlatform(): ExactPlatform

@@ -114,12 +114,11 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
-import com.hansholz.bestenotenapp.main.ExactPlatform
 import com.hansholz.bestenotenapp.main.LocalShowAbsences
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
-import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.hansholz.bestenotenapp.main.getPlatform
+import com.hansholz.bestenotenapp.main.isApplePlatform
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.utils.captureAsyncAndSaveOrShare
 import dev.chrisbanes.haze.hazeSource
@@ -412,7 +411,7 @@ fun Timetable(
                                             ) {
                                                 Icon(
                                                     imageVector =
-                                                        if (listOf(ExactPlatform.IOS, ExactPlatform.MACOS).contains(getExactPlatform())) {
+                                                        if (isApplePlatform()) {
                                                             MaterialSymbols.Rounded.Arrow_back_ios_new
                                                         } else {
                                                             MaterialSymbols.Rounded.Arrow_back
@@ -509,7 +508,7 @@ fun Timetable(
                                             ) {
                                                 Icon(
                                                     imageVector =
-                                                        if (listOf(ExactPlatform.IOS, ExactPlatform.MACOS).contains(getExactPlatform())) {
+                                                        if (isApplePlatform()) {
                                                             MaterialSymbols.Rounded.Arrow_forward_ios
                                                         } else {
                                                             MaterialSymbols.Rounded.Arrow_forward
