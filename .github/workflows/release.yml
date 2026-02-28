@@ -67,6 +67,7 @@ jobs:
           [ -f ios-unsigned.ipa ]     && mv ios-unsigned.ipa     "${REPO}-${APP_VERSION}-ios-unsigned.ipa"
           [ -f windows-x64.exe ]      && mv windows-x64.exe      "${REPO}-${APP_VERSION}-windows-x64.exe"
           [ -f windows-arm64.exe ]    && mv windows-arm64.exe    "${REPO}-${APP_VERSION}-windows-arm64.exe"
+          [ -f macos-x64.dmg ]        && mv macos-x64.dmg        "${REPO}-${APP_VERSION}-macos-x64.dmg"
           [ -f macos-arm64.dmg ]      && mv macos-arm64.dmg      "${REPO}-${APP_VERSION}-macos-arm64.dmg"
           [ -f linux-x64.deb ]        && mv linux-x64.deb        "${REPO}-${APP_VERSION}-linux-x64.deb"
           [ -f linux-arm64.deb ]      && mv linux-arm64.deb      "${REPO}-${APP_VERSION}-linux-arm64.deb"

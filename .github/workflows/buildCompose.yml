@@ -34,6 +34,9 @@ on:
       build_windows_arm64:
         type: boolean
         default: true
+      build_macos_x64:
+        type: boolean
+        default: true
       build_macos_arm64:
         type: boolean
         default: true
@@ -227,7 +230,46 @@ jobs:
           name: windows-arm64-exe
           path: artifacts/windows-arm64.exe
 
-  macos:
+  macos-x64:
+    if: ${{ inputs.build_macos_x64 }}
+    runs-on: macos-26-intel
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JetBrains Runtime (JBRSDK)
+        shell: bash
+        run: |
+          set -e
+          BASE="https://cache-redirector.jetbrains.com/intellij-jbr"
+          FILE="jbrsdk-${JBR_VERSION}-osx-x64-${JBR_BUILD}.tar.gz"
+          curl -fsSL "$BASE/$FILE" -o "$RUNNER_TEMP/jbr.tar.gz"
+          mkdir -p "$RUNNER_TEMP/jbr"
+          tar -xzf "$RUNNER_TEMP/jbr.tar.gz" -C "$RUNNER_TEMP/jbr" --strip-components=1
+          echo "JAVA_HOME=$RUNNER_TEMP/jbr/Contents/Home" >> $GITHUB_ENV
+          echo "$RUNNER_TEMP/jbr/Contents/Home/bin" >> $GITHUB_PATH
+          java -version
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+
+      - name: Build DMG (Apple Silicon)
+        run: |
+          set -e
+          ./gradlew :${MODULE_PATH}:createReleaseDmg
+          mkdir -p artifacts
+          DMG=$(find "${MODULE_PATH}/build" -type f -name "*.dmg" | head -n1)
+          cp "$DMG" "artifacts/macos-x64.dmg"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-x64-dmg
+          path: artifacts/*.dmg
+
+  macos-arm64:
     if: ${{ inputs.build_macos_arm64 }}
     runs-on: macos-26
     steps:
