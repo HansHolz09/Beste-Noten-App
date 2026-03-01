@@ -33,7 +33,7 @@ import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
 import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.hansholz.bestenotenapp.navigation.Fragment
 import com.jetbrains.JBR
-import dev.hansholz.advancedmenubar.DefaultMacMenu
+import dev.hansholz.advancedmenubar.DefaultMacMenuBar
 import io.github.kdroidfilter.nucleus.aot.runtime.AotRuntime
 import io.github.kdroidfilter.nucleus.core.runtime.SingleInstanceManager
 import kotlinx.coroutines.delay
@@ -66,7 +66,7 @@ fun main() {
             val scope = rememberCoroutineScope()
             var navController by remember { mutableStateOf<NavController?>(null) }
             val uriHandler = LocalUriHandler.current
-            DefaultMacMenu(
+            DefaultMacMenuBar(
                 onSettingsClick = {
                     scope.launch {
                         navController?.navigate(Fragment.Settings.route)
