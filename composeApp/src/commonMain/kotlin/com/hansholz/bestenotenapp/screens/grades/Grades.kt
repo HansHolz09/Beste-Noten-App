@@ -166,7 +166,7 @@ fun Grades(
     animatedVisibilityScope: AnimatedVisibilityScope,
     isOpened: Boolean = false,
     navigateBack: () -> Unit = {},
-) = kSafeProvider(viewModel.kSafe) {
+) {
     with(sharedTransitionScope) {
         val gradesViewModel = viewModel { GradesViewModel(viewModel) }
 
@@ -376,7 +376,7 @@ fun Grades(
                                                                         val typeNames = gradeAverageCalculator.subjectTypeNames(subjectItems)
                                                                         val subjectWeighting =
                                                                             subjectWeightings[subjectKey] ?: gradeAverageCalculator.loadSubjectWeighting(
-                                                                                kSafe = kSafe,
+                                                                                kSafe = viewModel.kSafe,
                                                                                 subjectKey = subjectKey,
                                                                                 typeNames = typeNames,
                                                                                 useWeightingInsteadOfPercent = gradeAverageUseWeighting,
@@ -943,81 +943,83 @@ fun Grades(
                                                 modifier = Modifier.weight(1f, false),
                                                 verticalArrangement = Arrangement.spacedBy(2.dp),
                                             ) {
-                                                if (!isOpened) {
+                                                kSafeProvider(viewModel.kSafe) {
+                                                    if (!isOpened) {
+                                                        settingsToggleItem(
+                                                            checked = gradeAverageEnabled,
+                                                            onCheckedChange = {
+                                                                gradeAverageEnabled = it
+                                                                put("gradeAverageEnabled", it)
+                                                                if (!it) {
+                                                                    weightingDialogVisible = false
+                                                                }
+                                                            },
+                                                            text = "Durchschnittsberechnung aktiv",
+                                                            icon = MathAvg,
+                                                            textModifier = Modifier.skipToLookaheadSize(),
+                                                            position = PreferencePosition.Top,
+                                                        )
+                                                        settingsToggleItem(
+                                                            checked = gradeAverageUseWeighting,
+                                                            onCheckedChange = {
+                                                                if (gradeAverageUseWeighting != it) {
+                                                                    gradeAverageUseWeighting = it
+                                                                    put("gradeAverageUseWeighting", it)
+                                                                    gradeAverageCalculator.convertStoredSubjectWeightingsMode(
+                                                                        kSafe = kSafe,
+                                                                        useWeightingInsteadOfPercent = it,
+                                                                    )
+                                                                    subjectWeightings.clear()
+                                                                }
+                                                            },
+                                                            text = "Mit Gewichtungen statt Prozenten rechnen",
+                                                            icon = MaterialSymbols.Rounded.Balance,
+                                                            textModifier = Modifier.skipToLookaheadSize(),
+                                                            position = PreferencePosition.Middle,
+                                                        )
+                                                    }
                                                     settingsToggleItem(
-                                                        checked = gradeAverageEnabled,
+                                                        checked = showGradeHistory,
                                                         onCheckedChange = {
-                                                            gradeAverageEnabled = it
-                                                            put("gradeAverageEnabled", it)
-                                                            if (!it) {
-                                                                weightingDialogVisible = false
-                                                            }
+                                                            showGradeHistory = it
+                                                            put("showGradeHistory", it)
                                                         },
-                                                        text = "Durchschnittsberechnung aktiv",
-                                                        icon = MathAvg,
+                                                        text = "Noten-Historien anzeigen",
+                                                        icon = MaterialSymbols.Rounded.History,
                                                         textModifier = Modifier.skipToLookaheadSize(),
-                                                        position = PreferencePosition.Top,
+                                                        position =
+                                                            if (viewModel.isDemoAccount.value) {
+                                                                PreferencePosition.Bottom
+                                                            } else if (isOpened) {
+                                                                PreferencePosition.Single
+                                                            } else {
+                                                                PreferencePosition.Middle
+                                                            },
                                                     )
-                                                    settingsToggleItem(
-                                                        checked = gradeAverageUseWeighting,
-                                                        onCheckedChange = {
-                                                            if (gradeAverageUseWeighting != it) {
-                                                                gradeAverageUseWeighting = it
-                                                                put("gradeAverageUseWeighting", it)
-                                                                gradeAverageCalculator.convertStoredSubjectWeightingsMode(
-                                                                    kSafe = kSafe,
-                                                                    useWeightingInsteadOfPercent = it,
-                                                                )
-                                                                subjectWeightings.clear()
-                                                            }
-                                                        },
-                                                        text = "Mit Gewichtungen statt Prozenten rechnen",
-                                                        icon = MaterialSymbols.Rounded.Balance,
-                                                        textModifier = Modifier.skipToLookaheadSize(),
-                                                        position = PreferencePosition.Middle,
-                                                    )
-                                                }
-                                                settingsToggleItem(
-                                                    checked = showGradeHistory,
-                                                    onCheckedChange = {
-                                                        showGradeHistory = it
-                                                        put("showGradeHistory", it)
-                                                    },
-                                                    text = "Noten-Historien anzeigen",
-                                                    icon = MaterialSymbols.Rounded.History,
-                                                    textModifier = Modifier.skipToLookaheadSize(),
-                                                    position =
-                                                        if (viewModel.isDemoAccount.value) {
-                                                            PreferencePosition.Bottom
-                                                        } else if (isOpened) {
-                                                            PreferencePosition.Single
-                                                        } else {
-                                                            PreferencePosition.Middle
-                                                        },
-                                                )
-                                                if (!viewModel.isDemoAccount.value && !isOpened) {
-                                                    settingsToggleItem(
-                                                        checked = showCollectionsWithoutGrades,
-                                                        onCheckedChange = {
-                                                            showCollectionsWithoutGrades = it
-                                                            put("showCollectionsWithoutGrades", it)
-                                                        },
-                                                        text = "Leistungen ohne Noten anzeigen",
-                                                        icon = MaterialSymbols.Rounded.Disabled_visible,
-                                                        textModifier = Modifier.skipToLookaheadSize(),
-                                                        position = PreferencePosition.Middle,
-                                                    )
-                                                    settingsToggleItem(
-                                                        checked = showTeachersWithFirstname,
-                                                        onCheckedChange = {
-                                                            showTeachersWithFirstname = it
-                                                            put("showTeachersWithFirstname", it)
-                                                        },
-                                                        text = "Lehrer mit Vornamen anzeigen",
-                                                        icon = MaterialSymbols.Rounded.Title,
-                                                        textModifier = Modifier.skipToLookaheadSize(),
-                                                        position = PreferencePosition.Bottom,
-                                                    )
+                                                    if (!viewModel.isDemoAccount.value && !isOpened) {
+                                                        settingsToggleItem(
+                                                            checked = showCollectionsWithoutGrades,
+                                                            onCheckedChange = {
+                                                                showCollectionsWithoutGrades = it
+                                                                put("showCollectionsWithoutGrades", it)
+                                                            },
+                                                            text = "Leistungen ohne Noten anzeigen",
+                                                            icon = MaterialSymbols.Rounded.Disabled_visible,
+                                                            textModifier = Modifier.skipToLookaheadSize(),
+                                                            position = PreferencePosition.Middle,
+                                                        )
+                                                        settingsToggleItem(
+                                                            checked = showTeachersWithFirstname,
+                                                            onCheckedChange = {
+                                                                showTeachersWithFirstname = it
+                                                                put("showTeachersWithFirstname", it)
+                                                            },
+                                                            text = "Lehrer mit Vornamen anzeigen",
+                                                            icon = MaterialSymbols.Rounded.Title,
+                                                            textModifier = Modifier.skipToLookaheadSize(),
+                                                            position = PreferencePosition.Bottom,
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
@@ -1068,7 +1070,7 @@ fun Grades(
             val dialogTypeNames = gradeAverageCalculator.subjectTypeNames(dialogState.subjectCollections)
             val currentWeighting =
                 subjectWeightings[dialogState.subjectKey] ?: gradeAverageCalculator.loadSubjectWeighting(
-                    kSafe = kSafe,
+                    kSafe = viewModel.kSafe,
                     subjectKey = dialogState.subjectKey,
                     typeNames = dialogTypeNames,
                     useWeightingInsteadOfPercent = gradeAverageUseWeighting,
@@ -1090,7 +1092,7 @@ fun Grades(
                 onCategoryWeightChanged = { categoryId, weight ->
                     val latestWeighting =
                         subjectWeightings[dialogState.subjectKey] ?: gradeAverageCalculator.loadSubjectWeighting(
-                            kSafe = kSafe,
+                            kSafe = viewModel.kSafe,
                             subjectKey = dialogState.subjectKey,
                             typeNames = dialogTypeNames,
                             useWeightingInsteadOfPercent = gradeAverageUseWeighting,
@@ -1098,7 +1100,7 @@ fun Grades(
                     val updatedWeighting = latestWeighting.withCategoryWeight(categoryId, weight)
                     subjectWeightings[dialogState.subjectKey] = updatedWeighting
                     gradeAverageCalculator.persistSubjectWeighting(
-                        kSafe = kSafe,
+                        kSafe = viewModel.kSafe,
                         subjectKey = dialogState.subjectKey,
                         weighting = updatedWeighting,
                     )
@@ -1106,7 +1108,7 @@ fun Grades(
                 onTypeCategoryChanged = { typeName, categoryId ->
                     val latestWeighting =
                         subjectWeightings[dialogState.subjectKey] ?: gradeAverageCalculator.loadSubjectWeighting(
-                            kSafe = kSafe,
+                            kSafe = viewModel.kSafe,
                             subjectKey = dialogState.subjectKey,
                             typeNames = dialogTypeNames,
                             useWeightingInsteadOfPercent = gradeAverageUseWeighting,
@@ -1114,7 +1116,7 @@ fun Grades(
                     val updatedWeighting = latestWeighting.withTypeCategory(typeName, categoryId)
                     subjectWeightings[dialogState.subjectKey] = updatedWeighting
                     gradeAverageCalculator.persistSubjectWeighting(
-                        kSafe = kSafe,
+                        kSafe = viewModel.kSafe,
                         subjectKey = dialogState.subjectKey,
                         weighting = updatedWeighting,
                     )
@@ -1122,7 +1124,7 @@ fun Grades(
                 onResetToDefault = {
                     subjectWeightings[dialogState.subjectKey] = gradeAverageCalculator.defaultSubjectWeightingConfig(gradeAverageUseWeighting)
                     gradeAverageCalculator.clearSubjectWeighting(
-                        kSafe = kSafe,
+                        kSafe = viewModel.kSafe,
                         subjectKey = dialogState.subjectKey,
                         typeNames = dialogTypeNames,
                     )
