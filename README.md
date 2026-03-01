@@ -7,27 +7,27 @@ ___
   <h1>Beste-Noten-App</h1>
 </div>
 
-> **_Hintergrund:_** Diese App ist im Rahmen des praktischen Teils meiner Facharbeit über Compose Multiplatform entstanden
-
 Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher und ist eine einfachere, schönere und schnellere Alternative zur offiziellen beste.schule-App.
 
 ### [Zur Web-Version](https://hansholz09.github.io/Beste-Noten-App)
 
-**Native Apps:** [siehe Releases](https://github.com/HansHolz09/Beste-Noten-App/releases) _(außer iOS)_
-> **_Hinweis:_** Die nativen Apps enthalten keine Entwickler-Zertifikate, weshalb wahrscheinlich Warnungen beim Installieren angezeigt werden. 
-> Die iOS/iPadOS Version müssen selber kompiliert und installiert werden ([siehe **Bauen der App**](#bauenstarten-der-app)), da es aktuell noch keinen Weg gibt, 
-> Apps auf diesen Geräten ohne Apple Developer Account zu sideloaden. 
+**Native Apps:** [siehe Releases](https://github.com/HansHolz09/Beste-Noten-App/releases)
+> [!IMPORTANT]  
+> Die für iOS/iPadOS bereitgestellte IPA-Datei ist nicht signiert und kann daher nicht direkt auf diesen Geräten installiert werden.
+> Es wird daher empfohlen, diese Datei mithilfe von Apps wie AltStore oder Sideloadly zu sideloaden.
+> Alternativ kann die App auch komplett neu kompiliert werden ([siehe **Bauen der App**](#bauenstarten-der-app)) und anschließend direkt über XCode auf dem gewünschten Gerät installiert werden.
 
 
 ## Funktionen
 - Login über Private-Access-Token oder direkt über beste.schule
 - Demo-Account zum Ausprobieren der App
-- Startseite mit Tagesübersicht und aktuellen Noten
-- Einfache Notenübersicht mit Möglichkeit zum Ansehen der Noten-Historien
+- Startseite mit Tagesübersicht, aktuellen Noten und dem Jahresfortschritt
+- Einfache Notenübersicht mit Möglichkeit zum Ansehen der Noten-Historien und konfigurierbarer Durchschnittsberechnung
 - Noten-Diagramme zum Vergleich der verschiedenen Schuljahre
-- Übersichtliche Stundenplan-Ansicht mit Vertretungsplan-Änderungen und Abwesenheits-Einträgen
+- Übersichtliche Stundenplan-Ansicht mit Vertretungsplan-Änderungen, Abwesenheits-Einträgen und aktuellen Tagesnotizen
 - Übersicht aktueller Fächer und Lehrer mit ihren Abkürzungen
 - Jahresinformationen zu den Halbjahres-Zeiträumen und Abwesenheits-Statistiken
+- Import/Export von App-Einstellungen und Noten-Gewichtungen sowie der Noten mit Möglichkeit zur späteren Ansicht ohne beste.schule-Account
 - Adaptives Material-3-Expressive-Design auf allen Plattformen
 - Schöne Animationen und Übergänge
 - Immersives haptisches Feedback auf unterstützten Geräten
@@ -79,7 +79,7 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 ## Genutzte Bibliotheken und Plugins
 - [Ktor Client](https://github.com/ktorio/ktor) - Apache 2.0 - Zugriff auf Api von beste.schule
 - [Kotlin Multiplatform OIDC](https://github.com/kalinjul/kotlin-multiplatform-oidc) - Apache 2.0 - OpenID Connect Unterstützung für Authentifizierung über beste.schule
-- [Multiplatform Settings](https://github.com/russhwolf/multiplatform-settings) - Apache 2.0 - Speichern von Einstellungen
+- [KSafe](https://github.com/ioannisa/KSafe) - Apache 2.0 - Speichern von Einstellungen und Anmeldedaten
 - [KoalaPlot Core](https://github.com/koalaplot/koalaplot-core) - MIT - Diagramm-Bibliothek
 - [Jetlime](https://github.com/pushpalroy/Jetlime) - MIT - Timeline-Komponenten für Schulstunden-Übersicht
 - [Haze](https://github.com/chrisbanes/haze) - Apache 2.0 - Hintergrund Unschärfe-Effekte
@@ -90,17 +90,16 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 - [ConfettiKit](https://github.com/vinceglb/confettikit) - MIT - Confetti-Animationen (Easter-Eggs)
 - [Emoji.kt](https://github.com/kosi-libs/Emoji.kt) - Unterstützung für animierte Emojis
 - [Compose Sonner](https://github.com/dokar3/compose-sonner) - Apache 2.0 - Toast-Komponente
+- [AboutLibraries](https://github.com/mikepenz/AboutLibraries) - Apache 2.0 - Komponente zum Anzeigen der genutzten Bibliotheken
 - [Capturable](https://github.com/jmseb3/Capturable) - MIT - Teilen/Speichern von Composables als Bild
+- [FileKit](https://github.com/vinceglb/FileKit) - MIT - Datei-Dialoge für Import/Export
 - [Alarmee](https://github.com/Tweener/alarmee) - Apache 2.0 - Benachrichtigungen für Android und iOS
 - [KMM Permission](https://github.com/reyazoct/Kmm-Permissions) - MIT - Anfragen der Benachrichtigungsberechtigung
 - [multihaptic](https://github.com/xfqwdsj/multihaptic) - MIT - Vielseitig anpassbares haptisches Feedback
-- [AndroidX Security Crypto](https://developer.android.com/jetpack/androidx/releases/security) - Apache 2.0 - Kryptografiebibliothek für Android
-- [AndroidX Biometric](https://developer.android.com/jetpack/androidx/releases/biometric) - Apache 2.0 - Unterstützung für biometrische Authentifizierung unter Android
 - [SmartSpacer SDK](https://github.com/KieronQuinn/Smartspacer) - GPL 3.0 - Integration für SmartSpacer unter Android
-- [Advanced Menubar for Compose Desktop](https://github.com/HansHolz09/Advanced-Menubar) - Apache 2.0 - Deutsche macOS Menubar mit mehr Optionen
+- [Advanced MenuBar for Compose Desktop](https://github.com/HansHolz09/Advanced-MenuBar) - Apache 2.0 - Deutsche macOS Menubar mit mehr Optionen
 - [JBR API](https://github.com/JetBrains/JetBrainsRuntimeApi) - Apache 2.0 - API von JetBrains Runtime für Zugriff auf Native Fenstersteuerelemente
-- [JNA](https://github.com/java-native-access/jna) - Apache 2.0 - Java Native Access für Zugriff auf Native Fenstersteuerelemente
-- [Credential Secure Storage for Java](https://github.com/microsoft/credential-secure-storage-for-java) - MIT - Sichere Tokenspeicherung für JVM
+- [Nucleus](https://github.com/kdroidFilter/Nucleus) - MIT - Erzeugen optimierter App-Installer für die Desktop-Ziele
 - [Ktlint Gradle](https://github.com/JLLeitschuh/ktlint-gradle) - MIT - Wrapper-Plugin für [ktlint](https://github.com/pinterest/ktlint)
 - [gradle-buildconfig-plugin](https://github.com/gmazzo/gradle-buildconfig-plugin) - Apache 2.0 - Automatisches Erzeugen von BuildConfig-Klasse für App-Version
 

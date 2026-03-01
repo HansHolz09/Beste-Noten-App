@@ -7,26 +7,27 @@ ___
   <h1>Beste-Noten-App</h1>
 </div>
 
-> **_Background:_** This app was created as part of the practical component of my specialized paper on Compose Multiplatform.
-
 This cross-platform school app makes everyday school life more organized and is a simpler, more beautiful, and faster alternative to the official beste.schule app.
 
 ### [Web Version](https://hansholz09.github.io/Beste-Noten-App)
 
-**Native Apps:** [see Releases](https://github.com/HansHolz09/Beste-Noten-App/releases) _(except for iOS)_
-> **_Note:_** The native apps are not signed with developer certificates, so you will likely see warnings during installation.
-> The iOS/iPadOS version needs to be compiled and installed manually ([see **Building/Running the App**](#buildingrunning-the-app)), as there is currently no way to sideload apps on these devices without an Apple Developer Account.
+**Native Apps:** [see Releases](https://github.com/HansHolz09/Beste-Noten-App/releases)
+> [!IMPORTANT]  
+> The IPA file provided for iOS/iPadOS is not signed and therefore cannot be installed directly on these devices.
+> It is therefore recommended to sideload this file using apps such as AltStore or Sideloadly.
+> Alternatively, the app can be completely recompiled ([see **Building/Running the App**](#buildingrunning-the-app)) and then installed directly on the desired device via XCode.
 
 
 ## Features
 - Login via private access token or directly through beste.schule
 - Demo account to try out the app
-- Home screen with a daily overview and recent grades
-- Simple grade overview with the option to view grade histories
-- Grade charts to compare different school years
-- Clear timetable view with substitution plan changes and absence entries
+- Home page with daily overview, current grades, and annual progress
+- Simple grade overview with the option to view grade history and configurable average calculation
+- Grade charts for comparing different school years
+- Clear timetable view with substitute teacher schedule changes, absence entries, and current daily notes
 - Overview of current subjects and teachers with their abbreviations
 - Annual information on half-year periods and absence statistics
+- Import/export of app settings and grade weightings as well as grades with the option to view them later without a beste.schule account
 - Adaptive Material 3 Expressive design on all platforms
 - Beautiful animations and transitions
 - Immersive haptic feedback on supported devices
@@ -78,7 +79,7 @@ This cross-platform school app makes everyday school life more organized and is 
 ## Libraries and Plugins Used
 - [Ktor Client](https://github.com/ktorio/ktor) - Apache 2.0 - Access to the beste.schule API
 - [Kotlin Multiplatform OIDC](https://github.com/kalinjul/kotlin-multiplatform-oidc) - Apache 2.0 - OpenID Connect support for authentication via beste.schule
-- [Multiplatform Settings](https://github.com/russhwolf/multiplatform-settings) - Apache 2.0 - Saving settings
+- [KSafe](https://github.com/ioannisa/KSafe) - Apache 2.0 - Saving settings and login details
 - [KoalaPlot Core](https://github.com/koalaplot/koalaplot-core) - MIT - Chart library
 - [Jetlime](https://github.com/pushpalroy/Jetlime) - MIT - Timeline components for class overview
 - [Haze](https://github.com/chrisbanes/haze) - Apache 2.0 - Background blur effects
@@ -89,17 +90,16 @@ This cross-platform school app makes everyday school life more organized and is 
 - [ConfettiKit](https://github.com/vinceglb/confettikit) - MIT - Confetti animations (Easter eggs)
 - [Emoji.kt](https://github.com/kosi-libs/Emoji.kt) - Support for animated emojis
 - [Compose Sonner](https://github.com/dokar3/compose-sonner) - Apache 2.0 - Toast component
+- [AboutLibraries](https://github.com/mikepenz/AboutLibraries) - Apache 2.0 - Component for displaying the libraries used
 - [Capturable](https://github.com/jmseb3/Capturable) - MIT - Share/save Composables as images
+- [FileKit](https://github.com/vinceglb/FileKit) - MIT - File dialogs for import/export
 - [Alarmee](https://github.com/Tweener/alarmee) - Apache 2.0 - Notifications for Android and iOS
 - [KMM Permission](https://github.com/reyazoct/Kmm-Permissions) - MIT - Requesting notification permissions
 - [multihaptic](https://github.com/xfqwdsj/multihaptic) - MIT - Highly customizable haptic feedback
-- [AndroidX Security Crypto](https://developer.android.com/jetpack/androidx/releases/security) - Apache 2.0 - Cryptography library for Android
-- [AndroidX Biometric](https://developer.android.com/jetpack/androidx/releases/biometric) - Apache 2.0 - Support for biometric authentication on Android
 - [SmartSpacer SDK](https://github.com/KieronQuinn/Smartspacer) - GPL 3.0 - Integration for SmartSpacer on Android
-- [Advanced Menubar for Compose Desktop](https://github.com/HansHolz09/Advanced-Menubar) - Apache 2.0 - German macOS menubar with more options
+- [Advanced MenuBar for Compose Desktop](https://github.com/HansHolz09/Advanced-MenuBar) - Apache 2.0 - German macOS menu bar with more options
 - [JBR API](https://github.com/JetBrains/JetBrainsRuntimeApi) - Apache 2.0 - API from JetBrains Runtime for accessing native window controls
-- [JNA](https://github.com/java-native-access/jna) - Apache 2.0 - Java Native Access for accessing native window controls
-- [Credential Secure Storage for Java](https://github.com/microsoft/credential-secure-storage-for-java) - MIT - Secure token storage for JVM
+- [Nucleus](https://github.com/kdroidFilter/Nucleus) - MIT - Create optimized app installers for desktop targets
 - [Ktlint Gradle](https://github.com/JLLeitschuh/ktlint-gradle) - MIT - Wrapper plugin for [ktlint](https://github.com/pinterest/ktlint)
 - [gradle-buildconfig-plugin](https://github.com/gmazzo/gradle-buildconfig-plugin) - Apache 2.0 - Automatic generation of BuildConfig class for app version
 
