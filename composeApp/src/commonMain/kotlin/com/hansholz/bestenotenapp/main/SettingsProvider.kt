@@ -7,8 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import com.hansholz.bestenotenapp.security.kSafe
-import com.hansholz.bestenotenapp.security.kSafeProvider
+import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import dev.chrisbanes.haze.HazeState
 
 internal val LocalBackgroundEnabled = compositionLocalOf { mutableStateOf(false) }
@@ -38,7 +37,7 @@ internal val LocalNavigationDrawerTopPadding = compositionLocalOf<Dp?> { null }
 
 @Composable
 fun SettingsProvider(content: @Composable () -> Unit) =
-    kSafeProvider(remember { kSafe() }) {
+    kSafeProviderCompose {
         val backgroundEnabledState = remember { mutableStateOf(get("backgroundEnabled", true)) }
         val hapticsEnabledState = remember { mutableStateOf(get("hapticsEnabled", listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform()))) }
         val showGreetingsState = remember { mutableStateOf(get("showGreetings", true)) }

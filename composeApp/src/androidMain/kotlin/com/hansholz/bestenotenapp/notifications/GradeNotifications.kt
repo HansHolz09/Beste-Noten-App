@@ -37,7 +37,10 @@ actual object GradeNotifications {
                 activityRef = WeakReference(platformContext)
                 setApplicationContext(platformContext.applicationContext)
             }
-            is Context -> setApplicationContext(platformContext.applicationContext)
+
+            is Context -> {
+                setApplicationContext(platformContext.applicationContext)
+            }
         }
         ensureNotificationServiceInitialized(platformContext ?: applicationContext)
         refreshScheduling()

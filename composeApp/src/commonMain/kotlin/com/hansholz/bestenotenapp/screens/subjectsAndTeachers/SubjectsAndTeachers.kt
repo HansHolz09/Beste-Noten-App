@@ -195,6 +195,7 @@ fun SubjectsAndTeachers(
                                         }
                                     }
                                 }
+
                                 1 -> {
                                     if (viewModel.teachersAndSubjects.isEmpty()) {
                                         EmptyStateMessage(

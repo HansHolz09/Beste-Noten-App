@@ -41,6 +41,7 @@ kotlin {
             compileTaskProvider.get().compilerOptions {
                 freeCompilerArgs.add("-Xexpect-actual-classes")
                 freeCompilerArgs.add("-Xcontext-sensitive-resolution")
+                freeCompilerArgs.add("-Xcontext-parameters")
             }
         }
     }
@@ -320,6 +321,7 @@ nucleus.application {
 }
 
 ktlint {
+    version.set("1.8.0")
     enableExperimentalRules.set(true)
     additionalEditorconfig.set(
         mapOf(

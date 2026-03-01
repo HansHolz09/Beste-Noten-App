@@ -65,7 +65,7 @@ import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getPlatform
-import com.hansholz.bestenotenapp.security.kSafeProvider
+import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import dev.chrisbanes.haze.hazeSource
@@ -80,7 +80,7 @@ fun Login(
     viewModel: ViewModel,
     onNavigateHome: () -> Unit,
     onNavigateToGrades: () -> Unit,
-) = kSafeProvider(viewModel.kSafe) {
+) = kSafeProviderCompose(viewModel.kSafe) {
     val loginViewModel = viewModel { LoginViewModel() }
 
     val scope = viewModel.viewModelScope

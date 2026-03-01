@@ -27,15 +27,14 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationIntervalMinutes
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
-import com.hansholz.bestenotenapp.security.kSafe
-import com.hansholz.bestenotenapp.security.kSafeProvider
+import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.hansholz.bestenotenapp.utils.formateInterval
 import components.dialogs.EnhancedAlertDialog
 import top.ltfan.multihaptic.compose.rememberVibrator
 
 @Composable
 fun NotificationIntervalDialog(settingsViewModel: SettingsViewModel) =
-    kSafeProvider(remember { kSafe() }) {
+    kSafeProviderCompose {
         val vibrator = rememberVibrator()
 
         var notificationIntervalMinutes by LocalGradeNotificationIntervalMinutes.current

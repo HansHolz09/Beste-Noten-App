@@ -15,8 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.hansholz.bestenotenapp.main.AppHazeState
-import com.hansholz.bestenotenapp.security.kSafe
-import com.hansholz.bestenotenapp.security.kSafeProvider
+import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.ktx.animateColorScheme
 import com.materialkolor.rememberDynamicColorScheme
@@ -37,7 +36,7 @@ internal val LocalBlurEnabled = compositionLocalOf { mutableStateOf(false) }
 internal fun AppTheme(
     finalTheme: (ColorScheme) -> Unit = {},
     content: @Composable () -> Unit,
-) = kSafeProvider(remember { kSafe() }) {
+) = kSafeProviderCompose {
     val useSystemIsDark = remember { mutableStateOf(get("useSystemIsDark", true)) }
     val isDark = remember { mutableStateOf(get("isDark", false)) }
     val isDarkState = if (useSystemIsDark.value) isSystemInDarkMode() else isDark.value

@@ -183,6 +183,7 @@ internal fun CheckboxColors.boxColor(
                 ToggleableState.On,
                 ToggleableState.Indeterminate,
                 -> checkedBoxColor
+
                 ToggleableState.Off -> uncheckedBoxColor
             }
         } else {
@@ -213,6 +214,7 @@ private fun CheckboxColors.borderColor(
                 ToggleableState.On,
                 ToggleableState.Indeterminate,
                 -> checkedBorderColor
+
                 ToggleableState.Off -> uncheckedBorderColor
             }
         } else {

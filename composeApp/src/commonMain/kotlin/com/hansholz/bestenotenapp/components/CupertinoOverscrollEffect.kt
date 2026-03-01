@@ -338,24 +338,27 @@ internal class CupertinoOverscrollEffect(
 
     private fun CupertinoOverscrollDirection.combinedWith(other: CupertinoOverscrollDirection): CupertinoOverscrollDirection =
         when (this) {
-            CupertinoOverscrollDirection.UNKNOWN ->
+            CupertinoOverscrollDirection.UNKNOWN -> {
                 when (other) {
                     CupertinoOverscrollDirection.UNKNOWN -> CupertinoOverscrollDirection.UNKNOWN
                     CupertinoOverscrollDirection.VERTICAL -> CupertinoOverscrollDirection.VERTICAL
                     CupertinoOverscrollDirection.HORIZONTAL -> CupertinoOverscrollDirection.HORIZONTAL
                 }
+            }
 
-            CupertinoOverscrollDirection.VERTICAL ->
+            CupertinoOverscrollDirection.VERTICAL -> {
                 when (other) {
                     CupertinoOverscrollDirection.UNKNOWN, CupertinoOverscrollDirection.VERTICAL -> CupertinoOverscrollDirection.VERTICAL
                     CupertinoOverscrollDirection.HORIZONTAL -> CupertinoOverscrollDirection.HORIZONTAL
                 }
+            }
 
-            CupertinoOverscrollDirection.HORIZONTAL ->
+            CupertinoOverscrollDirection.HORIZONTAL -> {
                 when (other) {
                     CupertinoOverscrollDirection.UNKNOWN, CupertinoOverscrollDirection.HORIZONTAL -> CupertinoOverscrollDirection.HORIZONTAL
                     CupertinoOverscrollDirection.VERTICAL -> CupertinoOverscrollDirection.VERTICAL
                 }
+            }
         }
 
     private fun Velocity.toFloat(): Float = toOffset().toFloat()

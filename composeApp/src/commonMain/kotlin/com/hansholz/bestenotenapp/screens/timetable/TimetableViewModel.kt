@@ -34,9 +34,11 @@ class TimetableViewModel(
             DayOfWeek.SATURDAY -> {
                 currentDate.plus(DatePeriod(days = 2))
             }
+
             DayOfWeek.SUNDAY -> {
                 currentDate.plus(DatePeriod(days = 1))
             }
+
             else -> {
                 currentDate
             }

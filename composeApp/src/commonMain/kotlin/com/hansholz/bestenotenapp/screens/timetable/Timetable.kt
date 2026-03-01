@@ -546,6 +546,7 @@ fun Timetable(
                                     }
                                 }
                             }
+
                             1 -> {
                                 Box(
                                     contentAlignment = Alignment.BottomCenter,

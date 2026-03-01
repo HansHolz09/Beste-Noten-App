@@ -19,7 +19,7 @@ import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.screens.biometry.Biometry
 import com.hansholz.bestenotenapp.screens.grades.Grades
 import com.hansholz.bestenotenapp.screens.login.Login
-import com.hansholz.bestenotenapp.security.kSafeProvider
+import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 fun AppNavigation(
     viewModel: ViewModel,
     onNavHostReady: suspend (NavController) -> Unit = {},
-) = kSafeProvider(viewModel.kSafe) {
+) = kSafeProviderCompose(viewModel.kSafe) {
     val scope = rememberCoroutineScope()
     val requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
     val token by secureMutableStateOf("", "authToken")

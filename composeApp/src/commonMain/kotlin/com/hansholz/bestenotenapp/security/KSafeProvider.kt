@@ -1,8 +1,12 @@
 package com.hansholz.bestenotenapp.security
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.remember
 import eu.anifantakis.lib.ksafe.KSafe
 import eu.anifantakis.lib.ksafe.compose.mutableStateOf
 
+@Stable
 class KSafeProvider(
     val kSafe: KSafe,
 ) {
@@ -41,3 +45,9 @@ inline fun <R> kSafeProvider(
     kSafe: KSafe,
     block: KSafeProvider.() -> R,
 ): R = KSafeProvider(kSafe).run(block)
+
+@Composable
+fun <R> kSafeProviderCompose(
+    kSafe: KSafe = remember { kSafe() },
+    content: @Composable KSafeProvider.() -> R,
+): R = remember(kSafe) { KSafeProvider(kSafe) }.content()

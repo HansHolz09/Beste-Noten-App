@@ -404,7 +404,7 @@ object DemoDataGenerator {
             val dayRnd = Random.nextInt(100)
             val dayNotes =
                 when {
-                    dayRnd < 25 ->
+                    dayRnd < 25 -> {
                         listOf(
                             JournalNote(
                                 description =
@@ -418,7 +418,9 @@ object DemoDataGenerator {
                                     ).random(),
                             ),
                         )
-                    dayRnd < 40 ->
+                    }
+
+                    dayRnd < 40 -> {
                         listOf(
                             JournalNote(
                                 description =
@@ -440,7 +442,11 @@ object DemoDataGenerator {
                                     ).random(),
                             ),
                         )
-                    else -> emptyList()
+                    }
+
+                    else -> {
+                        emptyList()
+                    }
                 }
             val lessons =
                 plan.mapIndexed { lessonIndex, subject ->
@@ -469,28 +475,36 @@ object DemoDataGenerator {
                     val rndNote = Random.nextInt(100)
                     val notes =
                         when {
-                            rndNote < 5 ->
+                            rndNote < 5 -> {
                                 listOf(
                                     JournalNote(
                                         description = "Thema des Tests",
                                         type = JournalNoteType(name = "Test", color = "#27F54D"),
                                     ),
                                 )
-                            rndNote < 8 ->
+                            }
+
+                            rndNote < 8 -> {
                                 listOf(
                                     JournalNote(
                                         description = "Thema der Klassenarbeit",
                                         type = JournalNoteType(name = "Klassenarbeit", color = "#F54927"),
                                     ),
                                 )
-                            rndNote < 10 ->
+                            }
+
+                            rndNote < 10 -> {
                                 listOf(
                                     JournalNote(
                                         description = "In dieser Stunde findet irgendein besonderes Ereignis statt",
                                         type = JournalNoteType(name = "Ereignis"),
                                     ),
                                 )
-                            else -> emptyList()
+                            }
+
+                            else -> {
+                                emptyList()
+                            }
                         }
 
                     JournalLesson(
@@ -704,6 +718,7 @@ object DemoDataGenerator {
                     from = "$startDate 00:00:00"
                     to = "$endDate 23:59:59"
                 }
+
                 kindRoll < 70 -> {
                     val dayIndex = startDate.dayOfWeek.isoDayNumber.let { (it - 1).coerceIn(0, 4) }
                     val lessonsPerDay = weekPlan.getOrNull(dayIndex)?.size ?: 6
@@ -715,6 +730,7 @@ object DemoDataGenerator {
                     from = "$startDate $startTime"
                     to = "$startDate $endTime"
                 }
+
                 else -> {
                     val dayIndex = startDate.dayOfWeek.isoDayNumber.let { (it - 1).coerceIn(0, 4) }
                     val lessonsPerDay = weekPlan.getOrNull(dayIndex)?.size ?: 6

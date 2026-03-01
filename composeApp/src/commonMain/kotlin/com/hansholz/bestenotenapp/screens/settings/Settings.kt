@@ -88,7 +88,7 @@ import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.screens.grades.GradeAverageCalculator
-import com.hansholz.bestenotenapp.security.kSafeProvider
+import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalIsDark
@@ -111,7 +111,7 @@ import kotlin.time.ExperimentalTime
 fun Settings(
     viewModel: ViewModel,
     onNavigateToLogin: () -> Unit,
-) = kSafeProvider(viewModel.kSafe) {
+) = kSafeProviderCompose(viewModel.kSafe) {
     val settingsViewModel = viewModel { SettingsViewModel() }
 
     val scope = rememberCoroutineScope()

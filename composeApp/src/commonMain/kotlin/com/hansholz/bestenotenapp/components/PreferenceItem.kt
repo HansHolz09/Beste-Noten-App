@@ -49,20 +49,27 @@ fun PreferenceItem(
 ) {
     val shape =
         when (position) {
-            PreferencePosition.Single -> MaterialTheme.shapes.large
-            PreferencePosition.Top ->
+            PreferencePosition.Single -> {
+                MaterialTheme.shapes.large
+            }
+
+            PreferencePosition.Top -> {
                 MaterialTheme.shapes.large.copy(
                     bottomStart = MaterialTheme.shapes.extraSmall.bottomStart,
                     bottomEnd = MaterialTheme.shapes.extraSmall.bottomEnd,
                 )
+            }
 
-            PreferencePosition.Bottom ->
+            PreferencePosition.Bottom -> {
                 MaterialTheme.shapes.large.copy(
                     topStart = MaterialTheme.shapes.extraSmall.topStart,
                     topEnd = MaterialTheme.shapes.extraSmall.topEnd,
                 )
+            }
 
-            PreferencePosition.Middle -> MaterialTheme.shapes.extraSmall
+            PreferencePosition.Middle -> {
+                MaterialTheme.shapes.extraSmall
+            }
         }
     val animatedEnabled by animateFloatAsState(if (enabled) 1f else 0.5f)
 
@@ -91,21 +98,23 @@ fun PreferenceItem(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             when (icon) {
-                is ImageVector ->
+                is ImageVector -> {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
                         tint = iconTint,
                         modifier = Modifier.size(24.dp),
                     )
+                }
 
-                is Painter ->
+                is Painter -> {
                     Icon(
                         painter = icon,
                         contentDescription = null,
                         tint = iconTint,
                         modifier = Modifier.size(24.dp),
                     )
+                }
 
                 else -> {}
             }

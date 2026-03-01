@@ -52,7 +52,9 @@ fun rememberLazyListScrollSpeedState(state: LazyListState): ScrollSpeedState {
 
                     val deltaPx =
                         when {
-                            curIndex == lastIndex -> (curOffset - lastOffset)
+                            curIndex == lastIndex -> {
+                                (curOffset - lastOffset)
+                            }
 
                             curIndex > lastIndex -> {
                                 val fromLastItem = (lastFirstSize - lastOffset).coerceAtLeast(0)
