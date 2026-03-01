@@ -130,7 +130,6 @@ kotlin {
             implementation(libs.nucleus.aot.runtime)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.ktor.client.apache5)
-            implementation(libs.credential.secure.storage)
             implementation(libs.materialyou)
             implementation(libs.advanced.menubar)
             implementation(libs.jbr.api)
