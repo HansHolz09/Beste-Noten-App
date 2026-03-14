@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: test_assets
           merge-multiple: true
@@ -76,7 +76,7 @@ jobs:
           cd test_assets
           zip -r "../test-build-${GITHUB_SHA}.zip" .
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: test-build-zip
           path: test-build-${{ github.sha }}.zip
