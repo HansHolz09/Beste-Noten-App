@@ -8,7 +8,6 @@ import androidx.fragment.app.FragmentActivity
 import com.hansholz.bestenotenapp.api.androidCodeAuthFlowFactory
 import com.hansholz.bestenotenapp.main.App
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
-import com.hansholz.bestenotenapp.utils.AndroidContext
 import eu.anifantakis.lib.ksafe.BiometricHelper
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.init
@@ -19,7 +18,6 @@ class MainActivity : FragmentActivity() {
         installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        AndroidContext.init(this)
         GradeNotifications.initialize(this)
         PermissionInitiation.setActivity(this)
         FileKit.init(this)

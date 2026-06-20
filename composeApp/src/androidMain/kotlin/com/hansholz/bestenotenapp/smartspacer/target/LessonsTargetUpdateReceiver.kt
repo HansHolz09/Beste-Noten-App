@@ -3,13 +3,12 @@ package com.hansholz.bestenotenapp.smartspacer.target
 import android.annotation.SuppressLint
 import android.content.Context
 import com.hansholz.bestenotenapp.smartspacer.SmartspacerPrefs
-import com.hansholz.bestenotenapp.utils.AndroidContext
 import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerTargetProvider
 import com.kieronquinn.app.smartspacer.sdk.receivers.SmartspacerTargetUpdateReceiver
+import java.time.ZonedDateTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.time.ZonedDateTime
 
 class LessonsTargetUpdateReceiver : SmartspacerTargetUpdateReceiver() {
     @SuppressLint("NewApi")
@@ -17,7 +16,6 @@ class LessonsTargetUpdateReceiver : SmartspacerTargetUpdateReceiver() {
         context: Context,
         requestTargets: List<RequestTarget>,
     ) {
-        AndroidContext.init(context)
         val scope = CoroutineScope(Dispatchers.IO)
         val repo = LessonsTargetRepository()
         val prefs = SmartspacerPrefs
