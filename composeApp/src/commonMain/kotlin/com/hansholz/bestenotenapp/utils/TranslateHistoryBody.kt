@@ -16,6 +16,8 @@ fun translateHistoryBody(body: String): String =
                 it
             }
         }.replace("Created", "Erstellt")
+        .replace("Deleted", "Gelöscht")
+        .replace("Restored", "Wiederhergestellt")
         .replace("Updated Value", "Wert geändert")
         .replace("Updated Tendency", "Tendenz geändert")
         .replace("Updated Given_at", "Wann-Gegeben geändert")
