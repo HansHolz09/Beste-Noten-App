@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
@@ -108,6 +109,7 @@ import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
@@ -611,26 +613,41 @@ fun Timetable(
                                                 }
                                             },
                                         )
-                                        EnhancedButton(
-                                            onClick = {
-                                                scope.launch {
-                                                    timetableViewModel.toolbarState = 0
-                                                    timetableViewModel.contentBlurred = false
-                                                    val selectedDate =
-                                                        Instant
-                                                            .fromEpochMilliseconds(datePickerState.selectedDateMillis!!)
-                                                            .toLocalDateTime(TimeZone.currentSystemDefault())
-                                                            .date
-                                                    timetableViewModel.startPageDate = selectedDate
-                                                    pagerState.scrollToPage(Int.MAX_VALUE / 2)
-                                                    delay(250)
-                                                    if (timetableViewModel.toolbarState == 0) timetableViewModel.userScrollEnabled = true
-                                                }
-                                            },
-                                            enabled = datePickerState.selectedDateMillis != null,
-                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp).align(Alignment.End),
-                                        ) {
-                                            Text("Wählen")
+                                        Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp).align(Alignment.End)) {
+                                            EnhancedOutlinedButton(
+                                                onClick = {
+                                                    scope.launch {
+                                                        timetableViewModel.toolbarState = 0
+                                                        timetableViewModel.contentBlurred = false
+                                                        delay(250)
+                                                        if (timetableViewModel.toolbarState == 0) timetableViewModel.userScrollEnabled = true
+                                                    }
+                                                },
+                                                enabled = datePickerState.selectedDateMillis != null,
+                                            ) {
+                                                Text("Abbrechen")
+                                            }
+                                            Spacer(Modifier.width(8.dp))
+                                            EnhancedButton(
+                                                onClick = {
+                                                    scope.launch {
+                                                        timetableViewModel.toolbarState = 0
+                                                        timetableViewModel.contentBlurred = false
+                                                        val selectedDate =
+                                                            Instant
+                                                                .fromEpochMilliseconds(datePickerState.selectedDateMillis!!)
+                                                                .toLocalDateTime(TimeZone.currentSystemDefault())
+                                                                .date
+                                                        timetableViewModel.startPageDate = selectedDate
+                                                        pagerState.scrollToPage(Int.MAX_VALUE / 2)
+                                                        delay(250)
+                                                        if (timetableViewModel.toolbarState == 0) timetableViewModel.userScrollEnabled = true
+                                                    }
+                                                },
+                                                enabled = datePickerState.selectedDateMillis != null,
+                                            ) {
+                                                Text("Wählen")
+                                            }
                                         }
                                     }
                                 }
