@@ -5,4 +5,7 @@ interface OidcConstants {
     val redirectUrl: String
 }
 
-expect object PlatformOidcConstants : OidcConstants
+expect object PlatformOidcConstants : OidcConstants {
+    override val clientId: String
+    override val redirectUrl: String
+}

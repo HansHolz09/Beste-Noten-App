@@ -1,5 +1,4 @@
 
-import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule.GROUP
 import io.github.kdroidfilter.nucleus.desktop.application.dsl.CompressionLevel
@@ -9,11 +8,10 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.androidKmpLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.nucleus)
@@ -29,7 +27,21 @@ buildConfig {
 }
 
 kotlin {
-    androidTarget {
+    android {
+        namespace = "com.hansholz.bestenotenapp"
+        compileSdk =
+            libs.versions.android.compileSdk
+                .get()
+                .toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
+
+        androidResources {
+            enable = true
+        }
+
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
@@ -136,84 +148,6 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
-    }
-}
-
-android {
-    namespace = "com.hansholz.bestenotenapp"
-    compileSdk =
-        libs.versions.android.compileSdk
-            .get()
-            .toInt()
-
-    val keystorePropsFile = rootProject.file("keystore.properties")
-    val hasKeystore = keystorePropsFile.exists()
-    val keystoreProps =
-        Properties().apply {
-            if (hasKeystore) keystorePropsFile.inputStream().use { load(it) }
-        }
-
-    defaultConfig {
-        applicationId = "com.hansholz.bestenotenapp"
-        minSdk =
-            libs.versions.android.minSdk
-                .get()
-                .toInt()
-        targetSdk =
-            libs.versions.android.targetSdk
-                .get()
-                .toInt()
-        versionCode =
-            libs.versions.appVersionCode
-                .get()
-                .toInt()
-        versionName = libs.versions.appVersion.get()
-
-        addManifestPlaceholders(
-            mapOf("oidcRedirectScheme" to "bestenotenapp://callback"),
-        )
-    }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-    signingConfigs {
-        if (hasKeystore) {
-            create("release") {
-                storeFile = file(keystoreProps["storeFile"]!!.toString())
-                storePassword = keystoreProps["storePassword"]!!.toString()
-                keyAlias = keystoreProps["keyAlias"]!!.toString()
-                keyPassword = keystoreProps["keyPassword"]!!.toString()
-                enableV1Signing = true
-                enableV2Signing = true
-                enableV3Signing = true
-            }
-        }
-    }
-
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles("src/androidMain/proguard-rules.pro")
-            if (hasKeystore) signingConfig = signingConfigs.getByName("release")
-
-            applicationVariants.all {
-                val variant = this
-                variant.outputs
-                    .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
-                    .forEach { output ->
-                        val outputFileName =
-                            "${libs.versions.appName.get()}-${libs.versions.appVersion.get()}-${libs.versions.appVersionCode.get()}.apk"
-                        output.outputFileName = outputFileName
-                    }
-            }
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
@@ -334,8 +268,12 @@ ktlint {
         }
     }
 
-    tasks.named("desktopJar").dependsOn(tasks.ktlintFormat)
-    tasks.preBuild.dependsOn(tasks.ktlintFormat)
+    tasks.named("desktopJar").configure {
+        dependsOn(tasks.ktlintFormat)
+    }
+    tasks.matching { it.name == "preBuild" }.configureEach {
+        dependsOn(tasks.ktlintFormat)
+    }
 }
 
 aboutLibraries {
