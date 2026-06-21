@@ -10,7 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value="composeApp:createReleaseDmg" />
+          <option value="composeApp:packageReleaseDmg" />
         </list>
       </option>
       <option name="vmOptions" />

@@ -285,6 +285,9 @@ nucleus.application {
             minimumSystemVersion =
                 libs.versions.macos.minSdk
                     .get()
+            macOsSdkVersion =
+                libs.versions.macos.targetSdk
+                    .get()
             jvmArgs += "-Dapple.awt.application.appearance=system"
             infoPlist {
                 extraKeysRawXml =
@@ -334,62 +337,6 @@ ktlint {
 
     tasks.named("desktopJar").dependsOn(tasks.ktlintFormat)
     tasks.preBuild.dependsOn(tasks.ktlintFormat)
-}
-
-val patchMacosBinary =
-    tasks.register("patchMacosBinary") {
-        notCompatibleWithConfigurationCache("Caching because of ProcessBuilder disabled")
-        dependsOn("createReleaseDistributable")
-
-        val appName = libs.versions.appName.get()
-        val appFolder = "$appName.app"
-        doLast {
-            val buildDir = layout.buildDirectory.get().asFile
-            val binaryPath = File(buildDir, "compose/binaries/main-release/app/$appFolder/Contents/MacOS/$appName")
-            val appBundlePath = File(buildDir, "compose/binaries/main-release/app/$appFolder")
-            val patchedFile = File(binaryPath.parentFile, "${binaryPath.name}_patched")
-            if (binaryPath.exists()) {
-                try {
-                    val vtoolProcess =
-                        ProcessBuilder(
-                            "vtool",
-                            "-set-build-version",
-                            "macos",
-                            libs.versions.macos.minSdk
-                                .get(),
-                            libs.versions.macos.targetSdk
-                                .get(),
-                            "-output",
-                            patchedFile.absolutePath,
-                            binaryPath.absolutePath,
-                        ).inheritIO().start()
-                    if (vtoolProcess.waitFor() == 0 && patchedFile.exists()) {
-                        binaryPath.delete()
-                        patchedFile.renameTo(binaryPath)
-                        binaryPath.setExecutable(true)
-                        val codesignProcess =
-                            ProcessBuilder(
-                                "codesign",
-                                "--force",
-                                "--deep",
-                                "--sign",
-                                "-",
-                                appBundlePath.absolutePath,
-                            ).inheritIO().start()
-                        codesignProcess.waitFor()
-                    }
-                } catch (e: Exception) {
-                    println("Error patching DMG: ${e.message}")
-                    println("Xcode/vtool should be installed")
-                }
-            }
-        }
-    }
-tasks.register("createReleaseDmg") {
-    group = "packaging"
-    description = "Creates DMG with macOS 26 SDK"
-    dependsOn(patchMacosBinary)
-    finalizedBy("packageReleaseDmg")
 }
 
 aboutLibraries {
