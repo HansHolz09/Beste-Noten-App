@@ -6,14 +6,17 @@ import androidx.compose.ui.window.ComposeUIViewController
 import com.hansholz.bestenotenapp.main.App
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.notifications.ensureIosNotificationsInitialized
+import com.hansholz.bestenotenapp.utils.LegacySafeArea
 import com.hansholz.bestenotenapp.utils.isInWindowMode
 
 fun mainViewController() =
     ComposeUIViewController {
         ensureIosNotificationsInitialized()
-        CompositionLocalProvider(
-            LocalNavigationDrawerTopPadding provides if (isInWindowMode()) 50.dp else null,
-        ) {
-            App()
+        LegacySafeArea {
+            CompositionLocalProvider(
+                LocalNavigationDrawerTopPadding provides if (isInWindowMode()) 50.dp else null,
+            ) {
+                App()
+            }
         }
     }
