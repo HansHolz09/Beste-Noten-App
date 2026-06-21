@@ -32,7 +32,7 @@ fun EnhancedFilterChip(
         selected = selected,
         onClick = {
             onClick()
-            vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+            vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
         },
         label = label,
         modifier = modifier,

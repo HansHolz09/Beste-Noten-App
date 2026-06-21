@@ -19,7 +19,7 @@ import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.ktx.animateColorScheme
 import com.materialkolor.rememberDynamicColorScheme
-import dev.chrisbanes.haze.HazeDefaults
+import dev.chrisbanes.haze.blur.HazeBlurDefaults
 import dev.chrisbanes.haze.hazeSource
 import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
 
@@ -43,7 +43,7 @@ internal fun AppTheme(
     val useCustomColorSchemeState = remember { mutableStateOf(get("useCustomColorScheme", false)) }
     val supportsCustomColorSchemeState = remember { mutableStateOf(false) }
     val animationsEnabledState = remember { mutableStateOf(get("animationsEnabled", true)) }
-    val blurEnabledState = remember { mutableStateOf(get("blurEnabled", HazeDefaults.blurEnabled())) }
+    val blurEnabledState = remember { mutableStateOf(get("blurEnabled", HazeBlurDefaults.blurEnabled())) }
     CompositionLocalProvider(
         LocalUseSystemIsDark provides useSystemIsDark,
         LocalIsDark provides isDark,

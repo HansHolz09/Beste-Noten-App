@@ -96,8 +96,9 @@ import com.hansholz.bestenotenapp.theme.LocalSupportsCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseSystemIsDark
 import com.hansholz.bestenotenapp.utils.formateInterval
-import dev.chrisbanes.haze.HazeDefaults
+import dev.chrisbanes.haze.blur.HazeBlurDefaults
 import dev.chrisbanes.haze.hazeSource
+import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
@@ -239,7 +240,7 @@ fun Settings(
                 icon = MaterialSymbols.Rounded.Animation,
                 position = PreferencePosition.Middle,
             )
-            if (HazeDefaults.blurEnabled()) {
+            if (HazeBlurDefaults.blurEnabled()) {
                 settingsToggleItem(
                     checked = blurEnabled,
                     onCheckedChange = {
@@ -523,7 +524,7 @@ fun Settings(
                     checked = requireBiometricAuthentification,
                     onCheckedChange = {
                         if (it) {
-                            kSafe.verifyBiometricDirect("Bestätige, um die biometrische Authentifizierung beim Start zu aktiven.") { isSuccessful ->
+                            KSafeBiometrics.verifyBiometricDirect("Bestätige, um die biometrische Authentifizierung beim Start zu aktiven.") { isSuccessful ->
                                 if (isSuccessful) {
                                     requireBiometricAuthentification = it
                                     putSecure("requireBiometricAuthentification", it)
@@ -565,7 +566,7 @@ fun Settings(
                                 isDark = appSettings.isDark
                                 useCustomColorScheme = appSettings.useCustomColorScheme
                                 animationsEnabled = appSettings.animationsEnabled
-                                blurEnabled = appSettings.blurEnabled && HazeDefaults.blurEnabled()
+                                blurEnabled = appSettings.blurEnabled && HazeBlurDefaults.blurEnabled()
                                 backgroundEnabled = appSettings.backgroundEnabled
                                 hapticsEnabled = appSettings.hapticsEnabled
                                 showGreetings = appSettings.showGreetings
@@ -588,7 +589,7 @@ fun Settings(
                                 put("isDark", appSettings.isDark)
                                 put("useCustomColorScheme", appSettings.useCustomColorScheme)
                                 put("animationsEnabled", appSettings.animationsEnabled)
-                                put("blurEnabled", appSettings.blurEnabled && HazeDefaults.blurEnabled())
+                                put("blurEnabled", appSettings.blurEnabled && HazeBlurDefaults.blurEnabled())
                                 put("backgroundEnabled", appSettings.backgroundEnabled)
                                 put("hapticsEnabled", appSettings.hapticsEnabled)
                                 put("showGreetings", appSettings.showGreetings)

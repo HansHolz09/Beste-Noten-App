@@ -22,7 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
-import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import components.dialogs.EnhancedAlertDialog
 import top.ltfan.multihaptic.compose.rememberVibrator
 
@@ -63,7 +63,7 @@ fun ChooseStudentDialog(loginViewModel: LoginViewModel) {
                                 .clip(RoundedCornerShape(12.dp))
                                 .clickable {
                                     selectedStudent = student.id.toString()
-                                    vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                                    vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                 }.padding(horizontal = 16.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {

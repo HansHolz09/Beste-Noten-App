@@ -69,6 +69,7 @@ import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import dev.chrisbanes.haze.hazeSource
+import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -295,7 +296,9 @@ fun Login(
                                             .clickable {
                                                 val newValue = !requireBiometricAuthentification
                                                 if (newValue) {
-                                                    kSafe.verifyBiometricDirect("Bestätige, um die biometrische Authentifizierung beim Start zu aktiven.") { isSuccessful ->
+                                                    KSafeBiometrics.verifyBiometricDirect(
+                                                        "Bestätige, um die biometrische Authentifizierung beim Start zu aktiven.",
+                                                    ) { isSuccessful ->
                                                         if (isSuccessful) {
                                                             requireBiometricAuthentification = newValue
                                                             putSecure("requireBiometricAuthentification", newValue)
@@ -325,7 +328,7 @@ fun Login(
                                         checked = requireBiometricAuthentification,
                                         onCheckedChange = {
                                             if (it) {
-                                                kSafe.verifyBiometricDirect("Bestätige, um die biometrische Authentifizierung beim Start zu aktiven.") { isSuccessful ->
+                                                KSafeBiometrics.verifyBiometricDirect("Bestätige, um die biometrische Authentifizierung beim Start zu aktiven.") { isSuccessful ->
                                                     if (isSuccessful) {
                                                         requireBiometricAuthentification = it
                                                         putSecure("requireBiometricAuthentification", it)

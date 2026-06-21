@@ -5,10 +5,10 @@ import android.content.Context
 import com.hansholz.bestenotenapp.smartspacer.SmartspacerPrefs
 import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerTargetProvider
 import com.kieronquinn.app.smartspacer.sdk.receivers.SmartspacerTargetUpdateReceiver
-import java.time.ZonedDateTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.ZonedDateTime
 
 class LessonsTargetUpdateReceiver : SmartspacerTargetUpdateReceiver() {
     @SuppressLint("NewApi")

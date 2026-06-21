@@ -22,7 +22,7 @@ fun rememberEnhancedPagerState(
             .drop(1)
             .distinctUntilChanged()
             .collect {
-                vibrator.enhancedVibrate(EnhancedVibrations.SPIN)
+                vibrator.enhancedVibrateN(EnhancedVibrations.SPIN)
             }
     }
 

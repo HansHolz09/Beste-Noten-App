@@ -45,7 +45,7 @@ internal object GradeNotificationEngine {
             if (!shouldSchedule()) return GradeNotificationOutcome.Success
 
             val studentId = get<String?>("studentId", null) ?: return GradeNotificationOutcome.Success
-            val token = getSecure<String?>("authToken", null) ?: return GradeNotificationOutcome.Success
+            val token = get<String?>("authToken", null) ?: return GradeNotificationOutcome.Success
 
             val httpClient = createHttpClient()
             return try {
@@ -91,7 +91,7 @@ internal object GradeNotificationEngine {
     private fun hasCredentials(): Boolean =
         kSafeProvider(kSafe) {
             val studentId = get<String?>("studentId", null)
-            val token = getSecure<String?>("authToken", null)
+            val token = get<String?>("authToken", null)
             return !studentId.isNullOrBlank() && !token.isNullOrBlank()
         }
 

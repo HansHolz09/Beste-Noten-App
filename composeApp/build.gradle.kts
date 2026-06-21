@@ -41,16 +41,11 @@ kotlin {
             compileTaskProvider.get().compilerOptions {
                 freeCompilerArgs.add("-Xexpect-actual-classes")
                 freeCompilerArgs.add("-Xcontext-sensitive-resolution")
-                freeCompilerArgs.add("-Xcontext-parameters")
             }
         }
     }
 
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64(),
-    ).forEach { iosTarget ->
+    listOf(iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
@@ -94,12 +89,14 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
             implementation(libs.ksafe.compose)
+            implementation(libs.ksafe.biometrics)
             implementation(libs.aboutlibraries.core)
             implementation(libs.aboutlibraries.compose.core)
             implementation(libs.aboutlibraries.compose.m3)
             implementation(libs.koalaplot.core)
             implementation(libs.jetlime)
             implementation(libs.haze)
+            implementation(libs.haze.blur)
             implementation(libs.material.kolor)
             implementation(libs.platformtools.darkmodedetector)
             implementation(libs.multihaptic.compose)
@@ -112,7 +109,6 @@ kotlin {
             implementation(libs.filekit.dialogs)
         }
         androidMain.dependencies {
-            implementation(libs.androidx.animation) // TODO: Remove if CMP 1.10.2 is out
             implementation(libs.androidx.fragment)
             implementation(libs.androidx.core.splashscreen)
             implementation(libs.ktor.client.okhttp)

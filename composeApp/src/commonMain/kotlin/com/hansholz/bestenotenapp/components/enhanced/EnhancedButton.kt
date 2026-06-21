@@ -35,7 +35,7 @@ fun EnhancedButton(
     Button(
         onClick = {
             onClick()
-            vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+            vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
         },
         shapes =
             ButtonShapes(
@@ -72,7 +72,7 @@ fun EnhancedOutlinedButton(
     OutlinedButton(
         onClick = {
             onClick()
-            vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+            vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
         },
         shapes =
             ButtonShapes(

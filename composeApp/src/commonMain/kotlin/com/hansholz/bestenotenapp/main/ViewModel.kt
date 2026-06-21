@@ -35,6 +35,7 @@ import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.hansholz.bestenotenapp.utils.IO
+import com.hansholz.bestenotenapp.utils.defaultFileKitDialogSettings
 import com.hansholz.bestenotenapp.utils.weekOfYear
 import dev.chrisbanes.haze.HazeState
 import io.github.vinceglb.filekit.FileKit
@@ -260,7 +261,7 @@ class ViewModel(
                 val file =
                     FileKit.openFilePicker(
                         type = FileKitType.File("json"),
-                        title = "JSON mit Notendaten wählen",
+                        dialogSettings = defaultFileKitDialogSettings("JSON mit Notendaten wählen"),
                     )
                 file?.let { file ->
                     val data = json.decodeFromString<ExportData>(file.readString())
@@ -598,7 +599,7 @@ class ViewModel(
             try {
                 kSafeProvider(kSafe) {
                     studentId.value = get<String?>("studentId", null)
-                    authToken.value = getSecure<String?>("authToken", null)
+                    authToken.value = get<String?>("authToken", null)
                 }
                 init()
                 GradeNotifications.onLogin()

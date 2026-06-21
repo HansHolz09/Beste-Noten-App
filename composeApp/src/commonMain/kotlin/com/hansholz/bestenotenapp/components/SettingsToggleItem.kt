@@ -13,7 +13,7 @@ import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Close
 import com.composables.icons.materialsymbols.rounded.Done
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
-import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import top.ltfan.multihaptic.compose.rememberVibrator
 
 fun LazyListScope.settingsToggleItem(
@@ -44,7 +44,7 @@ fun LazyListScope.settingsToggleItem(
                 onCheckedChange = {
                     onCheckedChange(it)
                     if (hapticsEnabled) {
-                        vibrator.enhancedVibrate(
+                        vibrator.enhancedVibrateN(
                             if (it) {
                                 EnhancedVibrations.TOGGLE_ON
                             } else {

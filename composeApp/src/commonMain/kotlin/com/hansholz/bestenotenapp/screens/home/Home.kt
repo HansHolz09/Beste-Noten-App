@@ -79,7 +79,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
-import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.repeatingBackground
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalShowCurrentLesson
@@ -214,7 +214,7 @@ fun Home(
                                                             )
                                                     }
                                                     greeting = newGreeting
-                                                    vibrator.enhancedVibrate(EnhancedVibrations.SPIN)
+                                                    vibrator.enhancedVibrateN(EnhancedVibrations.SPIN)
                                                 }
                                         if (animationsEnabled) {
                                             TextWithNotoAnimatedEmoji(
@@ -255,7 +255,7 @@ fun Home(
                                 ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
                                 .clickable {
                                     scope.launch {
-                                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                         makeItemVisibleAndNavigate(
                                             listState = lazyStaggeredGridState,
                                             index = 1,
@@ -359,7 +359,7 @@ fun Home(
                                 ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
                                 .clickable {
                                     scope.launch {
-                                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                         makeItemVisibleAndNavigate(
                                             listState = lazyStaggeredGridState,
                                             index = 2,
@@ -546,7 +546,7 @@ fun Home(
                                 ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
                                 .clickable {
                                     scope.launch {
-                                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                         makeItemVisibleAndNavigate(
                                             listState = lazyStaggeredGridState,
                                             index = 3,
@@ -604,7 +604,7 @@ fun Home(
                                 ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
                                 .clickable {
                                     homeViewModel.isStatsDialogShown = true
-                                    vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                                    vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                 },
                         ) {
                             Column(Modifier.fillMaxWidth()) {

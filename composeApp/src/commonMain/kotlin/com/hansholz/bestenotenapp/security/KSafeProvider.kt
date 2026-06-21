@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import eu.anifantakis.lib.ksafe.KSafe
+import eu.anifantakis.lib.ksafe.KSafeWriteMode
 import eu.anifantakis.lib.ksafe.compose.mutableStateOf
 
 @Stable
@@ -13,32 +14,27 @@ class KSafeProvider(
     inline fun <reified T> get(
         key: String,
         defaultValue: T,
-    ): T = kSafe.getDirect(key, defaultValue, false)
+    ): T = kSafe.getDirect(key, defaultValue)
 
     inline fun <reified T> put(
         key: String,
         value: T,
-    ) = kSafe.putDirect(key, value, false)
-
-    inline fun <reified T> getSecure(
-        key: String,
-        defaultValue: T,
-    ): T = kSafe.getDirect(key, defaultValue)
+    ) = kSafe.putDirect(key, value, KSafeWriteMode.Plain)
 
     inline fun <reified T> putSecure(
         key: String,
         value: T,
-    ) = kSafe.putDirect(key, value)
+    ) = kSafe.putDirect(key, value, KSafeWriteMode.Encrypted())
 
     inline fun <reified T> storedMutableStateOf(
         defaultValue: T,
         key: String? = null,
-    ) = kSafe.mutableStateOf(defaultValue, key, false)
+    ) = kSafe.mutableStateOf(defaultValue, key, KSafeWriteMode.Plain)
 
     inline fun <reified T> secureMutableStateOf(
         defaultValue: T,
         key: String? = null,
-    ) = kSafe.mutableStateOf(defaultValue, key)
+    ) = kSafe.mutableStateOf(defaultValue, key, KSafeWriteMode.Encrypted())
 }
 
 inline fun <R> kSafeProvider(

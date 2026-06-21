@@ -64,7 +64,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
-import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
@@ -196,7 +196,7 @@ fun WeekScheduleView(
                                 shownLessonPopup = if (targetLessonPopupShown) selectedLesson else null,
                             ) { lesson ->
                                 if (enabled) {
-                                    vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                                    vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                     selectedLesson = lesson
                                     selectedDay = currentDate
                                     lessonPopupShown.value = true
@@ -240,7 +240,7 @@ fun WeekScheduleView(
                     Modifier.fillMaxSize().clickable(null, null) {
                         lessonPopupShown.value = false
                         contentBlurred = false
-                        vibrator.enhancedVibrate(EnhancedVibrations.QUICK_FALL)
+                        vibrator.enhancedVibrateN(EnhancedVibrations.QUICK_FALL)
                     },
                 ) {
                     OutlinedCard(
@@ -424,7 +424,7 @@ fun WeekScheduleView(
                                         Modifier
                                             .clickable {
                                                 dialogShown.value = true
-                                                vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                                                vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                             }.skipToLookaheadSize(),
                                     colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f)),
                                 )

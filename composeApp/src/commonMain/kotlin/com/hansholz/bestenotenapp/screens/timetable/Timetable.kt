@@ -112,7 +112,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
-import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.main.LocalShowAbsences
 import com.hansholz.bestenotenapp.main.Platform
@@ -232,12 +232,12 @@ fun Timetable(
                             if (refreshTick != 0 && currentPage == pagerState.currentPage) {
                                 refreshTick = 0
                                 if (timetableViewModel.userScrollEnabled && !lessonPopupShown.value) {
-                                    vibrator.enhancedVibrate(EnhancedVibrations.SPIN)
+                                    vibrator.enhancedVibrateN(EnhancedVibrations.SPIN)
                                     isRefreshLoading = true
                                     delay(1000)
                                     week = viewModel.getJournalWeek(weekDate, false, showAbsences)
                                     isRefreshLoading = false
-                                    vibrator.enhancedVibrate(EnhancedVibrations.QUICK_FALL)
+                                    vibrator.enhancedVibrateN(EnhancedVibrations.QUICK_FALL)
                                 }
                             }
                         }

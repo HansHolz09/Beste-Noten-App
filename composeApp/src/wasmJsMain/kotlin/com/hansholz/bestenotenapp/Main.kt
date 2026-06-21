@@ -14,6 +14,7 @@ import bestenotenapp.composeapp.generated.resources.logo
 import com.hansholz.bestenotenapp.main.App
 import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.theme.FontFamilies
+import eu.anifantakis.lib.ksafe.awaitCacheReady
 import io.ktor.http.Url
 import kotlinx.browser.document
 import kotlinx.browser.window

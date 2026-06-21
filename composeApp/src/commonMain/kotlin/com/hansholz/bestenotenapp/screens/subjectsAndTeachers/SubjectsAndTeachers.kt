@@ -58,7 +58,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
-import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.components.rememberLazyListScrollSpeedState
 import com.hansholz.bestenotenapp.main.LocalShowAllSubjects
@@ -156,7 +156,7 @@ fun SubjectsAndTeachers(
                                                 ) { isAnimated ->
                                                     LaunchedEffect(Unit) {
                                                         if (lazyListState.isScrollInProgress && isAnimated && abs(speedState.pxPerSecond) > 4000) {
-                                                            vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
+                                                            vibrator.enhancedVibrateN(EnhancedVibrations.LOW_TICK)
                                                         }
                                                     }
                                                     ListItem(
@@ -216,7 +216,7 @@ fun SubjectsAndTeachers(
                                                 ) { isAnimated ->
                                                     LaunchedEffect(Unit) {
                                                         if (lazyListState.isScrollInProgress && isAnimated && abs(speedState.pxPerSecond) > 4000) {
-                                                            vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
+                                                            vibrator.enhancedVibrateN(EnhancedVibrations.LOW_TICK)
                                                         }
                                                     }
                                                     ListItem(

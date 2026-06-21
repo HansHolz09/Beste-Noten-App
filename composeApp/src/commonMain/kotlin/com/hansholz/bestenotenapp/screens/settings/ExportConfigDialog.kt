@@ -40,7 +40,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
-import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.utils.formateDate
 import components.dialogs.EnhancedAlertDialog
@@ -121,7 +121,7 @@ fun ExportConfigDialog(
                                     .clip(RoundedCornerShape(12.dp))
                                     .clickable {
                                         appSettings = !appSettings
-                                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                     }.padding(horizontal = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
@@ -144,7 +144,7 @@ fun ExportConfigDialog(
                                     .clip(RoundedCornerShape(12.dp))
                                     .clickable {
                                         gradeWeights = !gradeWeights
-                                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                     }.padding(horizontal = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
@@ -196,7 +196,7 @@ fun ExportConfigDialog(
                                                     } else {
                                                         gradeYears.add(year)
                                                     }
-                                                    vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                                                    vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                                 }.padding(horizontal = 16.dp),
                                             verticalAlignment = Alignment.CenterVertically,
                                         ) {

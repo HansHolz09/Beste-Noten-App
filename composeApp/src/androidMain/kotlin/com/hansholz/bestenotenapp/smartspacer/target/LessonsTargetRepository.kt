@@ -22,7 +22,7 @@ class LessonsTargetRepository {
 
     fun ensureToken(): Boolean =
         kSafeProvider(kSafe) {
-            tokenState.value = getSecure("authToken", null)
+            tokenState.value = get("authToken", null)
             return !tokenState.value.isNullOrEmpty()
         }
 

@@ -37,7 +37,7 @@ fun Vibrator.enhancedVibrate(
     }
 }
 
-fun Vibrator.enhancedVibrate(
+fun Vibrator.enhancedVibrateN(
     vibration: EnhancedVibrations,
     forceVibration: Boolean = false,
 ) {

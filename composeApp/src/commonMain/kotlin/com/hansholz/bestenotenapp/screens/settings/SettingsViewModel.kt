@@ -12,10 +12,11 @@ import com.hansholz.bestenotenapp.data.ExportData
 import com.hansholz.bestenotenapp.screens.grades.GradeAverageCalculator
 import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.hansholz.bestenotenapp.utils.IO
-import dev.chrisbanes.haze.HazeDefaults
+import com.hansholz.bestenotenapp.utils.defaultFileKitDialogSettings
+import com.hansholz.bestenotenapp.utils.saveOrDownloadBytes
+import dev.chrisbanes.haze.blur.HazeBlurDefaults
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitType
-import io.github.vinceglb.filekit.dialogs.deprecated.openFileSaver
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.readString
 import io.ktor.utils.io.core.toByteArray
@@ -58,7 +59,7 @@ class SettingsViewModel : ViewModel() {
                             isDark = get("isDark", false),
                             useCustomColorScheme = get("useCustomColorScheme", false),
                             animationsEnabled = get("animationsEnabled", true),
-                            blurEnabled = get("blurEnabled", HazeDefaults.blurEnabled()),
+                            blurEnabled = get("blurEnabled", HazeBlurDefaults.blurEnabled()),
                             backgroundEnabled = get("backgroundEnabled", true),
                             hapticsEnabled = get("hapticsEnabled", false),
                             showGreetings = get("showGreetings", true),
@@ -115,8 +116,7 @@ class SettingsViewModel : ViewModel() {
                         gradeWeights = gradeWeightsData,
                         gradeYears = gradeYearsData,
                     )
-                @Suppress("DEPRECATION")
-                FileKit.openFileSaver(
+                FileKit.saveOrDownloadBytes(
                     bytes = json.encodeToString(exportDate).toByteArray(),
                     suggestedName = "BNA_Export_vom_$date",
                     extension = "json",
@@ -141,7 +141,7 @@ class SettingsViewModel : ViewModel() {
             val file =
                 FileKit.openFilePicker(
                     type = FileKitType.File("json"),
-                    title = "JSON mit Einstellungen oder Gewichtungen wählen",
+                    dialogSettings = defaultFileKitDialogSettings("JSON mit Einstellungen oder Gewichtungen wählen"),
                 )
             file?.let { file ->
                 val data = json.decodeFromString<ExportData>(file.readString())

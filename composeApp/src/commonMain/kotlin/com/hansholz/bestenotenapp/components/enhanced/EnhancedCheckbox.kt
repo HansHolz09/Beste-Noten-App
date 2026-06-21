@@ -62,7 +62,7 @@ fun EnhancedCheckbox(
                     onClick = {
                         val newState = !checked
                         onCheckedChange(newState)
-                        vibrator.enhancedVibrate(
+                        vibrator.enhancedVibrateN(
                             if (newState) {
                                 EnhancedVibrations.TOGGLE_ON
                             } else {

@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.hansholz.bestenotenapp.components.ConfettiPresets
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
-import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import io.github.vinceglb.confettikit.compose.ConfettiKit
 import top.ltfan.multihaptic.compose.rememberVibrator
 
@@ -17,7 +17,7 @@ fun ConfettiEasterEgg(settingsViewModel: SettingsViewModel) {
             modifier = Modifier.fillMaxSize(),
             parties = ConfettiPresets.randomFirework(20),
             onParticleSystemStarted = { _, _ ->
-                vibrator.enhancedVibrate(EnhancedVibrations.EXPLOSION)
+                vibrator.enhancedVibrateN(EnhancedVibrations.EXPLOSION)
             },
             onParticleSystemEnded = { _, activeSystems ->
                 if (activeSystems == 0) settingsViewModel.showConfetti = false

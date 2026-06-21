@@ -55,7 +55,7 @@ fun SettingsProvider(content: @Composable () -> Unit) =
         val gradeNotificationsEnabledState = remember { mutableStateOf(get("gradeNotificationsEnabled", false)) }
         val gradeNotificationIntervalState = remember { mutableStateOf(get("gradeNotificationsIntervalMinutes", 60L)) }
         val gradeNotificationsWifiOnlyState = remember { mutableStateOf(get("gradeNotificationsWifiOnly", false)) }
-        val requireBiometricAuthentificationState = remember { mutableStateOf(getSecure("requireBiometricAuthentification", false)) }
+        val requireBiometricAuthentificationState = remember { mutableStateOf(get("requireBiometricAuthentification", false)) }
         CompositionLocalProvider(
             LocalBackgroundEnabled provides backgroundEnabledState,
             LocalHapticsEnabled provides hapticsEnabledState,

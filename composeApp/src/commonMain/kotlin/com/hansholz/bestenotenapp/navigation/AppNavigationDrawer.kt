@@ -44,7 +44,7 @@ import com.hansholz.bestenotenapp.components.NavigationDrawer
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
-import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.theme.FontFamilies
@@ -99,7 +99,7 @@ fun AppNavigationDrawer(
                                 .clickable(null, null) {
                                     if (!showConfetti) {
                                         showConfetti = true
-                                        vibrator.enhancedVibrate(EnhancedVibrations.LOGO_RAIN)
+                                        vibrator.enhancedVibrateN(EnhancedVibrations.LOGO_RAIN)
                                     }
                                 },
                         color = colorScheme.onSurface,
@@ -122,7 +122,7 @@ fun AppNavigationDrawer(
                                 .clickable(null, null) {
                                     if (!showConfetti) {
                                         showConfetti = true
-                                        vibrator.enhancedVibrate(EnhancedVibrations.LOGO_RAIN)
+                                        vibrator.enhancedVibrateN(EnhancedVibrations.LOGO_RAIN)
                                     }
                                 },
                         color = colorScheme.onSurface,
@@ -148,7 +148,7 @@ fun AppNavigationDrawer(
                                     navController.navigate(screen.route)
                                     if (windowWithSizeClass == WindowWidthSizeClass.COMPACT) viewModel.closeOrOpenDrawer(windowWithSizeClass)
                                 }
-                                vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                                vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                             },
                             modifier =
                                 Modifier.padding(10.dp).then(
@@ -179,7 +179,7 @@ fun AppNavigationDrawer(
                                 navController.navigate(Fragment.Settings.route)
                                 if (windowWithSizeClass == WindowWidthSizeClass.COMPACT) viewModel.closeOrOpenDrawer(windowWithSizeClass)
                             }
-                            vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                            vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                         },
                         modifier =
                             Modifier.padding(10.dp).then(

@@ -42,7 +42,7 @@ import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.toOffset
 import androidx.compose.ui.unit.toSize
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
-import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
@@ -153,7 +153,7 @@ internal class CupertinoOverscrollEffect(
         get() = overscrollOffsetState.value
         set(value) {
             if (overscrollOffsetState.value == Offset.Zero && value != Offset.Zero && lastFlingUnconsumedDelta != Offset.Zero) {
-                vibrator.enhancedVibrate(EnhancedVibrations.THUD)
+                vibrator.enhancedVibrateN(EnhancedVibrations.THUD)
             }
             overscrollOffsetState.value = value
             drawCallScheduledByOffsetChange = true

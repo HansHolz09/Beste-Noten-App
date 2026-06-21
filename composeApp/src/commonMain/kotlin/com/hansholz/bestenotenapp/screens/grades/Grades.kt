@@ -340,7 +340,6 @@ fun Grades(
                                                             GradeValueBox(it.grades?.getOrNull(0)?.value)
                                                         },
                                                         colors = ListItemDefaults.colors(Color.Transparent),
-                                                        modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2),
                                                     )
                                                 }
                                             }

@@ -22,7 +22,7 @@ import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Article
 import com.hansholz.bestenotenapp.api.models.JournalNote
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
-import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.main.LocalShowNotes
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
@@ -72,7 +72,7 @@ fun DayHeader(
             Modifier
                 .padding(vertical = 8.dp)
                 .clickable(null, null, !notes.isNullOrEmpty()) {
-                    vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                    vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                     isNotesDialogShown.value = true
                 },
         horizontalAlignment = Alignment.CenterHorizontally,

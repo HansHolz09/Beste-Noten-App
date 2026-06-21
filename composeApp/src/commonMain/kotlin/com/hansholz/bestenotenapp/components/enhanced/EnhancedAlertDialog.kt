@@ -53,7 +53,7 @@ import com.hansholz.bestenotenapp.components.clippedShadow
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
-import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.main.AppHazeState
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
@@ -175,7 +175,7 @@ fun BasicEnhancedAlertDialog(
                                 .pointerInput(Unit) {
                                     detectTapGestures {
                                         onDismissRequest.invoke()
-                                        vibrator.enhancedVibrate(EnhancedVibrations.QUICK_FALL)
+                                        vibrator.enhancedVibrateN(EnhancedVibrations.QUICK_FALL)
                                     }
                                 }.enhancedHazeEffect(AppHazeState.current.value, MaterialTheme.colorScheme.scrim, fallbackAlpha = alpha)
                                 .fillMaxSize(),

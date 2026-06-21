@@ -3,6 +3,9 @@
 # Keep Ktor classes
 -keep class io.ktor.** { *; }
 
+# Corountines
+-keep,allowobfuscation class kotlinx.coroutines.Job { *; }
+
 # Keep necessary attributes
 -keepattributes InnerClasses
 

@@ -29,7 +29,7 @@ fun EnhancedIconButton(
         onClick = {
             onClick()
             if (hapticEnabled) {
-                vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
             }
         },
         shapes =
