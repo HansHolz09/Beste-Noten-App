@@ -92,10 +92,10 @@ jobs:
       - name: Build universal APK
         run: |
           set -e
-          ./gradlew :${MODULE_PATH}:packageReleaseUniversalApk || ./gradlew :${MODULE_PATH}:assembleRelease
+          ./gradlew :androidApp:packageReleaseUniversalApk || ./gradlew :androidApp:assembleRelease
           mkdir -p artifacts
-          APK=$(find "${MODULE_PATH}/build" -type f -iname "*universal*.apk" | head -n1)
-          if [ -z "$APK" ]; then APK=$(find "${MODULE_PATH}/build" -type f -iname "*release*.apk" | head -n1); fi
+          APK=$(find "androidApp/build" -type f -iname "*universal*.apk" | head -n1)
+          if [ -z "$APK" ]; then APK=$(find "androidApp/build" -type f -iname "*release*.apk" | head -n1); fi
           cp "$APK" artifacts/android-universal.apk
 
       - uses: actions/upload-artifact@v7
@@ -267,7 +267,7 @@ jobs:
       - name: Build DMG (Apple Silicon)
         run: |
           set -e
-          ./gradlew :${MODULE_PATH}:createReleaseDmg
+          ./gradlew :${MODULE_PATH}:packageReleaseDmg
           mkdir -p artifacts
           DMG=$(find "${MODULE_PATH}/build" -type f -name "*.dmg" | head -n1)
           cp "$DMG" "artifacts/macos-x64.dmg"
@@ -306,7 +306,7 @@ jobs:
       - name: Build DMG (Apple Silicon)
         run: |
           set -e
-          ./gradlew :${MODULE_PATH}:createReleaseDmg
+          ./gradlew :${MODULE_PATH}:packageReleaseDmg
           mkdir -p artifacts
           DMG=$(find "${MODULE_PATH}/build" -type f -name "*.dmg" | head -n1)
           cp "$DMG" "artifacts/macos-arm64.dmg"
