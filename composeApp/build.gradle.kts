@@ -112,7 +112,6 @@ kotlin {
             implementation(libs.androidx.fragment)
             implementation(libs.androidx.core.splashscreen)
             implementation(libs.ktor.client.okhttp)
-            implementation(libs.smartspacer.sdk)
             implementation(libs.permission)
             implementation(libs.alarmee)
         }

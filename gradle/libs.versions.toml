@@ -37,7 +37,6 @@ navigationCompose = "2.9.2"
 materialKolor = "4.1.1"
 #noinspection NewerVersionAvailable
 oidc = "0.15.3"
-smartspacer-sdk = "1.1"
 sonner = "0.3.9"
 
 # App configurations
@@ -103,7 +102,6 @@ navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-co
 runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
 ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
 ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "composeMultiplatform" }
-smartspacer-sdk = { module = "com.kieronquinn.smartspacer:sdk-plugin", version.ref = "smartspacer-sdk" }
 sonner = { module = "io.github.dokar3:sonner", version.ref = "sonner" }
 
 [plugins]

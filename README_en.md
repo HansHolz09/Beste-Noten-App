@@ -35,7 +35,6 @@ This cross-platform school app makes everyday school life more organized and is 
 - Optional biometric authentication on every app launch for Android and iOS
 - Some customization options
 - Integration of native window controls (except on Linux)
-- [Smartspacer](https://github.com/KieronQuinn/Smartspacer) integration for Android
 - and more...
 
 
@@ -96,7 +95,6 @@ This cross-platform school app makes everyday school life more organized and is 
 - [Alarmee](https://github.com/Tweener/alarmee) - Apache 2.0 - Notifications for Android and iOS
 - [KMM Permission](https://github.com/reyazoct/Kmm-Permissions) - MIT - Requesting notification permissions
 - [multihaptic](https://github.com/xfqwdsj/multihaptic) - MIT - Highly customizable haptic feedback
-- [SmartSpacer SDK](https://github.com/KieronQuinn/Smartspacer) - GPL 3.0 - Integration for SmartSpacer on Android
 - [Advanced MenuBar for Compose Desktop](https://github.com/HansHolz09/Advanced-MenuBar) - Apache 2.0 - German macOS menu bar with more options
 - [JBR API](https://github.com/JetBrains/JetBrainsRuntimeApi) - Apache 2.0 - API from JetBrains Runtime for accessing native window controls
 - [Nucleus](https://github.com/kdroidFilter/Nucleus) - MIT - Create optimized app installers for desktop targets

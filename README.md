@@ -35,7 +35,6 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 - Optionale biometrische Authentifizierung bei jedem Start der App auf Android und iOS
 - Einige Anpassungsmöglichkeiten
 - Integration nativer Fenstersteuerelemente (außer unter Linux)
-- [Smartspacer](https://github.com/KieronQuinn/Smartspacer)-Integration für Android
 - und mehr...
 
 
@@ -96,7 +95,6 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 - [Alarmee](https://github.com/Tweener/alarmee) - Apache 2.0 - Benachrichtigungen für Android und iOS
 - [KMM Permission](https://github.com/reyazoct/Kmm-Permissions) - MIT - Anfragen der Benachrichtigungsberechtigung
 - [multihaptic](https://github.com/xfqwdsj/multihaptic) - MIT - Vielseitig anpassbares haptisches Feedback
-- [SmartSpacer SDK](https://github.com/KieronQuinn/Smartspacer) - GPL 3.0 - Integration für SmartSpacer unter Android
 - [Advanced MenuBar for Compose Desktop](https://github.com/HansHolz09/Advanced-MenuBar) - Apache 2.0 - Deutsche macOS Menubar mit mehr Optionen
 - [JBR API](https://github.com/JetBrains/JetBrainsRuntimeApi) - Apache 2.0 - API von JetBrains Runtime für Zugriff auf Native Fenstersteuerelemente
 - [Nucleus](https://github.com/kdroidFilter/Nucleus) - MIT - Erzeugen optimierter App-Installer für die Desktop-Ziele
