@@ -1,17 +1,18 @@
 package com.hansholz.bestenotenapp.screens.timetable
 
-import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.SizeTransform
-import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.SeekableTransitionState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -40,20 +41,21 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.PredictiveBackHandler
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Close
@@ -71,7 +73,8 @@ import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.utils.SimpleTime
 import com.hansholz.bestenotenapp.utils.formateDate
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
@@ -99,7 +102,6 @@ fun WeekScheduleView(
     enabled: Boolean = true,
     captureOnly: Boolean = false,
 ) {
-    val scope = rememberCoroutineScope()
     val vibrator = rememberVibrator()
     val isDark = LocalThemeIsDark.current
     val blurEnabled = LocalBlurEnabled.current
@@ -138,33 +140,110 @@ fun WeekScheduleView(
         )
     }
 
-    var contentBlurred by remember { mutableStateOf(false) }
-    val contentBlurRadius = animateDpAsState(if (contentBlurred) 10.dp else 0.dp, tween(300, 50, CubicBezierEasing(0.0f, 0.0f, 1.0f, 1.0f)))
+    val popupVisible = lessonPopupShown.value && selectedLesson != null
+    val popupVisibilityState =
+        remember {
+            SeekableTransitionState(false)
+        }
+    val popupTransition = rememberTransition(popupVisibilityState, label = "TimetableLessonPopup")
+    var isBackInProgress by remember { mutableStateOf(false) }
+    var backProgress by remember { mutableFloatStateOf(0f) }
+    LaunchedEffect(popupVisible, isBackInProgress) {
+        if (!isBackInProgress) {
+            popupVisibilityState.animateTo(popupVisible)
+        }
+    }
+    val popupBoundsTransform =
+        remember {
+            BoundsTransform { _, _ ->
+                spring(
+                    dampingRatio = Spring.DampingRatioLowBouncy,
+                    stiffness = Spring.StiffnessMediumLow,
+                )
+            }
+        }
+    val animatedScheduleScale by animateFloatAsState(
+        targetValue = if (popupVisible) 0.985f else 1f,
+        animationSpec =
+            spring(
+                dampingRatio = Spring.DampingRatioNoBouncy,
+                stiffness = Spring.StiffnessMediumLow,
+            ),
+        label = "TimetablePopupContentScale",
+    )
+    val effectiveScheduleScale =
+        if (isBackInProgress) {
+            0.985f + ((1f - 0.985f) * backProgress)
+        } else {
+            animatedScheduleScale
+        }
+
+    @Suppress("DEPRECATION")
+    PredictiveBackHandler(enabled = isCurrentPage && popupVisible) { progressFlow ->
+        var receivedProgress = false
+        try {
+            popupVisibilityState.snapTo(true)
+            progressFlow.collect { event ->
+                if (!receivedProgress) {
+                    receivedProgress = true
+                    isBackInProgress = true
+                    backProgress = 0f
+                    popupVisibilityState.seekTo(0f, false)
+                }
+                backProgress = event.progress.coerceIn(0f, 1f) * 0.2f
+                popupVisibilityState.seekTo(backProgress, false)
+            }
+
+            if (receivedProgress) {
+                backProgress = 1f
+                popupVisibilityState.seekTo(1f, false)
+                lessonPopupShown.value = false
+                popupVisibilityState.snapTo(false)
+            } else {
+                lessonPopupShown.value = false
+            }
+            isBackInProgress = false
+            backProgress = 0f
+        } catch (_: CancellationException) {
+            withContext(NonCancellable) {
+                val initialBackProgress = backProgress
+                val rollbackDurationNanos = 160_000_000L
+                var startTimeNanos: Long? = null
+                do {
+                    val frameTimeNanos = withFrameNanos { it }
+                    val startTime = startTimeNanos ?: frameTimeNanos.also { startTimeNanos = it }
+                    val fraction = ((frameTimeNanos - startTime).toFloat() / rollbackDurationNanos).coerceIn(0f, 1f)
+                    val easedFraction = 1f - ((1f - fraction) * (1f - fraction))
+                    val rollbackProgress = initialBackProgress * (1f - easedFraction)
+                    backProgress = rollbackProgress
+                    popupVisibilityState.seekTo(rollbackProgress, false)
+                } while (fraction < 1f)
+                popupVisibilityState.snapTo(true)
+            }
+            isBackInProgress = false
+            backProgress = 0f
+        }
+    }
 
     SharedTransitionLayout(
         modifier = Modifier,
     ) {
-        AnimatedContent(
-            targetState = lessonPopupShown.value,
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
-            transitionSpec = {
-                fadeIn(animationSpec = tween(500)) togetherWith
-                    fadeOut(animationSpec = tween(500)) using
-                    SizeTransform(
-                        clip = false,
-                        sizeAnimationSpec = { _, _ ->
-                            spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
-                        },
-                    )
-            },
-        ) { targetLessonPopupShown ->
+        Box(Modifier.fillMaxSize()) {
             Row(
                 modifier =
                     Modifier
                         .fillMaxHeight()
-                        .enhancedHazeEffect(blurRadius = contentBlurRadius.value)
-                        .padding(contentPadding)
+                        .enhancedHazeEffect(
+                            blurRadius =
+                                animateDpAsState(
+                                    targetValue = if (popupVisible) 10.dp else 0.dp,
+                                    animationSpec = tween(if (popupVisible) 180 else 140),
+                                    label = "TimetablePopupBlurRadius",
+                                ).value,
+                        ).graphicsLayer {
+                            scaleX = effectiveScheduleScale
+                            scaleY = effectiveScheduleScale
+                        }.padding(contentPadding)
                         .then(modifier),
             ) {
                 week.days.forEachIndexed { dayIndex, day ->
@@ -191,61 +270,46 @@ fun WeekScheduleView(
                                 minTime = minTimeHour ?: SimpleTime.parse("7:00"),
                                 maxTime = latestLessonEnd ?: SimpleTime.parse("18:00"),
                                 sharedTransitionScope = this@SharedTransitionLayout,
-                                animatedContentScope = this@AnimatedContent,
                                 selectedLesson = selectedLesson,
-                                shownLessonPopup = if (targetLessonPopupShown) selectedLesson else null,
+                                popupTransition = popupTransition,
+                                popupBoundsTransform = popupBoundsTransform,
                             ) { lesson ->
                                 if (enabled) {
                                     vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                     selectedLesson = lesson
                                     selectedDay = currentDate
                                     lessonPopupShown.value = true
-                                    contentBlurred = true
                                 }
                             }
                         }
                     }
                 }
             }
-            if (targetLessonPopupShown) {
-                var backProgress by remember { mutableFloatStateOf(0f) }
-                var isBackInProgress by remember { mutableStateOf(false) }
-                @Suppress("DEPRECATION")
-                PredictiveBackHandler(isCurrentPage) { progressFlow ->
-                    try {
-                        isBackInProgress = true
 
-                        progressFlow.collect { event ->
-                            backProgress = event.progress
-                        }
-
-                        scope.launch {
-                            lessonPopupShown.value = false
-                            contentBlurred = false
-                            isBackInProgress = false
-                            backProgress = 0f
-                        }
-                    } catch (_: CancellationException) {
-                        isBackInProgress = false
-                        backProgress = 0f
-                    }
-                }
-                val backHandlingModifier =
-                    if (isBackInProgress) {
-                        Modifier.scale(1f - (backProgress * 0.2f))
-                    } else {
-                        Modifier
-                    }
+            popupTransition.AnimatedVisibility(
+                visible = { it },
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .then(
+                            if (lessonPopupShown.value) {
+                                Modifier.clickable(null, null) {
+                                    lessonPopupShown.value = false
+                                    vibrator.enhancedVibrateN(EnhancedVibrations.QUICK_FALL)
+                                }
+                            } else {
+                                Modifier
+                            },
+                        ),
+                enter = fadeIn(animationSpec = tween(120)),
+                exit = fadeOut(animationSpec = tween(100)),
+            ) {
                 Box(
-                    Modifier.fillMaxSize().clickable(null, null) {
-                        lessonPopupShown.value = false
-                        contentBlurred = false
-                        vibrator.enhancedVibrateN(EnhancedVibrations.QUICK_FALL)
-                    },
+                    Modifier.fillMaxSize(),
                 ) {
                     OutlinedCard(
                         modifier =
-                            backHandlingModifier
+                            Modifier
                                 .verticalScroll(rememberScrollState())
                                 .widthIn(max = 350.dp)
                                 .align(Alignment.Center)
@@ -254,10 +318,8 @@ fun WeekScheduleView(
                                 .enhancedSharedBounds(
                                     sharedTransitionScope = this@SharedTransitionLayout,
                                     sharedContentState = rememberSharedContentState(selectedLesson ?: ""),
-                                    animatedVisibilityScope = this@AnimatedContent,
-                                    boundsTransform = { _, _ ->
-                                        spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
-                                    },
+                                    animatedVisibilityScope = this@AnimatedVisibility,
+                                    boundsTransform = popupBoundsTransform,
                                 ).clickable(null, null) {},
                         shape = RoundedCornerShape(24.dp),
                         colors =
@@ -269,7 +331,7 @@ fun WeekScheduleView(
                                         "initial" -> if (isDark) Color.DarkGray else Color.LightGray
                                         "planned" -> if (isDark) Color(38, 63, 168) else Color(160, 182, 238)
                                         else -> colorScheme.surface
-                                    }.copy(if (blurEnabled.value) 0.7f else 1f),
+                                    }.copy(if (blurEnabled.value) 0.9f else 1f),
                             ),
                         border = BorderStroke(2.dp, colorScheme.outline),
                     ) {
@@ -277,7 +339,6 @@ fun WeekScheduleView(
                             EnhancedIconButton(
                                 onClick = {
                                     lessonPopupShown.value = false
-                                    contentBlurred = false
                                 },
                                 modifier = Modifier.padding(start = 2.dp, top = 2.dp),
                                 isExpressive = false,

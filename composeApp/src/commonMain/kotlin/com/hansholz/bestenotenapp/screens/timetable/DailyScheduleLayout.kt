@@ -1,10 +1,12 @@
 package com.hansholz.bestenotenapp.screens.timetable
 
-import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.BoundsTransform
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Transition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
@@ -45,9 +47,9 @@ fun DailyScheduleLayout(
     minTime: SimpleTime,
     maxTime: SimpleTime,
     sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
     selectedLesson: JournalLesson?,
-    shownLessonPopup: JournalLesson?,
+    popupTransition: Transition<Boolean>,
+    popupBoundsTransform: BoundsTransform,
     onLessonPopupOpened: (JournalLesson) -> Unit,
 ) {
     val sortedLessons =
@@ -69,7 +71,11 @@ fun DailyScheduleLayout(
                 val isDark = LocalThemeIsDark.current
                 sortedLessons.forEach { lesson ->
                     Box {
-                        if (shownLessonPopup != lesson) {
+                        popupTransition.AnimatedVisibility(
+                            visible = { popupShown -> selectedLesson != lesson || !popupShown },
+                            enter = EnterTransition.None,
+                            exit = ExitTransition.None,
+                        ) {
                             OutlinedCard(
                                 onClick = {
                                     onLessonPopupOpened(lesson)
@@ -81,12 +87,10 @@ fun DailyScheduleLayout(
                                         .enhancedSharedBounds(
                                             sharedTransitionScope = sharedTransitionScope,
                                             sharedContentState = rememberSharedContentState(lesson),
-                                            animatedVisibilityScope = animatedContentScope,
+                                            animatedVisibilityScope = this@AnimatedVisibility,
                                             enter = fadeIn(initialAlpha = if (selectedLesson == lesson) 0f else 1f),
                                             exit = fadeOut(targetAlpha = if (selectedLesson == lesson) 0f else 1f),
-                                            boundsTransform = { _, _ ->
-                                                spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
-                                            },
+                                            boundsTransform = popupBoundsTransform,
                                             resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
                                             renderInOverlayDuringTransition = selectedLesson == lesson,
                                         ),
@@ -122,7 +126,7 @@ fun DailyScheduleLayout(
                                     modifier = Modifier.fillMaxSize(),
                                     contentAlignment = Alignment.Center,
                                 ) {
-                                    val flip = (maxWidth.value * 1.5f) <= maxHeight.value
+                                    val flip = ((maxWidth.value * 1.5f) <= maxHeight.value) && lesson.subject?.localId != null
                                     Text(
                                         text = lesson.subject?.localId ?: "?",
                                         modifier =
