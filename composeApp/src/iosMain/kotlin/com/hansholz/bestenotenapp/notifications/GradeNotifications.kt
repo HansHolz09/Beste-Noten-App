@@ -148,7 +148,7 @@ actual object GradeNotifications {
             val monitor = nw_path_monitor_create()
             val queue: dispatch_queue_t = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND.toLong(), 0uL)
             nw_path_monitor_set_queue(monitor, queue)
-            nw_path_monitor_set_update_handler(monitor) { path: nw_path_t? ->
+            nw_path_monitor_set_update_handler(monitor) { path: nw_path_t ->
                 val wifiAvailable = path != null && nw_path_uses_interface_type(path, nw_interface_type_wifi)
                 nw_path_monitor_cancel(monitor)
                 if (continuation.isActive) {
