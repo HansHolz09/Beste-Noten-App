@@ -107,23 +107,25 @@ fun WeekScheduleView(
     val blurEnabled = LocalBlurEnabled.current
     val showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
 
-    if (week?.days == null) return
+    val days = week?.days ?: return
 
     val allLessons =
-        week.days
-            .map {
-                it.copy(
-                    lessons =
-                        it.lessons?.mapIndexed { index, lesson ->
-                            val startTime = SimpleTime.parse("07:30").plus(50 * index)
-                            if (lesson.time?.from == null || lesson.time.to == null) {
-                                lesson.copy(time = lesson.time?.copy(from = startTime.toString(), to = startTime.plus(45).toString()))
-                            } else {
-                                lesson
-                            }
-                        },
-                )
-            }.flatMap { it.lessons.orEmpty() }
+        remember(days) {
+            days
+                .map {
+                    it.copy(
+                        lessons =
+                            it.lessons?.mapIndexed { index, lesson ->
+                                val startTime = SimpleTime.parse("07:30").plus(50 * index)
+                                if (lesson.time?.from == null || lesson.time.to == null) {
+                                    lesson.copy(time = lesson.time?.copy(from = startTime.toString(), to = startTime.plus(45).toString()))
+                                } else {
+                                    lesson
+                                }
+                            },
+                    )
+                }.flatMap { it.lessons.orEmpty() }
+        }
 
     if (allLessons.isEmpty()) return
 
@@ -246,9 +248,9 @@ fun WeekScheduleView(
                         }.padding(contentPadding)
                         .then(modifier),
             ) {
-                week.days.forEachIndexed { dayIndex, day ->
+                days.forEachIndexed { dayIndex, day ->
                     if (!day.lessons.isNullOrEmpty()) {
-                        val currentDate = LocalDate.parse(week.days.firstOrNull()?.date ?: "01.01.2000").plus(dayIndex, DateTimeUnit.DAY)
+                        val currentDate = LocalDate.parse(days.firstOrNull()?.date ?: "2000-01-01").plus(dayIndex, DateTimeUnit.DAY)
                         Column(
                             modifier = Modifier.weight(1f).fillMaxHeight(),
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -383,7 +385,7 @@ fun WeekScheduleView(
                                             DayOfWeek.SATURDAY -> "Samstag"
                                             DayOfWeek.SUNDAY -> "Sonntag"
                                         }}, ${formateDate(selectedDay.toString())}\n${selectedLesson?.nr ?: "?"}. Stunde" +
-                                            if (week.days
+                                            if (days
                                                     .flatMap { it.lessons.orEmpty() }
                                                     .find { it == selectedLesson }
                                                     ?.time

@@ -44,6 +44,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -138,6 +139,19 @@ fun Home(
         val showCurrentLesson by LocalShowCurrentLesson.current
         val showNotes by LocalShowNotes.current
         val showYearProgress by LocalShowYearProgress.current
+
+        val newestGrades by remember {
+            derivedStateOf {
+                viewModel
+                    .startGradeCollections
+                    .asSequence()
+                    .filter { !it.grades.isNullOrEmpty() }
+                    .distinctBy { it.id }
+                    .sortedWith(compareByDescending<GradeCollection> { it.givenAt }.thenBy { it.name })
+                    .take(5)
+                    .toList()
+            }
+        }
 
         UpdateOnNewDay {
             homeViewModel.refreshGrades(viewModel)
@@ -308,28 +322,22 @@ fun Home(
                                             }
                                         } else {
                                             Column {
-                                                viewModel
-                                                    .startGradeCollections
-                                                    .filter { it.grades?.size != 0 }
-                                                    .sortedWith(compareByDescending<GradeCollection> { it.givenAt }.thenBy { it.name })
-                                                    .take(5)
-                                                    .toSet()
-                                                    .forEach {
-                                                        ListItem(
-                                                            headlineContent = {
-                                                                Text("${it.subject?.name}: ${it.name}")
-                                                            },
-                                                            supportingContent = {
-                                                                Column {
-                                                                    Text("${it.type} vom ${formateDate(it.givenAt)}")
-                                                                }
-                                                            },
-                                                            leadingContent = {
-                                                                GradeValueBox(it.grades?.getOrNull(0)?.value)
-                                                            },
-                                                            colors = ListItemDefaults.colors(Color.Transparent),
-                                                        )
-                                                    }
+                                                newestGrades.forEach {
+                                                    ListItem(
+                                                        headlineContent = {
+                                                            Text("${it.subject?.name}: ${it.name}")
+                                                        },
+                                                        supportingContent = {
+                                                            Column {
+                                                                Text("${it.type} vom ${formateDate(it.givenAt)}")
+                                                            }
+                                                        },
+                                                        leadingContent = {
+                                                            GradeValueBox(it.grades?.getOrNull(0)?.value)
+                                                        },
+                                                        colors = ListItemDefaults.colors(Color.Transparent),
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -416,6 +424,9 @@ fun Home(
                                                     .isNullOrEmpty()
                                             ) {
                                                 val lessons = viewModel.currentJournalDay.value!!.lessons!!
+                                                val groupedLessons = remember(lessons) { lessons.sortedBy { it.nr }.groupBy { it.nr } }
+                                                val maxLessonNr = remember(lessons) { lessons.maxOf { it.nr.toInt() } }
+                                                val currentTime by rememberCurrentSimpleTime()
                                                 Column(Modifier.padding(10.dp).padding(start = 5.dp)) {
                                                     CompositionLocalProvider(
                                                         LocalJetLimeStyle provides
@@ -424,12 +435,11 @@ fun Home(
                                                                     lineBrush = JetLimeDefaults.lineSolidBrush(colorScheme.primary.copy(0.7f)),
                                                                 ),
                                                     ) {
-                                                        lessons.sortedBy { it.nr }.groupBy { it.nr }.forEach { groupLessons ->
+                                                        groupedLessons.forEach { groupLessons ->
                                                             val firstLesson = groupLessons.value[0]
-                                                            val position = EventPosition.dynamic(firstLesson.nr.toInt() - 1, lessons.maxOf { it.nr.toInt() })
+                                                            val position = EventPosition.dynamic(firstLesson.nr.toInt() - 1, maxLessonNr)
                                                             val lessonTimeStart = SimpleTime.parse(firstLesson.time?.from ?: "00:00")
                                                             val lessonTimeEnd = SimpleTime.parse(firstLesson.time?.to ?: "00:00")
-                                                            val currentTime by rememberCurrentSimpleTime()
                                                             @OptIn(ExperimentalComposeApi::class)
                                                             JetLimeExtendedEvent(
                                                                 style =

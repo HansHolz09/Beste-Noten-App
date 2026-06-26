@@ -218,29 +218,39 @@ fun Timetable(
                     isLoaded: (Boolean) -> Unit = {},
                 ) {
                     var isLoading by remember { mutableStateOf(false) }
-                    var weekDate = remember { timetableViewModel.startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK) }
+                    val weekDate =
+                        remember(timetableViewModel.startPageDate, currentPage) {
+                            timetableViewModel.startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK)
+                        }
                     var week by remember { mutableStateOf<JournalWeek?>(null) }
-                    LaunchedEffect(weekDate, timetableViewModel.startPageDate) {
+                    LaunchedEffect(weekDate, showAbsences) {
                         isLoading = true
-                        while (viewModel.years.isEmpty() || (viewModel.absences.isEmpty() && showAbsences)) delay(10)
-                        weekDate = timetableViewModel.startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK)
+                        if (viewModel.years.isEmpty()) {
+                            viewModel.getYears()?.let { viewModel.years.addAll(it) }
+                        }
                         week = viewModel.getJournalWeek(weekDate, getAbsences = showAbsences && pagerState.currentPage == currentPage)
                         isLoading = false
                         if (week?.days?.all { it.lessons.isNullOrEmpty() } ?: true) isLoaded(false)
                     }
                     var isRefreshLoading by remember { mutableStateOf(false) }
                     LaunchedEffect(refreshTick) {
-                        scope.launch {
-                            if (refreshTick != 0 && currentPage == pagerState.currentPage) {
-                                refreshTick = 0
-                                if (timetableViewModel.userScrollEnabled && !lessonPopupShown.value) {
-                                    vibrator.enhancedVibrateN(EnhancedVibrations.SPIN)
-                                    isRefreshLoading = true
+                        val currentRefreshTick = refreshTick
+                        if (currentRefreshTick != 0 && currentPage == pagerState.currentPage) {
+                            if (timetableViewModel.userScrollEnabled && !lessonPopupShown.value) {
+                                vibrator.enhancedVibrateN(EnhancedVibrations.SPIN)
+                                isRefreshLoading = true
+                                try {
                                     delay(1000)
                                     week = viewModel.getJournalWeek(weekDate, false, showAbsences)
-                                    isRefreshLoading = false
                                     vibrator.enhancedVibrateN(EnhancedVibrations.QUICK_FALL)
+                                } finally {
+                                    isRefreshLoading = false
+                                    if (refreshTick == currentRefreshTick) {
+                                        refreshTick = 0
+                                    }
                                 }
+                            } else if (refreshTick == currentRefreshTick) {
+                                refreshTick = 0
                             }
                         }
                     }

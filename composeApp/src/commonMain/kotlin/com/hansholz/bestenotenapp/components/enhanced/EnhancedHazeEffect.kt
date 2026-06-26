@@ -1,5 +1,6 @@
 package com.hansholz.bestenotenapp.components.enhanced
 
+import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -25,23 +26,36 @@ fun Modifier.enhancedHazeEffect(
     block: (BlurVisualEffect.() -> Unit)? = null,
 ): Modifier {
     val blurEnabled = LocalBlurEnabled.current.value
-    return if (hazeState != null) {
-        this.hazeEffect(hazeState) {
-            blurEffect {
-                this.blurEnabled = blurEnabled
-                this.blurRadius = blurRadius ?: 20.dp
-                color?.let {
-                    backgroundColor = it
-                    fallbackTint = HazeColorEffect.tint(it.copy(fallbackAlpha), HazeColorEffect.DefaultBlendMode)
+    return when {
+        hazeState != null && blurEnabled -> {
+            this.hazeEffect(hazeState) {
+                blurEffect {
+                    this.blurRadius = blurRadius ?: 20.dp
+                    color?.let {
+                        backgroundColor = it
+                        fallbackTint = HazeColorEffect.tint(it.copy(fallbackAlpha), HazeColorEffect.DefaultBlendMode)
+                    }
+                    inputScale = HazeInputScale.Auto
+                    noiseFactor = 0f
+                    block?.invoke(this)
                 }
-                inputScale = HazeInputScale.Auto
-                noiseFactor = 0f
-                block?.invoke(this)
             }
         }
-    } else if (blurEnabled) {
-        this.blur((blurRadius ?: 10.dp) * 2)
-    } else {
-        this
+
+        hazeState != null && color != null -> {
+            this.background(color)
+        }
+
+        hazeState != null -> {
+            this
+        }
+
+        blurEnabled && (blurRadius ?: 10.dp) > 0.dp -> {
+            this.blur((blurRadius ?: 10.dp) * 2)
+        }
+
+        else -> {
+            this
+        }
     }
 }

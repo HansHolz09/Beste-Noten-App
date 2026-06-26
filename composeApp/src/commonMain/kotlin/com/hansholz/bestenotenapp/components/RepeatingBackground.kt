@@ -41,55 +41,59 @@ fun Modifier.repeatingBackground(
     offset: Offset = Offset.Zero,
     cropPx: Int = 0,
 ): Modifier =
-    this.drawWithCache {
-        val finalBitmap =
-            if (cropPx > 0) {
-                val targetWidth = imageBitmap.width - 2 * cropPx
-                val targetHeight = imageBitmap.height - 2 * cropPx
+    if (alpha <= 0f || scale <= 0f) {
+        this
+    } else {
+        this.drawWithCache {
+            val finalBitmap =
+                if (cropPx > 0) {
+                    val targetWidth = imageBitmap.width - 2 * cropPx
+                    val targetHeight = imageBitmap.height - 2 * cropPx
 
-                if (targetWidth > 0 && targetHeight > 0) {
-                    val bitmap = ImageBitmap(targetWidth, targetHeight)
-                    val canvas = Canvas(bitmap)
-                    val paint = Paint()
-                    canvas.drawImageRect(
-                        image = imageBitmap,
-                        srcOffset = IntOffset(cropPx, cropPx),
-                        srcSize = IntSize(targetWidth, targetHeight),
-                        dstOffset = IntOffset.Zero,
-                        dstSize = IntSize(targetWidth, targetHeight),
-                        paint = paint,
-                    )
-                    bitmap
+                    if (targetWidth > 0 && targetHeight > 0) {
+                        val bitmap = ImageBitmap(targetWidth, targetHeight)
+                        val canvas = Canvas(bitmap)
+                        val paint = Paint()
+                        canvas.drawImageRect(
+                            image = imageBitmap,
+                            srcOffset = IntOffset(cropPx, cropPx),
+                            srcSize = IntSize(targetWidth, targetHeight),
+                            dstOffset = IntOffset.Zero,
+                            dstSize = IntSize(targetWidth, targetHeight),
+                            paint = paint,
+                        )
+                        bitmap
+                    } else {
+                        imageBitmap
+                    }
                 } else {
                     imageBitmap
                 }
-            } else {
-                imageBitmap
-            }
 
-        val imageShader = ImageShader(finalBitmap, TileMode.Repeated, TileMode.Repeated)
-        val brush = ShaderBrush(imageShader)
+            val imageShader = ImageShader(finalBitmap, TileMode.Repeated, TileMode.Repeated)
+            val brush = ShaderBrush(imageShader)
 
-        onDrawBehind {
-            val scaledWidth = finalBitmap.width * scale
-            val scaledHeight = finalBitmap.height * scale
+            onDrawBehind {
+                val scaledWidth = finalBitmap.width * scale
+                val scaledHeight = finalBitmap.height * scale
 
-            val correctedStartX = (offset.x % scaledWidth).let { if (it > 0) it - scaledWidth else it }
-            val correctedStartY = (offset.y % scaledHeight).let { if (it > 0) it - scaledHeight else it }
+                val correctedStartX = (offset.x % scaledWidth).let { if (it > 0) it - scaledWidth else it }
+                val correctedStartY = (offset.y % scaledHeight).let { if (it > 0) it - scaledHeight else it }
 
-            withTransform({
-                translate(left = correctedStartX, top = correctedStartY)
-                scale(scaleX = scale, scaleY = scale, pivot = Offset.Zero)
-            }) {
-                drawRect(
-                    brush = brush,
-                    alpha = alpha,
-                    size =
-                        Size(
-                            width = (this.size.width - correctedStartX) / scale,
-                            height = (this.size.height - correctedStartY) / scale,
-                        ),
-                )
+                withTransform({
+                    translate(left = correctedStartX, top = correctedStartY)
+                    scale(scaleX = scale, scaleY = scale, pivot = Offset.Zero)
+                }) {
+                    drawRect(
+                        brush = brush,
+                        alpha = alpha,
+                        size =
+                            Size(
+                                width = (this.size.width - correctedStartX) / scale,
+                                height = (this.size.height - correctedStartY) / scale,
+                            ),
+                    )
+                }
             }
         }
     }

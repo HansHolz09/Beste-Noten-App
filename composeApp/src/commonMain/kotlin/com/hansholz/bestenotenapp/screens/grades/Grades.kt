@@ -67,6 +67,7 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -250,27 +251,45 @@ fun Grades(
                         1 -> secondLazyListState
                         else -> rememberLazyListState()
                     }
-                val items =
-                    remember(
-                        viewModel.gradeCollections,
-                        gradesViewModel.selectedYears.size,
-                        showCollectionsWithoutGrades,
-                        gradesViewModel.searchQuery,
-                        gradesViewModel.isLoading,
-                    ) {
+                val filteredGradeItems by remember {
+                    derivedStateOf {
+                        val selectedYearIds = gradesViewModel.selectedYears.mapTo(mutableSetOf()) { it.id }
+                        val query = gradesViewModel.searchQuery.trim()
                         viewModel
                             .gradeCollections
-                            .toSet()
-                            .filter { gradesViewModel.selectedYears.map { it.id }.contains(it.interval?.yearId) }
-                            .filter { if (showCollectionsWithoutGrades) true else it.grades?.size != 0 }
-                            .filter { (it.name ?: "").contains(gradesViewModel.searchQuery, true) }
+                            .asSequence()
+                            .distinctBy { it.id }
+                            .filter { it.interval?.yearId in selectedYearIds }
+                            .filter { showCollectionsWithoutGrades || !it.grades.isNullOrEmpty() }
+                            .filter {
+                                query.isEmpty() ||
+                                    it.name.orEmpty().contains(query, ignoreCase = true) ||
+                                    it.subject
+                                        ?.name
+                                        .orEmpty()
+                                        .contains(query, ignoreCase = true)
+                            }.toList()
                     }
+                }
+                val dateSortedGradeItems by remember {
+                    derivedStateOf {
+                        filteredGradeItems.sortedWith(compareByDescending<GradeCollection> { it.givenAt }.thenBy { it.name })
+                    }
+                }
+                val subjectGroupedGradeItems by remember {
+                    derivedStateOf {
+                        filteredGradeItems
+                            .sortedWith(compareBy({ it.subject?.name }, { it.givenAt }, { it.name }))
+                            .groupBy { it.subject?.name }
+                            .toList()
+                    }
+                }
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.hazeSource(viewModel.hazeBackgroundState).enhancedHazeEffect(blurRadius = contentBlurRadius.value),
                     userScrollEnabled = gradesViewModel.userScrollEnabled,
                 ) { currentPage ->
-                    EnhancedAnimatedContent(gradesViewModel.isLoading || items.isEmpty()) { targetState ->
+                    EnhancedAnimatedContent(gradesViewModel.isLoading || filteredGradeItems.isEmpty()) { targetState ->
                         Box(Modifier.fillMaxSize()) {
                             if (targetState) {
                                 EnhancedAnimatedContent(gradesViewModel.isLoading) { isLoading ->
@@ -298,7 +317,7 @@ fun Grades(
                                             contentPadding = contentPadding,
                                             userScrollEnabled = gradesViewModel.userScrollEnabled,
                                         ) {
-                                            items(items.sortedWith(compareByDescending<GradeCollection> { it.givenAt }.thenBy { it.name }).toList()) {
+                                            items(dateSortedGradeItems, key = { it.id }) {
                                                 EnhancedAnimated(
                                                     modifier = Modifier.padding(verticalPadding),
                                                     preset = ZoomIn(),
@@ -354,165 +373,161 @@ fun Grades(
                                             contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
                                             userScrollEnabled = gradesViewModel.userScrollEnabled,
                                         ) {
-                                            items
-                                                .sortedWith(compareBy({ it.subject?.name }, { it.givenAt }, { it.name }))
-                                                .groupBy { it.subject?.name }
-                                                .toList()
-                                                .forEach { (title, subjectItems) ->
-                                                    stickyHeader {
-                                                        EnhancedAnimated(
-                                                            preset = ZoomIn(),
-                                                            durationMillis = 200,
-                                                        ) { isAnimated ->
-                                                            LaunchedEffect(Unit) {
-                                                                if (secondLazyListState.isScrollInProgress && isAnimated && abs(speedState.pxPerSecond) > 4000) {
-                                                                    vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
+                                            subjectGroupedGradeItems.forEach { (title, subjectItems) ->
+                                                stickyHeader {
+                                                    EnhancedAnimated(
+                                                        preset = ZoomIn(),
+                                                        durationMillis = 200,
+                                                    ) { isAnimated ->
+                                                        LaunchedEffect(Unit) {
+                                                            if (secondLazyListState.isScrollInProgress && isAnimated && abs(speedState.pxPerSecond) > 4000) {
+                                                                vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
+                                                            }
+                                                        }
+                                                        val subjectKey = remember(title, subjectItems) { gradeAverageCalculator.subjectWeightingKey(title, subjectItems) }
+                                                        val averageText =
+                                                            remember(gradeAverageEnabled, subjectKey, subjectWeightings.toMap(), gradeAverageUseWeighting) {
+                                                                if (gradeAverageEnabled) {
+                                                                    val typeNames = gradeAverageCalculator.subjectTypeNames(subjectItems)
+                                                                    val subjectWeighting =
+                                                                        subjectWeightings[subjectKey] ?: gradeAverageCalculator.loadSubjectWeighting(
+                                                                            kSafe = kSafe,
+                                                                            subjectKey = subjectKey,
+                                                                            typeNames = typeNames,
+                                                                            useWeightingInsteadOfPercent = gradeAverageUseWeighting,
+                                                                        )
+                                                                    gradeAverageCalculator.formatAverageLabel(
+                                                                        gradeAverageCalculator.calculateSubjectAverage(
+                                                                            collections = subjectItems,
+                                                                            weighting = subjectWeighting,
+                                                                            useWeightingInsteadOfPercent = gradeAverageUseWeighting,
+                                                                        ),
+                                                                    )
+                                                                } else {
+                                                                    null
                                                                 }
                                                             }
-                                                            val subjectKey = remember(title, subjectItems) { gradeAverageCalculator.subjectWeightingKey(title, subjectItems) }
-                                                            val averageText =
-                                                                remember(gradeAverageEnabled, subjectKey, subjectWeightings.toMap(), gradeAverageUseWeighting) {
-                                                                    if (gradeAverageEnabled) {
-                                                                        val typeNames = gradeAverageCalculator.subjectTypeNames(subjectItems)
-                                                                        val subjectWeighting =
-                                                                            subjectWeightings[subjectKey] ?: gradeAverageCalculator.loadSubjectWeighting(
-                                                                                kSafe = kSafe,
-                                                                                subjectKey = subjectKey,
-                                                                                typeNames = typeNames,
-                                                                                useWeightingInsteadOfPercent = gradeAverageUseWeighting,
-                                                                            )
-                                                                        gradeAverageCalculator.formatAverageLabel(
-                                                                            gradeAverageCalculator.calculateSubjectAverage(
-                                                                                collections = subjectItems,
-                                                                                weighting = subjectWeighting,
-                                                                                useWeightingInsteadOfPercent = gradeAverageUseWeighting,
-                                                                            ),
-                                                                        )
-                                                                    } else {
-                                                                        null
-                                                                    }
-                                                                }
-                                                            val interactionSource = remember { MutableInteractionSource() }
-                                                            Column(
-                                                                Modifier
-                                                                    .fillMaxWidth()
-                                                                    .height(56.dp)
-                                                                    .then(
-                                                                        if (gradeAverageEnabled && !isOpened) {
-                                                                            Modifier
-                                                                                .hoverable(interactionSource)
-                                                                                .indication(interactionSource, ripple())
-                                                                                .pointerInput(Unit) {
-                                                                                    detectTapGestures(
-                                                                                        onPress = { offset ->
-                                                                                            val press = PressInteraction.Press(offset)
-                                                                                            interactionSource.emit(press)
-                                                                                            tryAwaitRelease()
-                                                                                            interactionSource.emit(PressInteraction.Release(press))
-                                                                                        },
-                                                                                        onTap = {
-                                                                                            vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
-                                                                                            weightingDialogState =
-                                                                                                SubjectWeightingDialogState(
-                                                                                                    subjectTitle = title ?: "Kein Fach",
-                                                                                                    subjectKey = subjectKey,
-                                                                                                    subjectCollections = subjectItems,
-                                                                                                )
-                                                                                            weightingDialogVisible = true
-                                                                                        },
-                                                                                    )
-                                                                                }
-                                                                        } else {
-                                                                            Modifier
-                                                                        },
-                                                                    ),
-                                                            ) {
-                                                                HorizontalDivider(thickness = 1.dp)
-                                                                Box(Modifier.weight(1f)) {
-                                                                    Box(
+                                                        val interactionSource = remember { MutableInteractionSource() }
+                                                        Column(
+                                                            Modifier
+                                                                .fillMaxWidth()
+                                                                .height(56.dp)
+                                                                .then(
+                                                                    if (gradeAverageEnabled && !isOpened) {
                                                                         Modifier
-                                                                            .fillMaxSize()
-                                                                            .enhancedHazeEffect(viewModel.hazeBackgroundState3, colorScheme.secondaryContainer)
-                                                                            .enhancedHazeEffect(viewModel.hazeBackgroundState2, colorScheme.secondaryContainer) {
-                                                                                mask =
-                                                                                    Brush.verticalGradient(
-                                                                                        colors = listOf(Color.Transparent, Color.Red),
-                                                                                    )
-                                                                            },
+                                                                            .hoverable(interactionSource)
+                                                                            .indication(interactionSource, ripple())
+                                                                            .pointerInput(Unit) {
+                                                                                detectTapGestures(
+                                                                                    onPress = { offset ->
+                                                                                        val press = PressInteraction.Press(offset)
+                                                                                        interactionSource.emit(press)
+                                                                                        tryAwaitRelease()
+                                                                                        interactionSource.emit(PressInteraction.Release(press))
+                                                                                    },
+                                                                                    onTap = {
+                                                                                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                                                                                        weightingDialogState =
+                                                                                            SubjectWeightingDialogState(
+                                                                                                subjectTitle = title ?: "Kein Fach",
+                                                                                                subjectKey = subjectKey,
+                                                                                                subjectCollections = subjectItems,
+                                                                                            )
+                                                                                        weightingDialogVisible = true
+                                                                                    },
+                                                                                )
+                                                                            }
+                                                                    } else {
+                                                                        Modifier
+                                                                    },
+                                                                ),
+                                                        ) {
+                                                            HorizontalDivider(thickness = 1.dp)
+                                                            Box(Modifier.weight(1f)) {
+                                                                Box(
+                                                                    Modifier
+                                                                        .fillMaxSize()
+                                                                        .enhancedHazeEffect(viewModel.hazeBackgroundState3, colorScheme.secondaryContainer)
+                                                                        .enhancedHazeEffect(viewModel.hazeBackgroundState2, colorScheme.secondaryContainer) {
+                                                                            mask =
+                                                                                Brush.verticalGradient(
+                                                                                    colors = listOf(Color.Transparent, Color.Red),
+                                                                                )
+                                                                        },
+                                                                )
+                                                                Row(
+                                                                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                                                                    verticalAlignment = Alignment.CenterVertically,
+                                                                ) {
+                                                                    Text(
+                                                                        text = title ?: "Kein Fach",
+                                                                        modifier = Modifier.weight(1f),
+                                                                        style = typography.titleMedium,
+                                                                        maxLines = 1,
+                                                                        overflow = TextOverflow.Ellipsis,
                                                                     )
-                                                                    Row(
-                                                                        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-                                                                        verticalAlignment = Alignment.CenterVertically,
-                                                                    ) {
+                                                                    if (averageText != null && !isOpened) {
                                                                         Text(
-                                                                            text = title ?: "Kein Fach",
-                                                                            modifier = Modifier.weight(1f),
+                                                                            text = averageText,
                                                                             style = typography.titleMedium,
+                                                                            fontFamily = FontFamilies.Sniglet,
                                                                             maxLines = 1,
                                                                             overflow = TextOverflow.Ellipsis,
                                                                         )
-                                                                        if (averageText != null && !isOpened) {
+                                                                    }
+                                                                }
+                                                            }
+                                                            HorizontalDivider(thickness = 1.dp)
+                                                        }
+                                                    }
+                                                }
+                                                items(subjectItems, key = { it.id }) {
+                                                    EnhancedAnimated(
+                                                        modifier = Modifier.padding(verticalPadding),
+                                                        preset = ZoomIn(),
+                                                        durationMillis = 200,
+                                                    ) { isAnimated ->
+                                                        LaunchedEffect(Unit) {
+                                                            if (secondLazyListState.isScrollInProgress && isAnimated && abs(speedState.pxPerSecond) > 4000) {
+                                                                vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
+                                                            }
+                                                        }
+                                                        ListItem(
+                                                            headlineContent = {
+                                                                Text("${it.name} - ${it.type}")
+                                                            },
+                                                            supportingContent = {
+                                                                Column {
+                                                                    Text("Gegeben am ${formateDate(it.givenAt)}")
+
+                                                                    val histories = it.grades?.getOrNull(0)?.histories
+
+                                                                    if (histories?.isEmpty() == false && showGradeHistory) {
+                                                                        Spacer(Modifier.height(10.dp))
+                                                                        Text("Historie deiner Note:")
+                                                                        histories.filterHistory().forEach {
                                                                             Text(
-                                                                                text = averageText,
-                                                                                style = typography.titleMedium,
-                                                                                fontFamily = FontFamilies.Sniglet,
-                                                                                maxLines = 1,
-                                                                                overflow = TextOverflow.Ellipsis,
+                                                                                "${if (showTeachersWithFirstname) {
+                                                                                    it.conductor?.forename
+                                                                                } else {
+                                                                                    it.conductor?.forename?.take(
+                                                                                        1,
+                                                                                    ) + "."
+                                                                                }} ${it.conductor?.name}: ${translateHistoryBody(it.body)}",
                                                                             )
                                                                         }
                                                                     }
                                                                 }
-                                                                HorizontalDivider(thickness = 1.dp)
-                                                            }
-                                                        }
-                                                    }
-                                                    items(subjectItems) {
-                                                        EnhancedAnimated(
-                                                            modifier = Modifier.padding(verticalPadding),
-                                                            preset = ZoomIn(),
-                                                            durationMillis = 200,
-                                                        ) { isAnimated ->
-                                                            LaunchedEffect(Unit) {
-                                                                if (secondLazyListState.isScrollInProgress && isAnimated && abs(speedState.pxPerSecond) > 4000) {
-                                                                    vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
-                                                                }
-                                                            }
-                                                            ListItem(
-                                                                headlineContent = {
-                                                                    Text("${it.name} - ${it.type}")
-                                                                },
-                                                                supportingContent = {
-                                                                    Column {
-                                                                        Text("Gegeben am ${formateDate(it.givenAt)}")
-
-                                                                        val histories = it.grades?.getOrNull(0)?.histories
-
-                                                                        if (histories?.isEmpty() == false && showGradeHistory) {
-                                                                            Spacer(Modifier.height(10.dp))
-                                                                            Text("Historie deiner Note:")
-                                                                            histories.filterHistory().forEach {
-                                                                                Text(
-                                                                                    "${if (showTeachersWithFirstname) {
-                                                                                        it.conductor?.forename
-                                                                                    } else {
-                                                                                        it.conductor?.forename?.take(
-                                                                                            1,
-                                                                                        ) + "."
-                                                                                    }} ${it.conductor?.name}: ${translateHistoryBody(it.body)}",
-                                                                                )
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                },
-                                                                leadingContent = {
-                                                                    GradeValueBox(it.grades?.getOrNull(0)?.value)
-                                                                },
-                                                                colors = ListItemDefaults.colors(Color.Transparent),
-                                                                modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2),
-                                                            )
-                                                        }
+                                                            },
+                                                            leadingContent = {
+                                                                GradeValueBox(it.grades?.getOrNull(0)?.value)
+                                                            },
+                                                            colors = ListItemDefaults.colors(Color.Transparent),
+                                                            modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2),
+                                                        )
                                                     }
                                                 }
+                                            }
                                         }
                                     }
                                 }

@@ -55,12 +55,10 @@ class TimetableViewModel(
                 viewModel.getYears()?.let { viewModel.years.addAll(it) }
             }
             if (viewModel.absences.isEmpty() && kSafeProvider(viewModel.kSafe) { get("showAbsences", true) }) {
-                val currentYearId =
-                    viewModel.years
-                        .last()
-                        .id
-                        .toString()
-                viewModel.getAbsences(currentYearId)?.let { viewModel.absences.add(currentYearId to it) }
+                viewModel.years.lastOrNull()?.let { currentYear ->
+                    val currentYearId = currentYear.id.toString()
+                    viewModel.getAbsences(currentYearId)?.let { viewModel.absences.add(currentYearId to it) }
+                }
             }
         }
     }

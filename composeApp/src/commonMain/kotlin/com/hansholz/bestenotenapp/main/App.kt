@@ -7,6 +7,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -41,18 +42,21 @@ fun App(
                 val viewModel = viewModel { ViewModel(toasterState) }
 
                 val blurEnabled = LocalBlurEnabled.current.value
-                val backgroundAlpha = animateFloatAsState(if (LocalBackgroundEnabled.current.value) (if (blurEnabled) 1f else 0.2f) else 0f, tween(750))
-                RepeatingBackground(
-                    imageBitmap = imageResource(Res.drawable.background),
-                    modifier =
-                        Modifier
-                            .hazeSource(viewModel.hazeBackgroundState)
-                            .hazeSource(viewModel.hazeBackgroundState1)
-                            .hazeSource(viewModel.hazeBackgroundState2)
-                            .hazeSource(viewModel.hazeBackgroundState3)
-                            .enhancedHazeEffect()
-                            .alpha(backgroundAlpha.value),
-                )
+                val targetBackgroundAlpha = if (LocalBackgroundEnabled.current.value) (if (blurEnabled) 1f else 0.2f) else 0f
+                val backgroundAlpha by animateFloatAsState(targetBackgroundAlpha, tween(750))
+                if (targetBackgroundAlpha > 0f || backgroundAlpha > 0.01f) {
+                    RepeatingBackground(
+                        imageBitmap = imageResource(Res.drawable.background),
+                        modifier =
+                            Modifier
+                                .hazeSource(viewModel.hazeBackgroundState)
+                                .hazeSource(viewModel.hazeBackgroundState1)
+                                .hazeSource(viewModel.hazeBackgroundState2)
+                                .hazeSource(viewModel.hazeBackgroundState3)
+                                .enhancedHazeEffect()
+                                .alpha(backgroundAlpha),
+                    )
+                }
 
                 AppNavigation(viewModel, onNavHostReady)
 

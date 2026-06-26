@@ -44,6 +44,9 @@ import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.readString
 import io.ktor.utils.io.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -404,35 +407,32 @@ class ViewModel(
     suspend fun getCollections(filterYears: List<Year>? = null): List<GradeCollection>? {
         if (isDemoAccount.value) {
             delay(1000)
+            val filterYearIds = filterYears.orEmpty().mapTo(mutableSetOf()) { it.id }
             return if (filterYears.isNullOrEmpty()) {
-                gradeCollections
+                gradeCollections.toList()
             } else {
-                gradeCollections.filter { gc -> filterYears.any { it.id == gc.intervalId } }
+                gradeCollections.filter { it.interval?.yearId in filterYearIds || it.intervalId in filterYearIds }
             }
         }
         try {
             val includes = listOf("grades", "interval", "grades.histories")
-            val collections = mutableStateListOf<GradeCollection>()
-            collections.clear()
-            if (filterYears.isNullOrEmpty()) {
-                val collection = api.collectionsIndex(include = includes)
-                collections.addAll(collection.data)
-                if ((collection.meta?.lastPage ?: 0) > 1) {
-                    for (i in 2..(collection.meta?.lastPage ?: 0)) {
-                        collections.addAll(api.collectionsIndex(include = includes, page = i).data)
+            val collections =
+                if (filterYears.isNullOrEmpty()) {
+                    getCollectionsPages(includes)
+                } else {
+                    coroutineScope {
+                        filterYears
+                            .map { year ->
+                                async {
+                                    getCollectionsPages(
+                                        includes = includes,
+                                        filterYear = year.id.toString(),
+                                    )
+                                }
+                            }.awaitAll()
+                            .flatten()
                     }
                 }
-            } else {
-                filterYears.forEach {
-                    val collection = api.collectionsIndex(include = includes, filterYear = it.id.toString())
-                    collections.addAll(collection.data)
-                    if ((collection.meta?.lastPage ?: 0) > 1) {
-                        for (i in 2..(collection.meta?.lastPage ?: 0)) {
-                            collections.addAll(api.collectionsIndex(include = includes, filterYear = it.id.toString(), page = i).data)
-                        }
-                    }
-                }
-            }
             couldReachBesteSchule()
             return collections
         } catch (e: Exception) {
@@ -481,7 +481,7 @@ class ViewModel(
                             val toDate = LocalDate.parse(schoolYear.to)
                             date in fromDate..toDate
                         }?.id
-                        .toString()
+                        ?.toString()
                 }
             if (getAbsences && year != null && absences.none { it.first == year }) {
                 getAbsences(year)?.let { absences.add(year to it) }
@@ -561,7 +561,7 @@ class ViewModel(
     suspend fun getSubjects(): List<Subject>? {
         if (isDemoAccount.value) {
             delay(500)
-            return subjects
+            return subjects.toList()
         }
         try {
             val data = api.subjectsIndex().data
@@ -593,6 +593,27 @@ class ViewModel(
             return null
         }
     }
+
+    private suspend fun getCollectionsPages(
+        includes: List<String>,
+        filterYear: String? = null,
+    ): List<GradeCollection> =
+        coroutineScope {
+            val firstPage = api.collectionsIndex(include = includes, filterYear = filterYear)
+            val lastPage = (firstPage.meta?.lastPage ?: 1).coerceAtLeast(1)
+            if (lastPage == 1) {
+                firstPage.data
+            } else {
+                firstPage.data +
+                    (2..lastPage)
+                        .map { page ->
+                            async {
+                                api.collectionsIndex(include = includes, filterYear = filterYear, page = page).data
+                            }
+                        }.awaitAll()
+                        .flatten()
+            }
+        }
 
     init {
         viewModelScope.launch {

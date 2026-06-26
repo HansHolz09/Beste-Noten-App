@@ -30,6 +30,8 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -88,9 +90,9 @@ import io.github.koalaplot.core.xygraph.DefaultPoint
 import io.github.koalaplot.core.xygraph.FloatLinearAxisModel
 import io.github.koalaplot.core.xygraph.Point
 import io.github.koalaplot.core.xygraph.XYGraph
+import kotlin.math.ceil
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.ceil
 
 @OptIn(ExperimentalKoalaPlotApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -108,22 +110,56 @@ fun GradeDiagrams(
         val secondLazyListState = rememberLazyListState()
         val lazyListState = if (gradesViewModel.analyzeYears) secondLazyListState else firstLazyListState
 
-        val filteredGrades =
-            viewModel.gradeCollections
-                .toSet()
-                .filter { gradesViewModel.selectedYears.map { it.id }.contains(it.interval?.yearId) }
-                .filter {
-                    !it.grades.isNullOrEmpty() &&
-                        it.grades
-                            .firstOrNull()
-                            ?.value
-                            ?.take(1)
-                            ?.toIntOrNull() != null
+        val selectedYearIds by remember {
+            derivedStateOf { gradesViewModel.selectedYears.mapTo(mutableSetOf()) { it.id } }
+        }
+        val deselectedSubjects by remember {
+            derivedStateOf { gradesViewModel.deselectedSubjects.toSet() }
+        }
+        val filteredGrades by remember {
+            derivedStateOf {
+                viewModel.gradeCollections
+                    .asSequence()
+                    .distinctBy { it.id }
+                    .filter { it.interval?.yearId in selectedYearIds }
+                    .filter {
+                        !it.grades.isNullOrEmpty() &&
+                            it.grades
+                                .firstOrNull()
+                                ?.value
+                                ?.take(1)
+                                ?.toIntOrNull() != null
+                    }.toList()
+            }
+        }
+        val allFilteredGrades by remember {
+            derivedStateOf {
+                viewModel.gradeCollections
+                    .asSequence()
+                    .distinctBy { it.id }
+                    .filter { it.interval?.yearId != null && !it.grades.isNullOrEmpty() }
+                    .toList()
+            }
+        }
+        val visibleFilteredGrades by remember {
+            derivedStateOf {
+                if (gradesViewModel.filterSubjects) {
+                    filteredGrades.filter { it.subject?.name !in deselectedSubjects }
+                } else {
+                    filteredGrades
                 }
-        val allFilteredGrades =
-            viewModel.gradeCollections
-                .asSequence()
-                .filter { it.interval?.yearId != null && !it.grades.isNullOrEmpty() }
+            }
+        }
+        val subjectFilterOptions by remember {
+            derivedStateOf {
+                (if (gradesViewModel.analyzeYears) allFilteredGrades else filteredGrades)
+                    .asSequence()
+                    .map { it.subject?.name ?: "" }
+                    .distinct()
+                    .sorted()
+                    .toList()
+            }
+        }
 
         KoalaPlotTheme(animationSpec = if (LocalAnimationsEnabled.current.value) spring(2f) else snap()) {
             EnhancedAnimatedContent(gradesViewModel.analyzeYears) { analyzeYears ->
@@ -136,8 +172,7 @@ fun GradeDiagrams(
                     ) {
                         item {
                             val grades =
-                                filteredGrades
-                                    .filter { !gradesViewModel.filterSubjects || !gradesViewModel.deselectedSubjects.contains(it.subject?.name) }
+                                visibleFilteredGrades
                                     .map {
                                         it.grades!![0]
                                             .value
@@ -235,14 +270,13 @@ fun GradeDiagrams(
                                     ),
                                 )
                             } else {
-                                val gradeCollections = viewModel.gradeCollections
                                 val years = viewModel.years
                                 val processedData =
-                                    remember(gradeCollections, years, gradesViewModel.filterSubjects, gradesViewModel.deselectedSubjects.size) {
+                                    remember(allFilteredGrades, years.size, gradesViewModel.filterSubjects, deselectedSubjects) {
                                         val allGradesByYear =
                                             allFilteredGrades
                                                 .filter {
-                                                    !gradesViewModel.filterSubjects || !gradesViewModel.deselectedSubjects.contains(it.subject?.name)
+                                                    !gradesViewModel.filterSubjects || it.subject?.name !in deselectedSubjects
                                                 }.flatMap { gc -> gc.grades!!.map { gc.interval!!.yearId to normalizeGrade(it.value) } }
                                                 .filter { it.second != "N/A" }
                                                 .toList()
@@ -669,22 +703,19 @@ fun GradeDiagrams(
                     modifier = Modifier.padding(horizontal = 15.dp).padding(bottom = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    (if (gradesViewModel.analyzeYears) allFilteredGrades.toList() else filteredGrades)
-                        .map { it.subject?.name ?: "" }
-                        .toSet()
-                        .forEach { subject ->
-                            EnhancedFilterChip(
-                                selected = !gradesViewModel.deselectedSubjects.contains(subject),
-                                onClick = {
-                                    if (gradesViewModel.deselectedSubjects.contains(subject)) {
-                                        gradesViewModel.deselectedSubjects.remove(subject)
-                                    } else {
-                                        gradesViewModel.deselectedSubjects.add(subject)
-                                    }
-                                },
-                                label = { Text(subject) },
-                            )
-                        }
+                    subjectFilterOptions.forEach { subject ->
+                        EnhancedFilterChip(
+                            selected = !gradesViewModel.deselectedSubjects.contains(subject),
+                            onClick = {
+                                if (gradesViewModel.deselectedSubjects.contains(subject)) {
+                                    gradesViewModel.deselectedSubjects.remove(subject)
+                                } else {
+                                    gradesViewModel.deselectedSubjects.add(subject)
+                                }
+                            },
+                            label = { Text(subject) },
+                        )
+                    }
                 }
             }
         }
