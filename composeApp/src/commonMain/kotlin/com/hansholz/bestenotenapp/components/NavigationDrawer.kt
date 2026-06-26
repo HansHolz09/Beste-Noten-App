@@ -3,6 +3,7 @@
 package com.hansholz.bestenotenapp.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
@@ -16,14 +17,8 @@ import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowWidthSizeClass
 import dev.chrisbanes.haze.HazeState
@@ -58,29 +53,31 @@ fun NavigationDrawer(
             }
         }
     } else {
-        val density = LocalDensity.current
-        var width by remember { mutableStateOf(0.dp) }
-        CloseableNavigationDrawer(
-            drawerState = drawerState,
-            modifier =
-                Modifier.onGloballyPositioned {
-                    width = with(density) { it.size.width.toDp() }
-                },
-            drawerContent = {
-                Row {
-                    PermanentDrawerSheet(
-                        modifier = if (windowWidthSizeClass == WindowWidthSizeClass.MEDIUM) Modifier.width(width / 2.5f) else Modifier,
-                        drawerContainerColor = Color.Transparent,
-                    ) {
-                        Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
-                            drawerContent()
-                        }
-                    }
-                    VerticalDivider(thickness = 2.dp, color = colorScheme.outline)
+        BoxWithConstraints {
+            val drawerSheetModifier =
+                if (windowWidthSizeClass == WindowWidthSizeClass.MEDIUM) {
+                    Modifier.width(maxWidth / 2.5f)
+                } else {
+                    Modifier
                 }
-            },
-        ) {
-            content()
+            CloseableNavigationDrawer(
+                drawerState = drawerState,
+                drawerContent = {
+                    Row {
+                        PermanentDrawerSheet(
+                            modifier = drawerSheetModifier,
+                            drawerContainerColor = Color.Transparent,
+                        ) {
+                            Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
+                                drawerContent()
+                            }
+                        }
+                        VerticalDivider(thickness = 2.dp, color = colorScheme.outline)
+                    }
+                },
+            ) {
+                content()
+            }
         }
     }
 }
