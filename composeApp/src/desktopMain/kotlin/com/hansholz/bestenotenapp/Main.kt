@@ -51,7 +51,7 @@ fun main() {
             onCloseRequest = ::exitApplication,
             state = rememberWindowState(position = WindowPosition.Aligned(Alignment.Center), size = DpSize(1200.dp, 800.dp)),
             title = "Beste-Noten-App",
-            icon = painterResource(Res.drawable.logo),
+            icon = if (hostOs.isMacOS) null else painterResource(Res.drawable.logo),
         ) {
             val isSingle = SingleInstanceManager.isSingleInstance { window.toFront() }
             if (!isSingle) exitProcess(0)
