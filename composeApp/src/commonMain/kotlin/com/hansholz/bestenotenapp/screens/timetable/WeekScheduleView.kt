@@ -198,9 +198,8 @@ fun WeekScheduleView(
 
             if (receivedProgress) {
                 backProgress = 1f
-                popupVisibilityState.seekTo(1f, false)
                 lessonPopupShown.value = false
-                popupVisibilityState.snapTo(false)
+                popupVisibilityState.animateTo(false)
             } else {
                 lessonPopupShown.value = false
             }
