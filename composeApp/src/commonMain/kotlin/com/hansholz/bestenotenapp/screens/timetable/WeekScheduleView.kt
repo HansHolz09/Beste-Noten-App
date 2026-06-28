@@ -244,6 +244,7 @@ fun WeekScheduleView(
                         ).graphicsLayer {
                             scaleX = effectiveScheduleScale
                             scaleY = effectiveScheduleScale
+                            if (!blurEnabled.value) alpha = 30 * effectiveScheduleScale - 29
                         }.padding(contentPadding)
                         .then(modifier),
             ) {
