@@ -43,7 +43,7 @@ fun Modifier.enhancedHazeEffect(
         }
 
         hazeState != null && color != null -> {
-            this.background(color)
+            this.background(color.copy(fallbackAlpha))
         }
 
         hazeState != null -> {
