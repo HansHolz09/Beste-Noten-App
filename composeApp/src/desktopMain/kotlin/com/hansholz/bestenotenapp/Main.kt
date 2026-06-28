@@ -46,6 +46,7 @@ import kotlin.system.exitProcess
 
 @OptIn(ExperimentalMaterial3ComponentOverrideApi::class, ExperimentalMaterial3Api::class)
 fun main() {
+    System.setProperty("ksafe.jvm.keyVault", "software") // because no signed macOS app
     application {
         DecoratedWindow(
             onCloseRequest = ::exitApplication,
