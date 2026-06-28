@@ -14,7 +14,9 @@ import com.mikepenz.aboutlibraries.ui.compose.DefaultChipColors
 import com.mikepenz.aboutlibraries.ui.compose.LibraryDefaults
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import com.mikepenz.aboutlibraries.ui.compose.m3.libraryColors
+import com.mikepenz.aboutlibraries.ui.compose.m3.style.m3VariantColors
 import com.mikepenz.aboutlibraries.ui.compose.produceLibraries
+import com.mikepenz.aboutlibraries.ui.compose.variant.LibraryDetailMode
 import components.dialogs.EnhancedAlertDialog
 
 @Composable
@@ -39,7 +41,7 @@ fun LibrariesDialog(settingsViewModel: SettingsViewModel) {
         text = {
             LibrariesContainer(
                 libraries = libraries,
-                showDescription = true,
+                detailMode = LibraryDetailMode.Sheet,
                 colors =
                     LibraryDefaults.libraryColors(
                         libraryBackgroundColor = Color.Transparent,
@@ -50,6 +52,11 @@ fun LibrariesDialog(settingsViewModel: SettingsViewModel) {
                                 contentColor = colorScheme.onBackground,
                             ),
                         dialogBackgroundColor = colorScheme.background,
+                    ),
+                variantColors =
+                    LibraryDefaults.m3VariantColors(
+                        rowBackground = Color.Transparent,
+                        rowExpandedBackground = Color.Transparent,
                     ),
                 licenseDialogConfirmText = "Schließen",
             )
