@@ -113,40 +113,99 @@ jobs:
           }
 
           $startedAt = Get-Date
+          $knownProcessIds = @(Get-Process | Select-Object -ExpandProperty Id)
 
           $installRoots = @(
-            "$env:LOCALAPPDATA\Programs",
             "$env:LOCALAPPDATA",
+            "$env:LOCALAPPDATA\Programs",
             "$env:ProgramFiles",
             "${env:ProgramFiles(x86)}"
           ) | Where-Object { $_ -and (Test-Path $_) }
 
-          function Get-CandidateAppProcesses {
-            $processes = Get-CimInstance Win32_Process | Where-Object {
-              $_.ExecutablePath -and
-              $_.CreationDate -and
-              ([Management.ManagementDateTimeConverter]::ToDateTime($_.CreationDate) -ge $startedAt.AddSeconds(-5))
-            }
+          function Get-UninstallEntries {
+            $roots = @(
+              "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*",
+              "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*",
+              "HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
+            )
 
-            foreach ($process in $processes) {
-              foreach ($root in $installRoots) {
-                if ($process.ExecutablePath.StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) {
-                  $fileName = [System.IO.Path]::GetFileName($process.ExecutablePath)
-
-                  if ($fileName -notmatch "unins|uninstall|update|setup|installer") {
-                    $process
-                    break
-                  }
+            foreach ($root in $roots) {
+              Get-ItemProperty -Path $root -ErrorAction SilentlyContinue |
+                Where-Object {
+                  $_.DisplayName -or $_.InstallLocation -or $_.DisplayIcon
                 }
-              }
             }
           }
 
+          $entriesBefore = @(Get-UninstallEntries | ForEach-Object { $_.PSPath })
+
+          function Get-NewAppProcess {
+            $processes = Get-Process -ErrorAction SilentlyContinue | Where-Object {
+              $knownProcessIds -notcontains $_.Id
+            }
+
+            foreach ($process in $processes) {
+              $path = $null
+              $startTime = $null
+
+              try { $path = $process.Path } catch {}
+              try { $startTime = $process.StartTime } catch {}
+
+              if (-not $path) {
+                continue
+              }
+
+              if ($startTime -and $startTime -lt $startedAt.AddSeconds(-5)) {
+                continue
+              }
+
+              $fileName = [System.IO.Path]::GetFileName($path)
+
+              if ($fileName -match "unins|uninstall|update|setup|installer") {
+                continue
+              }
+
+              foreach ($root in $installRoots) {
+                if ($path.StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) {
+                  return $process
+                }
+              }
+            }
+
+            return $null
+          }
+
           function Find-InstalledAppExecutable {
+            $entriesAfter = @(Get-UninstallEntries)
+            $newEntries = @($entriesAfter | Where-Object { $entriesBefore -notcontains $_.PSPath })
+
+            $candidateRoots = New-Object System.Collections.Generic.List[string]
+
+            foreach ($entry in $newEntries) {
+              if ($entry.InstallLocation -and (Test-Path $entry.InstallLocation)) {
+                $candidateRoots.Add($entry.InstallLocation)
+              }
+
+              if ($entry.DisplayIcon) {
+                $displayIcon = $entry.DisplayIcon.Trim('"')
+                $displayIcon = $displayIcon -replace ',\d+$', ''
+
+                if (Test-Path $displayIcon) {
+                  $candidateRoots.Add((Split-Path -Parent $displayIcon))
+                }
+              }
+            }
+
             foreach ($root in $installRoots) {
+              $candidateRoots.Add($root)
+            }
+
+            $uniqueRoots = $candidateRoots | Where-Object { $_ -and (Test-Path $_) } | Select-Object -Unique
+
+            foreach ($root in $uniqueRoots) {
               $candidate = Get-ChildItem -Path $root -Recurse -Filter "*.exe" -File -ErrorAction SilentlyContinue |
                 Where-Object {
-                  $_.LastWriteTime -ge $startedAt.AddMinutes(-5) -and
+                  $_.LastWriteTime -ge $startedAt.AddMinutes(-10) -and
                   $_.Name -notmatch "unins|uninstall|update|setup|installer"
                 } |
                 Sort-Object LastWriteTime -Descending |
@@ -163,11 +222,11 @@ jobs:
           Write-Host "Installing $($installer.FullName)"
           Start-Process -FilePath $installer.FullName -ArgumentList "/S" -Wait
 
-          Write-Host "Waiting for installer auto-started app process..."
+          Write-Host "Checking whether the installer auto-started the app..."
           $process = $null
 
           for ($i = 0; $i -lt 20; $i++) {
-            $process = Get-CandidateAppProcesses | Select-Object -First 1
+            $process = Get-NewAppProcess
 
             if ($process) {
               break
@@ -177,22 +236,13 @@ jobs:
           }
 
           if ($process) {
-            Write-Host "Detected auto-started app process: $($process.ExecutablePath)"
-            $pidToWatch = $process.ProcessId
+            Write-Host "Detected auto-started app process: $($process.Path)"
+            $pidToWatch = $process.Id
           } else {
-            Write-Host "No auto-started process detected. Falling back to manual launch, because silent NSIS installs may skip finish-page actions."
+            Write-Host "No auto-started app process detected. Launching installed app manually."
 
             $app = Find-InstalledAppExecutable
             if (-not $app) {
-              Write-Host "Installed files could not be matched automatically."
-              foreach ($root in $installRoots) {
-                Write-Host "Scanning $root"
-                Get-ChildItem -Path $root -Depth 4 -ErrorAction SilentlyContinue |
-                  Select-Object FullName |
-                  Out-String -Width 240 |
-                  Write-Host
-              }
-
               throw "Installed app executable not found."
             }
 
@@ -297,20 +347,25 @@ jobs:
             exit 1
           fi
 
+          DEB_ABS="$(realpath "$DEB")"
+          PACKAGE_NAME="$(dpkg-deb -f "$DEB_ABS" Package)"
+
           if ! command -v xvfb-run >/dev/null 2>&1; then
             echo "xvfb-run is missing. Installing xvfb only as fallback."
             sudo apt-get update
             sudo apt-get install -y xvfb
           fi
 
-          PACKAGE_NAME="$(dpkg-deb -f "$DEB" Package)"
-
-          echo "Installing $DEB"
-          sudo apt-get install -y "$DEB"
+          echo "Installing $DEB_ABS"
+          if ! sudo apt-get install -y "$DEB_ABS"; then
+            echo "Install failed. Updating apt metadata once and retrying."
+            sudo apt-get update
+            sudo apt-get install -y "$DEB_ABS"
+          fi
 
           APP="$(
             while IFS= read -r file; do
-              if [ -f "$file" ] && [ -x "$file" ]; then
+              if [ -e "$file" ] && [ -x "$file" ]; then
                 case "$file" in
                   /opt/*|/usr/bin/*|/usr/local/bin/*)
                     base="$(basename "$file")"
@@ -325,18 +380,6 @@ jobs:
           )"
 
           if [ -z "$APP" ]; then
-            APP="$(
-              find /opt /usr/bin /usr/local/bin -maxdepth 6 \
-                \( -type f -o -type l \) \
-                -perm -111 \
-                2>/dev/null |
-                grep -viE "uninstall|remove|update|\.desktop|\.png|\.svg|\.ico" |
-                sort |
-                head -n1 || true
-            )"
-          fi
-
-          if [ -z "$APP" ]; then
             echo "Installed package files:"
             dpkg -L "$PACKAGE_NAME"
 
@@ -344,8 +387,10 @@ jobs:
             exit 1
           fi
 
+          LOG_FILE="$RUNNER_TEMP/linux-smoke-test.log"
+
           echo "Launching $APP with Xvfb"
-          xvfb-run -a "$APP" &
+          xvfb-run -a "$APP" > "$LOG_FILE" 2>&1 &
           PID=$!
 
           sleep 20
@@ -361,5 +406,7 @@ jobs:
             set -e
 
             echo "App exited during startup smoke test with exit code $CODE."
+            echo "App output:"
+            cat "$LOG_FILE" || true
             exit 1
           fi
