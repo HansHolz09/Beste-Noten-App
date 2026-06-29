@@ -1,0 +1,365 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  ktlint:
+    name: ktlintCheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Run ktlintCheck
+        run: ./gradlew :composeApp:ktlintCheck
+
+  release-binaries:
+    name: Build all release binaries
+    uses: ./.github/workflows/buildCompose.yml
+    with:
+      upload_wasm_as_pages_artifact: false
+      build_android: true
+      build_ios: true
+      build_windows_x64: true
+      build_windows_arm64: true
+      build_macos_x64: true
+      build_macos_arm64: true
+      build_linux_x64: true
+      build_linux_arm64: true
+      build_wasm: true
+    secrets: inherit
+
+  desktop-smoke-test:
+    name: Smoke test ${{ matrix.name }}
+    needs:
+      - ktlint
+      - release-binaries
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 25
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows x64
+            runner: windows-latest
+            artifact: windows-x64-exe
+            platform: windows
+
+          - name: Windows arm64
+            runner: windows-11-arm
+            artifact: windows-arm64-exe
+            platform: windows
+
+          - name: macOS x64
+            runner: macos-26-intel
+            artifact: macos-x64-dmg
+            platform: macos
+
+          - name: macOS arm64
+            runner: macos-26
+            artifact: macos-arm64-dmg
+            platform: macos
+
+          - name: Linux x64
+            runner: ubuntu-latest
+            artifact: linux-x64-deb
+            platform: linux
+
+          - name: Linux arm64
+            runner: ubuntu-22.04-arm
+            artifact: linux-arm64-deb
+            platform: linux
+
+    steps:
+      - name: Download desktop artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ matrix.artifact }}
+          path: smoke-artifact
+
+      - name: Install and observe Windows app
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $installer = Get-ChildItem -Path "smoke-artifact" -Filter "*.exe" -File | Select-Object -First 1
+          if (-not $installer) {
+            throw "No Windows installer found."
+          }
+
+          $startedAt = Get-Date
+
+          $installRoots = @(
+            "$env:LOCALAPPDATA\Programs",
+            "$env:LOCALAPPDATA",
+            "$env:ProgramFiles",
+            "${env:ProgramFiles(x86)}"
+          ) | Where-Object { $_ -and (Test-Path $_) }
+
+          function Get-CandidateAppProcesses {
+            $processes = Get-CimInstance Win32_Process | Where-Object {
+              $_.ExecutablePath -and
+              $_.CreationDate -and
+              ([Management.ManagementDateTimeConverter]::ToDateTime($_.CreationDate) -ge $startedAt.AddSeconds(-5))
+            }
+
+            foreach ($process in $processes) {
+              foreach ($root in $installRoots) {
+                if ($process.ExecutablePath.StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) {
+                  $fileName = [System.IO.Path]::GetFileName($process.ExecutablePath)
+
+                  if ($fileName -notmatch "unins|uninstall|update|setup|installer") {
+                    $process
+                    break
+                  }
+                }
+              }
+            }
+          }
+
+          function Find-InstalledAppExecutable {
+            foreach ($root in $installRoots) {
+              $candidate = Get-ChildItem -Path $root -Recurse -Filter "*.exe" -File -ErrorAction SilentlyContinue |
+                Where-Object {
+                  $_.LastWriteTime -ge $startedAt.AddMinutes(-5) -and
+                  $_.Name -notmatch "unins|uninstall|update|setup|installer"
+                } |
+                Sort-Object LastWriteTime -Descending |
+                Select-Object -First 1
+
+              if ($candidate) {
+                return $candidate.FullName
+              }
+            }
+
+            return $null
+          }
+
+          Write-Host "Installing $($installer.FullName)"
+          Start-Process -FilePath $installer.FullName -ArgumentList "/S" -Wait
+
+          Write-Host "Waiting for installer auto-started app process..."
+          $process = $null
+
+          for ($i = 0; $i -lt 20; $i++) {
+            $process = Get-CandidateAppProcesses | Select-Object -First 1
+
+            if ($process) {
+              break
+            }
+
+            Start-Sleep -Seconds 1
+          }
+
+          if ($process) {
+            Write-Host "Detected auto-started app process: $($process.ExecutablePath)"
+            $pidToWatch = $process.ProcessId
+          } else {
+            Write-Host "No auto-started process detected. Falling back to manual launch, because silent NSIS installs may skip finish-page actions."
+
+            $app = Find-InstalledAppExecutable
+            if (-not $app) {
+              Write-Host "Installed files could not be matched automatically."
+              foreach ($root in $installRoots) {
+                Write-Host "Scanning $root"
+                Get-ChildItem -Path $root -Depth 4 -ErrorAction SilentlyContinue |
+                  Select-Object FullName |
+                  Out-String -Width 240 |
+                  Write-Host
+              }
+
+              throw "Installed app executable not found."
+            }
+
+            Write-Host "Launching $app"
+            $manualProcess = Start-Process -FilePath $app -PassThru
+            $pidToWatch = $manualProcess.Id
+          }
+
+          Start-Sleep -Seconds 20
+
+          $watchedProcess = Get-Process -Id $pidToWatch -ErrorAction SilentlyContinue
+          if (-not $watchedProcess) {
+            throw "App process exited during startup smoke test."
+          }
+
+          Stop-Process -Id $pidToWatch -Force -ErrorAction SilentlyContinue
+          Write-Host "Smoke test passed. App stayed alive for 20 seconds."
+
+      - name: Mount and launch macOS app
+        if: matrix.platform == 'macos'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DMG="$(find smoke-artifact -type f -name "*.dmg" | head -n1)"
+          if [ -z "$DMG" ]; then
+            echo "No DMG found."
+            exit 1
+          fi
+
+          MOUNT="$RUNNER_TEMP/dmg"
+          APP_ROOT="$RUNNER_TEMP/app"
+
+          mkdir -p "$MOUNT" "$APP_ROOT"
+
+          cleanup() {
+            if [ -n "${PID:-}" ] && kill -0 "$PID" 2>/dev/null; then
+              kill "$PID" || true
+              wait "$PID" || true
+            fi
+
+            hdiutil detach "$MOUNT" -quiet || true
+          }
+
+          trap cleanup EXIT
+
+          echo "Mounting $DMG"
+          hdiutil attach "$DMG" -nobrowse -readonly -mountpoint "$MOUNT"
+
+          APP_IN_DMG="$(find "$MOUNT" -maxdepth 3 -type d -name "*.app" | head -n1)"
+          if [ -z "$APP_IN_DMG" ]; then
+            echo "No .app bundle found in DMG."
+            find "$MOUNT" -maxdepth 4 -print
+            exit 1
+          fi
+
+          cp -R "$APP_IN_DMG" "$APP_ROOT/"
+          APP="$APP_ROOT/$(basename "$APP_IN_DMG")"
+
+          xattr -dr com.apple.quarantine "$APP" || true
+
+          EXEC="$(find "$APP/Contents/MacOS" -maxdepth 1 -type f -perm -111 | head -n1)"
+          if [ -z "$EXEC" ]; then
+            EXEC="$(find "$APP/Contents/MacOS" -maxdepth 1 -type f | head -n1)"
+          fi
+
+          if [ -z "$EXEC" ]; then
+            echo "No executable found in app bundle."
+            find "$APP/Contents" -maxdepth 4 -print
+            exit 1
+          fi
+
+          chmod +x "$EXEC"
+
+          echo "Launching $EXEC"
+          "$EXEC" &
+          PID=$!
+
+          sleep 20
+
+          if kill -0 "$PID" 2>/dev/null; then
+            echo "Smoke test passed. App stayed alive for 20 seconds."
+          else
+            set +e
+            wait "$PID"
+            CODE=$?
+            set -e
+
+            echo "App exited during startup smoke test with exit code $CODE."
+            exit 1
+          fi
+
+      - name: Install and launch Linux app
+        if: matrix.platform == 'linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DEB="$(find smoke-artifact -type f -name "*.deb" | head -n1)"
+          if [ -z "$DEB" ]; then
+            echo "No DEB found."
+            exit 1
+          fi
+
+          if ! command -v xvfb-run >/dev/null 2>&1; then
+            echo "xvfb-run is missing. Installing xvfb only as fallback."
+            sudo apt-get update
+            sudo apt-get install -y xvfb
+          fi
+
+          PACKAGE_NAME="$(dpkg-deb -f "$DEB" Package)"
+
+          echo "Installing $DEB"
+          sudo apt-get install -y "$DEB"
+
+          APP="$(
+            while IFS= read -r file; do
+              if [ -f "$file" ] && [ -x "$file" ]; then
+                case "$file" in
+                  /opt/*|/usr/bin/*|/usr/local/bin/*)
+                    base="$(basename "$file")"
+                    if ! echo "$base" | grep -Eiq "uninstall|remove|update"; then
+                      echo "$file"
+                      break
+                    fi
+                    ;;
+                esac
+              fi
+            done < <(dpkg -L "$PACKAGE_NAME")
+          )"
+
+          if [ -z "$APP" ]; then
+            APP="$(
+              find /opt /usr/bin /usr/local/bin -maxdepth 6 \
+                \( -type f -o -type l \) \
+                -perm -111 \
+                2>/dev/null |
+                grep -viE "uninstall|remove|update|\.desktop|\.png|\.svg|\.ico" |
+                sort |
+                head -n1 || true
+            )"
+          fi
+
+          if [ -z "$APP" ]; then
+            echo "Installed package files:"
+            dpkg -L "$PACKAGE_NAME"
+
+            echo "Could not find installed Linux app executable."
+            exit 1
+          fi
+
+          echo "Launching $APP with Xvfb"
+          xvfb-run -a "$APP" &
+          PID=$!
+
+          sleep 20
+
+          if kill -0 "$PID" 2>/dev/null; then
+            kill "$PID" || true
+            wait "$PID" || true
+            echo "Smoke test passed. App stayed alive for 20 seconds."
+          else
+            set +e
+            wait "$PID"
+            CODE=$?
+            set -e
+
+            echo "App exited during startup smoke test with exit code $CODE."
+            exit 1
+          fi
