@@ -129,34 +129,32 @@ jobs:
           }
 
           $installDir = Join-Path $env:RUNNER_TEMP "smoke-install"
-          $extractDir = Join-Path $env:RUNNER_TEMP "smoke-extract"
           New-Item -ItemType Directory -Force -Path $installDir | Out-Null
-          New-Item -ItemType Directory -Force -Path $extractDir | Out-Null
 
           function Find-AppExecutable {
             param(
               [Parameter(Mandatory = $true)]
-              [string[]] $Roots
+              [string] $Root
             )
 
-            $existingRoots = $Roots | Where-Object { $_ -and (Test-Path $_) } | Select-Object -Unique
+            if (-not (Test-Path $Root)) {
+              return $null
+            }
 
-            foreach ($root in $existingRoots) {
-              Write-Host "Searching app executable in $root"
+            $candidates = Get-ChildItem -Path $Root -Recurse -Filter "*.exe" -File -ErrorAction SilentlyContinue |
+              Where-Object {
+                $_.Name -notmatch "unins|uninstall|setup|installer|update|elevate|java|javaw|keytool|jpackage|jlink" -and
+                $_.FullName -notmatch "\\resources\\|\\runtime\\|\\jre\\|\\jdk\\|\\bin\\"
+              } |
+              Sort-Object `
+                @{ Expression = { if ($_.DirectoryName -eq $Root) { 0 } else { 1 } }; Ascending = $true },
+                @{ Expression = { $_.DirectoryName.Split([IO.Path]::DirectorySeparatorChar).Count }; Ascending = $true },
+                @{ Expression = { $_.Length }; Ascending = $false }
 
-              $candidates = Get-ChildItem -Path $root -Recurse -Filter "*.exe" -File -ErrorAction SilentlyContinue |
-                Where-Object {
-                  $_.Name -notmatch "unins|uninstall|setup|installer|update|java|javaw|keytool|jpackage|jlink" -and
-                  $_.FullName -notmatch "\\runtime\\|\\jre\\|\\jdk\\|\\bin\\"
-                } |
-                Sort-Object `
-                  @{ Expression = { $_.DirectoryName.Split([IO.Path]::DirectorySeparatorChar).Count }; Ascending = $true },
-                  @{ Expression = { $_.Length }; Ascending = $false }
+            $candidate = $candidates | Select-Object -First 1
 
-              $candidate = $candidates | Select-Object -First 1
-              if ($candidate) {
-                return $candidate.FullName
-              }
+            if ($candidate) {
+              return $candidate.FullName
             }
 
             return $null
@@ -164,14 +162,9 @@ jobs:
 
           Write-Host "Installing $($installer.FullName) into $installDir"
 
-          $installArgs = @(
-            "/S",
-            "/D=$installDir"
-          )
-
           $installerProcess = Start-Process `
             -FilePath $installer.FullName `
-            -ArgumentList $installArgs `
+            -ArgumentList @("/S", "/D=$installDir") `
             -Wait `
             -PassThru
 
@@ -179,44 +172,24 @@ jobs:
             throw "Installer exited with code $($installerProcess.ExitCode)."
           }
 
-          $app = Find-AppExecutable -Roots @($installDir)
+          Write-Host "Installed files:"
+          Get-ChildItem -Path $installDir -Recurse -ErrorAction SilentlyContinue |
+            Select-Object FullName |
+            Out-String -Width 240 |
+            Write-Host
+
+          $app = Find-AppExecutable -Root $installDir
 
           if (-not $app) {
-            Write-Host "No executable found in forced install dir. Trying NSIS extraction fallback."
-
-            $sevenZip = Get-Command 7z -ErrorAction SilentlyContinue
-            if ($sevenZip) {
-              & 7z x "$($installer.FullName)" "-o$extractDir" -y | Out-Host
-
-              Get-ChildItem -Path $extractDir -Recurse -Include "*.7z", "*.zip" -File -ErrorAction SilentlyContinue |
-                ForEach-Object {
-                  $nestedDir = Join-Path $_.DirectoryName ($_.BaseName + "-extracted")
-                  New-Item -ItemType Directory -Force -Path $nestedDir | Out-Null
-                  & 7z x "$($_.FullName)" "-o$nestedDir" -y | Out-Host
-                }
-
-              $app = Find-AppExecutable -Roots @($extractDir)
-            }
-          }
-
-          if (-not $app) {
-            Write-Host "Install directory content:"
-            Get-ChildItem -Path $installDir -Recurse -ErrorAction SilentlyContinue |
-              Select-Object FullName |
-              Out-String -Width 240 |
-              Write-Host
-
-            Write-Host "Extraction directory content:"
-            Get-ChildItem -Path $extractDir -Recurse -ErrorAction SilentlyContinue |
-              Select-Object FullName |
-              Out-String -Width 240 |
-              Write-Host
-
             throw "Installed app executable not found."
           }
 
           Write-Host "Launching $app"
-          $process = Start-Process -FilePath $app -PassThru
+
+          $process = Start-Process `
+            -FilePath $app `
+            -WorkingDirectory (Split-Path -Parent $app) `
+            -PassThru
 
           Start-Sleep -Seconds 20
 
@@ -317,17 +290,32 @@ jobs:
           DEB_ABS="$(realpath "$DEB")"
           PACKAGE_NAME="$(dpkg-deb -f "$DEB_ABS" Package)"
 
+          APT_UPDATED=0
+
+          apt_update_once() {
+            if [ "$APT_UPDATED" -eq 0 ]; then
+              sudo apt-get update
+              APT_UPDATED=1
+            fi
+          }
+
           if ! command -v xvfb-run >/dev/null 2>&1; then
             echo "xvfb-run is missing. Installing xvfb only as fallback."
-            sudo apt-get update
+            apt_update_once
             sudo apt-get install -y xvfb
           fi
 
           echo "Installing $DEB_ABS"
           if ! sudo apt-get install -y "$DEB_ABS"; then
             echo "Install failed. Updating apt metadata once and retrying."
-            sudo apt-get update
+            apt_update_once
             sudo apt-get install -y "$DEB_ABS"
+          fi
+
+          if ! ldconfig -p | grep -q "libEGL.so.1"; then
+            echo "libEGL.so.1 is missing on this runner. Installing minimal EGL runtime for Skiko."
+            apt_update_once
+            sudo apt-get install -y libegl1
           fi
 
           APP="$(
