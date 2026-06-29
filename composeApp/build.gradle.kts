@@ -264,9 +264,6 @@ ktlint {
     tasks.named("desktopJar").configure {
         dependsOn(tasks.ktlintFormat)
     }
-    tasks.matching { it.name == "preBuild" }.configureEach {
-        dependsOn(tasks.ktlintFormat)
-    }
 }
 
 aboutLibraries {

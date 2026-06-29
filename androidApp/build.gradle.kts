@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.ktlint)
 }
 
 android {
@@ -89,4 +90,25 @@ dependencies {
     implementation(libs.ksafe.biometrics)
     implementation(libs.permission)
     implementation(libs.filekit.dialogs)
+}
+
+ktlint {
+    version.set("1.8.0")
+    enableExperimentalRules.set(true)
+    additionalEditorconfig.set(
+        mapOf(
+            "max_line_length" to "180",
+            "ktlint_function_naming_ignore_when_annotated_with" to "Composable",
+        ),
+    )
+    filter {
+        exclude { element ->
+            val path = element.file.path
+            path.contains("\\generated\\") || path.contains("/generated/")
+        }
+    }
+
+    tasks.matching { it.name == "preBuild" }.configureEach {
+        dependsOn(tasks.ktlintFormat)
+    }
 }
