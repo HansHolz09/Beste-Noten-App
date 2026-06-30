@@ -9,6 +9,13 @@
   "platformAutomerge": false,
   "packageRules": [
     {
+      "description": "Ignore snapshot and dev versions completely",
+      "matchPackageNames": [
+        "/.*/"
+      ],
+      "allowedVersions": "!/(^|[.+_-])(snapshot|dev)([0-9.+_-]|$)/i"
+    },
+    {
       "matchUpdateTypes": [
         "patch",
         "minor"
@@ -22,7 +29,7 @@
       "automerge": false
     },
     {
-      "matchNewValue": "/(alpha|beta|rc|eap|snapshot)/i",
+      "matchNewValue": "/(^|[.+_-])(alpha|beta|rc|eap)([0-9.+_-]|$)/i",
       "automerge": false
     }
   ]
