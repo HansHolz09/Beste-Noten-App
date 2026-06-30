@@ -381,3 +381,37 @@ jobs:
             cat "$LOG_FILE" || true
             exit 1
           fi
+
+  ci-success:
+    name: ci-success
+    runs-on: ubuntu-latest
+    needs:
+      - ktlint
+      - desktop-binaries
+      - other-release-binaries
+      - desktop-smoke-test
+    if: always()
+    steps:
+      - name: Check CI result
+        run: |
+          if [ "${{ needs.ktlint.result }}" != "success" ]; then
+            echo "ktlint failed"
+            exit 1
+          fi
+
+          if [ "${{ needs.desktop-binaries.result }}" != "success" ]; then
+            echo "desktop-binaries failed"
+            exit 1
+          fi
+
+          if [ "${{ needs.other-release-binaries.result }}" != "success" ]; then
+            echo "other-release-binaries failed"
+            exit 1
+          fi
+
+          if [ "${{ needs.desktop-smoke-test.result }}" != "success" ]; then
+            echo "desktop-smoke-test failed"
+            exit 1
+          fi
+
+          echo "All required CI jobs passed"
