@@ -226,6 +226,8 @@ jobs:
 
       - name: Build EXE (arm64)
         shell: bash
+        env:
+          ELECTRON_BUILDER_7Z_FILTER: BCJ
         run: |
           set -e
           ./gradlew :${MODULE_PATH}:packageReleaseNsis
