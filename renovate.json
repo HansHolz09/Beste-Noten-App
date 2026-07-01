@@ -9,11 +9,11 @@
   "platformAutomerge": false,
   "packageRules": [
     {
-      "description": "Ignore snapshot and dev versions completely",
+      "description": "Ignored versions",
       "matchPackageNames": [
         "/.*/"
       ],
-      "allowedVersions": "!/(^|[.+_-])(snapshot|dev)([0-9.+_-]|$)/i"
+      "allowedVersions": "!/(^|[.+_-])(snapshot|dev|compat)([0-9.+_-]|$)/i"
     },
     {
       "matchUpdateTypes": [
@@ -32,5 +32,9 @@
       "matchNewValue": "/(^|[.+_-])(alpha|beta|rc|eap)([0-9.+_-]|$)/i",
       "automerge": false
     }
+  ],
+  "ignoreDeps": [
+    "io.github.kalinjul.kotlin.multiplatform:oidc-appsupport",
+    "io.github.koalaplot:koalaplot-core"
   ]
 }
