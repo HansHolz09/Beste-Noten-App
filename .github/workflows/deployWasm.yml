@@ -30,7 +30,7 @@ jobs:
           ./gradlew :${MODULE_PATH}:wasmJsBrowserDistribution
 
       - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ${{ env.MODULE_PATH }}/build/dist/wasmJs/productionExecutable
 
