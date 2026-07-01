@@ -21,6 +21,12 @@ on:
       upload_wasm_as_pages_artifact:
         type: boolean
         default: false
+      run_desktop_smoke_tests:
+        type: boolean
+        default: false
+      ignore_artifact_upload_errors:
+        type: boolean
+        default: false
 
       build_android:
         type: boolean
@@ -99,6 +105,7 @@ jobs:
           cp "$APK" artifacts/android-universal.apk
 
       - uses: actions/upload-artifact@v7
+        continue-on-error: ${{ inputs.ignore_artifact_upload_errors }}
         with:
           name: android-universal-apk
           path: artifacts/android-universal.apk
@@ -150,6 +157,7 @@ jobs:
 
       - name: Upload iOS Artifact
         uses: actions/upload-artifact@v7
+        continue-on-error: ${{ inputs.ignore_artifact_upload_errors }}
         with:
           name: ios-unsigned-ipa
           path: ios-unsigned.ipa
@@ -191,7 +199,92 @@ jobs:
           EXE=$(find "${MODULE_PATH}/build/compose/binaries/main-release/nsis" -type f -name "*.exe" | head -n1)
           cp "$EXE" artifacts/windows-x64.exe
 
+      - name: Smoke test Windows app
+        if: ${{ inputs.run_desktop_smoke_tests }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $installer = Get-ChildItem -Path "artifacts" -Filter "*.exe" -File | Select-Object -First 1
+          if (-not $installer) {
+            throw "No Windows installer found."
+          }
+
+          $installDir = Join-Path $env:RUNNER_TEMP "smoke-install"
+          New-Item -ItemType Directory -Force -Path $installDir | Out-Null
+
+          function Find-AppExecutable {
+            param(
+              [Parameter(Mandatory = $true)]
+              [string] $Root
+            )
+
+            if (-not (Test-Path $Root)) {
+              return $null
+            }
+
+            $candidates = Get-ChildItem -Path $Root -Recurse -Filter "*.exe" -File -ErrorAction SilentlyContinue |
+              Where-Object {
+                $_.Name -notmatch "unins|uninstall|setup|installer|update|elevate|java|javaw|keytool|jpackage|jlink" -and
+                $_.FullName -notmatch "\\resources\\|\\runtime\\|\\jre\\|\\jdk\\|\\bin\\"
+              } |
+              Sort-Object `
+                @{ Expression = { if ($_.DirectoryName -eq $Root) { 0 } else { 1 } }; Ascending = $true },
+                @{ Expression = { $_.DirectoryName.Split([IO.Path]::DirectorySeparatorChar).Count }; Ascending = $true },
+                @{ Expression = { $_.Length }; Ascending = $false }
+
+            $candidate = $candidates | Select-Object -First 1
+
+            if ($candidate) {
+              return $candidate.FullName
+            }
+
+            return $null
+          }
+
+          Write-Host "Installing $($installer.FullName) into $installDir"
+
+          $installerProcess = Start-Process `
+            -FilePath $installer.FullName `
+            -ArgumentList @("/S", "/D=$installDir") `
+            -Wait `
+            -PassThru
+
+          if ($installerProcess.ExitCode -ne 0) {
+            throw "Installer exited with code $($installerProcess.ExitCode)."
+          }
+
+          $app = Find-AppExecutable -Root $installDir
+
+          if (-not $app) {
+            Write-Host "Installed files:"
+            Get-ChildItem -Path $installDir -Recurse -ErrorAction SilentlyContinue |
+              Select-Object FullName |
+              Out-String -Width 240 |
+              Write-Host
+
+            throw "Installed app executable not found."
+          }
+
+          Write-Host "Launching $app"
+
+          $process = Start-Process `
+            -FilePath $app `
+            -WorkingDirectory (Split-Path -Parent $app) `
+            -PassThru
+
+          Start-Sleep -Seconds 20
+
+          $watchedProcess = Get-Process -Id $process.Id -ErrorAction SilentlyContinue
+          if (-not $watchedProcess) {
+            throw "App process exited during startup smoke test."
+          }
+
+          Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+          Write-Host "Smoke test passed. App stayed alive for 20 seconds."
+
       - uses: actions/upload-artifact@v7
+        continue-on-error: ${{ inputs.ignore_artifact_upload_errors }}
         with:
           name: windows-x64-exe
           path: artifacts/windows-x64.exe
@@ -235,7 +328,92 @@ jobs:
           EXE=$(find "${MODULE_PATH}/build/compose/binaries/main-release/nsis" -type f -name "*.exe" | head -n1)
           cp "$EXE" artifacts/windows-arm64.exe
 
+      - name: Smoke test Windows app
+        if: ${{ inputs.run_desktop_smoke_tests }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $installer = Get-ChildItem -Path "artifacts" -Filter "*.exe" -File | Select-Object -First 1
+          if (-not $installer) {
+            throw "No Windows installer found."
+          }
+
+          $installDir = Join-Path $env:RUNNER_TEMP "smoke-install"
+          New-Item -ItemType Directory -Force -Path $installDir | Out-Null
+
+          function Find-AppExecutable {
+            param(
+              [Parameter(Mandatory = $true)]
+              [string] $Root
+            )
+
+            if (-not (Test-Path $Root)) {
+              return $null
+            }
+
+            $candidates = Get-ChildItem -Path $Root -Recurse -Filter "*.exe" -File -ErrorAction SilentlyContinue |
+              Where-Object {
+                $_.Name -notmatch "unins|uninstall|setup|installer|update|elevate|java|javaw|keytool|jpackage|jlink" -and
+                $_.FullName -notmatch "\\resources\\|\\runtime\\|\\jre\\|\\jdk\\|\\bin\\"
+              } |
+              Sort-Object `
+                @{ Expression = { if ($_.DirectoryName -eq $Root) { 0 } else { 1 } }; Ascending = $true },
+                @{ Expression = { $_.DirectoryName.Split([IO.Path]::DirectorySeparatorChar).Count }; Ascending = $true },
+                @{ Expression = { $_.Length }; Ascending = $false }
+
+            $candidate = $candidates | Select-Object -First 1
+
+            if ($candidate) {
+              return $candidate.FullName
+            }
+
+            return $null
+          }
+
+          Write-Host "Installing $($installer.FullName) into $installDir"
+
+          $installerProcess = Start-Process `
+            -FilePath $installer.FullName `
+            -ArgumentList @("/S", "/D=$installDir") `
+            -Wait `
+            -PassThru
+
+          if ($installerProcess.ExitCode -ne 0) {
+            throw "Installer exited with code $($installerProcess.ExitCode)."
+          }
+
+          $app = Find-AppExecutable -Root $installDir
+
+          if (-not $app) {
+            Write-Host "Installed files:"
+            Get-ChildItem -Path $installDir -Recurse -ErrorAction SilentlyContinue |
+              Select-Object FullName |
+              Out-String -Width 240 |
+              Write-Host
+
+            throw "Installed app executable not found."
+          }
+
+          Write-Host "Launching $app"
+
+          $process = Start-Process `
+            -FilePath $app `
+            -WorkingDirectory (Split-Path -Parent $app) `
+            -PassThru
+
+          Start-Sleep -Seconds 20
+
+          $watchedProcess = Get-Process -Id $process.Id -ErrorAction SilentlyContinue
+          if (-not $watchedProcess) {
+            throw "App process exited during startup smoke test."
+          }
+
+          Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+          Write-Host "Smoke test passed. App stayed alive for 20 seconds."
+
       - uses: actions/upload-artifact@v7
+        continue-on-error: ${{ inputs.ignore_artifact_upload_errors }}
         with:
           name: windows-arm64-exe
           path: artifacts/windows-arm64.exe
@@ -274,7 +452,82 @@ jobs:
           DMG=$(find "${MODULE_PATH}/build" -type f -name "*.dmg" | head -n1)
           cp "$DMG" "artifacts/macos-x64.dmg"
 
+      - name: Smoke test macOS app
+        if: ${{ inputs.run_desktop_smoke_tests }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DMG="$(find artifacts -type f -name "*.dmg" | head -n1)"
+          if [ -z "$DMG" ]; then
+            echo "No DMG found."
+            exit 1
+          fi
+
+          MOUNT="$RUNNER_TEMP/dmg"
+          APP_ROOT="$RUNNER_TEMP/app"
+
+          mkdir -p "$MOUNT" "$APP_ROOT"
+
+          cleanup() {
+            if [ -n "${PID:-}" ] && kill -0 "$PID" 2>/dev/null; then
+              kill "$PID" || true
+              wait "$PID" || true
+            fi
+
+            hdiutil detach "$MOUNT" -quiet || true
+          }
+
+          trap cleanup EXIT
+
+          echo "Mounting $DMG"
+          hdiutil attach "$DMG" -nobrowse -readonly -mountpoint "$MOUNT"
+
+          APP_IN_DMG="$(find "$MOUNT" -maxdepth 3 -type d -name "*.app" | head -n1)"
+          if [ -z "$APP_IN_DMG" ]; then
+            echo "No .app bundle found in DMG."
+            find "$MOUNT" -maxdepth 4 -print
+            exit 1
+          fi
+
+          cp -R "$APP_IN_DMG" "$APP_ROOT/"
+          APP="$APP_ROOT/$(basename "$APP_IN_DMG")"
+
+          xattr -dr com.apple.quarantine "$APP" 2>/dev/null || true
+
+          EXEC="$(find "$APP/Contents/MacOS" -maxdepth 1 -type f -perm -111 | head -n1)"
+          if [ -z "$EXEC" ]; then
+            EXEC="$(find "$APP/Contents/MacOS" -maxdepth 1 -type f | head -n1)"
+          fi
+
+          if [ -z "$EXEC" ]; then
+            echo "No executable found in app bundle."
+            find "$APP/Contents" -maxdepth 4 -print
+            exit 1
+          fi
+
+          chmod +x "$EXEC"
+
+          echo "Launching $EXEC"
+          "$EXEC" &
+          PID=$!
+
+          sleep 20
+
+          if kill -0 "$PID" 2>/dev/null; then
+            echo "Smoke test passed. App stayed alive for 20 seconds."
+          else
+            set +e
+            wait "$PID"
+            CODE=$?
+            set -e
+
+            echo "App exited during startup smoke test with exit code $CODE."
+            exit 1
+          fi
+
       - uses: actions/upload-artifact@v7
+        continue-on-error: ${{ inputs.ignore_artifact_upload_errors }}
         with:
           name: macos-x64-dmg
           path: artifacts/*.dmg
@@ -313,7 +566,82 @@ jobs:
           DMG=$(find "${MODULE_PATH}/build" -type f -name "*.dmg" | head -n1)
           cp "$DMG" "artifacts/macos-arm64.dmg"
 
+      - name: Smoke test macOS app
+        if: ${{ inputs.run_desktop_smoke_tests }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DMG="$(find artifacts -type f -name "*.dmg" | head -n1)"
+          if [ -z "$DMG" ]; then
+            echo "No DMG found."
+            exit 1
+          fi
+
+          MOUNT="$RUNNER_TEMP/dmg"
+          APP_ROOT="$RUNNER_TEMP/app"
+
+          mkdir -p "$MOUNT" "$APP_ROOT"
+
+          cleanup() {
+            if [ -n "${PID:-}" ] && kill -0 "$PID" 2>/dev/null; then
+              kill "$PID" || true
+              wait "$PID" || true
+            fi
+
+            hdiutil detach "$MOUNT" -quiet || true
+          }
+
+          trap cleanup EXIT
+
+          echo "Mounting $DMG"
+          hdiutil attach "$DMG" -nobrowse -readonly -mountpoint "$MOUNT"
+
+          APP_IN_DMG="$(find "$MOUNT" -maxdepth 3 -type d -name "*.app" | head -n1)"
+          if [ -z "$APP_IN_DMG" ]; then
+            echo "No .app bundle found in DMG."
+            find "$MOUNT" -maxdepth 4 -print
+            exit 1
+          fi
+
+          cp -R "$APP_IN_DMG" "$APP_ROOT/"
+          APP="$APP_ROOT/$(basename "$APP_IN_DMG")"
+
+          xattr -dr com.apple.quarantine "$APP" 2>/dev/null || true
+
+          EXEC="$(find "$APP/Contents/MacOS" -maxdepth 1 -type f -perm -111 | head -n1)"
+          if [ -z "$EXEC" ]; then
+            EXEC="$(find "$APP/Contents/MacOS" -maxdepth 1 -type f | head -n1)"
+          fi
+
+          if [ -z "$EXEC" ]; then
+            echo "No executable found in app bundle."
+            find "$APP/Contents" -maxdepth 4 -print
+            exit 1
+          fi
+
+          chmod +x "$EXEC"
+
+          echo "Launching $EXEC"
+          "$EXEC" &
+          PID=$!
+
+          sleep 20
+
+          if kill -0 "$PID" 2>/dev/null; then
+            echo "Smoke test passed. App stayed alive for 20 seconds."
+          else
+            set +e
+            wait "$PID"
+            CODE=$?
+            set -e
+
+            echo "App exited during startup smoke test with exit code $CODE."
+            exit 1
+          fi
+
       - uses: actions/upload-artifact@v7
+        continue-on-error: ${{ inputs.ignore_artifact_upload_errors }}
         with:
           name: macos-arm64-dmg
           path: artifacts/*.dmg
@@ -356,7 +684,115 @@ jobs:
           DEB=$(find "${MODULE_PATH}/build" -maxdepth 6 -type f -name "*.deb" | head -n1)
           cp "$DEB" "artifacts/linux-x64.deb"
 
+      - name: Smoke test Linux app
+        if: ${{ inputs.run_desktop_smoke_tests }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DEB="$(find artifacts -type f -name "*.deb" | head -n1)"
+          if [ -z "$DEB" ]; then
+            echo "No DEB found."
+            exit 1
+          fi
+
+          DEB_ABS="$(realpath "$DEB")"
+          PACKAGE_NAME="$(dpkg-deb -f "$DEB_ABS" Package)"
+
+          APT_UPDATED=0
+
+          apt_update_once() {
+            if [ "$APT_UPDATED" -eq 0 ]; then
+              sudo apt-get update
+              APT_UPDATED=1
+            fi
+          }
+
+          if ! command -v xvfb-run >/dev/null 2>&1; then
+            echo "xvfb-run is missing. Installing xvfb only as fallback."
+            apt_update_once
+            sudo apt-get install -y xvfb
+          fi
+
+          echo "Installing $DEB_ABS"
+          if ! sudo apt-get install -y "$DEB_ABS"; then
+            echo "Install failed. Updating apt metadata once and retrying."
+            apt_update_once
+            sudo apt-get install -y "$DEB_ABS"
+          fi
+
+          if ! ldconfig -p | grep -q "libEGL.so.1"; then
+            echo "libEGL.so.1 is missing on this runner. Installing minimal EGL runtime for Skiko."
+            apt_update_once
+            sudo apt-get install -y libegl1
+          fi
+
+          APP="$(
+            while IFS= read -r file; do
+              resolved="$(readlink -f "$file" 2>/dev/null || true)"
+
+              if [ -z "$resolved" ]; then
+                continue
+              fi
+
+              if [ ! -f "$resolved" ] || [ ! -x "$resolved" ]; then
+                continue
+              fi
+
+              case "$resolved" in
+                */runtime/*|*/jre/*|*/jdk/*|*/lib/*|*/bin/java|*/bin/javaw|*.so)
+                  continue
+                  ;;
+              esac
+
+              base="$(basename "$resolved")"
+              if echo "$base" | grep -Eiq "uninstall|remove|update|setup|installer"; then
+                continue
+              fi
+
+              case "$file" in
+                /usr/bin/*|/usr/local/bin/*|/opt/*)
+                  echo "$file"
+                  break
+                  ;;
+              esac
+            done < <(dpkg -L "$PACKAGE_NAME")
+          )"
+
+          if [ -z "$APP" ]; then
+            echo "Installed package files:"
+            dpkg -L "$PACKAGE_NAME"
+
+            echo "Could not find installed Linux app executable."
+            exit 1
+          fi
+
+          LOG_FILE="$RUNNER_TEMP/linux-smoke-test.log"
+
+          echo "Launching $APP with Xvfb"
+          xvfb-run -a "$APP" > "$LOG_FILE" 2>&1 &
+          PID=$!
+
+          sleep 20
+
+          if kill -0 "$PID" 2>/dev/null; then
+            kill "$PID" || true
+            wait "$PID" || true
+            echo "Smoke test passed. App stayed alive for 20 seconds."
+          else
+            set +e
+            wait "$PID"
+            CODE=$?
+            set -e
+
+            echo "App exited during startup smoke test with exit code $CODE."
+            echo "App output:"
+            cat "$LOG_FILE" || true
+            exit 1
+          fi
+
       - uses: actions/upload-artifact@v7
+        continue-on-error: ${{ inputs.ignore_artifact_upload_errors }}
         with:
           name: linux-x64-deb
           path: artifacts/*.deb
@@ -399,7 +835,115 @@ jobs:
           DEB=$(find "${MODULE_PATH}/build" -maxdepth 6 -type f -name "*.deb" | head -n1)
           cp "$DEB" "artifacts/linux-arm64.deb"
 
+      - name: Smoke test Linux app
+        if: ${{ inputs.run_desktop_smoke_tests }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          DEB="$(find artifacts -type f -name "*.deb" | head -n1)"
+          if [ -z "$DEB" ]; then
+            echo "No DEB found."
+            exit 1
+          fi
+
+          DEB_ABS="$(realpath "$DEB")"
+          PACKAGE_NAME="$(dpkg-deb -f "$DEB_ABS" Package)"
+
+          APT_UPDATED=0
+
+          apt_update_once() {
+            if [ "$APT_UPDATED" -eq 0 ]; then
+              sudo apt-get update
+              APT_UPDATED=1
+            fi
+          }
+
+          if ! command -v xvfb-run >/dev/null 2>&1; then
+            echo "xvfb-run is missing. Installing xvfb only as fallback."
+            apt_update_once
+            sudo apt-get install -y xvfb
+          fi
+
+          echo "Installing $DEB_ABS"
+          if ! sudo apt-get install -y "$DEB_ABS"; then
+            echo "Install failed. Updating apt metadata once and retrying."
+            apt_update_once
+            sudo apt-get install -y "$DEB_ABS"
+          fi
+
+          if ! ldconfig -p | grep -q "libEGL.so.1"; then
+            echo "libEGL.so.1 is missing on this runner. Installing minimal EGL runtime for Skiko."
+            apt_update_once
+            sudo apt-get install -y libegl1
+          fi
+
+          APP="$(
+            while IFS= read -r file; do
+              resolved="$(readlink -f "$file" 2>/dev/null || true)"
+
+              if [ -z "$resolved" ]; then
+                continue
+              fi
+
+              if [ ! -f "$resolved" ] || [ ! -x "$resolved" ]; then
+                continue
+              fi
+
+              case "$resolved" in
+                */runtime/*|*/jre/*|*/jdk/*|*/lib/*|*/bin/java|*/bin/javaw|*.so)
+                  continue
+                  ;;
+              esac
+
+              base="$(basename "$resolved")"
+              if echo "$base" | grep -Eiq "uninstall|remove|update|setup|installer"; then
+                continue
+              fi
+
+              case "$file" in
+                /usr/bin/*|/usr/local/bin/*|/opt/*)
+                  echo "$file"
+                  break
+                  ;;
+              esac
+            done < <(dpkg -L "$PACKAGE_NAME")
+          )"
+
+          if [ -z "$APP" ]; then
+            echo "Installed package files:"
+            dpkg -L "$PACKAGE_NAME"
+
+            echo "Could not find installed Linux app executable."
+            exit 1
+          fi
+
+          LOG_FILE="$RUNNER_TEMP/linux-smoke-test.log"
+
+          echo "Launching $APP with Xvfb"
+          xvfb-run -a "$APP" > "$LOG_FILE" 2>&1 &
+          PID=$!
+
+          sleep 20
+
+          if kill -0 "$PID" 2>/dev/null; then
+            kill "$PID" || true
+            wait "$PID" || true
+            echo "Smoke test passed. App stayed alive for 20 seconds."
+          else
+            set +e
+            wait "$PID"
+            CODE=$?
+            set -e
+
+            echo "App exited during startup smoke test with exit code $CODE."
+            echo "App output:"
+            cat "$LOG_FILE" || true
+            exit 1
+          fi
+
       - uses: actions/upload-artifact@v7
+        continue-on-error: ${{ inputs.ignore_artifact_upload_errors }}
         with:
           name: linux-arm64-deb
           path: artifacts/*.deb
@@ -430,6 +974,7 @@ jobs:
       - name: Upload WASM as normal artifact
         if: ${{ !inputs.upload_wasm_as_pages_artifact }}
         uses: actions/upload-artifact@v7
+        continue-on-error: ${{ inputs.ignore_artifact_upload_errors }}
         with:
           name: wasm-dist
           path: ${{ env.MODULE_PATH }}/build/dist/wasmJs/productionExecutable
