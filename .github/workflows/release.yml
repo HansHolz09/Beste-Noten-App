@@ -75,7 +75,7 @@ jobs:
           ls -l
 
       - name: Create/Update GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ env.APP_VERSION }}
           name: ${{ env.APP_VERSION }}
