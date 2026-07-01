@@ -981,6 +981,6 @@ jobs:
 
       - name: Upload Pages Artifact
         if: ${{ inputs.upload_wasm_as_pages_artifact }}
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ${{ env.MODULE_PATH }}/build/dist/wasmJs/productionExecutable
