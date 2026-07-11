@@ -16,21 +16,31 @@
       "allowedVersions": "!/(^|[.+_-])(snapshot|dev|compat)([0-9.+_-]|$)/i"
     },
     {
+      "description": "Automerge minor updates",
       "matchUpdateTypes": [
-        "patch",
         "minor"
       ],
       "automerge": true
     },
     {
+      "description": "Do not automerge major and patch updates",
       "matchUpdateTypes": [
-        "major"
+        "major",
+        "patch"
       ],
       "automerge": false
     },
     {
+      "description": "Do not automerge prerelease versions",
       "matchNewValue": "/(^|[.+_-])(alpha|beta|rc|eap)([0-9.+_-]|$)/i",
       "automerge": false
+    },
+    {
+      "description": "Automerge all GitHub Actions updates",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "automerge": true
     }
   ],
   "ignoreDeps": [
