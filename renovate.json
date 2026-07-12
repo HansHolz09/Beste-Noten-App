@@ -16,17 +16,17 @@
       "allowedVersions": "!/(^|[.+_-])(snapshot|dev|compat)([0-9.+_-]|$)/i"
     },
     {
-      "description": "Automerge minor updates",
+      "description": "Automerge patch updates",
       "matchUpdateTypes": [
-        "minor"
+        "patch"
       ],
       "automerge": true
     },
     {
-      "description": "Do not automerge major and patch updates",
+      "description": "Do not automerge major and minor updates",
       "matchUpdateTypes": [
         "major",
-        "patch"
+        "minor"
       ],
       "automerge": false
     },
