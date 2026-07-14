@@ -186,7 +186,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ inputs.node_version }}
 
@@ -313,7 +313,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ inputs.node_version }}
 
@@ -440,7 +440,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ inputs.node_version }}
 
@@ -554,7 +554,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ inputs.node_version }}
 
@@ -672,7 +672,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ inputs.node_version }}
 
@@ -823,7 +823,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ inputs.node_version }}
 
@@ -962,7 +962,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ inputs.node_version }}
 
