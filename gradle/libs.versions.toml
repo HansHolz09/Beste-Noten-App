@@ -18,7 +18,7 @@ fragment = "1.8.9"
 haze = "2.0.0-alpha03"
 #noinspection NewerVersionAvailable
 koalaplotCore = "0.9.1"
-kotlin = "2.4.0"
+kotlin = "2.4.10"
 ksafe = "2.2.1"
 ktlint = "14.2.0"
 alarmee = "2.7.0"
