@@ -91,6 +91,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -336,21 +337,44 @@ fun Grades(
                                                             Column {
                                                                 Text("${it.type} vom ${formateDate(it.givenAt)}")
 
-                                                                val histories = it.grades?.getOrNull(0)?.histories
+                                                                val collectionHistories = it.histories ?: emptyList()
+                                                                val gradeHistories = it.grades?.getOrNull(0)?.histories ?: emptyList()
 
-                                                                if (histories?.isEmpty() == false && showGradeHistory) {
+                                                                val teachers =
+                                                                    (collectionHistories + gradeHistories)
+                                                                        .map { (it.conductor?.id ?: 0) to (it.conductor?.name ?: "") }
+                                                                        .distinct()
+
+                                                                if ((collectionHistories.isNotEmpty() || gradeHistories.isNotEmpty()) && showGradeHistory) {
                                                                     Spacer(Modifier.height(10.dp))
-                                                                    Text("Historie deiner Note:")
-                                                                    histories.filterHistory().forEach {
-                                                                        Text(
-                                                                            "${if (showTeachersWithFirstname) {
-                                                                                it.conductor?.forename
-                                                                            } else {
-                                                                                it.conductor?.forename?.take(
-                                                                                    1,
-                                                                                ) + "."
-                                                                            }} ${it.conductor?.name}: ${translateHistoryBody(it.body)}",
-                                                                        )
+                                                                    Text("Historie:", textDecoration = TextDecoration.Underline)
+                                                                    collectionHistories.filterHistory().forEach {
+                                                                        Row {
+                                                                            Text(
+                                                                                "${if (showTeachersWithFirstname) {
+                                                                                    it.conductor?.forename
+                                                                                } else {
+                                                                                    it.conductor?.forename?.take(
+                                                                                        1,
+                                                                                    ) + "."
+                                                                                }} ${it.conductor?.name}: ",
+                                                                            )
+                                                                            Text(translateHistoryBody("Leistung", it.body, teachers))
+                                                                        }
+                                                                    }
+                                                                    gradeHistories.filterHistory().forEach {
+                                                                        Row {
+                                                                            Text(
+                                                                                "${if (showTeachersWithFirstname) {
+                                                                                    it.conductor?.forename
+                                                                                } else {
+                                                                                    it.conductor?.forename?.take(
+                                                                                        1,
+                                                                                    ) + "."
+                                                                                }} ${it.conductor?.name}: ",
+                                                                            )
+                                                                            Text(translateHistoryBody("Note", it.body, teachers))
+                                                                        }
                                                                     }
                                                                 }
                                                             }
@@ -500,21 +524,44 @@ fun Grades(
                                                                 Column {
                                                                     Text("Gegeben am ${formateDate(it.givenAt)}")
 
-                                                                    val histories = it.grades?.getOrNull(0)?.histories
+                                                                    val collectionHistories = it.histories ?: emptyList()
+                                                                    val gradeHistories = it.grades?.getOrNull(0)?.histories ?: emptyList()
 
-                                                                    if (histories?.isEmpty() == false && showGradeHistory) {
+                                                                    val teachers =
+                                                                        (collectionHistories + gradeHistories)
+                                                                            .map { (it.conductor?.id ?: 0) to (it.conductor?.name ?: "") }
+                                                                            .distinct()
+
+                                                                    if ((collectionHistories.isNotEmpty() || gradeHistories.isNotEmpty()) && showGradeHistory) {
                                                                         Spacer(Modifier.height(10.dp))
-                                                                        Text("Historie deiner Note:")
-                                                                        histories.filterHistory().forEach {
-                                                                            Text(
-                                                                                "${if (showTeachersWithFirstname) {
-                                                                                    it.conductor?.forename
-                                                                                } else {
-                                                                                    it.conductor?.forename?.take(
-                                                                                        1,
-                                                                                    ) + "."
-                                                                                }} ${it.conductor?.name}: ${translateHistoryBody(it.body)}",
-                                                                            )
+                                                                        Text("Historie:", textDecoration = TextDecoration.Underline)
+                                                                        collectionHistories.filterHistory().forEach {
+                                                                            Row {
+                                                                                Text(
+                                                                                    "${if (showTeachersWithFirstname) {
+                                                                                        it.conductor?.forename
+                                                                                    } else {
+                                                                                        it.conductor?.forename?.take(
+                                                                                            1,
+                                                                                        ) + "."
+                                                                                    }} ${it.conductor?.name}: ",
+                                                                                )
+                                                                                Text(translateHistoryBody("Leistung", it.body, teachers))
+                                                                            }
+                                                                        }
+                                                                        gradeHistories.filterHistory().forEach {
+                                                                            Row {
+                                                                                Text(
+                                                                                    "${if (showTeachersWithFirstname) {
+                                                                                        it.conductor?.forename
+                                                                                    } else {
+                                                                                        it.conductor?.forename?.take(
+                                                                                            1,
+                                                                                        ) + "."
+                                                                                    }} ${it.conductor?.name}: ",
+                                                                                )
+                                                                                Text(translateHistoryBody("Note", it.body, teachers))
+                                                                            }
                                                                         }
                                                                     }
                                                                 }
