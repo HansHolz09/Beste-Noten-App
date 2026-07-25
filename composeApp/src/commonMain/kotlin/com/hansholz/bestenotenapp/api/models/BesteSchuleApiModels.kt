@@ -88,23 +88,32 @@ data class Announcement(
     val id: Int,
     val title: String,
     val message: String? = null,
-    val from: String,
-    val to: String,
+    @SerialName("read_from") val readFrom: String? = null,
+    @SerialName("read_to") val readTo: String? = null,
+    @SerialName("write_from") val writeFrom: String? = null,
+    @SerialName("write_to") val writeTo: String? = null,
+    @Deprecated("Use readFrom") val from: String? = null,
+    @Deprecated("Use readTo") val to: String? = null,
     @SerialName("for") val for_: String,
-    @SerialName("need_confirmation_from_student") val needConfirmationFromStudent: Int,
-    @SerialName("need_confirmation_from_guardian") val needConfirmationFromGuardian: Int,
+    @SerialName("need_confirmation_from_student") val needConfirmationFromStudent: String? = null,
+    @SerialName("need_confirmation_from_guardian") val needConfirmationFromGuardian: String? = null,
     @SerialName("students_count") val studentsCount: String? = null,
     @SerialName("guardians_count") val guardiansCount: String? = null,
+    @SerialName("read_students_count") val readStudentsCount: String? = null,
+    @SerialName("read_guardians_count") val readGuardiansCount: String? = null,
     @SerialName("all_students_count") val allStudentsCount: String? = null,
     @SerialName("all_guardians_count") val allGuardiansCount: String? = null,
     @SerialName("single_group") val singleGroup: Boolean,
     val type: AnnouncementType? = null,
     val groups: List<Group>? = null,
+    @SerialName("group_ids") val groupIds: String? = null,
+    @SerialName("student_ids") val studentIds: String? = null,
     val students: List<Student>? = null,
     val guardians: List<Guardian>? = null,
     @SerialName("all_students") val allStudents: List<Student>? = null,
     @SerialName("all_guardians") val allGuardians: List<Guardian>? = null,
     val teacher: Teacher? = null,
+    val stat: List<AnnouncementStat>? = null,
 )
 
 @Serializable
@@ -325,7 +334,7 @@ data class FinalCertificate(
 data class Finalgrade(
     val id: Int,
     val value: String? = null,
-    @SerialName("value_int") val valueInt: Double? = null,
+    @SerialName("value_int") val valueInt: JsonPrimitive? = null,
     @SerialName("value_calc") val valueCalc: JsonPrimitive? = null,
     @SerialName("value_calc_int") val valueCalcInt: String? = null,
     @SerialName("calculation_rule") val calculationRule: String? = null,
@@ -357,10 +366,13 @@ data class Grade(
     val id: Int,
     val value: String,
     @SerialName("given_at") val givenAt: String,
+    val read: String? = null,
     val student: Student? = null,
     val subject: Subject? = null,
     val collection: GradeCollection? = null,
     val teacher: Teacher? = null,
+    @SerialName("readBy") val readBy: Teacher? = null,
+    @SerialName("read_by_type") val readByType: String? = null,
     val histories: List<History>? = null,
 )
 
@@ -561,6 +573,7 @@ data class JournalLessonStudent(
     val lesson: JournalLesson? = null,
     @SerialName("journal_lesson_ids") val journalLessonIds: String? = null,
     val notes: List<JournalNote>? = null,
+    val time: TimeTableTimeLesson? = null,
 )
 
 @Serializable
@@ -779,18 +792,19 @@ data class Room(
 
 @Serializable
 data class School(
-    val id: Int,
-    val customer: Boolean,
-    val name: String,
-    val email: String,
+    val id: Int? = null,
+    val customer: Boolean? = null,
+    val name: String? = null,
+    val email: String? = null,
     val type: String? = null,
     @SerialName("postal_second_line") val postalSecondLine: String? = null,
-    val street: String,
-    @SerialName("street_nr") val streetNr: String,
-    @SerialName("postal_code") val postalCode: String,
-    val city: String,
-    val state: String,
+    val street: String? = null,
+    @SerialName("street_nr") val streetNr: String? = null,
+    @SerialName("postal_code") val postalCode: String? = null,
+    val city: String? = null,
+    val state: String? = null,
     @SerialName("logo_url") val logoUrl: String? = null,
+    val times: List<TimeTableTime>? = null,
 )
 
 @Serializable
@@ -1346,6 +1360,8 @@ data class Student(
     val guardians: List<Guardian>? = null,
     @SerialName("guardians_count") val guardiansCount: Int? = null,
     val tags: List<Tag>? = null,
+    @SerialName("notes_count") val notesCount: String? = null,
+    val status: Announcementable? = null,
 )
 
 @Serializable
@@ -1864,6 +1880,7 @@ data class User(
     @SerialName("phone_business") val phoneBusiness: String? = null,
     val role: String? = null,
     val school: School? = null,
+    val year: Year? = null,
     val students: List<Student>? = null,
     val teachers: List<Teacher>? = null,
     val guardians: List<Guardian>? = null,
@@ -1999,4 +2016,227 @@ data class VerifyTwoFactorUserRequest(
 @Serializable
 data class AddMembershipUserRequest(
     val token: String,
+)
+
+@Serializable
+data class Announcementable(
+    val id: String,
+    val read: Boolean,
+    val response: String? = null,
+    @SerialName("read_at") val readAt: String? = null,
+    val teacher: Teacher? = null,
+    val student: Student? = null,
+    val guardian: Guardian? = null,
+)
+
+@Serializable
+data class AnnouncementStat(
+    val group: Group,
+    @SerialName("students_read_count") val studentsReadCount: Int,
+    @SerialName("guardians_read_count") val guardiansReadCount: Int,
+    @SerialName("students_count") val studentsCount: Int,
+    @SerialName("guardians_count") val guardiansCount: Int,
+)
+
+@Serializable
+data class Attachment(
+    val id: String,
+    val filename: String,
+    @SerialName("filesize_kb") val filesizeKb: String,
+    @SerialName("attachmentable_type") val attachmentableType: String,
+    @SerialName("attachmentable_id") val attachmentableId: String,
+    val url: String,
+)
+
+@Serializable
+data class StoreAttachmentRequest(
+    @SerialName("attachmentable_type") val attachmentableType: String? = null,
+    @SerialName("attachmentable_id") val attachmentableId: Int? = null,
+    val attachment: ByteArray,
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as StoreAttachmentRequest
+
+        if (attachmentableId != other.attachmentableId) return false
+        if (attachmentableType != other.attachmentableType) return false
+        if (!attachment.contentEquals(other.attachment)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = attachmentableId ?: 0
+        result = 31 * result + (attachmentableType?.hashCode() ?: 0)
+        result = 31 * result + attachment.contentHashCode()
+        return result
+    }
+}
+
+@Serializable
+data class StoreAnnouncementResponseRequest(
+    val response: String? = null,
+)
+
+@Serializable
+data class IntervalStudent(
+    val id: String,
+    @SerialName("student_id") val studentId: String,
+    @SerialName("interval_id") val intervalId: String,
+    val custom: String,
+    @SerialName("certificate_type") val certificateType: String,
+    @SerialName("certificate_date") val certificateDate: String,
+    @SerialName("not_present_with_absence_count") val notPresentWithAbsenceCount: String,
+    @SerialName("not_present_without_absence_count") val notPresentWithoutAbsenceCount: String,
+    val deleted: Boolean,
+    val student: Student? = null,
+    val interval: Interval? = null,
+)
+
+@Serializable
+data class BatchFinalgradeItem(
+    val importAction: String,
+    val id: Int? = null,
+    @SerialName("student_id") val studentId: Int? = null,
+    @SerialName("subject_id") val subjectId: Int? = null,
+    @SerialName("interval_id") val intervalId: Int? = null,
+    val value: String? = null,
+    @SerialName("calculation_rule") val calculationRule: String? = null,
+    @SerialName("calculation_verbal") val calculationVerbal: String? = null,
+    @SerialName("calculation_for") val calculationFor: String? = null,
+)
+typealias BatchFinalgradeRequest = List<BatchFinalgradeItem>
+
+@Serializable
+data class BatchIntervalStudentRequest(
+    val items: List<BatchIntervalStudentItem>,
+)
+
+@Serializable
+data class BatchIntervalStudentItem(
+    @SerialName("student_id") val studentId: Int,
+    @SerialName("interval_id") val intervalId: Int,
+    @SerialName("certificate_type") val certificateType: String? = null,
+    @SerialName("certificate_date") val certificateDate: String? = null,
+    val custom: String? = null,
+    @SerialName("not_present_without_absence_count") val notPresentWithoutAbsenceCount: String? = null,
+    @SerialName("not_present_with_absence_count") val notPresentWithAbsenceCount: String? = null,
+)
+
+@Serializable
+data class BatchJournalLessonStudentItem(
+    val importAction: String,
+    val id: String? = null,
+    @SerialName("student_id") val studentId: Int? = null,
+    @SerialName("journal_lesson_id") val journalLessonId: String? = null,
+    val present: Boolean? = null,
+    @SerialName("too_early") val tooEarly: Int? = null,
+    @SerialName("too_late") val tooLate: Int? = null,
+    @SerialName("missing_homework") val missingHomework: Boolean? = null,
+    @SerialName("missing_equipment") val missingEquipment: Boolean? = null,
+    @SerialName("absence_id") val absenceId: Int? = null,
+)
+typealias BatchJournalLessonStudentRequest = List<BatchJournalLessonStudentItem>
+
+@Serializable
+data class StoreChecklistStudentRequest(
+    @SerialName("student_id") val studentId: Int,
+    val checked: Boolean,
+    @SerialName("checked_at") val checkedAt: String? = null,
+    val note: String? = null,
+)
+
+typealias BatchChecklistStudentRequest = List<StoreChecklistStudentRequest>
+
+@Serializable
+data class UpdateChecklistStudentRequest(
+    val checked: Boolean,
+    @SerialName("checked_at") val checkedAt: String? = null,
+    val note: String? = null,
+)
+
+@Serializable
+data class UpdateJournalDayStudentRequest(
+    val id: String,
+    val present: Boolean,
+    @SerialName("student_id") val studentId: Int,
+    @SerialName("absence_id") val absenceId: Int? = null,
+)
+
+@Serializable
+data class StoreNewsletterRequest(
+    val email: String,
+)
+
+@Serializable
+data class StoreOrUpdateSubstitutionPlanDayRequest(
+    val notes: String? = null,
+)
+
+@Serializable
+data class StoreSeatingPlanRequest(
+    val width: Int,
+    val height: Int,
+    @SerialName("room_id") val roomId: Int? = null,
+    @SerialName("group_id") val groupId: Int? = null,
+    val seats: JsonArray? = null,
+)
+
+@Serializable
+data class UpdateSeatingPlanRequest(
+    val width: Int? = null,
+    val height: Int? = null,
+    @SerialName("room_id") val roomId: Int? = null,
+    @SerialName("group_id") val groupId: Int? = null,
+    val seats: JsonArray? = null,
+)
+
+@Serializable
+data class ImportSaxsvsRequest(
+    val file: ByteArray,
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as ImportSaxsvsRequest
+
+        if (!file.contentEquals(other.file)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int = file.contentHashCode()
+}
+
+@Serializable
+data class FinalgradeSaxsvsRequest(
+    val file: ByteArray,
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as FinalgradeSaxsvsRequest
+
+        if (!file.contentEquals(other.file)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int = file.contentHashCode()
+}
+
+@Serializable
+data class DatabaseNotification(
+    val id: String,
+    val type: String? = null,
+    @SerialName("notifiable_type") val notifiableType: String? = null,
+    @SerialName("notifiable_id") val notifiableId: String? = null,
+    val data: JsonObject? = null,
+    @SerialName("read_at") val readAt: String? = null,
+    @SerialName("created_at") val createdAt: String? = null,
+    @SerialName("updated_at") val updatedAt: String? = null,
 )

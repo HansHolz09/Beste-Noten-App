@@ -375,8 +375,8 @@ class ViewModel(
         }
         try {
             val data =
-                year?.let { api.dayStudentCount(it.id, it.from, it.to).data.first() }
-                    ?: api.dayStudentCount().data.first()
+                year?.let { api.journalDayStudentStatisticsCount(filterRange = "${it.from},${it.to}").data.first() }
+                    ?: api.journalDayStudentStatisticsCount().data.first()
             couldReachBesteSchule()
             return data
         } catch (e: Exception) {
@@ -393,8 +393,8 @@ class ViewModel(
         }
         try {
             val data =
-                year?.let { api.lessonStudentCount(it.id, it.from, it.to).data.first() }
-                    ?: api.lessonStudentCount().data.first()
+                year?.let { api.journalLessonStudentStatisticsCount(filterRange = "${it.from},${it.to}").data.first() }
+                    ?: api.journalLessonStudentStatisticsCount().data.first()
             couldReachBesteSchule()
             return data
         } catch (e: Exception) {
@@ -415,7 +415,7 @@ class ViewModel(
             }
         }
         try {
-            val includes = listOf("grades", "interval", "grades.histories")
+            val includes = listOf("grades", "interval", "grades.histories", "histories")
             val collections =
                 if (filterYears.isNullOrEmpty()) {
                     getCollectionsPages(includes)
