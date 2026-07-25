@@ -167,7 +167,7 @@ class ViewModel(
         try {
             handleToken()
             val user = init()
-            if (user?.students.isNullOrEmpty()) {
+            if (user?.role !in listOf("student", "guardian")) {
                 toaster.show(
                     Toast(
                         message = "Es sind ausschließlich Schüler/Eltern-Accounts zulässig",
@@ -176,7 +176,7 @@ class ViewModel(
                 )
                 isLoading(false)
             } else {
-                user.students.size.let {
+                user!!.students!!.size.let {
                     if (it > 1) {
                         chooseStudent(user.students) {
                             put("studentId", it)
