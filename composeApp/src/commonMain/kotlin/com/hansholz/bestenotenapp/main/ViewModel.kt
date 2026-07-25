@@ -199,6 +199,7 @@ class ViewModel(
                         GradeNotifications.onLogin()
                     }
                 }
+                api.yearSetCurrent()
                 if (stayLoggedIn) {
                     putSecure("authToken", authToken.value!!)
                 }
