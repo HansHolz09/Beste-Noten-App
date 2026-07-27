@@ -104,6 +104,15 @@ jobs:
           if [ -z "$APK" ]; then APK=$(find "androidApp/build" -type f -iname "*release*.apk" | head -n1); fi
           cp "$APK" artifacts/android-universal.apk
 
+      - name: Enable KVM
+        if: ${{ inputs.run_smoke_tests }}
+        shell: bash
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       - name: AVD cache
         if: ${{ inputs.run_smoke_tests }}
         id: avd-cache
@@ -112,46 +121,104 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-34-google_apis-x86_64
+          key: avd-v1-api36-google_apis-x86_64
 
-      - name: Create AVD and generate snapshot for caching
+      - name: Create AVD snapshot
         if: ${{ inputs.run_smoke_tests && steps.avd-cache.outputs.cache-hit != 'true' }}
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 37
+          api-level: 36
           target: google_apis
           arch: x86_64
           avd-name: smoke-test-avd
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: >-
+            -no-window
+            -gpu swiftshader_indirect
+            -noaudio
+            -no-boot-anim
+            -camera-back none
           disable-animations: false
-          script: echo "Generated AVD snapshot for caching."
+          script: |
+            echo "Generated clean AVD snapshot for caching."
 
       - name: Smoke test Android app
         if: ${{ inputs.run_smoke_tests }}
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 37
+          api-level: 36
           target: google_apis
           arch: x86_64
           avd-name: smoke-test-avd
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: >-
+            -no-snapshot-save
+            -no-window
+            -gpu swiftshader_indirect
+            -noaudio
+            -no-boot-anim
+            -camera-back none
           disable-animations: true
           script: |
-            set -e
+            set -euo pipefail
+
             APK="artifacts/android-universal.apk"
-            PACKAGE=$(aapt dump badging "$APK" | grep package: | awk -F"'" '{print $2}')
-            ACTIVITY=$(aapt dump badging "$APK" | grep launchable-activity | awk -F"'" '{print $2}')
-            echo "Installing $PACKAGE ($ACTIVITY)"
+
+            if [ ! -f "$APK" ]; then
+              echo "APK not found: $APK"
+              exit 1
+            fi
+
+            PACKAGE=$(
+              aapt dump badging "$APK" |
+                awk -F"'" '/^package:/{print $2; exit}'
+            )
+
+            ACTIVITY=$(
+              aapt dump badging "$APK" |
+                awk -F"'" '/launchable-activity:/{print $2; exit}'
+            )
+
+            if [ -z "$PACKAGE" ]; then
+              echo "Could not determine package name."
+              aapt dump badging "$APK"
+              exit 1
+            fi
+
+            if [ -z "$ACTIVITY" ]; then
+              echo "Could not determine launchable activity."
+              aapt dump badging "$APK"
+              exit 1
+            fi
+
+            echo "Installing package: $PACKAGE"
+            echo "Launch activity: $ACTIVITY"
+
             adb install -r "$APK"
-            adb shell am start -n "$PACKAGE/$ACTIVITY"
+
+            adb logcat -c
+
+            adb shell am force-stop "$PACKAGE"
+            adb shell am start -W -n "$PACKAGE/$ACTIVITY"
+
             sleep 20
-            if adb shell pidof "$PACKAGE" > /dev/null; then
-              echo "Smoke test passed. App stayed alive for 20 seconds."
+
+            PID=$(adb shell pidof "$PACKAGE" | tr -d '\r')
+
+            if [ -n "$PID" ]; then
+              echo "Smoke test passed."
+              echo "App process $PID stayed alive for 20 seconds."
             else
-              echo "App process not found after 20 seconds."
-              adb logcat -d | tail -n 200
+              echo "Smoke test failed."
+              echo "App process was not found after 20 seconds."
+
+              adb shell dumpsys activity activities |
+                grep -A 10 -B 10 "$PACKAGE" || true
+
+              adb logcat -d |
+                grep -E "$PACKAGE|AndroidRuntime|FATAL EXCEPTION" |
+                tail -n 300 || true
+
               exit 1
             fi
 
@@ -255,56 +322,143 @@ jobs:
             CODE_SIGNING_IDENTITY=""
 
       - name: Smoke test iOS Simulator app
+        shell: bash
         run: |
           set -euo pipefail
 
-          APP="$(find build/simulator -maxdepth 4 -type d -name "*.app" | head -n1)"
-          if [ -z "$APP" ]; then
-            echo "No .app bundle found in simulator build output."
-            find build/simulator -maxdepth 5 -print
+          APP="$(
+            find build/simulator/Build/Products \
+              -type d \
+              -path "*-iphonesimulator/*.app" \
+              -print \
+              -quit
+          )"
+
+          if [ -z "$APP" ] || [ ! -d "$APP" ]; then
+            echo "No simulator .app bundle found."
+            find build/simulator/Build/Products -maxdepth 4 -print || true
             exit 1
           fi
 
-          BUNDLE_ID="$(defaults read "$APP/Info" CFBundleIdentifier)"
-          echo "Found app bundle: $APP ($BUNDLE_ID)"
+          INFO_PLIST="$APP/Info.plist"
 
-          DEVICE_ID="$(xcrun simctl list devices available -j | python3 -c '
-          import json, sys
+          if [ ! -f "$INFO_PLIST" ]; then
+            echo "Info.plist not found in app bundle: $APP"
+            find "$APP" -maxdepth 2 -print
+            exit 1
+          fi
+
+          BUNDLE_ID="$(
+            /usr/libexec/PlistBuddy \
+              -c "Print :CFBundleIdentifier" \
+              "$INFO_PLIST"
+          )"
+
+          if [ -z "$BUNDLE_ID" ]; then
+            echo "Could not determine CFBundleIdentifier."
+            plutil -p "$INFO_PLIST" || true
+            exit 1
+          fi
+
+          echo "Found app bundle: $APP"
+          echo "Bundle identifier: $BUNDLE_ID"
+
+          DEVICE_ID="$(
+            xcrun simctl list devices available -j |
+              python3 -c '
+          import json
+          import sys
+
           data = json.load(sys.stdin)
-          for runtime, devices in data["devices"].items():
-              for d in devices:
-                  if d["name"] == "iPhone 16" and d["isAvailable"]:
-                      print(d["udid"])
+
+          preferred_names = [
+              "iPhone 16",
+              "iPhone 17",
+              "iPhone 16 Pro",
+              "iPhone 17 Pro",
+          ]
+
+          available = [
+              device
+              for devices in data.get("devices", {}).values()
+              for device in devices
+              if device.get("isAvailable")
+              and device.get("deviceTypeIdentifier", "").startswith(
+                  "com.apple.CoreSimulator.SimDeviceType.iPhone"
+              )
+          ]
+
+          for name in preferred_names:
+              for device in available:
+                  if device.get("name") == name:
+                      print(device["udid"])
                       sys.exit(0)
+
+          if available:
+              print(available[0]["udid"])
+              sys.exit(0)
+
           sys.exit(1)
-          ')"
+          '
+          )"
 
           if [ -z "$DEVICE_ID" ]; then
-            echo "No iPhone 16 simulator found."
+            echo "No available iPhone simulator found."
             xcrun simctl list devices available
             exit 1
           fi
 
-          echo "Booting simulator $DEVICE_ID"
-          xcrun simctl boot "$DEVICE_ID" || true
+          cleanup() {
+            echo "Shutting down simulator."
+            xcrun simctl terminate "$DEVICE_ID" "$BUNDLE_ID" 2>/dev/null || true
+            xcrun simctl shutdown "$DEVICE_ID" 2>/dev/null || true
+          }
+
+          trap cleanup EXIT
+
+          echo "Booting simulator: $DEVICE_ID"
+          xcrun simctl boot "$DEVICE_ID" 2>/dev/null || true
           xcrun simctl bootstatus "$DEVICE_ID" -b
 
-          echo "Installing $APP"
+          echo "Installing app."
+          xcrun simctl uninstall "$DEVICE_ID" "$BUNDLE_ID" 2>/dev/null || true
           xcrun simctl install "$DEVICE_ID" "$APP"
 
           echo "Launching $BUNDLE_ID"
-          xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID"
 
-          sleep 20
+          LAUNCH_OUTPUT="$(
+            xcrun simctl launch \
+              --terminate-running-process \
+              "$DEVICE_ID" \
+              "$BUNDLE_ID"
+          )"
 
-          if xcrun simctl spawn "$DEVICE_ID" launchctl list | grep -q "$BUNDLE_ID"; then
-            echo "Smoke test passed. App stayed alive for 20 seconds."
-          else
-            echo "App process not found after 20 seconds."
+          echo "$LAUNCH_OUTPUT"
+
+          PID="$(printf '%s\n' "$LAUNCH_OUTPUT" | awk -F': ' 'NF == 2 { print $2 }')"
+
+          if ! [[ "$PID" =~ ^[0-9]+$ ]]; then
+            echo "Could not determine application PID."
             exit 1
           fi
 
-          xcrun simctl shutdown "$DEVICE_ID" || true
+          echo "Application launched with PID $PID."
+          sleep 20
+
+          if xcrun simctl spawn "$DEVICE_ID" kill -0 "$PID" 2>/dev/null; then
+            echo "Smoke test passed. App stayed alive for 20 seconds."
+          else
+            echo "App process $PID is no longer running."
+
+            echo "Recent application logs:"
+            xcrun simctl spawn "$DEVICE_ID" log show \
+              --style compact \
+              --last 2m \
+              --predicate "process == \"Beste-Noten-App\" OR eventMessage CONTAINS[c] \"$BUNDLE_ID\"" \
+              | tail -n 300 || true
+
+            exit 1
+          fi
 
   windows-x64:
     if: ${{ inputs.build_windows_x64 }}
