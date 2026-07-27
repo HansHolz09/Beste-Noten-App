@@ -91,6 +91,7 @@ class ViewModel(
     val mediumExpandedDrawerState = mutableStateOf(DrawerState(DrawerValue.Open))
 
     val user = mutableStateOf<User?>(null)
+    val level = mutableStateOf<Level?>(null)
     val currentJournalDay = mutableStateOf<JournalDay?>(null)
     val journalWeeks = mutableStateListOf<Pair<String, JournalWeek>>()
     val currentTimetable = mutableStateOf<TimeTable?>(null)
@@ -334,6 +335,9 @@ class ViewModel(
         }
         if (!authToken.value.isNullOrEmpty()) {
             user.value = api.userMe().data
+            user.value?.students?.find { it.id.toString() == studentId.value }?.metaGroups?.getOrNull(0)?.id?.let {
+                level.value = api.groupsShow(it, listOf("level")).data.level
+            }
         }
         return user.value
     }
