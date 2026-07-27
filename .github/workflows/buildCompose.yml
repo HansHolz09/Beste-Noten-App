@@ -21,7 +21,7 @@ on:
       upload_wasm_as_pages_artifact:
         type: boolean
         default: false
-      run_desktop_smoke_tests:
+      run_smoke_tests:
         type: boolean
         default: false
       ignore_artifact_upload_errors:
@@ -104,6 +104,57 @@ jobs:
           if [ -z "$APK" ]; then APK=$(find "androidApp/build" -type f -iname "*release*.apk" | head -n1); fi
           cp "$APK" artifacts/android-universal.apk
 
+      - name: AVD cache
+        if: ${{ inputs.run_smoke_tests }}
+        id: avd-cache
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-34-google_apis-x86_64
+
+      - name: Create AVD and generate snapshot for caching
+        if: ${{ inputs.run_smoke_tests && steps.avd-cache.outputs.cache-hit != 'true' }}
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 37
+          target: google_apis
+          arch: x86_64
+          avd-name: smoke-test-avd
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
+      - name: Smoke test Android app
+        if: ${{ inputs.run_smoke_tests }}
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 37
+          target: google_apis
+          arch: x86_64
+          avd-name: smoke-test-avd
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: |
+            set -e
+            APK="artifacts/android-universal.apk"
+            PACKAGE=$(aapt dump badging "$APK" | grep package: | awk -F"'" '{print $2}')
+            ACTIVITY=$(aapt dump badging "$APK" | grep launchable-activity | awk -F"'" '{print $2}')
+            echo "Installing $PACKAGE ($ACTIVITY)"
+            adb install -r "$APK"
+            adb shell am start -n "$PACKAGE/$ACTIVITY"
+            sleep 20
+            if adb shell pidof "$PACKAGE" > /dev/null; then
+              echo "Smoke test passed. App stayed alive for 20 seconds."
+            else
+              echo "App process not found after 20 seconds."
+              adb logcat -d | tail -n 200
+              exit 1
+            fi
+
       - uses: actions/upload-artifact@v7
         continue-on-error: ${{ inputs.ignore_artifact_upload_errors }}
         with:
@@ -162,6 +213,99 @@ jobs:
           name: ios-unsigned-ipa
           path: ios-unsigned.ipa
 
+  ios_simulator:
+    if: ${{ inputs.build_ios && inputs.run_smoke_tests }}
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ inputs.temurin_version }}
+
+      - name: Cache Kotlin/Native Tooling
+        uses: actions/cache@v6
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-konan-${{ hashFiles('gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-konan-
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Set up Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Build for iOS Simulator
+        run: |
+          set -e
+          xcodebuild build \
+            -project iosApp/iosApp.xcodeproj \
+            -scheme "Release App" \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -arch arm64 \
+            -derivedDataPath build/simulator \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_ENTITLEMENTS="" \
+            CODE_SIGNING_IDENTITY=""
+
+      - name: Smoke test iOS Simulator app
+        run: |
+          set -euo pipefail
+
+          APP="$(find build/simulator -maxdepth 4 -type d -name "*.app" | head -n1)"
+          if [ -z "$APP" ]; then
+            echo "No .app bundle found in simulator build output."
+            find build/simulator -maxdepth 5 -print
+            exit 1
+          fi
+
+          BUNDLE_ID="$(defaults read "$APP/Info" CFBundleIdentifier)"
+          echo "Found app bundle: $APP ($BUNDLE_ID)"
+
+          DEVICE_ID="$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          data = json.load(sys.stdin)
+          for runtime, devices in data["devices"].items():
+              for d in devices:
+                  if d["name"] == "iPhone 16" and d["isAvailable"]:
+                      print(d["udid"])
+                      sys.exit(0)
+          sys.exit(1)
+          ')"
+
+          if [ -z "$DEVICE_ID" ]; then
+            echo "No iPhone 16 simulator found."
+            xcrun simctl list devices available
+            exit 1
+          fi
+
+          echo "Booting simulator $DEVICE_ID"
+          xcrun simctl boot "$DEVICE_ID" || true
+          xcrun simctl bootstatus "$DEVICE_ID" -b
+
+          echo "Installing $APP"
+          xcrun simctl install "$DEVICE_ID" "$APP"
+
+          echo "Launching $BUNDLE_ID"
+          xcrun simctl launch "$DEVICE_ID" "$BUNDLE_ID"
+
+          sleep 20
+
+          if xcrun simctl spawn "$DEVICE_ID" launchctl list | grep -q "$BUNDLE_ID"; then
+            echo "Smoke test passed. App stayed alive for 20 seconds."
+          else
+            echo "App process not found after 20 seconds."
+            exit 1
+          fi
+
+          xcrun simctl shutdown "$DEVICE_ID" || true
+
   windows-x64:
     if: ${{ inputs.build_windows_x64 }}
     runs-on: windows-latest
@@ -200,7 +344,7 @@ jobs:
           cp "$EXE" artifacts/windows-x64.exe
 
       - name: Smoke test Windows app
-        if: ${{ inputs.run_desktop_smoke_tests }}
+        if: ${{ inputs.run_smoke_tests }}
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
@@ -329,7 +473,7 @@ jobs:
           cp "$EXE" artifacts/windows-arm64.exe
 
       - name: Smoke test Windows app
-        if: ${{ inputs.run_desktop_smoke_tests }}
+        if: ${{ inputs.run_smoke_tests }}
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
@@ -453,7 +597,7 @@ jobs:
           cp "$DMG" "artifacts/macos-x64.dmg"
 
       - name: Smoke test macOS app
-        if: ${{ inputs.run_desktop_smoke_tests }}
+        if: ${{ inputs.run_smoke_tests }}
         shell: bash
         run: |
           set -euo pipefail
@@ -567,7 +711,7 @@ jobs:
           cp "$DMG" "artifacts/macos-arm64.dmg"
 
       - name: Smoke test macOS app
-        if: ${{ inputs.run_desktop_smoke_tests }}
+        if: ${{ inputs.run_smoke_tests }}
         shell: bash
         run: |
           set -euo pipefail
@@ -685,7 +829,7 @@ jobs:
           cp "$DEB" "artifacts/linux-x64.deb"
 
       - name: Smoke test Linux app
-        if: ${{ inputs.run_desktop_smoke_tests }}
+        if: ${{ inputs.run_smoke_tests }}
         shell: bash
         run: |
           set -euo pipefail
@@ -836,7 +980,7 @@ jobs:
           cp "$DEB" "artifacts/linux-arm64.deb"
 
       - name: Smoke test Linux app
-        if: ${{ inputs.run_desktop_smoke_tests }}
+        if: ${{ inputs.run_smoke_tests }}
         shell: bash
         run: |
           set -euo pipefail
@@ -970,6 +1114,65 @@ jobs:
         run: |
           set -e
           ./gradlew :${MODULE_PATH}:wasmJsBrowserDistribution
+
+      - name: Smoke test WASM app
+        if: ${{ inputs.run_smoke_tests }}
+        run: |
+          set -e
+
+          npm install --no-save playwright serve
+
+          DIST_DIR="${MODULE_PATH}/build/dist/wasmJs/productionExecutable"
+          npx serve -l 8080 "$DIST_DIR" &
+          SERVER_PID=$!
+
+          sleep 3
+
+          npx playwright install --with-deps chromium
+
+          cat > smoke-test.mjs << 'EOF'
+          import { chromium } from 'playwright';
+
+          const browser = await chromium.launch();
+          const page = await browser.newPage();
+
+          const errors = [];
+
+          page.on('pageerror', (err) => {
+            errors.push(`Uncaught exception: ${err.message}`);
+          });
+
+          page.on('console', (msg) => {
+            if (msg.type() === 'error') {
+              errors.push(`Console error: ${msg.text()}`);
+            }
+          });
+
+          page.on('requestfailed', (req) => {
+            errors.push(`Request failed: ${req.url()} - ${req.failure()?.errorText}`);
+          });
+
+          await page.goto('http://localhost:8080', { waitUntil: 'load', timeout: 30000 });
+          await page.waitForTimeout(10000);
+
+          await browser.close();
+
+          if (errors.length > 0) {
+            console.error('Smoke test failed with the following errors:');
+            for (const e of errors) {
+              console.error(' - ' + e);
+            }
+            process.exit(1);
+          }
+
+          console.log('Smoke test passed. No errors detected after 10 seconds.');
+          EOF
+
+          node smoke-test.mjs
+          EXIT_CODE=$?
+
+          kill "$SERVER_PID" || true
+          exit $EXIT_CODE
 
       - name: Upload WASM as normal artifact
         if: ${{ !inputs.upload_wasm_as_pages_artifact }}

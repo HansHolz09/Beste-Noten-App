@@ -43,7 +43,7 @@ jobs:
     uses: ./.github/workflows/buildCompose.yml
     with:
       upload_wasm_as_pages_artifact: false
-      run_desktop_smoke_tests: true
+      run_smoke_tests: true
       ignore_artifact_upload_errors: true
       build_android: true
       build_ios: true
