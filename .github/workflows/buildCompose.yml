@@ -160,7 +160,7 @@ jobs:
             -camera-back none
           disable-animations: true
           script: |
-            set -euo pipefail
+            set -eu
 
             APK="artifacts/android-universal.apk"
 
@@ -197,13 +197,12 @@ jobs:
             adb install -r "$APK"
 
             adb logcat -c
-
             adb shell am force-stop "$PACKAGE"
             adb shell am start -W -n "$PACKAGE/$ACTIVITY"
 
             sleep 20
 
-            PID=$(adb shell pidof "$PACKAGE" | tr -d '\r')
+            PID="$(adb shell pidof "$PACKAGE" | tr -d '\r' || true)"
 
             if [ -n "$PID" ]; then
               echo "Smoke test passed."
@@ -420,6 +419,12 @@ jobs:
           xcrun simctl boot "$DEVICE_ID" 2>/dev/null || true
           xcrun simctl bootstatus "$DEVICE_ID" -b
 
+          EXECUTABLE="$(
+            /usr/libexec/PlistBuddy \
+              -c "Print :CFBundleExecutable" \
+              "$INFO_PLIST"
+          )"
+
           echo "Installing app."
           xcrun simctl uninstall "$DEVICE_ID" "$BUNDLE_ID" 2>/dev/null || true
           xcrun simctl install "$DEVICE_ID" "$APP"
@@ -435,26 +440,35 @@ jobs:
 
           echo "$LAUNCH_OUTPUT"
 
-          PID="$(printf '%s\n' "$LAUNCH_OUTPUT" | awk -F': ' 'NF == 2 { print $2 }')"
+          INITIAL_PID="$(
+            printf '%s\n' "$LAUNCH_OUTPUT" |
+              awk -F': ' 'NF == 2 { print $2 }'
+          )"
 
-          if ! [[ "$PID" =~ ^[0-9]+$ ]]; then
-            echo "Could not determine application PID."
-            exit 1
-          fi
+          echo "Application launched with PID $INITIAL_PID."
 
-          echo "Application launched with PID $PID."
           sleep 20
 
-          if xcrun simctl spawn "$DEVICE_ID" kill -0 "$PID" 2>/dev/null; then
-            echo "Smoke test passed. App stayed alive for 20 seconds."
-          else
-            echo "App process $PID is no longer running."
+          RUNNING_PID="$(
+            xcrun simctl spawn "$DEVICE_ID" ps -axo pid=,comm= |
+              awk -v executable="$EXECUTABLE" '
+                $0 ~ ("/" executable "$") {
+                  print $1
+                  exit
+                }
+              '
+          )"
 
-            echo "Recent application logs:"
+          if [ -n "$RUNNING_PID" ]; then
+            echo "Smoke test passed."
+            echo "App stayed alive with PID $RUNNING_PID."
+          else
+            echo "App process was not found after 20 seconds."
+
             xcrun simctl spawn "$DEVICE_ID" log show \
               --style compact \
               --last 2m \
-              --predicate "process == \"Beste-Noten-App\" OR eventMessage CONTAINS[c] \"$BUNDLE_ID\"" \
+              --predicate "process == \"$EXECUTABLE\" OR eventMessage CONTAINS[c] \"$BUNDLE_ID\"" \
               | tail -n 300 || true
 
             exit 1
