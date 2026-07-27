@@ -55,22 +55,49 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import bestenotenapp.composeapp.generated.resources.Res
-import bestenotenapp.composeapp.generated.resources.grades
-import bestenotenapp.composeapp.generated.resources.stats
-import bestenotenapp.composeapp.generated.resources.subjectsAndTeachers
-import bestenotenapp.composeapp.generated.resources.timetable
 import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Abc
+import com.composables.icons.materialsymbols.rounded.Account_circle
+import com.composables.icons.materialsymbols.rounded.Alternate_email
+import com.composables.icons.materialsymbols.rounded.Apartment
+import com.composables.icons.materialsymbols.rounded.Architecture
+import com.composables.icons.materialsymbols.rounded.Calculate
+import com.composables.icons.materialsymbols.rounded.Date_range
+import com.composables.icons.materialsymbols.rounded.Demography
+import com.composables.icons.materialsymbols.rounded.Electric_bolt
+import com.composables.icons.materialsymbols.rounded.Event_busy
+import com.composables.icons.materialsymbols.rounded.Experiment
+import com.composables.icons.materialsymbols.rounded.Face
+import com.composables.icons.materialsymbols.rounded.Face_2
+import com.composables.icons.materialsymbols.rounded.Face_3
+import com.composables.icons.materialsymbols.rounded.Face_4
+import com.composables.icons.materialsymbols.rounded.Face_5
+import com.composables.icons.materialsymbols.rounded.Face_6
+import com.composables.icons.materialsymbols.rounded.Format_list_numbered
+import com.composables.icons.materialsymbols.rounded.Globe
+import com.composables.icons.materialsymbols.rounded.Health_cross
+import com.composables.icons.materialsymbols.rounded.Info
+import com.composables.icons.materialsymbols.rounded.Insights
+import com.composables.icons.materialsymbols.rounded.Labs
+import com.composables.icons.materialsymbols.rounded.Location_on
 import com.composables.icons.materialsymbols.rounded.Menu
 import com.composables.icons.materialsymbols.rounded.News
 import com.composables.icons.materialsymbols.rounded.Refresh
+import com.composables.icons.materialsymbols.rounded.Schedule
+import com.composables.icons.materialsymbols.rounded.School
+import com.composables.icons.materialsymbols.rounded.Sick
+import com.composables.icons.materialsymbols.rounded.Signature
+import com.composables.icons.materialsymbols.rounded.Sports
+import com.composables.icons.materialsymbols.rounded.Sports_and_outdoors
+import com.composables.icons.materialsymbols.rounded.Sticky_note_2
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.components.GradeValueBox
+import com.hansholz.bestenotenapp.components.ScatterConfig
+import com.hansholz.bestenotenapp.components.ScatterItem
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.TwoToneLinearWavyProgressIndicator
 import com.hansholz.bestenotenapp.components.UpdateOnNewDay
@@ -81,7 +108,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
-import com.hansholz.bestenotenapp.components.repeatingBackground
+import com.hansholz.bestenotenapp.components.scatteredIconBackground
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalShowCurrentLesson
 import com.hansholz.bestenotenapp.main.LocalShowGreetings
@@ -109,11 +136,9 @@ import com.pushpal.jetlime.LocalJetLimeStyle
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
-import org.jetbrains.compose.resources.imageResource
 import org.kodein.emoji.compose.m3.TextWithNotoAnimatedEmoji
 import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.math.roundToInt
-import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
@@ -253,7 +278,6 @@ fun Home(
                         }
                     }
                     item {
-                        val imageBitmap = imageResource(Res.drawable.grades)
                         Box(
                             Modifier
                                 .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
@@ -261,11 +285,23 @@ fun Home(
                                 .padding(10.dp)
                                 .clip(RoundedCornerShape(24.dp))
                                 .background(colorScheme.surfaceContainerHighest.copy(0.7f))
-                                .repeatingBackground(
-                                    imageBitmap = imageBitmap,
+                                .scatteredIconBackground(
+                                    items =
+                                        remember {
+                                            listOf(
+                                                ScatterItem.TextItem("1+"),
+                                                ScatterItem.TextItem("1"),
+                                                ScatterItem.TextItem("1-"),
+                                                ScatterItem.TextItem("2"),
+                                                ScatterItem.TextItem("3+"),
+                                                ScatterItem.TextItem("4-"),
+                                                ScatterItem.TextItem("5"),
+                                                ScatterItem.TextItem("6"),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.School),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.School),
+                                            )
+                                        },
                                     alpha = backgroundAlpha.value,
-                                    scale = 0.75f,
-                                    offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = 0f) },
                                 ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
                                 .clickable {
                                     scope.launch {
@@ -351,7 +387,6 @@ fun Home(
                         }
                     }
                     item {
-                        val imageBitmap = imageResource(Res.drawable.timetable)
                         Box(
                             Modifier
                                 .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
@@ -359,11 +394,32 @@ fun Home(
                                 .padding(10.dp)
                                 .clip(RoundedCornerShape(24.dp))
                                 .background(colorScheme.surfaceContainerHighest.copy(0.7f))
-                                .repeatingBackground(
-                                    imageBitmap = imageBitmap,
+                                .scatteredIconBackground(
+                                    items =
+                                        remember {
+                                            listOf(
+                                                ScatterItem.TextItem("Ast"),
+                                                ScatterItem.TextItem("Bio"),
+                                                ScatterItem.TextItem("Ch"),
+                                                ScatterItem.TextItem("De"),
+                                                ScatterItem.TextItem("Eng"),
+                                                ScatterItem.TextItem("Eth"),
+                                                ScatterItem.TextItem("Geo"),
+                                                ScatterItem.TextItem("Ge"),
+                                                ScatterItem.TextItem("Inf"),
+                                                ScatterItem.TextItem("Ku"),
+                                                ScatterItem.TextItem("Ma"),
+                                                ScatterItem.TextItem("Mu"),
+                                                ScatterItem.TextItem("Ph"),
+                                                ScatterItem.TextItem("Spo"),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Date_range),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Date_range),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Date_range),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Date_range),
+                                            )
+                                        },
+                                    config = ScatterConfig(cellSize = 85.dp, itemSizeFraction = 0.4f),
                                     alpha = backgroundAlpha.value,
-                                    scale = 0.6f,
-                                    offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = -50f) },
                                 ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
                                 .clickable {
                                     scope.launch {
@@ -499,7 +555,14 @@ fun Home(
                                                                                 (it.type?.name?.replace("Substitution Plan", "Vertretungsplan") ?: "?") +
                                                                                     ": ${it.description ?: "Keine Beschreibung"}",
                                                                             modifier = Modifier.padding(vertical = 5.dp),
-                                                                            color = if (currentTime in lessonTimeStart..lessonTimeEnd) colorScheme.primary else Color.Unspecified,
+                                                                            color =
+                                                                                if (currentTime in
+                                                                                    lessonTimeStart..lessonTimeEnd
+                                                                                ) {
+                                                                                    colorScheme.primary
+                                                                                } else {
+                                                                                    Color.Unspecified
+                                                                                },
                                                                             style = typography.bodyMedium,
                                                                         )
                                                                     }
@@ -540,7 +603,6 @@ fun Home(
                         }
                     }
                     item {
-                        val imageBitmap = imageResource(Res.drawable.subjectsAndTeachers)
                         Box(
                             Modifier
                                 .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
@@ -548,11 +610,32 @@ fun Home(
                                 .padding(10.dp)
                                 .clip(RoundedCornerShape(24.dp))
                                 .background(colorScheme.surfaceContainerHighest.copy(0.7f))
-                                .repeatingBackground(
-                                    imageBitmap = imageBitmap,
+                                .scatteredIconBackground(
+                                    items =
+                                        remember {
+                                            listOf(
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Experiment),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Labs),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Electric_bolt),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Calculate),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Globe),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Sports),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Sports_and_outdoors),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Architecture),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Abc),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Face),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Face_2),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Face_3),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Face_4),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Face_5),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Face_6),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Demography),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Demography),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Demography),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Demography),
+                                            )
+                                        },
                                     alpha = backgroundAlpha.value,
-                                    scale = 0.6f,
-                                    offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = -100f) },
                                 ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
                                 .clickable {
                                     scope.launch {
@@ -597,7 +680,6 @@ fun Home(
                         }
                     }
                     item {
-                        val imageBitmap = imageResource(Res.drawable.stats)
                         Box(
                             Modifier
                                 .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
@@ -605,12 +687,21 @@ fun Home(
                                 .padding(10.dp)
                                 .clip(RoundedCornerShape(24.dp))
                                 .background(colorScheme.surfaceContainerHighest.copy(0.7f))
-                                .repeatingBackground(
-                                    imageBitmap = imageBitmap,
+                                .scatteredIconBackground(
+                                    items =
+                                        remember {
+                                            listOf(
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Sick),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Health_cross),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Event_busy),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Schedule),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Signature),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Sticky_note_2),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Insights),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Insights),
+                                            )
+                                        },
                                     alpha = backgroundAlpha.value,
-                                    scale = 0.5f,
-                                    offset = remember { Offset(x = Random.nextFloat() * imageBitmap.width, y = 0f) },
-                                    cropPx = 30,
                                 ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
                                 .clickable {
                                     homeViewModel.isStatsDialogShown = true
