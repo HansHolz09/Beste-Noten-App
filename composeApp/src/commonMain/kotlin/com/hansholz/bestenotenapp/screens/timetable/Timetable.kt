@@ -225,8 +225,8 @@ fun Timetable(
                     var week by remember { mutableStateOf<JournalWeek?>(null) }
                     LaunchedEffect(weekDate, showAbsences) {
                         isLoading = true
-                        if (viewModel.years.isEmpty()) {
-                            viewModel.getYears()?.let { viewModel.years.addAll(it) }
+                        while (viewModel.years.isEmpty()) {
+                            delay(250)
                         }
                         week = viewModel.getJournalWeek(weekDate, getAbsences = showAbsences && pagerState.currentPage == currentPage)
                         isLoading = false
