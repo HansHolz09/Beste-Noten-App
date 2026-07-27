@@ -381,8 +381,8 @@ class ViewModel(
         }
         try {
             val data =
-                year?.let { api.journalDayStudentStatisticsCount(filterRange = "${it.from},${it.to}").data.first() }
-                    ?: api.journalDayStudentStatisticsCount().data.first()
+                year?.let { api.journalDayStudentStatisticsCount(filterRange = "${it.from},${it.to}").data.firstOrNull() }
+                    ?: api.journalDayStudentStatisticsCount().data.firstOrNull()
             couldReachBesteSchule()
             return data
         } catch (e: Exception) {
@@ -399,8 +399,8 @@ class ViewModel(
         }
         try {
             val data =
-                year?.let { api.journalLessonStudentStatisticsCount(filterRange = "${it.from},${it.to}").data.first() }
-                    ?: api.journalLessonStudentStatisticsCount().data.first()
+                year?.let { api.journalLessonStudentStatisticsCount(filterRange = "${it.from},${it.to}").data.firstOrNull() }
+                    ?: api.journalLessonStudentStatisticsCount().data.firstOrNull()
             couldReachBesteSchule()
             return data
         } catch (e: Exception) {
