@@ -773,11 +773,57 @@ fun Home(
                             }
                         }
                     }
+                    if (viewModel.user.value != null && !viewModel.isDemoAccount.value) {
+                        item {
+                            Box(
+                                Modifier
+                                    .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
+                                    .fillMaxWidth()
+                                    .padding(10.dp)
+                                    .clip(RoundedCornerShape(24.dp))
+                                    .background(colorScheme.surfaceContainerHighest.copy(0.7f))
+                                    .scatteredIconBackground(
+                                        items =
+                                            remember {
+                                                listOf(
+                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Account_circle),
+                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Info),
+                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Alternate_email),
+                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Format_list_numbered),
+                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Location_on),
+                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Apartment),
+                                                )
+                                            },
+                                        alpha = backgroundAlpha.value,
+                                    ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
+                                    .clickable {
+                                        homeViewModel.isAccountSchoolDialogShown = true
+                                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                                    },
+                            ) {
+                                Column(Modifier.fillMaxWidth()) {
+                                    Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
+                                        Text(
+                                            text = "Account- und Schuldaten",
+                                            modifier = Modifier.align(Alignment.Center),
+                                            style = typography.headlineSmall,
+                                        )
+                                    }
+                                    Text(
+                                        text = "Tippen, um deine Account- und Schuldaten einsehen zu können",
+                                        modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                        textAlign = TextAlign.Center,
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
             topAppBarBackground(innerPadding.calculateTopPadding())
         }
 
         StatsDialog(viewModel, homeViewModel)
+        AccountSchoolDialog(viewModel, homeViewModel)
     }
 }

@@ -22,6 +22,7 @@ class HomeViewModel(
 
     var isStatsDialogShown by mutableStateOf(false)
     var isStatsDialogLoading by mutableStateOf(true)
+    var isAccountSchoolDialogShown by mutableStateOf(false)
 
     fun refreshGrades(viewModel: com.hansholz.bestenotenapp.main.ViewModel) {
         viewModelScope.launch {
