@@ -148,46 +148,60 @@ jobs:
         run: |
           cat > "$RUNNER_TEMP/android-smoke-test.sh" <<'EOF'
           #!/usr/bin/env bash
-          set -euo pipefail
+          set -eu
 
           APK="artifacts/android-universal.apk"
 
-          if [[ ! -f "$APK" ]]; then
+          if [ ! -f "$APK" ]; then
             echo "APK not found: $APK"
             exit 1
           fi
 
           AAPT="$(command -v aapt || true)"
 
-          if [[ -z "$AAPT" ]]; then
-            AAPT="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -n 1)"
+          if [ -z "$AAPT" ]; then
+            AAPT="$(
+              find "$ANDROID_HOME/build-tools" \
+                -type f \
+                -name aapt \
+                -print |
+                sort -V |
+                tail -n 1
+            )"
           fi
 
-          if [[ -z "$AAPT" || ! -x "$AAPT" ]]; then
+          if [ -z "$AAPT" ] || [ ! -x "$AAPT" ]; then
             echo "Could not find aapt."
-            find "$ANDROID_HOME/build-tools" -maxdepth 2 -type f -name 'aapt*' || true
+            find "$ANDROID_HOME/build-tools" \
+              -maxdepth 2 \
+              -type f \
+              -name 'aapt*' || true
             exit 1
           fi
 
+          echo "Using aapt: $AAPT"
+
+          BADGING="$("$AAPT" dump badging "$APK")"
+
           PACKAGE="$(
-            "$AAPT" dump badging "$APK" |
+            printf '%s\n' "$BADGING" |
               awk -F"'" '/^package:/{print $2; exit}'
           )"
 
           ACTIVITY="$(
-            "$AAPT" dump badging "$APK" |
+            printf '%s\n' "$BADGING" |
               awk -F"'" '/^launchable-activity:/{print $2; exit}'
           )"
 
-          if [[ -z "$PACKAGE" ]]; then
+          if [ -z "$PACKAGE" ]; then
             echo "Could not determine package name."
-            "$AAPT" dump badging "$APK"
+            printf '%s\n' "$BADGING"
             exit 1
           fi
 
-          if [[ -z "$ACTIVITY" ]]; then
+          if [ -z "$ACTIVITY" ]; then
             echo "Could not determine launchable activity."
-            "$AAPT" dump badging "$APK"
+            printf '%s\n' "$BADGING"
             exit 1
           fi
 
@@ -203,9 +217,10 @@ jobs:
             adb shell am start -W -n "$PACKAGE/$ACTIVITY"
           )"
 
-          echo "$START_OUTPUT"
+          printf '%s\n' "$START_OUTPUT"
 
-          if echo "$START_OUTPUT" | grep -qE '^Error:|Exception'; then
+          if printf '%s\n' "$START_OUTPUT" |
+              grep -E '^Error:|Exception' >/dev/null; then
             echo "Android activity could not be started."
             exit 1
           fi
@@ -214,7 +229,7 @@ jobs:
 
           PID="$(adb shell pidof "$PACKAGE" | tr -d '\r' || true)"
 
-          if [[ -n "$PID" ]]; then
+          if [ -n "$PID" ]; then
             echo "Smoke test passed."
             echo "App process $PID stayed alive for 20 seconds."
             exit 0
