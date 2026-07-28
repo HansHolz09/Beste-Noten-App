@@ -340,13 +340,68 @@ jobs:
       - name: Set up Xcode
         run: sudo xcode-select -s /Applications/Xcode.app
 
+      - name: Boot iOS Simulator (in background)
+        id: boot_sim
+        run: |
+          set -euo pipefail
+          
+          DEVICE_ID="$(
+            xcrun simctl list devices available -j |
+              python3 -c '
+          import json
+          import sys
+          
+          data = json.load(sys.stdin)
+          
+          preferred_names = [
+              "iPhone 17",
+              "iPhone 17 Pro",
+              "iPhone 16",
+              "iPhone 16 Pro",
+          ]
+          
+          available = [
+              device
+              for devices in data.get("devices", {}).values()
+              for device in devices
+              if device.get("isAvailable")
+              and device.get("deviceTypeIdentifier", "").startswith(
+                  "com.apple.CoreSimulator.SimDeviceType.iPhone"
+              )
+          ]
+          
+          for name in preferred_names:
+              for device in available:
+                  if device.get("name") == name:
+                      print(device["udid"])
+                      sys.exit(0)
+          
+          if available:
+              print(available[0]["udid"])
+              sys.exit(0)
+          
+          sys.exit(1)
+          '
+          )"
+
+          if [ -z "$DEVICE_ID" ]; then
+            echo "No available iPhone simulator found."
+            xcrun simctl list devices available
+            exit 1
+          fi
+
+          echo "Booting simulator in background: $DEVICE_ID"
+          xcrun simctl boot "$DEVICE_ID" 2>/dev/null || true
+          
+          echo "device_id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
+
       - name: Build for iOS Simulator
         run: |
           set -e
           xcodebuild build \
             -project iosApp/iosApp.xcodeproj \
             -scheme "Release App" \
-            -configuration Release \
+            -configuration Debug \
             -sdk iphonesimulator \
             -arch arm64 \
             -derivedDataPath build/simulator \
@@ -357,6 +412,8 @@ jobs:
 
       - name: Smoke test iOS Simulator app
         shell: bash
+        env:
+          DEVICE_ID: ${{ steps.boot_sim.outputs.device_id }}
         run: |
           set -euo pipefail
 
@@ -400,24 +457,15 @@ jobs:
             exit 1
           fi
 
-          echo "Found app bundle: $APP"
-          echo "Bundle identifier: $BUNDLE_ID"
-          echo "Executable: $EXECUTABLE"
-
-          DEVICE_ID="$(
-            xcrun simctl list devices available -j |
-              python3 -c '
+          if [ -z "${DEVICE_ID:-}" ]; then
+            echo "No DEVICE_ID from boot step, falling back to lookup."
+            DEVICE_ID="$(
+              xcrun simctl list devices available -j |
+                python3 -c '
           import json
           import sys
 
           data = json.load(sys.stdin)
-
-          preferred_names = [
-              "iPhone 17",
-              "iPhone 17 Pro",
-              "iPhone 16",
-              "iPhone 16 Pro",
-          ]
 
           available = [
               device
@@ -429,19 +477,14 @@ jobs:
               )
           ]
 
-          for name in preferred_names:
-              for device in available:
-                  if device.get("name") == name:
-                      print(device["udid"])
-                      sys.exit(0)
-
           if available:
               print(available[0]["udid"])
               sys.exit(0)
 
           sys.exit(1)
           '
-          )"
+            )"
+          fi
 
           if [ -z "$DEVICE_ID" ]; then
             echo "No available iPhone simulator found."
@@ -449,6 +492,11 @@ jobs:
             exit 1
           fi
 
+          echo "Found app bundle: $APP"
+          echo "Bundle identifier: $BUNDLE_ID"
+          echo "Executable: $EXECUTABLE"
+          echo "Using simulator: $DEVICE_ID"
+          
           cleanup() {
             echo "Shutting down simulator."
             xcrun simctl terminate "$DEVICE_ID" "$BUNDLE_ID" 2>/dev/null || true
@@ -457,8 +505,7 @@ jobs:
 
           trap cleanup EXIT
 
-          echo "Booting simulator: $DEVICE_ID"
-          xcrun simctl boot "$DEVICE_ID" 2>/dev/null || true
+          echo "Waiting for simulator boot to complete: $DEVICE_ID"
           xcrun simctl bootstatus "$DEVICE_ID" -b
 
           echo "Installing app."
@@ -488,11 +535,11 @@ jobs:
 
           echo "Application launched with PID $INITIAL_PID."
 
-          sleep 20
+          sleep 10
 
           if kill -0 "$INITIAL_PID" 2>/dev/null; then
             echo "Smoke test passed."
-            echo "App stayed alive with PID $INITIAL_PID for 20 seconds."
+            echo "App stayed alive with PID $INITIAL_PID for 10 seconds."
           else
             echo "App process $INITIAL_PID is no longer running."
 
