@@ -61,10 +61,11 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.components.rotateForever
+import com.hansholz.bestenotenapp.main.ExactPlatform
+import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
-import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
-import com.hansholz.bestenotenapp.main.getPlatform
+import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
@@ -288,7 +289,7 @@ fun Login(
                                     onCheckedChange = { stayLoggedIn = it },
                                 )
                             }
-                            if (listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())) {
+                            if (LocalBiometricAuthenticationAvailable.current) {
                                 Row(
                                     modifier =
                                         modifier
@@ -297,7 +298,8 @@ fun Login(
                                                 val newValue = !requireBiometricAuthentification
                                                 if (newValue) {
                                                     KSafeBiometrics.verifyBiometricDirect(
-                                                        "Bestätige, um die biometrische Authentifizierung beim Start zu aktiven.",
+                                                        (if (getExactPlatform() == ExactPlatform.MACOS) "eine Bestätigung" else "Bestätige") +
+                                                            ", um die biometrische Authentifizierung beim Start zu aktivieren",
                                                     ) { isSuccessful ->
                                                         if (isSuccessful) {
                                                             requireBiometricAuthentification = newValue

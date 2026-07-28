@@ -5,8 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hansholz.bestenotenapp.main.Platform
-import com.hansholz.bestenotenapp.main.getPlatform
+import com.hansholz.bestenotenapp.main.ExactPlatform
+import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.hansholz.bestenotenapp.navigation.Screen
 import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.security.kSafeProvider
@@ -18,12 +18,12 @@ class BiometryViewModel : ViewModel() {
 
     val kSafe = kSafe()
 
-    fun tryBiometricAuthentication(
-        viewModel: com.hansholz.bestenotenapp.main.ViewModel,
-        onNavigateToScreen: (Screen) -> Unit,
-    ) = kSafeProvider(kSafe) {
-        if (listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())) {
-            KSafeBiometrics.verifyBiometricDirect("Authentifiziere dich, um Einblicke in deine Noten zu erhalten.") { isSuccessful ->
+    fun tryBiometricAuthentication(onNavigateToScreen: (Screen) -> Unit) =
+        kSafeProvider(kSafe) {
+            KSafeBiometrics.verifyBiometricDirect(
+                (if (getExactPlatform() == ExactPlatform.MACOS) "eine Authentifizierung" else "Authentifiziere dich") +
+                    ", um einen Einblick in deine Noten zu gestatten",
+            ) { isSuccessful ->
                 viewModelScope.launch {
                     if (isSuccessful) {
                         onNavigateToScreen(
@@ -38,9 +38,5 @@ class BiometryViewModel : ViewModel() {
                     }
                 }
             }
-        } else {
-            viewModel.logout()
-            onNavigateToScreen(Screen.Login)
         }
-    }
 }

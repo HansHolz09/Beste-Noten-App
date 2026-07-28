@@ -28,16 +28,19 @@ import com.hansholz.bestenotenapp.decoratedWindow.LocalDecoratedWindowScope
 import com.hansholz.bestenotenapp.decoratedWindow.TitleBar
 import com.hansholz.bestenotenapp.main.App
 import com.hansholz.bestenotenapp.main.ExactPlatform
+import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
 import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.hansholz.bestenotenapp.navigation.Fragment
 import com.jetbrains.JBR
 import dev.hansholz.advancedmenubar.DefaultMacMenuBar
+import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
 import io.github.kdroidfilter.nucleus.aot.runtime.AotRuntime
 import io.github.kdroidfilter.nucleus.core.runtime.SingleInstanceManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.skiko.hostOs
 import java.awt.Color
@@ -87,6 +90,7 @@ fun main() {
                 LocalTitleBarModifier provides Modifier.onGloballyPositioned { titleBarHeight.value = with(density) { it.size.height.toDp() } },
                 LocalNavigationDrawerTopPadding provides
                     if (getExactPlatform() == ExactPlatform.MACOS && !LocalDecoratedWindowScope.current.state.isFullscreen) titleBarHeight.value else null,
+                LocalBiometricAuthenticationAvailable provides runBlocking { KSafeBiometrics.biometricsAvailable() },
             ) {
                 App(
                     isDark = { isDark = it },

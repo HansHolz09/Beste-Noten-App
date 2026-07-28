@@ -33,7 +33,7 @@ fun Biometry(
     val biometryViewModel = viewModel { BiometryViewModel() }
 
     LaunchedEffect(Unit) {
-        biometryViewModel.tryBiometricAuthentication(viewModel, onNavigateToScreen)
+        biometryViewModel.tryBiometricAuthentication(onNavigateToScreen)
     }
 
     TopAppBarScaffold(
@@ -51,7 +51,7 @@ fun Biometry(
                     Column {
                         EnhancedButton(
                             onClick = {
-                                biometryViewModel.tryBiometricAuthentication(viewModel, onNavigateToScreen)
+                                biometryViewModel.tryBiometricAuthentication(onNavigateToScreen)
                             },
                             modifier = Modifier.sizeIn(maxWidth = 300.dp).fillMaxWidth().padding(10.dp),
                         ) {

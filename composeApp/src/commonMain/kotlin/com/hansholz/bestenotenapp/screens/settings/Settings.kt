@@ -66,6 +66,7 @@ import com.hansholz.bestenotenapp.components.icons.Github
 import com.hansholz.bestenotenapp.components.icons.MathAvg
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
+import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
 import com.hansholz.bestenotenapp.main.LocalGradeAverageEnabled
 import com.hansholz.bestenotenapp.main.LocalGradeAverageUseWeighting
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationIntervalMinutes
@@ -85,6 +86,7 @@ import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.LocalShowYearProgress
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.screens.grades.GradeAverageCalculator
@@ -144,6 +146,7 @@ fun Settings(
     var showNotes by LocalShowNotes.current
     var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
+    val biometricAuthentificationAvailable = LocalBiometricAuthenticationAvailable.current
     val authToken by secureMutableStateOf("", "authToken")
 
     TopAppBarScaffold(
@@ -516,7 +519,7 @@ fun Settings(
                     icon = MaterialSymbols.Rounded.Title,
                 )
             }
-            if (listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())) {
+            if (biometricAuthentificationAvailable) {
                 item {
                     PreferenceCategory("Sicherheit", Modifier.padding(horizontal = 15.dp))
                 }
@@ -524,7 +527,10 @@ fun Settings(
                     checked = requireBiometricAuthentification,
                     onCheckedChange = {
                         if (it) {
-                            KSafeBiometrics.verifyBiometricDirect("Bestätige, um die biometrische Authentifizierung beim Start zu aktiven.") { isSuccessful ->
+                            KSafeBiometrics.verifyBiometricDirect(
+                                (if (getExactPlatform() == ExactPlatform.MACOS) "eine Bestätigung" else "Bestätige") +
+                                    ", um die biometrische Authentifizierung beim Start zu aktivieren",
+                            ) { isSuccessful ->
                                 if (isSuccessful) {
                                     requireBiometricAuthentification = it
                                     putSecure("requireBiometricAuthentification", it)

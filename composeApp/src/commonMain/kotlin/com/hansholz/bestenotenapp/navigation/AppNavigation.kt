@@ -12,10 +12,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
-import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
-import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.screens.biometry.Biometry
 import com.hansholz.bestenotenapp.screens.grades.Grades
 import com.hansholz.bestenotenapp.screens.login.Login
@@ -30,13 +29,14 @@ fun AppNavigation(
 ) = kSafeProviderCompose(viewModel.kSafe) {
     val scope = rememberCoroutineScope()
     val requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
+    val biometricAuthenticationAvailable = LocalBiometricAuthenticationAvailable.current
     val token by secureMutableStateOf("", "authToken")
     val studentId by storedMutableStateOf("", "studentId")
     val startDestination =
         rememberSaveable {
             when {
                 token.isEmpty() || studentId.isEmpty() -> Screen.Login.route
-                requireBiometricAuthentification && listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform()) -> Screen.Biometry.route
+                requireBiometricAuthentification && biometricAuthenticationAvailable -> Screen.Biometry.route
                 else -> Screen.Main.route
             }
         }

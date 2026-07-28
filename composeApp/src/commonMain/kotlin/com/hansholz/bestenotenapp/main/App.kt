@@ -40,6 +40,7 @@ import com.hansholz.bestenotenapp.theme.AppTheme
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import dev.chrisbanes.haze.hazeSource
+import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -48,6 +49,8 @@ fun App(
     colors: (ColorScheme) -> Unit = {},
     onNavHostReady: suspend (NavController) -> Unit = {},
 ) {
+    KSafeBiometrics.defaultTitle = "Authentifizieren"
+
     AppTheme(colors) {
         val isDark = LocalThemeIsDark.current
         isDark(isDark)

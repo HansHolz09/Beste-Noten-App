@@ -35,6 +35,8 @@ internal val AppHazeState = compositionLocalOf { mutableStateOf(HazeState()) }
 internal val LocalTitleBarModifier = compositionLocalOf<Modifier> { Modifier }
 internal val LocalNavigationDrawerTopPadding = compositionLocalOf<Dp?> { null }
 
+val LocalBiometricAuthenticationAvailable = compositionLocalOf { false }
+
 @Composable
 fun SettingsProvider(content: @Composable () -> Unit) =
     kSafeProviderCompose {
