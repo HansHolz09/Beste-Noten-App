@@ -142,6 +142,101 @@ jobs:
           script: |
             echo "Generated clean AVD snapshot for caching."
 
+      - name: Create Android smoke test script
+        if: ${{ inputs.run_smoke_tests }}
+        shell: bash
+        run: |
+          cat > "$RUNNER_TEMP/android-smoke-test.sh" <<'EOF'
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          APK="artifacts/android-universal.apk"
+
+          if [[ ! -f "$APK" ]]; then
+            echo "APK not found: $APK"
+            exit 1
+          fi
+
+          AAPT="$(command -v aapt || true)"
+
+          if [[ -z "$AAPT" ]]; then
+            AAPT="$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -n 1)"
+          fi
+
+          if [[ -z "$AAPT" || ! -x "$AAPT" ]]; then
+            echo "Could not find aapt."
+            find "$ANDROID_HOME/build-tools" -maxdepth 2 -type f -name 'aapt*' || true
+            exit 1
+          fi
+
+          PACKAGE="$(
+            "$AAPT" dump badging "$APK" |
+              awk -F"'" '/^package:/{print $2; exit}'
+          )"
+
+          ACTIVITY="$(
+            "$AAPT" dump badging "$APK" |
+              awk -F"'" '/^launchable-activity:/{print $2; exit}'
+          )"
+
+          if [[ -z "$PACKAGE" ]]; then
+            echo "Could not determine package name."
+            "$AAPT" dump badging "$APK"
+            exit 1
+          fi
+
+          if [[ -z "$ACTIVITY" ]]; then
+            echo "Could not determine launchable activity."
+            "$AAPT" dump badging "$APK"
+            exit 1
+          fi
+
+          echo "Installing package: $PACKAGE"
+          echo "Launch activity: $ACTIVITY"
+
+          adb install -r "$APK"
+
+          adb logcat -c
+          adb shell am force-stop "$PACKAGE"
+
+          START_OUTPUT="$(
+            adb shell am start -W -n "$PACKAGE/$ACTIVITY"
+          )"
+
+          echo "$START_OUTPUT"
+
+          if echo "$START_OUTPUT" | grep -qE '^Error:|Exception'; then
+            echo "Android activity could not be started."
+            exit 1
+          fi
+
+          sleep 20
+
+          PID="$(adb shell pidof "$PACKAGE" | tr -d '\r' || true)"
+
+          if [[ -n "$PID" ]]; then
+            echo "Smoke test passed."
+            echo "App process $PID stayed alive for 20 seconds."
+            exit 0
+          fi
+
+          echo "Smoke test failed."
+          echo "App process was not found after 20 seconds."
+
+          echo "Current activity state:"
+          adb shell dumpsys activity activities |
+            grep -A 10 -B 10 "$PACKAGE" || true
+
+          echo "Recent crash logs:"
+          adb logcat -d |
+            grep -E "$PACKAGE|AndroidRuntime|FATAL EXCEPTION" |
+            tail -n 300 || true
+
+          exit 1
+          EOF
+
+          chmod +x "$RUNNER_TEMP/android-smoke-test.sh"
+
       - name: Smoke test Android app
         if: ${{ inputs.run_smoke_tests }}
         uses: reactivecircus/android-emulator-runner@v2
@@ -159,67 +254,7 @@ jobs:
             -no-boot-anim
             -camera-back none
           disable-animations: true
-          script: |
-            set -eu
-
-            APK="artifacts/android-universal.apk"
-
-            if [ ! -f "$APK" ]; then
-              echo "APK not found: $APK"
-              exit 1
-            fi
-
-            PACKAGE=$(
-              aapt dump badging "$APK" |
-                awk -F"'" '/^package:/{print $2; exit}'
-            )
-
-            ACTIVITY=$(
-              aapt dump badging "$APK" |
-                awk -F"'" '/launchable-activity:/{print $2; exit}'
-            )
-
-            if [ -z "$PACKAGE" ]; then
-              echo "Could not determine package name."
-              aapt dump badging "$APK"
-              exit 1
-            fi
-
-            if [ -z "$ACTIVITY" ]; then
-              echo "Could not determine launchable activity."
-              aapt dump badging "$APK"
-              exit 1
-            fi
-
-            echo "Installing package: $PACKAGE"
-            echo "Launch activity: $ACTIVITY"
-
-            adb install -r "$APK"
-
-            adb logcat -c
-            adb shell am force-stop "$PACKAGE"
-            adb shell am start -W -n "$PACKAGE/$ACTIVITY"
-
-            sleep 20
-
-            PID="$(adb shell pidof "$PACKAGE" | tr -d '\r' || true)"
-
-            if [ -n "$PID" ]; then
-              echo "Smoke test passed."
-              echo "App process $PID stayed alive for 20 seconds."
-            else
-              echo "Smoke test failed."
-              echo "App process was not found after 20 seconds."
-
-              adb shell dumpsys activity activities |
-                grep -A 10 -B 10 "$PACKAGE" || true
-
-              adb logcat -d |
-                grep -E "$PACKAGE|AndroidRuntime|FATAL EXCEPTION" |
-                tail -n 300 || true
-
-              exit 1
-            fi
+          script: bash "$RUNNER_TEMP/android-smoke-test.sh"
 
       - uses: actions/upload-artifact@v7
         continue-on-error: ${{ inputs.ignore_artifact_upload_errors }}
@@ -353,6 +388,12 @@ jobs:
               "$INFO_PLIST"
           )"
 
+          EXECUTABLE="$(
+            /usr/libexec/PlistBuddy \
+              -c "Print :CFBundleExecutable" \
+              "$INFO_PLIST"
+          )"
+
           if [ -z "$BUNDLE_ID" ]; then
             echo "Could not determine CFBundleIdentifier."
             plutil -p "$INFO_PLIST" || true
@@ -361,6 +402,7 @@ jobs:
 
           echo "Found app bundle: $APP"
           echo "Bundle identifier: $BUNDLE_ID"
+          echo "Executable: $EXECUTABLE"
 
           DEVICE_ID="$(
             xcrun simctl list devices available -j |
@@ -371,10 +413,10 @@ jobs:
           data = json.load(sys.stdin)
 
           preferred_names = [
-              "iPhone 16",
               "iPhone 17",
-              "iPhone 16 Pro",
               "iPhone 17 Pro",
+              "iPhone 16",
+              "iPhone 16 Pro",
           ]
 
           available = [
@@ -419,12 +461,6 @@ jobs:
           xcrun simctl boot "$DEVICE_ID" 2>/dev/null || true
           xcrun simctl bootstatus "$DEVICE_ID" -b
 
-          EXECUTABLE="$(
-            /usr/libexec/PlistBuddy \
-              -c "Print :CFBundleExecutable" \
-              "$INFO_PLIST"
-          )"
-
           echo "Installing app."
           xcrun simctl uninstall "$DEVICE_ID" "$BUNDLE_ID" 2>/dev/null || true
           xcrun simctl install "$DEVICE_ID" "$APP"
@@ -442,29 +478,25 @@ jobs:
 
           INITIAL_PID="$(
             printf '%s\n' "$LAUNCH_OUTPUT" |
-              awk -F': ' 'NF == 2 { print $2 }'
+              awk -F': ' 'NF == 2 { print $2; exit }'
           )"
+
+          if ! [[ "$INITIAL_PID" =~ ^[0-9]+$ ]]; then
+            echo "Could not determine application PID."
+            exit 1
+          fi
 
           echo "Application launched with PID $INITIAL_PID."
 
           sleep 20
 
-          RUNNING_PID="$(
-            xcrun simctl spawn "$DEVICE_ID" ps -axo pid=,comm= |
-              awk -v executable="$EXECUTABLE" '
-                $0 ~ ("/" executable "$") {
-                  print $1
-                  exit
-                }
-              '
-          )"
-
-          if [ -n "$RUNNING_PID" ]; then
+          if kill -0 "$INITIAL_PID" 2>/dev/null; then
             echo "Smoke test passed."
-            echo "App stayed alive with PID $RUNNING_PID."
+            echo "App stayed alive with PID $INITIAL_PID for 20 seconds."
           else
-            echo "App process was not found after 20 seconds."
+            echo "App process $INITIAL_PID is no longer running."
 
+            echo "Recent app logs:"
             xcrun simctl spawn "$DEVICE_ID" log show \
               --style compact \
               --last 2m \
