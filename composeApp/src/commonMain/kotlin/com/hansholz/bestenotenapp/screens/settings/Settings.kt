@@ -185,8 +185,8 @@ fun Settings(
                         FilledIconToggleButton(
                             checked = useSystemIsDark,
                             onCheckedChange = {
-                                useSystemIsDark = it
-                                put("useSystemIsDark", it)
+                                useSystemIsDark = true
+                                put("useSystemIsDark", true)
                                 vibrator.enhancedVibrate(EnhancedVibrations.SLOW_RISE)
                             },
                             shapes = IconButtonDefaults.toggleableShapes(),
@@ -196,10 +196,10 @@ fun Settings(
                         FilledIconToggleButton(
                             checked = !useSystemIsDark && !isDark,
                             onCheckedChange = {
-                                useSystemIsDark = !it
-                                put("useSystemIsDark", !it)
-                                isDark = !it
-                                put("isDark", !it)
+                                useSystemIsDark = false
+                                put("useSystemIsDark", false)
+                                isDark = false
+                                put("isDark", false)
                                 vibrator.enhancedVibrate(EnhancedVibrations.SLOW_RISE)
                             },
                             shapes = IconButtonDefaults.toggleableShapes(),
@@ -209,10 +209,10 @@ fun Settings(
                         FilledIconToggleButton(
                             checked = !useSystemIsDark && isDark,
                             onCheckedChange = {
-                                useSystemIsDark = !it
-                                put("useSystemIsDark", !it)
-                                isDark = it
-                                put("isDark", it)
+                                useSystemIsDark = false
+                                put("useSystemIsDark", false)
+                                isDark = true
+                                put("isDark", true)
                                 vibrator.enhancedVibrate(EnhancedVibrations.SLOW_RISE)
                             },
                             shapes = IconButtonDefaults.toggleableShapes(),

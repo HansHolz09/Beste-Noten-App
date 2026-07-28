@@ -6,8 +6,6 @@ import androidx.compose.runtime.LaunchedEffect
 import platform.UIKit.UIApplication
 import platform.UIKit.UIStatusBarStyleDarkContent
 import platform.UIKit.UIStatusBarStyleLightContent
-import platform.UIKit.UIUserInterfaceStyle
-import platform.UIKit.UIWindow
 import platform.UIKit.setStatusBarStyle
 
 @Composable
@@ -16,18 +14,8 @@ internal actual fun SystemAppearance(
     customColorScheme: @Composable (ColorScheme?) -> Unit,
 ) {
     LaunchedEffect(isDark) {
-        val application = UIApplication.sharedApplication
-        val window = application.keyWindow ?: application.windows.firstOrNull() as? UIWindow
-
-        application.setStatusBarStyle(
-            if (!isDark) UIStatusBarStyleDarkContent else UIStatusBarStyleLightContent,
+        UIApplication.sharedApplication.setStatusBarStyle(
+            if (isDark) UIStatusBarStyleDarkContent else UIStatusBarStyleLightContent,
         )
-
-        window?.overrideUserInterfaceStyle =
-            if (isDark) {
-                UIUserInterfaceStyle.UIUserInterfaceStyleDark
-            } else {
-                UIUserInterfaceStyle.UIUserInterfaceStyleLight
-            }
     }
 }
