@@ -23,6 +23,7 @@ import com.hansholz.bestenotenapp.api.models.JournalDayStudentCount
 import com.hansholz.bestenotenapp.api.models.JournalLessonStudentCount
 import com.hansholz.bestenotenapp.api.models.JournalWeek
 import com.hansholz.bestenotenapp.api.models.Level
+import com.hansholz.bestenotenapp.api.models.SetCurrentYearRequest
 import com.hansholz.bestenotenapp.api.models.Student
 import com.hansholz.bestenotenapp.api.models.Subject
 import com.hansholz.bestenotenapp.api.models.Teacher
@@ -201,7 +202,7 @@ class ViewModel(
                         GradeNotifications.onLogin()
                     }
                 }
-                api.yearSetCurrent()
+                setCurrentYear()
                 if (stayLoggedIn) {
                     putSecure("authToken", authToken.value!!)
                 }
@@ -620,6 +621,15 @@ class ViewModel(
                         .flatten()
             }
         }
+
+    suspend fun setCurrentYear(year: Int? = null) {
+        api.yearSetCurrent(SetCurrentYearRequest(year))
+    }
+
+    suspend fun reload() {
+        onCleared()
+        init()
+    }
 
     init {
         viewModelScope.launch {

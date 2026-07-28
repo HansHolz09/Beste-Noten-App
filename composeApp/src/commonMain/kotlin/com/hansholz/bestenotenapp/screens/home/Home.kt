@@ -58,6 +58,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Abc
@@ -104,6 +105,7 @@ import com.hansholz.bestenotenapp.components.UpdateOnNewDay
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
@@ -208,6 +210,33 @@ fun Home(
                     state = lazyStaggeredGridState,
                     contentPadding = innerPadding,
                 ) {
+                    item {
+                        EnhancedAnimatedVisibility(
+                            viewModel.user.value
+                                ?.config
+                                ?.yearId
+                                ?.let { true } ?: false,
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().padding(top = 20.dp, bottom = 10.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                EnhancedOutlinedButton(
+                                    onClick = {
+                                        viewModel.viewModelScope.launch {
+                                            viewModel.setCurrentYear()
+                                            viewModel.reload()
+                                            homeViewModel.refreshGrades(viewModel)
+                                            homeViewModel.refreshTimetable(viewModel)
+                                            homeViewModel.refreshStats(viewModel)
+                                        }
+                                    },
+                                ) {
+                                    Text("Zum aktuellen Schuljahr wechseln")
+                                }
+                            }
+                        }
+                    }
                     if (showGreetings) {
                         item {
                             EnhancedAnimatedContent(viewModel.isBesteSchuleNotReachable.value) { notReachable ->
@@ -818,6 +847,22 @@ fun Home(
                             }
                         }
                     }
+                    if (!viewModel.isDemoAccount.value) {
+                        item {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 20.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                EnhancedOutlinedButton(
+                                    onClick = {
+                                        homeViewModel.isYearSelectionDialogShown = true
+                                    },
+                                ) {
+                                    Text("Schuljahr ${viewModel.user.value?.year?.name}")
+                                }
+                            }
+                        }
+                    }
                 }
             }
             topAppBarBackground(innerPadding.calculateTopPadding())
@@ -825,5 +870,6 @@ fun Home(
 
         StatsDialog(viewModel, homeViewModel)
         AccountSchoolDialog(viewModel, homeViewModel)
+        YearSelectionDialog(viewModel, homeViewModel)
     }
 }

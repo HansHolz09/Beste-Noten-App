@@ -1879,6 +1879,7 @@ data class User(
     @SerialName("phone_private") val phonePrivate: String? = null,
     @SerialName("phone_business") val phoneBusiness: String? = null,
     val role: String? = null,
+    val config: Config? = null,
     val school: School? = null,
     val year: Year? = null,
     val students: List<Student>? = null,
@@ -1886,6 +1887,15 @@ data class User(
     val guardians: List<Guardian>? = null,
     val firebaseDevices: List<FirebaseDevice>? = null,
     val socialiteProviders: List<UserSocialite>? = null,
+)
+
+@Serializable
+data class Config(
+    val id: Int? = null,
+    val role: String? = null,
+    @SerialName("student_sort") val studentSort: String? = null,
+    val locale: String? = null,
+    @SerialName("year_id") val yearId: Int? = null,
 )
 
 @Serializable

@@ -75,12 +75,19 @@ class GradesViewModel(
             if (viewModel.years.isEmpty()) {
                 viewModel.getYears()?.let { viewModel.years.addAll(it) }
             }
-            if (viewModel.gradeCollections.isEmpty() && viewModel.years.isNotEmpty()) {
-                viewModel.getCollections(listOf(viewModel.years.last()))?.let { viewModel.gradeCollections.addAll(it) }
-            }
-            if (viewModel.years.isNotEmpty()) {
+            (
+                viewModel.years.find {
+                    it.id ==
+                        viewModel.user.value
+                            ?.config
+                            ?.yearId
+                } ?: viewModel.years.lastOrNull()
+            )?.let { currentYear ->
+                if (viewModel.gradeCollections.isEmpty()) {
+                    viewModel.getCollections(listOf(currentYear))?.let { viewModel.gradeCollections.addAll(it) }
+                }
                 selectedYears.clear()
-                selectedYears.add(viewModel.years.last())
+                selectedYears.add(currentYear)
             }
             isLoading = false
         }
