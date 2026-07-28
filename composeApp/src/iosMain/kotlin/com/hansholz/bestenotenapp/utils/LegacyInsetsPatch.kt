@@ -17,10 +17,13 @@ import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.staticCFunction
 import kotlinx.cinterop.useContents
 import kotlinx.cinterop.value
+import platform.CoreGraphics.CGRectMake
 import platform.UIKit.UIDevice
 import platform.UIKit.UIEdgeInsets
 import platform.UIKit.UIEdgeInsetsMake
 import platform.UIKit.UIView
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
 import platform.objc.class_getInstanceMethod
 import platform.objc.class_getInstanceVariable
 import platform.objc.ivar_getOffset
@@ -36,7 +39,7 @@ private const val KIND_READABLE_CONTENT = 1L
 private const val KIND_SAFE_AREA = 2L
 
 @OptIn(BetaInteropApi::class)
-fun installLegacyInsetsPatch() {
+fun installLegacyInsetsPatch(triggerView: UIView) {
     if (installed) return
 
     val majorIosVersion =
@@ -49,29 +52,34 @@ fun installLegacyInsetsPatch() {
         return
     }
 
-    val cls =
-        objc_getClass("CMPLayoutRegion") as? ObjCClass
-            ?: return
-
-    val method =
-        class_getInstanceMethod(
-            cls,
-            sel_registerName("edgeInsetsInView:"),
-        ) ?: return
-
-    val kindIvar =
-        class_getInstanceVariable(cls, "_kind")
-            ?: return
-
+    val cls = objc_getClass("CMPLayoutRegion") as? ObjCClass ?: return
+    val method = class_getInstanceMethod(cls, sel_registerName("edgeInsetsInView:")) ?: return
+    val kindIvar = class_getInstanceVariable(cls, "_kind") ?: return
     kindOffset = ivar_getOffset(kindIvar)
-
-    val replacement =
-        staticCFunction(::legacyEdgeInsetsInView)
-            .reinterpret<CFunction<() -> Unit>>()
-
+    val replacement = staticCFunction(::legacyEdgeInsetsInView).reinterpret<CFunction<() -> Unit>>()
     method_setImplementation(method, replacement)
 
     installed = true
+
+    nudgeToForceRelayout(triggerView)
+}
+
+private fun nudgeToForceRelayout(view: UIView) {
+    dispatch_async(dispatch_get_main_queue()) {
+        val original = view.bounds
+        val x = original.useContents { origin.x }
+        val y = original.useContents { origin.y }
+        val width = original.useContents { size.width }
+        val height = original.useContents { size.height }
+
+        view.setBounds(CGRectMake(x, y, width - 1.0, height))
+        view.layoutIfNeeded()
+
+        dispatch_async(dispatch_get_main_queue()) {
+            view.setBounds(CGRectMake(x, y, width, height))
+            view.layoutIfNeeded()
+        }
+    }
 }
 
 @Suppress("UNUSED_PARAMETER")
