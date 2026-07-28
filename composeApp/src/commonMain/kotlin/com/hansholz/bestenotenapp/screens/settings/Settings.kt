@@ -65,6 +65,7 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.components.icons.Github
 import com.hansholz.bestenotenapp.components.icons.MathAvg
 import com.hansholz.bestenotenapp.components.settingsToggleItem
+import com.hansholz.bestenotenapp.main.ExactPlatform
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
 import com.hansholz.bestenotenapp.main.LocalGradeAverageEnabled
