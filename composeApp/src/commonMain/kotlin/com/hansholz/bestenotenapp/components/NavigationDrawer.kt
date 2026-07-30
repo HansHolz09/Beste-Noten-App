@@ -6,7 +6,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DrawerState
@@ -33,6 +38,10 @@ fun NavigationDrawer(
     content: @Composable () -> Unit,
 ) {
     val windowWidthSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+    val windowInsets =
+        WindowInsets.safeDrawing.only(
+            WindowInsetsSides.Vertical + WindowInsetsSides.Start,
+        )
     if (windowWidthSizeClass == WindowWidthSizeClass.COMPACT) {
         ModalNavigationDrawer(
             drawerState = drawerState,
@@ -41,8 +50,13 @@ fun NavigationDrawer(
                     drawerState = drawerState,
                     hazeState = hazeState,
                     drawerContainerColor = Color.Transparent,
+                    windowInsets = WindowInsets(),
                 ) {
-                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                    Column(
+                        Modifier
+                            .verticalScroll(rememberScrollState())
+                            .windowInsetsPadding(windowInsets),
+                    ) {
                         drawerContent()
                     }
                 }
@@ -67,8 +81,14 @@ fun NavigationDrawer(
                         PermanentDrawerSheet(
                             modifier = drawerSheetModifier,
                             drawerContainerColor = Color.Transparent,
+                            windowInsets = WindowInsets(),
                         ) {
-                            Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
+                            Column(
+                                Modifier
+                                    .weight(1f)
+                                    .verticalScroll(rememberScrollState())
+                                    .windowInsetsPadding(windowInsets),
+                            ) {
                                 drawerContent()
                             }
                         }
