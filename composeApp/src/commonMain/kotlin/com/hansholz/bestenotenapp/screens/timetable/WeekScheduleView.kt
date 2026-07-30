@@ -44,6 +44,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -117,28 +118,44 @@ fun WeekScheduleView(
 
     val days = week?.days ?: return
 
-    val allLessons =
+    val preparedDays =
         remember(days) {
-            days
-                .map {
-                    it.copy(
-                        lessons =
-                            it.lessons?.mapIndexed { index, lesson ->
-                                val startTime = SimpleTime.parse("07:30").plus(50 * index)
-                                if (lesson.time?.from == null || lesson.time.to == null) {
-                                    lesson.copy(time = lesson.time?.copy(from = startTime.toString(), to = startTime.plus(45).toString()))
-                                } else {
-                                    lesson
-                                }
-                            },
+            val firstDate = LocalDate.parse(days.firstOrNull()?.date ?: "2000-01-01")
+            days.mapIndexedNotNull { dayIndex, day ->
+                val normalizedLessons =
+                    day.lessons
+                        ?.mapIndexed { lessonIndex, lesson ->
+                            val fallbackStart = SimpleTime.parse("07:30").plus(50 * lessonIndex)
+                            if (lesson.time?.from == null || lesson.time.to == null) {
+                                lesson.copy(
+                                    time =
+                                        lesson.time?.copy(
+                                            from = fallbackStart.toString(),
+                                            to = fallbackStart.plus(45).toString(),
+                                        ),
+                                )
+                            } else {
+                                lesson
+                            }
+                        }.orEmpty()
+
+                if (normalizedLessons.isEmpty()) {
+                    null
+                } else {
+                    PreparedScheduleDay(
+                        sourceIndex = dayIndex,
+                        date = firstDate.plus(dayIndex, DateTimeUnit.DAY),
+                        lessons = normalizedLessons,
                     )
-                }.flatMap { it.lessons.orEmpty() }
+                }
+            }
         }
 
+    val allLessons = remember(preparedDays) { preparedDays.flatMap(PreparedScheduleDay::lessons) }
     if (allLessons.isEmpty()) return
 
-    val minTimeHour = allLessons.minOfOrNull { SimpleTime.parse(it.time?.from ?: "23:59") }
-    val latestLessonEnd = allLessons.maxOfOrNull { SimpleTime.parse(it.time?.to ?: "00:00") }
+    val minTimeHour = remember(allLessons) { allLessons.minOf { SimpleTime.parse(it.time?.from ?: "23:59") } }
+    val latestLessonEnd = remember(allLessons) { allLessons.maxOf { SimpleTime.parse(it.time?.to ?: "00:00") } }
 
     var selectedLesson by remember { mutableStateOf<JournalLesson?>(null) }
     var selectedDay by remember {
@@ -234,31 +251,30 @@ fun WeekScheduleView(
         }
     }
 
+    val animatedBlurRadius by animateDpAsState(
+        targetValue = if (popupVisible) 10.dp else 0.dp,
+        animationSpec = tween(if (popupVisible) 180 else 140),
+        label = "TimetablePopupBlurRadius",
+    )
+
     SharedTransitionLayout(
-        modifier = Modifier,
+        modifier = modifier,
     ) {
         Box(Modifier.fillMaxSize()) {
             Row(
                 modifier =
                     Modifier
                         .fillMaxHeight()
-                        .enhancedHazeEffect(
-                            blurRadius =
-                                animateDpAsState(
-                                    targetValue = if (popupVisible) 10.dp else 0.dp,
-                                    animationSpec = tween(if (popupVisible) 180 else 140),
-                                    label = "TimetablePopupBlurRadius",
-                                ).value,
-                        ).graphicsLayer {
+                        .enhancedHazeEffect(blurRadius = animatedBlurRadius)
+                        .graphicsLayer {
                             scaleX = effectiveScheduleScale
                             scaleY = effectiveScheduleScale
                             if (!blurEnabled.value) alpha = 30 * effectiveScheduleScale - 29
-                        }.padding(contentPadding)
-                        .then(modifier),
+                        }.padding(contentPadding),
             ) {
-                days.forEachIndexed { dayIndex, day ->
-                    if (!day.lessons.isNullOrEmpty()) {
-                        val currentDate = LocalDate.parse(days.firstOrNull()?.date ?: "2000-01-01").plus(dayIndex, DateTimeUnit.DAY)
+                preparedDays.forEach { day ->
+                    key(day.date) {
+                        val currentDate = day.date
                         var homeworkLessonIds by remember(currentDate, homeworkEnabled) { mutableStateOf(emptySet<String>()) }
                         var doneHomeworkLessonIds by remember(currentDate, homeworkEnabled) { mutableStateOf(emptySet<String>()) }
                         LaunchedEffect(currentDate, homeworkEnabled, day.lessons, homeworkRevision) {
@@ -287,7 +303,7 @@ fun WeekScheduleView(
                             DayHeader(
                                 date = currentDate,
                                 viewModel = viewModel,
-                                notes = day.notes?.filter { it.description != null },
+                                notes = days[day.sourceIndex].notes?.filter { it.description != null },
                                 captureOnly = captureOnly,
                             )
                             DailyScheduleLayout(
@@ -296,8 +312,8 @@ fun WeekScheduleView(
                                 date = currentDate,
                                 modifier = Modifier.fillMaxHeight(),
                                 captureOnly = captureOnly,
-                                minTime = minTimeHour ?: SimpleTime.parse("7:00"),
-                                maxTime = latestLessonEnd ?: SimpleTime.parse("18:00"),
+                                minTime = minTimeHour,
+                                maxTime = latestLessonEnd,
                                 sharedTransitionScope = this@SharedTransitionLayout,
                                 selectedLesson = selectedLesson,
                                 popupTransition = popupTransition,
@@ -414,12 +430,7 @@ fun WeekScheduleView(
                                             DayOfWeek.SATURDAY -> "Samstag"
                                             DayOfWeek.SUNDAY -> "Sonntag"
                                         }}, ${formateDate(selectedDay.toString())}\n${selectedLesson?.nr ?: "?"}. Stunde" +
-                                            if (days
-                                                    .flatMap { it.lessons.orEmpty() }
-                                                    .find { it == selectedLesson }
-                                                    ?.time
-                                                    ?.from != null
-                                            ) {
+                                            if (selectedLesson?.time?.from != null) {
                                                 " (${selectedLesson?.time?.from} - ${selectedLesson?.time?.to})"
                                             } else {
                                                 ""
@@ -537,6 +548,12 @@ fun WeekScheduleView(
         }
     }
 }
+
+private data class PreparedScheduleDay(
+    val sourceIndex: Int,
+    val date: LocalDate,
+    val lessons: List<JournalLesson>,
+)
 
 fun HomeworkEntry.belongsToCurrentLessonSubject(lesson: JournalLesson): Boolean {
     if (placement != HomeworkPlacement.LESSON) return false
