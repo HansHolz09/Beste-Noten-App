@@ -87,6 +87,7 @@ fun main() {
             val titleBarHeight = remember { mutableStateOf(64.dp) }
             var isDark by remember { mutableStateOf(false) }
             CompositionLocalProvider(
+                LocalContextMenuRepresentation provides if (isDark) DarkDefaultContextMenuRepresentation else LightDefaultContextMenuRepresentation,
                 LocalTitleBarModifier provides Modifier.onGloballyPositioned { titleBarHeight.value = with(density) { it.size.height.toDp() } },
                 LocalNavigationDrawerTopPadding provides
                     if (getExactPlatform() == ExactPlatform.MACOS && !LocalDecoratedWindowScope.current.state.isFullscreen) titleBarHeight.value else null,
