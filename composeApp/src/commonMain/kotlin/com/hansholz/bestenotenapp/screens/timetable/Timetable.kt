@@ -201,7 +201,7 @@ fun Timetable(
             hazeState = viewModel.hazeBackgroundState,
         ) { innerPadding, topAppBarBackground ->
             Box(Modifier.fillMaxSize()) {
-                var topPadding by remember { mutableStateOf(innerPadding.calculateTopPadding()) }
+                val topPadding = innerPadding.calculateTopPadding()
                 val toolbarContentPadding = PaddingValues(top = topPadding, bottom = innerPadding.calculateBottomPadding())
                 val contentPadding = PaddingValues(top = topPadding, bottom = innerPadding.calculateBottomPadding() + timetableViewModel.toolbarPadding)
                 val verticalPadding = PaddingValues(start = innerPadding.calculateStartPadding(layoutDirection), end = innerPadding.calculateEndPadding(layoutDirection))
