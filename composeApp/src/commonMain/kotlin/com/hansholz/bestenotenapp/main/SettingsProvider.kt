@@ -29,6 +29,7 @@ internal val LocalShowTeachersWithFirstname = compositionLocalOf { mutableStateO
 internal val LocalGradeNotificationsEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalGradeNotificationIntervalMinutes = compositionLocalOf { mutableStateOf(60L) }
 internal val LocalGradeNotificationsWifiOnly = compositionLocalOf { mutableStateOf(false) }
+internal val LocalUsingOfflineCache = compositionLocalOf { mutableStateOf(false) }
 
 internal val LocalRequireBiometricAuthentification = compositionLocalOf { mutableStateOf(false) }
 

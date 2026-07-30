@@ -35,6 +35,8 @@ import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.api.oidcClient
 import com.hansholz.bestenotenapp.data.DemoDataGenerator
 import com.hansholz.bestenotenapp.data.ExportData
+import com.hansholz.bestenotenapp.data.besteSchuleCacheSize
+import com.hansholz.bestenotenapp.data.clearBesteSchuleCache
 import com.hansholz.bestenotenapp.homework.GoogleCalendarApi
 import com.hansholz.bestenotenapp.homework.GoogleCalendarHomeworkSyncDataSource
 import com.hansholz.bestenotenapp.homework.HomeworkEntry
@@ -52,17 +54,24 @@ import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.readString
+import io.ktor.client.network.sockets.ConnectTimeoutException
+import io.ktor.client.network.sockets.SocketTimeoutException
+import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.utils.io.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.io.IOException
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -70,6 +79,8 @@ import org.publicvalue.multiplatform.oidc.DefaultOpenIdConnectClient
 import org.publicvalue.multiplatform.oidc.OpenIdConnectException
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import com.hansholz.bestenotenapp.data.readBesteSchuleCache as readStoredBesteSchuleCache
+import com.hansholz.bestenotenapp.data.writeBesteSchuleCache as writeStoredBesteSchuleCache
 
 class ViewModel(
     toasterState: ToasterState,
@@ -83,6 +94,12 @@ class ViewModel(
             ignoreUnknownKeys = true
             encodeDefaults = true
         }
+    private val cacheJson =
+        Json {
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+        }
+    val offlineCacheAvailable = getPlatform() != Platform.WEB
 
     private val httpClient = createHttpClient()
 
@@ -90,6 +107,8 @@ class ViewModel(
     private val authFlow = codeAuthFlowFactory.createAuthFlow(DefaultOpenIdConnectClient(httpClient, oidcClient.config))
 
     val studentId = mutableStateOf<String?>(null)
+    val isBesteSchuleNotReachable = mutableStateOf(false)
+    val isUsingOfflineCache = mutableStateOf(false)
     private val api = BesteSchuleApi(httpClient, authToken, studentId)
     val homeworkSyncSettings = KSafeHomeworkSyncSettings(kSafe)
     val homeworkRevision = mutableIntStateOf(0)
@@ -99,6 +118,7 @@ class ViewModel(
             kSafe,
             GoogleCalendarHomeworkSyncDataSource(GoogleCalendarApi(httpClient, googleAuthProvider)) { studentId.value },
             homeworkSyncSettings,
+            canAutoSync = { !isUsingOfflineCache.value },
         )
 
     val hazeBackgroundState = HazeState()
@@ -137,8 +157,6 @@ class ViewModel(
     private var demoLessonStudentCountsByYear: Map<Int, JournalLessonStudentCount> = emptyMap()
     private var demoTotalDayStudentCount: JournalDayStudentCount? = null
     private var demoTotalLessonStudentCount: JournalLessonStudentCount? = null
-
-    val isBesteSchuleNotReachable = mutableStateOf(false)
 
     suspend fun getHomeworkForDate(date: LocalDate): List<HomeworkEntry> = homeworkRepository.getHomeworkForDate(date)
 
@@ -222,12 +240,44 @@ class ViewModel(
         homeworkSyncSettings.nextSyncToken = null
     }
 
-    private suspend fun couldReachBesteSchule() {
-        if (isBesteSchuleNotReachable.value) init()
+    private fun couldReachBesteSchule() {
         isBesteSchuleNotReachable.value = false
+        isUsingOfflineCache.value = false
+    }
+
+    private var besteSchuleRetryJob: Job? = null
+
+    private fun useOfflineCache() {
+        isBesteSchuleNotReachable.value = false
+        isUsingOfflineCache.value = true
+        if (besteSchuleRetryJob?.isActive == true) return
+        besteSchuleRetryJob =
+            viewModelScope.launch {
+                while (isUsingOfflineCache.value && !authToken.value.isNullOrEmpty()) {
+                    delay(5000)
+                    try {
+                        user.value = api.userMe().data
+                        user.value?.let { runCatching { writeBesteSchuleCache("user", it) } }
+                        couldReachBesteSchule()
+                        if (homeworkSyncSettings.googleSyncEnabled) {
+                            homeworkRepository.syncNow()
+                            homeworkRevision.intValue++
+                        }
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        if (!e.isConnectionFailure()) {
+                            couldNotReachBesteSchule()
+                            return@launch
+                        }
+                    }
+                }
+            }
     }
 
     private fun couldNotReachBesteSchule() {
+        isUsingOfflineCache.value = false
+        if (isBesteSchuleNotReachable.value) return
         isBesteSchuleNotReachable.value = true
         toaster.show(
             Toast(
@@ -236,6 +286,80 @@ class ViewModel(
             ),
         )
     }
+
+    private suspend inline fun <reified T> readBesteSchuleCache(key: String): T? {
+        if (!offlineCacheAvailable) return null
+        val student = studentId.value ?: return null
+        return readStoredBesteSchuleCache(student, key)?.let {
+            runCatching { cacheJson.decodeFromString<T>(it) }.getOrNull()
+        }
+    }
+
+    private suspend inline fun <reified T> writeBesteSchuleCache(
+        key: String,
+        value: T,
+    ) {
+        if (!offlineCacheAvailable) return
+        val student = studentId.value ?: return
+        writeStoredBesteSchuleCache(student, key, cacheJson.encodeToString(value))
+    }
+
+    private suspend inline fun <reified T> loadBesteSchuleData(
+        key: String,
+        crossinline request: suspend () -> T,
+    ): T? {
+        if (isUsingOfflineCache.value) return readBesteSchuleCache(key)
+        return try {
+            withTimeout(10000) { request() }.also {
+                runCatching { writeBesteSchuleCache(key, it) }
+                couldReachBesteSchule()
+            }
+        } catch (_: TimeoutCancellationException) {
+            readBesteSchuleCache<T>(key)?.also {
+                useOfflineCache()
+            } ?: run {
+                if (!isUsingOfflineCache.value) couldNotReachBesteSchule()
+                null
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            e.printStackTrace()
+            if (e.isConnectionFailure()) {
+                readBesteSchuleCache<T>(key)?.also {
+                    useOfflineCache()
+                } ?: run {
+                    if (!isUsingOfflineCache.value) couldNotReachBesteSchule()
+                    null
+                }
+            } else {
+                couldNotReachBesteSchule()
+                null
+            }
+        }
+    }
+
+    suspend fun clearOfflineCache() {
+        try {
+            clearBesteSchuleCache()
+            toaster.show(
+                Toast(
+                    message = "Offline-Daten wurden geleert",
+                    type = ToastType.Success,
+                ),
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            toaster.show(
+                Toast(
+                    message = "Offline-Daten konnten nicht geleert werden",
+                    type = ToastType.Error,
+                ),
+            )
+        }
+    }
+
+    suspend fun offlineCacheSize() = besteSchuleCacheSize()
 
     suspend fun getAccessToken(): Boolean {
         try {
@@ -301,6 +425,7 @@ class ViewModel(
                         GradeNotifications.onLogin()
                     }
                 }
+                writeBesteSchuleCache("user", user)
                 setCurrentYear()
                 if (stayLoggedIn) {
                     putSecure("authToken", authToken.value!!)
@@ -435,9 +560,9 @@ class ViewModel(
             return user.value
         }
         if (!authToken.value.isNullOrEmpty()) {
-            user.value = api.userMe().data
+            user.value = loadBesteSchuleData("user") { api.userMe().data }
             user.value?.students?.find { it.id.toString() == studentId.value }?.metaGroups?.getOrNull(0)?.id?.let {
-                level.value = api.groupsShow(it, listOf("level")).data.level
+                level.value = loadBesteSchuleData("level_$it") { api.groupsShow(it, listOf("level")).data.level }
             }
         }
         return user.value
@@ -447,15 +572,7 @@ class ViewModel(
         if (isDemoAccount.value) {
             return years.toList()
         }
-        try {
-            val data = api.yearIndex().data
-            couldReachBesteSchule()
-            return data
-        } catch (e: Exception) {
-            e.printStackTrace()
-            couldNotReachBesteSchule()
-            return null
-        }
+        return loadBesteSchuleData("years") { api.yearIndex().data }
     }
 
     suspend fun getIntervals(): List<Interval>? {
@@ -463,15 +580,7 @@ class ViewModel(
             delay(250)
             return years.lastOrNull()?.let { demoIntervalsByYear[it.id] }.orEmpty()
         }
-        try {
-            val data = api.studentsShow(studentId.value!!, listOf("intervals")).data.intervals
-            couldReachBesteSchule()
-            return data
-        } catch (e: Exception) {
-            e.printStackTrace()
-            couldNotReachBesteSchule()
-            return null
-        }
+        return loadBesteSchuleData("intervals") { api.studentsShow(studentId.value!!, listOf("intervals")).data.intervals }
     }
 
     suspend fun getDayStudentCount(year: Year? = null): JournalDayStudentCount? {
@@ -479,16 +588,13 @@ class ViewModel(
             delay(250)
             return year?.let { demoDayStudentCountsByYear[it.id] } ?: demoTotalDayStudentCount
         }
-        try {
-            val data =
-                year?.let { api.journalDayStudentStatisticsCount(filterRange = "${it.from},${it.to}").data.firstOrNull() }
-                    ?: api.journalDayStudentStatisticsCount().data.firstOrNull()
-            couldReachBesteSchule()
-            return data
-        } catch (e: Exception) {
-            e.printStackTrace()
-            couldNotReachBesteSchule()
-            return null
+        return loadBesteSchuleData("dayStudentCount_${year?.id ?: "all"}") {
+            year
+                ?.let {
+                    api.journalDayStudentStatisticsCount(filterRange = "${it.from},${it.to}").data.firstOrNull()
+                }
+                ?: api.journalDayStudentStatisticsCount().data.firstOrNull()
+                ?: return@loadBesteSchuleData null
         }
     }
 
@@ -497,16 +603,13 @@ class ViewModel(
             delay(250)
             return year?.let { demoLessonStudentCountsByYear[it.id] } ?: demoTotalLessonStudentCount
         }
-        try {
-            val data =
-                year?.let { api.journalLessonStudentStatisticsCount(filterRange = "${it.from},${it.to}").data.firstOrNull() }
-                    ?: api.journalLessonStudentStatisticsCount().data.firstOrNull()
-            couldReachBesteSchule()
-            return data
-        } catch (e: Exception) {
-            e.printStackTrace()
-            couldNotReachBesteSchule()
-            return null
+        return loadBesteSchuleData("lessonStudentCount_${year?.id ?: "all"}") {
+            year
+                ?.let {
+                    api.journalLessonStudentStatisticsCount(filterRange = "${it.from},${it.to}").data.firstOrNull()
+                }
+                ?: api.journalLessonStudentStatisticsCount().data.firstOrNull()
+                ?: return@loadBesteSchuleData null
         }
     }
 
@@ -520,31 +623,26 @@ class ViewModel(
                 gradeCollections.filter { it.interval?.yearId in filterYearIds || it.intervalId in filterYearIds }
             }
         }
-        try {
+        return loadBesteSchuleData(
+            "collections_${filterYears.orEmpty().map { it.id }.sorted().joinToString("-").ifBlank { "all" }}",
+        ) {
             val includes = listOf("grades", "interval", "grades.histories", "histories")
-            val collections =
-                if (filterYears.isNullOrEmpty()) {
-                    getCollectionsPages(includes)
-                } else {
-                    coroutineScope {
-                        filterYears
-                            .map { year ->
-                                async {
-                                    getCollectionsPages(
-                                        includes = includes,
-                                        filterYear = year.id.toString(),
-                                    )
-                                }
-                            }.awaitAll()
-                            .flatten()
-                    }
+            if (filterYears.isNullOrEmpty()) {
+                getCollectionsPages(includes)
+            } else {
+                coroutineScope {
+                    filterYears
+                        .map { year ->
+                            async {
+                                getCollectionsPages(
+                                    includes = includes,
+                                    filterYear = year.id.toString(),
+                                )
+                            }
+                        }.awaitAll()
+                        .flatten()
                 }
-            couldReachBesteSchule()
-            return collections
-        } catch (e: Exception) {
-            e.printStackTrace()
-            couldNotReachBesteSchule()
-            return null
+            }
         }
     }
 
@@ -570,98 +668,64 @@ class ViewModel(
             }
             return week
         }
-        try {
-            @OptIn(ExperimentalTime::class)
-            val currentNr =
-                Clock.System
-                    .now()
-                    .toLocalDateTime(TimeZone.currentSystemDefault())
-                    .date
-                    .let { "${it.year}-${it.weekOfYear}" }
-            val nr = date?.let { "${it.year}-${it.weekOfYear}" } ?: currentNr
-            val year =
-                date?.let {
-                    years
-                        .firstOrNull { schoolYear ->
-                            val fromDate = LocalDate.parse(schoolYear.from)
-                            val toDate = LocalDate.parse(schoolYear.to)
-                            date in fromDate..toDate
-                        }?.id
-                        ?.toString()
-                }
-            if (getAbsences && year != null && absences.none { it.first == year }) {
-                getAbsences(year)?.let { absences.add(year to it) }
+        val currentNr =
+            Clock.System
+                .now()
+                .toLocalDateTime(TimeZone.currentSystemDefault())
+                .date
+                .let { "${it.year}-${it.weekOfYear}" }
+        val nr = date?.let { "${it.year}-${it.weekOfYear}" } ?: currentNr
+        val year =
+            date?.let {
+                years
+                    .firstOrNull { schoolYear ->
+                        val fromDate = LocalDate.parse(schoolYear.from)
+                        val toDate = LocalDate.parse(schoolYear.to)
+                        date in fromDate..toDate
+                    }?.id
+                    ?.toString()
             }
-            val cachedWeek = if (useCached) journalWeeks.firstOrNull { it.first == nr }?.second else null
-            val week = cachedWeek ?: api.journalWeekShow(nr, year, true, "days.lessons").data
-            if (cachedWeek == null) {
-                if (!useCached) journalWeeks.removeAll { it.first == nr }
-                journalWeeks.add(nr to week)
-            }
-            couldReachBesteSchule()
-            return week
-        } catch (e: CancellationException) {
-            e.printStackTrace()
-            return null
-        } catch (e: Exception) {
-            e.printStackTrace()
-            couldNotReachBesteSchule()
-            return null
+        if (getAbsences && year != null && absences.none { it.first == year }) {
+            getAbsences(year)?.let { absences.add(year to it) }
         }
+        val cachedWeek = if (useCached) journalWeeks.firstOrNull { it.first == nr }?.second else null
+        val week =
+            cachedWeek ?: loadBesteSchuleData("journalWeek_$nr") {
+                api.journalWeekShow(nr, year, true, "days.lessons").data
+            } ?: return null
+        if (cachedWeek == null) {
+            if (!useCached) journalWeeks.removeAll { it.first == nr }
+            journalWeeks.add(nr to week)
+        }
+        return week
     }
 
     suspend fun getSubjectsAndTeachers(): List<Pair<Subject?, List<Teacher>?>>? {
         if (isDemoAccount.value) delay(500)
-        try {
-            if (currentTimetable.value == null) {
-                val index = api.timeTablesIndex().data
-                currentTimetable.value = api.timeTablesShow(index.last().id).data
+        val timetable = getCurrentTimetable() ?: return null
+        return timetable.lessons
+            ?.groupBy { it.subject }
+            ?.map {
+                it.key to
+                    it.value
+                        .flatMap { lesson -> lesson.teachers.orEmpty() }
+                        .toSet()
+                        .toList()
             }
-            val data =
-                currentTimetable.value
-                    ?.lessons
-                    ?.groupBy { it.subject }
-                    ?.map {
-                        it.key to
-                            it.value
-                                .flatMap { it.teachers.orEmpty() }
-                                .toSet()
-                                .toList()
-                    }
-            couldReachBesteSchule()
-            return data
-        } catch (e: Exception) {
-            e.printStackTrace()
-            couldNotReachBesteSchule()
-            return null
-        }
     }
 
     suspend fun getTeachersAndSubjects(): List<Pair<Teacher?, List<Subject?>>>? {
         if (isDemoAccount.value) delay(500)
-        try {
-            if (currentTimetable.value == null) {
-                val index = api.timeTablesIndex().data
-                currentTimetable.value = api.timeTablesShow(index.last().id).data
+        val timetable = getCurrentTimetable() ?: return null
+        return timetable.lessons
+            ?.groupBy { it.teachers }
+            ?.map {
+                it.key?.firstOrNull() to
+                    it.value
+                        .map { lesson -> lesson.subject }
+                        .toSet()
+                        .toList()
             }
-            val data =
-                currentTimetable.value
-                    ?.lessons
-                    ?.groupBy { it.teachers }
-                    ?.map {
-                        it.key?.firstOrNull() to
-                            it.value
-                                .map { it.subject }
-                                .toSet()
-                                .toList()
-                    }
-            couldReachBesteSchule()
-            return data
-        } catch (e: Exception) {
-            e.printStackTrace()
-            couldNotReachBesteSchule()
-            return null
-        }
     }
 
     suspend fun getSubjects(): List<Subject>? {
@@ -669,15 +733,7 @@ class ViewModel(
             delay(500)
             return subjects.toList()
         }
-        try {
-            val data = api.subjectsIndex().data
-            couldReachBesteSchule()
-            return data
-        } catch (e: Exception) {
-            e.printStackTrace()
-            couldNotReachBesteSchule()
-            return null
-        }
+        return loadBesteSchuleData("subjects") { api.subjectsIndex().data }
     }
 
     suspend fun getAbsences(filterYear: String? = null): List<Absence>? {
@@ -689,15 +745,19 @@ class ViewModel(
                 demoAbsencesByYear.values.flatten()
             }
         }
-        try {
-            val data = api.absencesIndex(filterYear = filterYear).data
-            couldReachBesteSchule()
-            return data
-        } catch (e: Exception) {
-            e.printStackTrace()
-            couldNotReachBesteSchule()
-            return null
+        return loadBesteSchuleData("absences_${filterYear ?: "all"}") {
+            api.absencesIndex(filterYear = filterYear).data
         }
+    }
+
+    private suspend fun getCurrentTimetable(): TimeTable? {
+        currentTimetable.value?.let { return it }
+        currentTimetable.value =
+            loadBesteSchuleData("timetable") {
+                val index = api.timeTablesIndex().data
+                api.timeTablesShow(index.last().id).data
+            }
+        return currentTimetable.value
     }
 
     private suspend fun getCollectionsPages(
@@ -739,7 +799,7 @@ class ViewModel(
                 }
                 init()
                 GradeNotifications.onLogin()
-                syncHomeworkNow(false)
+                if (!isUsingOfflineCache.value) syncHomeworkNow(false)
             } catch (e: Exception) {
                 e.printStackTrace()
                 toaster.show(
@@ -778,5 +838,23 @@ class ViewModel(
         demoLessonStudentCountsByYear = emptyMap()
         demoTotalDayStudentCount = null
         demoTotalLessonStudentCount = null
+        isBesteSchuleNotReachable.value = false
+        isUsingOfflineCache.value = false
     }
+}
+
+private fun Throwable.isConnectionFailure(): Boolean {
+    var current: Throwable? = this
+    while (current != null) {
+        if (
+            current is HttpRequestTimeoutException ||
+            current is ConnectTimeoutException ||
+            current is SocketTimeoutException ||
+            current is IOException
+        ) {
+            return true
+        }
+        current = current.cause
+    }
+    return false
 }

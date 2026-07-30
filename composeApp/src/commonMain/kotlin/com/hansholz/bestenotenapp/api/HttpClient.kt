@@ -22,9 +22,9 @@ fun commonHttpClientConfig(config: HttpClientConfig<*>): HttpClientConfig<*> {
             )
         }
         install(HttpTimeout) {
-            requestTimeoutMillis = 600000
-            connectTimeoutMillis = 30000
-            socketTimeoutMillis = 600000
+            requestTimeoutMillis = 10000
+            connectTimeoutMillis = 5000
+            socketTimeoutMillis = 10000
         }
         install(HttpCache)
     }

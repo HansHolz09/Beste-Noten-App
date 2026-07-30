@@ -16,6 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +36,7 @@ import com.composables.icons.materialsymbols.rounded.Blur_on
 import com.composables.icons.materialsymbols.rounded.Brightness_4
 import com.composables.icons.materialsymbols.rounded.Brightness_auto
 import com.composables.icons.materialsymbols.rounded.Dark_mode
+import com.composables.icons.materialsymbols.rounded.Delete_sweep
 import com.composables.icons.materialsymbols.rounded.Disabled_visible
 import com.composables.icons.materialsymbols.rounded.Fiber_new
 import com.composables.icons.materialsymbols.rounded.File_export
@@ -104,6 +106,7 @@ import com.hansholz.bestenotenapp.theme.LocalSupportsCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseSystemIsDark
 import com.hansholz.bestenotenapp.utils.formateInterval
+import com.hansholz.bestenotenapp.utils.roundToDecimals
 import dev.chrisbanes.haze.blur.HazeBlurDefaults
 import dev.chrisbanes.haze.hazeSource
 import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
@@ -156,6 +159,11 @@ fun Settings(
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
     val biometricAuthentificationAvailable = LocalBiometricAuthenticationAvailable.current
     val authToken by secureMutableStateOf("", "authToken")
+    var offlineCacheSize by remember { mutableStateOf<Long?>(null) }
+
+    LaunchedEffect(Unit) {
+        if (viewModel.offlineCacheAvailable) offlineCacheSize = viewModel.offlineCacheSize()
+    }
 
     TopAppBarScaffold(
         title = "Einstellungen",
@@ -619,6 +627,42 @@ fun Settings(
                     text = "Biometrische Authentifizierung erforderlich",
                     icon = MaterialSymbols.Rounded.Lock,
                 )
+            }
+            if (!viewModel.isDemoAccount.value && viewModel.offlineCacheAvailable) {
+                item {
+                    PreferenceCategory("Speicher", Modifier.padding(horizontal = 15.dp))
+                }
+                item {
+                    PreferenceItem(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        title = "Offline-Daten leeren",
+                        subtitle =
+                            offlineCacheSize?.let {
+                                "${(it / 1_000_000f).roundToDecimals(2).toString().replace('.', ',')} MB an zuletzt geladenen beste.schule-Daten"
+                            } ?: "Größe der zuletzt geladenen beste.schule-Daten wird ermittelt",
+                        icon = MaterialSymbols.Rounded.Delete_sweep,
+                        enabled = !settingsViewModel.cacheClearInProgress,
+                        onClick = {
+                            scope.launch {
+                                settingsViewModel.cacheClearInProgress = true
+                                try {
+                                    viewModel.clearOfflineCache()
+                                    offlineCacheSize = viewModel.offlineCacheSize()
+                                } finally {
+                                    settingsViewModel.cacheClearInProgress = false
+                                }
+                            }
+                            vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                        },
+                        position = PreferencePosition.Single,
+                        trailingContent =
+                            if (settingsViewModel.cacheClearInProgress) {
+                                { CircularWavyProgressIndicator(Modifier.size(32.dp)) }
+                            } else {
+                                null
+                            },
+                    )
+                }
             }
             item {
                 PreferenceCategory("Datensicherung", Modifier.padding(horizontal = 15.dp))

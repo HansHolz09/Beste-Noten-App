@@ -1,5 +1,6 @@
 package com.hansholz.bestenotenapp.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
@@ -20,8 +23,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Cloud_off
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
+import com.hansholz.bestenotenapp.main.LocalUsingOfflineCache
 import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
 import com.hansholz.bestenotenapp.utils.topAppBarEndPadding
 import com.hansholz.bestenotenapp.utils.topAppBarStartPadding
@@ -63,7 +69,17 @@ fun TopAppBarScaffold(
                         navigationIcon()
                     }
                 },
-                actions = { Spacer(Modifier.width(topAppBarEndPadding())) },
+                actions = {
+                    AnimatedVisibility(LocalUsingOfflineCache.current.value) {
+                        IconButton(
+                            onClick = {},
+                            enabled = false,
+                        ) {
+                            Icon(MaterialSymbols.Rounded.Cloud_off, null)
+                        }
+                    }
+                    Spacer(Modifier.width(topAppBarEndPadding()))
+                },
                 colors = TopAppBarDefaults.topAppBarColors(Color.Transparent),
             )
         },

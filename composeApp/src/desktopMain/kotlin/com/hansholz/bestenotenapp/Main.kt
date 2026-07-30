@@ -40,7 +40,9 @@ import com.jetbrains.JBR
 import dev.hansholz.advancedmenubar.DefaultMacMenuBar
 import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
 import io.github.kdroidfilter.nucleus.aot.runtime.AotRuntime
+import io.github.kdroidfilter.nucleus.core.runtime.NucleusApp
 import io.github.kdroidfilter.nucleus.core.runtime.SingleInstanceManager
+import io.github.vinceglb.filekit.FileKit
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -53,6 +55,7 @@ import kotlin.system.exitProcess
 @OptIn(ExperimentalMaterial3ComponentOverrideApi::class, ExperimentalMaterial3Api::class)
 fun main() {
     System.setProperty("ksafe.jvm.keyVault", "software") // because no signed macOS app
+    FileKit.init(NucleusApp.appId)
     application {
         DecoratedWindow(
             onCloseRequest = ::exitApplication,

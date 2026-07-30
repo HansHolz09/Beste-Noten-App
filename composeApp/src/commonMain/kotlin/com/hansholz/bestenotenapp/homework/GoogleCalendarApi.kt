@@ -2,6 +2,7 @@ package com.hansholz.bestenotenapp.homework
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.timeout
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
@@ -18,6 +19,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.encodeURLPathPart
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -38,55 +40,65 @@ class GoogleCalendarApi(
         summary: String,
         description: String? = null,
     ): GoogleCalendar =
-        httpClient
-            .post("$baseUrl/calendars") {
-                authorize()
-                contentType(ContentType.Application.Json)
-                setBody(GoogleCalendarCreateRequest(summary, description))
-            }.bodyOrThrow()
+        withTimeout(5000) {
+            httpClient
+                .post("$baseUrl/calendars") {
+                    authorize()
+                    contentType(ContentType.Application.Json)
+                    setBody(GoogleCalendarCreateRequest(summary, description))
+                }.bodyOrThrow()
+        }
 
     suspend fun listCalendars(pageToken: String? = null): GoogleCalendarListResponse =
-        httpClient
-            .get("$baseUrl/users/me/calendarList") {
-                authorize()
-                parameter("maxResults", 250)
-                parameter("showHidden", true)
-                pageToken?.let { parameter("pageToken", it) }
-            }.bodyOrThrow()
+        withTimeout(5000) {
+            httpClient
+                .get("$baseUrl/users/me/calendarList") {
+                    authorize()
+                    parameter("maxResults", 250)
+                    parameter("showHidden", true)
+                    pageToken?.let { parameter("pageToken", it) }
+                }.bodyOrThrow()
+        }
 
     suspend fun createEvent(
         calendarId: String,
         event: GoogleCalendarEvent,
     ): GoogleCalendarEvent =
-        httpClient
-            .post("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events") {
-                authorize()
-                contentType(ContentType.Application.Json)
-                setBody(event)
-            }.bodyOrThrow()
+        withTimeout(5000) {
+            httpClient
+                .post("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events") {
+                    authorize()
+                    contentType(ContentType.Application.Json)
+                    setBody(event)
+                }.bodyOrThrow()
+        }
 
     suspend fun patchEvent(
         calendarId: String,
         eventId: String,
         event: GoogleCalendarEvent,
     ): GoogleCalendarEvent =
-        httpClient
-            .patch("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events/${eventId.encodeURLPathPart()}") {
-                authorize()
-                contentType(ContentType.Application.Json)
-                setBody(event)
-            }.bodyOrThrow()
+        withTimeout(5000) {
+            httpClient
+                .patch("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events/${eventId.encodeURLPathPart()}") {
+                    authorize()
+                    contentType(ContentType.Application.Json)
+                    setBody(event)
+                }.bodyOrThrow()
+        }
 
     suspend fun deleteEvent(
         calendarId: String,
         eventId: String,
     ) {
-        val response =
-            httpClient.delete("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events/${eventId.encodeURLPathPart()}") {
-                authorize()
+        withTimeout(5000) {
+            val response =
+                httpClient.delete("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events/${eventId.encodeURLPathPart()}") {
+                    authorize()
+                }
+            if (!response.status.isSuccess() && response.status != HttpStatusCode.NotFound) {
+                response.throwGoogleError()
             }
-        if (!response.status.isSuccess() && response.status != HttpStatusCode.NotFound) {
-            response.throwGoogleError()
         }
     }
 
@@ -94,26 +106,32 @@ class GoogleCalendarApi(
         calendarId: String,
         syncToken: String?,
         pageToken: String? = null,
-        privateExtendedProperty: String? = null,
-    ): GoogleCalendarEventsResponse {
-        val response =
-            httpClient.get("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events") {
-                authorize()
-                parameter("singleEvents", true)
-                parameter("showDeleted", true)
-                parameter("maxResults", 2500)
-                syncToken?.let { parameter("syncToken", it) }
-                pageToken?.let { parameter("pageToken", it) }
-                privateExtendedProperty?.let { parameter("privateExtendedProperty", it) }
+        privateExtendedProperties: List<String> = emptyList(),
+    ): GoogleCalendarEventsResponse =
+        withTimeout(5000) {
+            val response =
+                httpClient.get("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events") {
+                    authorize()
+                    parameter("singleEvents", true)
+                    parameter("showDeleted", true)
+                    parameter("maxResults", 2500)
+                    syncToken?.let { parameter("syncToken", it) }
+                    pageToken?.let { parameter("pageToken", it) }
+                    privateExtendedProperties.forEach { parameter("privateExtendedProperty", it) }
+                }
+            if (response.status == HttpStatusCode.Gone) {
+                throw InvalidGoogleCalendarSyncTokenException()
             }
-        if (response.status == HttpStatusCode.Gone) {
-            throw InvalidGoogleCalendarSyncTokenException()
+            response.bodyOrThrow()
         }
-        return response.bodyOrThrow()
-    }
 
     private suspend fun io.ktor.client.request.HttpRequestBuilder.authorize() {
-        val token = authProvider.getAccessToken() ?: throw MissingGoogleAuthException()
+        timeout {
+            requestTimeoutMillis = 5000
+            connectTimeoutMillis = 3000
+            socketTimeoutMillis = 5000
+        }
+        val token = withTimeout(5000) { authProvider.getAccessToken() } ?: throw MissingGoogleAuthException()
         bearerAuth(token)
         header(HttpHeaders.Accept, ContentType.Application.Json)
     }
@@ -179,7 +197,7 @@ class GoogleCalendarHomeworkSyncDataSource(
                             calendarId = calendar.id,
                             syncToken = null,
                             pageToken = eventPageToken,
-                            privateExtendedProperty = "app=beste-noten-app",
+                            privateExtendedProperties = listOf("app=beste-noten-app"),
                         )
                     eventCount += response.items.size
                     eventPageToken = response.nextPageToken
@@ -208,11 +226,17 @@ class GoogleCalendarHomeworkSyncDataSource(
         mapping: CalendarSyncMapping?,
     ): CalendarSyncMapping {
         val event = entry.toGoogleCalendarEvent(studentIdProvider())
+        val eventId =
+            mapping?.googleEventId
+                ?: loadManagedEvents(calendarId, entry.localId)
+                    .filter { it.status != "cancelled" }
+                    .maxByOrNull { it.syncTimestamp() }
+                    ?.id
         val saved =
-            if (mapping?.googleEventId == null) {
+            if (eventId == null) {
                 api.createEvent(calendarId, event)
             } else {
-                api.patchEvent(calendarId, mapping.googleEventId, event)
+                api.patchEvent(calendarId, eventId, event)
             }
         return CalendarSyncMapping(
             localId = entry.localId,
@@ -245,6 +269,61 @@ class GoogleCalendarHomeworkSyncDataSource(
             pageToken = response.nextPageToken
             nextSyncToken = response.nextSyncToken ?: nextSyncToken
         } while (pageToken != null)
-        return RemoteCalendarEvents(events, nextSyncToken)
+        val newestEvents =
+            events
+                .filter { it.localId() != null }
+                .groupBy { it.localId() }
+                .values
+                .mapNotNull { matchingEvents ->
+                    matchingEvents
+                        .filter { it.status != "cancelled" }
+                        .ifEmpty { matchingEvents }
+                        .maxByOrNull { it.syncTimestamp() }
+                }
+        return RemoteCalendarEvents(newestEvents, nextSyncToken)
     }
+
+    suspend fun removeDuplicateEvents(calendarId: String): Boolean {
+        var removedDuplicates = false
+        loadManagedEvents(calendarId)
+            .filter { it.status != "cancelled" && it.localId() != null }
+            .groupBy { it.localId() }
+            .values
+            .filter { it.size > 1 }
+            .forEach { duplicateEvents ->
+                val retainedId = duplicateEvents.maxByOrNull { it.syncTimestamp() }?.id
+                duplicateEvents.forEach { event ->
+                    if (event.id != null && event.id != retainedId) {
+                        api.deleteEvent(calendarId, event.id)
+                        removedDuplicates = true
+                    }
+                }
+            }
+        return removedDuplicates
+    }
+
+    private suspend fun loadManagedEvents(
+        calendarId: String,
+        localId: String? = null,
+    ): List<GoogleCalendarEvent> {
+        val events = mutableListOf<GoogleCalendarEvent>()
+        val properties = listOfNotNull("app=beste-noten-app", localId?.let { "localId=$it" })
+        var pageToken: String? = null
+        do {
+            val response =
+                api.listEvents(
+                    calendarId = calendarId,
+                    syncToken = null,
+                    pageToken = pageToken,
+                    privateExtendedProperties = properties,
+                )
+            events += response.items
+            pageToken = response.nextPageToken
+        } while (pageToken != null)
+        return events
+    }
+
+    private fun GoogleCalendarEvent.localId() = extendedProperties?.privateProperties?.get("localId")
+
+    private fun GoogleCalendarEvent.syncTimestamp() = extendedProperties?.privateProperties?.get("appUpdatedAt") ?: updated.orEmpty()
 }

@@ -158,6 +158,7 @@ class KSafeHomeworkRepository(
     kSafe: KSafe,
     googleDataSource: GoogleCalendarHomeworkSyncDataSource,
     settings: HomeworkSyncSettings,
+    private val canAutoSync: () -> Boolean = { true },
 ) : HomeworkRepository {
     private val local = KSafeHomeworkDataSource(kSafe)
     private val sync = HomeworkSyncManager(local, googleDataSource, settings)
@@ -181,7 +182,7 @@ class KSafeHomeworkRepository(
     override suspend fun createHomework(entry: HomeworkEntry) {
         local.insert(entry)
         local.enqueueOutbox(entry.localId, SyncOperation.CREATE, entry.createdAt)
-        sync.syncNow()
+        if (canAutoSync()) sync.syncNow()
     }
 
     @OptIn(ExperimentalTime::class)
@@ -189,7 +190,7 @@ class KSafeHomeworkRepository(
         val updated = entry.copy(updatedAt = Clock.System.now())
         local.update(updated)
         local.enqueueOutbox(updated.localId, SyncOperation.UPDATE, updated.updatedAt)
-        sync.syncNow()
+        if (canAutoSync()) sync.syncNow()
     }
 
     @OptIn(ExperimentalTime::class)
@@ -200,7 +201,7 @@ class KSafeHomeworkRepository(
         val now = Clock.System.now()
         local.markStatus(localId, if (done) HomeworkStatus.DONE else HomeworkStatus.OPEN, now, null)
         local.enqueueOutbox(localId, SyncOperation.UPDATE, now)
-        sync.syncNow()
+        if (canAutoSync()) sync.syncNow()
     }
 
     @OptIn(ExperimentalTime::class)
@@ -208,7 +209,7 @@ class KSafeHomeworkRepository(
         val now = Clock.System.now()
         local.markStatus(localId, HomeworkStatus.DELETED, now, now)
         local.enqueueOutbox(localId, SyncOperation.DELETE, now)
-        sync.syncNow()
+        if (canAutoSync()) sync.syncNow()
     }
 
     override suspend fun syncNow() = sync.syncNow()
@@ -234,9 +235,10 @@ private class HomeworkSyncManager(
                 settings.nextSyncToken = null
             }
             settings.googleCalendarResolved = true
+            if (google.removeDuplicateEvents(calendarId)) settings.nextSyncToken = null
+            pull(calendarId)
             enqueueUnsynced(calendarId)
             push(calendarId)
-            pull(calendarId)
             settings.lastSuccessfulSyncAt = Clock.System.now()
             settings.lastSyncError = null
         } catch (e: InvalidGoogleCalendarSyncTokenException) {

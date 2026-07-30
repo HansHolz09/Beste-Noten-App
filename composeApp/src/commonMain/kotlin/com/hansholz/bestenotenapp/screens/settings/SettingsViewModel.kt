@@ -44,6 +44,7 @@ class SettingsViewModel : ViewModel() {
 
     var isExporting by mutableStateOf(false)
     var homeworkSyncInProgress by mutableStateOf(false)
+    var cacheClearInProgress by mutableStateOf(false)
 
     suspend fun exportAsJson(
         viewModel: com.hansholz.bestenotenapp.main.ViewModel,
