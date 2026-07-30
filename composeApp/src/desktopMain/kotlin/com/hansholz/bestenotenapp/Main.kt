@@ -1,5 +1,8 @@
 package com.hansholz.bestenotenapp
 
+import androidx.compose.foundation.DarkDefaultContextMenuRepresentation
+import androidx.compose.foundation.LightDefaultContextMenuRepresentation
+import androidx.compose.foundation.LocalContextMenuRepresentation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ComponentOverrideApi
 import androidx.compose.runtime.CompositionLocalProvider
