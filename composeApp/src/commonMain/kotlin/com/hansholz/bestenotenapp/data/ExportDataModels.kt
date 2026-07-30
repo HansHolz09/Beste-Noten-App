@@ -37,6 +37,7 @@ data class AppSettings(
     val showCollectionsWithoutGrades: Boolean = false,
     val showAbsences: Boolean = true,
     val showNotes: Boolean = true,
+    val homeworkEnabled: Boolean? = true,
     val showTeachersWithFirstname: Boolean = false,
     val gradeNotificationsEnabled: Boolean = false,
     val gradeNotificationsIntervalMinutes: Long = 60L,

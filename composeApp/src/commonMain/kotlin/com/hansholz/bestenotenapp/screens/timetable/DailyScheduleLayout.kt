@@ -14,21 +14,27 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Text_snippet
 import com.hansholz.bestenotenapp.api.models.Absence
 import com.hansholz.bestenotenapp.api.models.JournalLesson
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
@@ -44,12 +50,15 @@ fun DailyScheduleLayout(
     absences: List<Absence>,
     date: LocalDate,
     modifier: Modifier = Modifier,
+    captureOnly: Boolean,
     minTime: SimpleTime,
     maxTime: SimpleTime,
     sharedTransitionScope: SharedTransitionScope,
     selectedLesson: JournalLesson?,
     popupTransition: Transition<Boolean>,
     popupBoundsTransform: BoundsTransform,
+    homeworkLessonIds: Set<String> = emptySet(),
+    doneHomeworkLessonIds: Set<String> = emptySet(),
     onLessonPopupOpened: (JournalLesson) -> Unit,
 ) {
     val sortedLessons =
@@ -126,6 +135,21 @@ fun DailyScheduleLayout(
                                     modifier = Modifier.fillMaxSize(),
                                     contentAlignment = Alignment.Center,
                                 ) {
+                                    if (lesson.homeworkLessonId() in homeworkLessonIds && !captureOnly) {
+                                        val homeworkDone = lesson.homeworkLessonId() in doneHomeworkLessonIds
+                                        Icon(
+                                            MaterialSymbols.Rounded.Text_snippet,
+                                            null,
+                                            modifier =
+                                                Modifier
+                                                    .graphicsLayer(scaleX = -1f)
+                                                    .padding(3.dp)
+                                                    .align(Alignment.TopStart)
+                                                    .size(25.dp)
+                                                    .alpha(if (homeworkDone) 0.18f else 0.55f),
+                                            tint = if (homeworkDone) colorScheme.onSurfaceVariant else colorScheme.error,
+                                        )
+                                    }
                                     val flip = ((maxWidth.value * 1.5f) <= maxHeight.value) && lesson.subject?.localId != null
                                     Text(
                                         text = lesson.subject?.localId ?: "?",
@@ -142,7 +166,7 @@ fun DailyScheduleLayout(
                                                         LocalDate.parse(it.to.take(10)) >= date &&
                                                         SimpleTime.parse(it.from.takeLast(8)) <= SimpleTime.parse(lesson.time?.from ?: "00:00") &&
                                                         SimpleTime.parse(it.to.takeLast(8)) >= SimpleTime.parse(lesson.time?.to ?: "23:59")
-                                                }
+                                                } && !captureOnly
                                             ) {
                                                 colorScheme.error
                                             } else {
@@ -219,3 +243,5 @@ private data class LessonPlacementInfo(
     val width: Int,
     val height: Int,
 )
+
+fun JournalLesson.homeworkLessonId(): String? = time?.id ?: id ?: ids

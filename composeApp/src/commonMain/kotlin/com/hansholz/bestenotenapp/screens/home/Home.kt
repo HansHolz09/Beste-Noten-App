@@ -111,7 +111,9 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.scatteredIconBackground
+import com.hansholz.bestenotenapp.homework.HomeworkEntry
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
+import com.hansholz.bestenotenapp.main.LocalHomeworkEnabled
 import com.hansholz.bestenotenapp.main.LocalShowCurrentLesson
 import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
@@ -166,6 +168,21 @@ fun Home(
         val showCurrentLesson by LocalShowCurrentLesson.current
         val showNotes by LocalShowNotes.current
         val showYearProgress by LocalShowYearProgress.current
+        val homeworkEnabled by LocalHomeworkEnabled.current
+        val homeworkRevision = viewModel.homeworkRevision.intValue
+        var homework by remember { mutableStateOf(emptyList<HomeworkEntry>()) }
+
+        LaunchedEffect(viewModel.currentJournalDay.value?.date, homeworkEnabled, homeworkRevision) {
+            homework =
+                if (homeworkEnabled) {
+                    viewModel.currentJournalDay.value
+                        ?.date
+                        ?.let { viewModel.getHomeworkForDate(LocalDate.parse(it)) }
+                        .orEmpty()
+                } else {
+                    emptyList()
+                }
+        }
 
         val newestGrades by remember {
             derivedStateOf {
@@ -599,21 +616,50 @@ fun Home(
                                                             }
                                                         }
                                                     }
-                                                    if (showNotes) {
+                                                    if (showNotes || homework.isNotEmpty()) {
                                                         val notes =
                                                             viewModel.currentJournalDay.value
                                                                 ?.notes
                                                                 ?.filter { it.description != null }
-                                                        if (!notes.isNullOrEmpty()) Spacer(Modifier.height(5.dp))
-                                                        notes?.forEach { note ->
+                                                        if (!notes.isNullOrEmpty() || homework.isNotEmpty()) Spacer(Modifier.height(5.dp))
+                                                        if (showNotes) {
+                                                            notes?.forEach { note ->
+                                                                Column {
+                                                                    HorizontalDivider(
+                                                                        Modifier.fillMaxWidth().padding(top = 5.dp),
+                                                                        2.dp,
+                                                                        colorScheme.outline,
+                                                                    )
+                                                                    Row(
+                                                                        modifier = Modifier.padding(top = 5.dp),
+                                                                        verticalAlignment = Alignment.CenterVertically,
+                                                                    ) {
+                                                                        Icon(MaterialSymbols.Rounded.News, null, Modifier.padding(end = 10.dp))
+                                                                        Text(note.description ?: "Keine Beschreibung vorhanden")
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                        homework.forEach { entry ->
                                                             Column {
                                                                 HorizontalDivider(Modifier.fillMaxWidth().padding(top = 5.dp), 2.dp, colorScheme.outline)
                                                                 Row(
                                                                     modifier = Modifier.padding(top = 5.dp),
                                                                     verticalAlignment = Alignment.CenterVertically,
                                                                 ) {
-                                                                    Icon(MaterialSymbols.Rounded.News, null, Modifier.padding(end = 10.dp))
-                                                                    Text(note.description ?: "Keine Beschreibung vorhanden")
+                                                                    Icon(
+                                                                        MaterialSymbols.Rounded.News,
+                                                                        null,
+                                                                        Modifier.padding(end = 10.dp),
+                                                                        tint = colorScheme.error,
+                                                                    )
+                                                                    Text(
+                                                                        if (entry.subjectName.isNullOrBlank()) {
+                                                                            entry.title
+                                                                        } else {
+                                                                            "${entry.subjectName}: ${entry.title}"
+                                                                        },
+                                                                    )
                                                                 }
                                                             }
                                                         }

@@ -5,7 +5,7 @@ import org.publicvalue.multiplatform.oidc.appsupport.AndroidCodeAuthFlowFactory
 import org.publicvalue.multiplatform.oidc.appsupport.CodeAuthFlowFactory
 
 @SuppressLint("StaticFieldLeak")
-val androidCodeAuthFlowFactory = AndroidCodeAuthFlowFactory(useWebView = true)
+val androidCodeAuthFlowFactory = AndroidCodeAuthFlowFactory()
 
 actual val codeAuthFlowFactory: CodeAuthFlowFactory
     get() = androidCodeAuthFlowFactory

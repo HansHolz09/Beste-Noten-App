@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 fun PreferenceCategory(
     title: String,
     modifier: Modifier = Modifier,
+    reduceTopPadding: Boolean = false,
 ) {
     Text(
         text = title,
@@ -18,7 +19,7 @@ fun PreferenceCategory(
         color = MaterialTheme.colorScheme.primary,
         modifier =
             modifier.padding(
-                top = 24.dp,
+                top = if (reduceTopPadding) 8.dp else 24.dp,
                 start = 8.dp,
                 end = 8.dp,
                 bottom = 8.dp,

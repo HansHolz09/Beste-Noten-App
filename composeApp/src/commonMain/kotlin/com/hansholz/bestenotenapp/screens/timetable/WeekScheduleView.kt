@@ -67,7 +67,12 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.homework.HomeworkEntry
+import com.hansholz.bestenotenapp.homework.HomeworkPlacement
+import com.hansholz.bestenotenapp.homework.HomeworkStatus
+import com.hansholz.bestenotenapp.main.LocalHomeworkEnabled
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
+import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.utils.SimpleTime
@@ -93,6 +98,7 @@ import kotlin.time.ExperimentalTime
 )
 @Composable
 fun WeekScheduleView(
+    viewModel: ViewModel,
     week: JournalWeek?,
     absences: List<Absence>,
     lessonPopupShown: MutableState<Boolean>,
@@ -106,6 +112,8 @@ fun WeekScheduleView(
     val isDark = LocalThemeIsDark.current
     val blurEnabled = LocalBlurEnabled.current
     val showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
+    val homeworkEnabled by LocalHomeworkEnabled.current
+    val homeworkRevision = viewModel.homeworkRevision.intValue
 
     val days = week?.days ?: return
 
@@ -251,30 +259,51 @@ fun WeekScheduleView(
                 days.forEachIndexed { dayIndex, day ->
                     if (!day.lessons.isNullOrEmpty()) {
                         val currentDate = LocalDate.parse(days.firstOrNull()?.date ?: "2000-01-01").plus(dayIndex, DateTimeUnit.DAY)
+                        var homeworkLessonIds by remember(currentDate, homeworkEnabled) { mutableStateOf(emptySet<String>()) }
+                        var doneHomeworkLessonIds by remember(currentDate, homeworkEnabled) { mutableStateOf(emptySet<String>()) }
+                        LaunchedEffect(currentDate, homeworkEnabled, day.lessons, homeworkRevision) {
+                            val lessonIds = mutableSetOf<String>()
+                            val doneLessonIds = mutableSetOf<String>()
+                            if (homeworkEnabled) {
+                                day.lessons.forEach { lesson ->
+                                    val lessonId = lesson.homeworkLessonId() ?: return@forEach
+                                    val entries =
+                                        viewModel
+                                            .getHomeworkForLesson(lessonId, currentDate)
+                                            .filter { it.belongsToCurrentLessonSubject(lesson) }
+                                    if (entries.isNotEmpty()) {
+                                        lessonIds += lessonId
+                                        if (entries.all { it.status == HomeworkStatus.DONE }) doneLessonIds += lessonId
+                                    }
+                                }
+                            }
+                            homeworkLessonIds = lessonIds
+                            doneHomeworkLessonIds = doneLessonIds
+                        }
                         Column(
                             modifier = Modifier.weight(1f).fillMaxHeight(),
                             horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
                             DayHeader(
                                 date = currentDate,
-                                notes =
-                                    if (captureOnly) {
-                                        null
-                                    } else {
-                                        day.notes?.filter { it.description != null }
-                                    },
+                                viewModel = viewModel,
+                                notes = day.notes?.filter { it.description != null },
+                                captureOnly = captureOnly,
                             )
                             DailyScheduleLayout(
                                 lessons = day.lessons,
                                 absences = absences,
                                 date = currentDate,
                                 modifier = Modifier.fillMaxHeight(),
+                                captureOnly = captureOnly,
                                 minTime = minTimeHour ?: SimpleTime.parse("7:00"),
                                 maxTime = latestLessonEnd ?: SimpleTime.parse("18:00"),
                                 sharedTransitionScope = this@SharedTransitionLayout,
                                 selectedLesson = selectedLesson,
                                 popupTransition = popupTransition,
                                 popupBoundsTransform = popupBoundsTransform,
+                                homeworkLessonIds = homeworkLessonIds,
+                                doneHomeworkLessonIds = doneHomeworkLessonIds,
                             ) { lesson ->
                                 if (enabled) {
                                     vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
@@ -471,6 +500,15 @@ fun WeekScheduleView(
                                 colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f)),
                             )
                         }
+                        if (homeworkEnabled) {
+                            selectedLesson?.let { lesson ->
+                                LessonHomeworkSection(
+                                    viewModel = viewModel,
+                                    lesson = lesson,
+                                    selectedDay = selectedDay,
+                                )
+                            }
+                        }
                         absences
                             .filter {
                                 LocalDate.parse(it.from.take(10)) <= selectedDay &&
@@ -498,4 +536,17 @@ fun WeekScheduleView(
             }
         }
     }
+}
+
+fun HomeworkEntry.belongsToCurrentLessonSubject(lesson: JournalLesson): Boolean {
+    if (placement != HomeworkPlacement.LESSON) return false
+    val currentSubjectId = lesson.subject?.id?.toString()
+    val currentSubjectName = lesson.subject?.name
+    if (subjectId != null && currentSubjectId != null) {
+        return subjectId == currentSubjectId
+    }
+    if (subjectName != null && currentSubjectName != null) {
+        return subjectName == currentSubjectName
+    }
+    return true
 }

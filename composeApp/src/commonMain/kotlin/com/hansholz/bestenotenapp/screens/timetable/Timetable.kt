@@ -20,12 +20,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -303,6 +301,7 @@ fun Timetable(
                                                     }
                                                 }
                                                 WeekScheduleView(
+                                                    viewModel = viewModel,
                                                     week = week,
                                                     absences = if (showAbsences) viewModel.absences.flatMap { it.second } else emptyList(),
                                                     lessonPopupShown = lessonPopupShown,
@@ -339,7 +338,6 @@ fun Timetable(
                             .imePadding(),
                 ) {
                     val sharedContentState = rememberSharedContentState(key = "toolbar-card")
-                    val ime = WindowInsets.ime
 
                     var backProgress by remember { mutableFloatStateOf(0f) }
                     var isBackInProgress by remember { mutableStateOf(false) }
@@ -397,7 +395,7 @@ fun Timetable(
                                         modifier =
                                             Modifier
                                                 .onGloballyPositioned {
-                                                    timetableViewModel.toolbarPadding = with(density) { ime.getBottom(density).toDp() + it.size.height.toDp() + 12.dp }
+                                                    timetableViewModel.toolbarPadding = with(density) { it.size.height.toDp() + 12.dp }
                                                 }.enhancedSharedBounds(
                                                     sharedTransitionScope = sharedTransitionScope,
                                                     sharedContentState = sharedContentState,

@@ -38,7 +38,7 @@ android {
         base.archivesName = "${libs.versions.appName.get()}-${libs.versions.appVersion.get()}-${libs.versions.appVersionCode.get()}"
 
         addManifestPlaceholders(
-            mapOf("oidcRedirectScheme" to "bestenotenapp://callback"),
+            mapOf("oidcRedirectScheme" to "bestenotenapp"),
         )
     }
 

@@ -66,6 +66,7 @@ fun EnhancedAlertDialog(
     visible: Boolean,
     onDismissRequest: () -> Unit,
     maxWidth: Dp? = null,
+    withBlur: Boolean = true,
     confirmButton: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     dismissButton: @Composable (() -> Unit)? = null,
@@ -79,52 +80,56 @@ fun EnhancedAlertDialog(
     textContentColor: Color = AlertDialogDefaults.textContentColor,
     shadowElevation: Dp = ShadowElevation,
 ) {
-    BasicEnhancedAlertDialog(
-        visible = visible,
-        onDismissRequest = onDismissRequest,
-        content = {
-            EnhancedAlertDialogContent(
-                buttons = {
-                    FlowRow(
-                        horizontalArrangement =
-                            Arrangement.spacedBy(
-                                space = ButtonsHorizontalSpacing,
-                                alignment = Alignment.End,
-                            ),
-                        verticalArrangement =
-                            Arrangement.spacedBy(
-                                space = ButtonsVerticalSpacing,
-                                alignment = Alignment.Bottom,
-                            ),
-                    ) {
-                        dismissButton?.invoke()
-                        confirmButton()
-                    }
-                },
-                icon = icon,
-                title = title,
-                text = text,
-                shape = shape,
-                containerColor = containerColor,
-                shadowElevation = shadowElevation,
-                // Note that a button content color is provided here from the dialog's token, but in
-                // most cases, TextButtons should be used for dismiss and confirm buttons.
-                // TextButtons will not consume this provided content color value, and will used their
-                // own defined or default colors.
-                buttonContentColor = MaterialTheme.colorScheme.primary,
-                iconContentColor = iconContentColor,
-                titleContentColor = titleContentColor,
-                textContentColor = textContentColor,
-                modifier =
-                    modifier
-                        .sizeIn(
-                            minWidth = DialogMinWidth,
-                            maxWidth = maxWidth ?: DialogMaxWidth,
-                        ).then(if (maxWidth == Dp.Unspecified && getPlatform() == Platform.DESKTOP) Modifier.padding(top = 30.dp) else Modifier)
-                        .then(Modifier.semantics { paneTitle = "Dialog" }),
-            )
-        },
-    )
+    CompositionLocalProvider(
+        LocalBlurEnabled provides if (withBlur) LocalBlurEnabled.current else mutableStateOf(false),
+    ) {
+        BasicEnhancedAlertDialog(
+            visible = visible,
+            onDismissRequest = onDismissRequest,
+            content = {
+                EnhancedAlertDialogContent(
+                    buttons = {
+                        FlowRow(
+                            horizontalArrangement =
+                                Arrangement.spacedBy(
+                                    space = ButtonsHorizontalSpacing,
+                                    alignment = Alignment.End,
+                                ),
+                            verticalArrangement =
+                                Arrangement.spacedBy(
+                                    space = ButtonsVerticalSpacing,
+                                    alignment = Alignment.Bottom,
+                                ),
+                        ) {
+                            dismissButton?.invoke()
+                            confirmButton()
+                        }
+                    },
+                    icon = icon,
+                    title = title,
+                    text = text,
+                    shape = shape,
+                    containerColor = containerColor,
+                    shadowElevation = shadowElevation,
+                    // Note that a button content color is provided here from the dialog's token, but in
+                    // most cases, TextButtons should be used for dismiss and confirm buttons.
+                    // TextButtons will not consume this provided content color value, and will used their
+                    // own defined or default colors.
+                    buttonContentColor = MaterialTheme.colorScheme.primary,
+                    iconContentColor = iconContentColor,
+                    titleContentColor = titleContentColor,
+                    textContentColor = textContentColor,
+                    modifier =
+                        modifier
+                            .sizeIn(
+                                minWidth = DialogMinWidth,
+                                maxWidth = maxWidth ?: DialogMaxWidth,
+                            ).then(if (maxWidth == Dp.Unspecified && getPlatform() == Platform.DESKTOP) Modifier.padding(top = 30.dp) else Modifier)
+                            .then(Modifier.semantics { paneTitle = "Dialog" }),
+                )
+            },
+        )
+    }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)

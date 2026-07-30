@@ -43,6 +43,7 @@ class SettingsViewModel : ViewModel() {
     var showConfetti by mutableStateOf(false)
 
     var isExporting by mutableStateOf(false)
+    var homeworkSyncInProgress by mutableStateOf(false)
 
     suspend fun exportAsJson(
         viewModel: com.hansholz.bestenotenapp.main.ViewModel,
@@ -73,6 +74,7 @@ class SettingsViewModel : ViewModel() {
                             showCollectionsWithoutGrades = get("showCollectionsWithoutGrades", false),
                             showAbsences = get("showAbsences", true),
                             showNotes = get("showNotes", true),
+                            homeworkEnabled = get("homeworkEnabled", true),
                             showTeachersWithFirstname = get("showTeachersWithFirstname", false),
                             gradeNotificationsEnabled = get("gradeNotificationsEnabled", false),
                             gradeNotificationsIntervalMinutes = get("gradeNotificationsIntervalMinutes", 60L),

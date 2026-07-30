@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
@@ -50,6 +52,8 @@ import com.composables.icons.materialsymbols.rounded.Notifications
 import com.composables.icons.materialsymbols.rounded.Percent
 import com.composables.icons.materialsymbols.rounded.Settings_backup_restore
 import com.composables.icons.materialsymbols.rounded.Subject
+import com.composables.icons.materialsymbols.rounded.Sync
+import com.composables.icons.materialsymbols.rounded.Task_alt
 import com.composables.icons.materialsymbols.rounded.Texture
 import com.composables.icons.materialsymbols.rounded.Title
 import com.composables.icons.materialsymbols.rounded.Vibration
@@ -63,6 +67,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.components.icons.Github
+import com.hansholz.bestenotenapp.components.icons.GoogleCalendar
 import com.hansholz.bestenotenapp.components.icons.MathAvg
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.ExactPlatform
@@ -74,6 +79,8 @@ import com.hansholz.bestenotenapp.main.LocalGradeNotificationIntervalMinutes
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationsEnabled
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationsWifiOnly
 import com.hansholz.bestenotenapp.main.LocalHapticsEnabled
+import com.hansholz.bestenotenapp.main.LocalHomeworkEnabled
+import com.hansholz.bestenotenapp.main.LocalHomeworkGoogleSyncEnabled
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.LocalShowAbsences
 import com.hansholz.bestenotenapp.main.LocalShowAllSubjects
@@ -85,10 +92,8 @@ import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
 import com.hansholz.bestenotenapp.main.LocalShowNotes
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.LocalShowYearProgress
-import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getExactPlatform
-import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.screens.grades.GradeAverageCalculator
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
@@ -145,6 +150,8 @@ fun Settings(
     var showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
     var showAbsences by LocalShowAbsences.current
     var showNotes by LocalShowNotes.current
+    var homeworkEnabled by LocalHomeworkEnabled.current
+    var homeworkGoogleSyncEnabled by LocalHomeworkGoogleSyncEnabled.current
     var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
     val biometricAuthentificationAvailable = LocalBiometricAuthenticationAvailable.current
@@ -461,9 +468,11 @@ fun Settings(
                     icon = MaterialSymbols.Rounded.Disabled_visible,
                     position = PreferencePosition.Bottom,
                 )
-                item {
-                    PreferenceCategory("Stundenplan", Modifier.padding(horizontal = 15.dp))
-                }
+            }
+            item {
+                PreferenceCategory("Stundenplan", Modifier.padding(horizontal = 15.dp))
+            }
+            if (!viewModel.isDemoAccount.value) {
                 settingsToggleItem(
                     checked = showAbsences,
                     onCheckedChange = {
@@ -485,16 +494,81 @@ fun Settings(
                     icon = MaterialSymbols.Rounded.How_to_reg,
                     position = PreferencePosition.Top,
                 )
-                settingsToggleItem(
-                    checked = showNotes,
-                    onCheckedChange = {
-                        showNotes = it
-                        put("showNotes", it)
-                    },
-                    text = "Tages-Notizen anzeigen",
-                    icon = MaterialSymbols.Rounded.Article,
-                    position = PreferencePosition.Bottom,
-                )
+            }
+            settingsToggleItem(
+                checked = showNotes,
+                onCheckedChange = {
+                    showNotes = it
+                    put("showNotes", it)
+                },
+                text = "Tages-Notizen anzeigen",
+                icon = MaterialSymbols.Rounded.Article,
+                position = if (viewModel.isDemoAccount.value) PreferencePosition.Top else PreferencePosition.Middle,
+            )
+            settingsToggleItem(
+                checked = homeworkEnabled,
+                onCheckedChange = {
+                    homeworkEnabled = it
+                    viewModel.homeworkSyncSettings.homeworkEnabled = it
+                    put("homeworkEnabled", it)
+                },
+                text = "Hausaufgabenheft aktivieren",
+                icon = MaterialSymbols.Rounded.Task_alt,
+                position = PreferencePosition.Middle,
+            )
+            settingsToggleItem(
+                checked = homeworkGoogleSyncEnabled,
+                onCheckedChange = { enabled ->
+                    scope.launch {
+                        settingsViewModel.homeworkSyncInProgress = true
+                        try {
+                            if (enabled) {
+                                homeworkGoogleSyncEnabled = viewModel.connectGoogleCalendarForHomework()
+                                viewModel.syncHomeworkNow()
+                            } else {
+                                viewModel.disconnectGoogleCalendarForHomework()
+                                homeworkGoogleSyncEnabled = false
+                            }
+                            put("homeworkGoogleSyncEnabled", homeworkGoogleSyncEnabled)
+                        } finally {
+                            settingsViewModel.homeworkSyncInProgress = false
+                        }
+                    }
+                },
+                text = "Mit Google Kalender synchronisieren",
+                icon = GoogleCalendar,
+                enabled = homeworkEnabled,
+                position = if (homeworkGoogleSyncEnabled) PreferencePosition.Middle else PreferencePosition.Bottom,
+            )
+            if (homeworkGoogleSyncEnabled) {
+                item {
+                    PreferenceItem(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        title = "Jetzt synchronisieren",
+                        icon = MaterialSymbols.Rounded.Sync,
+                        enabled = homeworkEnabled && !settingsViewModel.homeworkSyncInProgress,
+                        onClick = {
+                            scope.launch {
+                                settingsViewModel.homeworkSyncInProgress = true
+                                try {
+                                    viewModel.syncHomeworkNow()
+                                } finally {
+                                    settingsViewModel.homeworkSyncInProgress = false
+                                }
+                            }
+                            vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                        },
+                        position = PreferencePosition.Bottom,
+                        trailingContent =
+                            if (settingsViewModel.homeworkSyncInProgress) {
+                                { CircularWavyProgressIndicator(Modifier.size(32.dp)) }
+                            } else {
+                                null
+                            },
+                    )
+                }
+            }
+            if (!viewModel.isDemoAccount.value) {
                 item {
                     PreferenceCategory("Fächer und Lehrer", Modifier.padding(horizontal = 15.dp))
                 }
@@ -587,6 +661,8 @@ fun Settings(
                                 showCollectionsWithoutGrades = appSettings.showCollectionsWithoutGrades
                                 showAbsences = appSettings.showAbsences
                                 showNotes = appSettings.showNotes
+                                homeworkEnabled = appSettings.homeworkEnabled ?: true
+                                viewModel.homeworkSyncSettings.homeworkEnabled = homeworkEnabled
                                 showTeachersWithFirstname = appSettings.showTeachersWithFirstname
                                 notificationsEnabled = appSettings.gradeNotificationsEnabled
                                 notificationIntervalMinutes = appSettings.gradeNotificationsIntervalMinutes
@@ -610,6 +686,7 @@ fun Settings(
                                 put("showCollectionsWithoutGrades", appSettings.showCollectionsWithoutGrades)
                                 put("showAbsences", appSettings.showAbsences)
                                 put("showNotes", appSettings.showNotes)
+                                put("homeworkEnabled", appSettings.homeworkEnabled)
                                 put("showTeachersWithFirstname", appSettings.showTeachersWithFirstname)
                                 put("gradeNotificationsEnabled", appSettings.gradeNotificationsEnabled)
                                 put("gradeNotificationsIntervalMinutes", appSettings.gradeNotificationsIntervalMinutes)

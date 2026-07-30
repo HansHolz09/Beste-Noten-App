@@ -23,6 +23,8 @@ internal val LocalShowAllSubjects = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowCollectionsWithoutGrades = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowAbsences = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowNotes = compositionLocalOf { mutableStateOf(false) }
+internal val LocalHomeworkEnabled = compositionLocalOf { mutableStateOf(true) }
+internal val LocalHomeworkGoogleSyncEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowTeachersWithFirstname = compositionLocalOf { mutableStateOf(false) }
 internal val LocalGradeNotificationsEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalGradeNotificationIntervalMinutes = compositionLocalOf { mutableStateOf(60L) }
@@ -53,6 +55,8 @@ fun SettingsProvider(content: @Composable () -> Unit) =
         val showCollectionsWithoutGradesState = remember { mutableStateOf(get("showCollectionsWithoutGrades", false)) }
         val showAbsences = remember { mutableStateOf(get("showAbsences", true)) }
         val showNotes = remember { mutableStateOf(get("showNotes", true)) }
+        val homeworkEnabled = remember { mutableStateOf(get("homeworkEnabled", true)) }
+        val homeworkGoogleSyncEnabled = remember { mutableStateOf(get("homeworkGoogleSyncEnabled", false)) }
         val showTeachersWithFirstnameState = remember { mutableStateOf(get("showTeachersWithFirstname", false)) }
         val gradeNotificationsEnabledState = remember { mutableStateOf(get("gradeNotificationsEnabled", false)) }
         val gradeNotificationIntervalState = remember { mutableStateOf(get("gradeNotificationsIntervalMinutes", 60L)) }
@@ -72,6 +76,8 @@ fun SettingsProvider(content: @Composable () -> Unit) =
             LocalShowCollectionsWithoutGrades provides showCollectionsWithoutGradesState,
             LocalShowAbsences provides showAbsences,
             LocalShowNotes provides showNotes,
+            LocalHomeworkEnabled provides homeworkEnabled,
+            LocalHomeworkGoogleSyncEnabled provides homeworkGoogleSyncEnabled,
             LocalShowTeachersWithFirstname provides showTeachersWithFirstnameState,
             LocalGradeNotificationsEnabled provides gradeNotificationsEnabledState,
             LocalGradeNotificationIntervalMinutes provides gradeNotificationIntervalState,

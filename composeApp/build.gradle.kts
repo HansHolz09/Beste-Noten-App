@@ -22,6 +22,22 @@ plugins {
 buildConfig {
     buildConfigField("VERSION_NAME", provider { libs.versions.appVersion.get() })
     buildConfigField("VERSION_CODE", provider { libs.versions.appVersionCode.get() })
+
+    listOf(
+        "GOOGLE_CLIENT_ID_ANDROID",
+        "GOOGLE_CLIENT_ID_IOS",
+        "GOOGLE_CLIENT_SECRET_IOS",
+        "GOOGLE_CLIENT_ID_DESKTOP",
+        "GOOGLE_CLIENT_SECRET_DESKTOP",
+        "GOOGLE_CLIENT_ID_WEB",
+        "GOOGLE_CLIENT_SECRET_WEB",
+    ).forEach { key ->
+        val secret =
+            providers.gradleProperty(key).orNull
+                ?: System.getenv(key)
+                ?: ""
+        buildConfigField("String", key, "\"${secret}\"")
+    }
 }
 
 kotlin {

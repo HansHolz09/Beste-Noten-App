@@ -4,6 +4,7 @@ package com.hansholz.bestenotenapp.main
 
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -11,6 +12,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.dokar.sonner.Toast
 import com.dokar.sonner.ToastType
+import com.dokar.sonner.ToasterDefaults
 import com.dokar.sonner.ToasterState
 import com.hansholz.bestenotenapp.api.BesteSchuleApi
 import com.hansholz.bestenotenapp.api.codeAuthFlowFactory
@@ -33,6 +35,12 @@ import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.api.oidcClient
 import com.hansholz.bestenotenapp.data.DemoDataGenerator
 import com.hansholz.bestenotenapp.data.ExportData
+import com.hansholz.bestenotenapp.homework.GoogleCalendarApi
+import com.hansholz.bestenotenapp.homework.GoogleCalendarHomeworkSyncDataSource
+import com.hansholz.bestenotenapp.homework.HomeworkEntry
+import com.hansholz.bestenotenapp.homework.KSafeGoogleAuthProvider
+import com.hansholz.bestenotenapp.homework.KSafeHomeworkRepository
+import com.hansholz.bestenotenapp.homework.KSafeHomeworkSyncSettings
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.security.kSafeProvider
@@ -83,6 +91,15 @@ class ViewModel(
 
     val studentId = mutableStateOf<String?>(null)
     private val api = BesteSchuleApi(httpClient, authToken, studentId)
+    val homeworkSyncSettings = KSafeHomeworkSyncSettings(kSafe)
+    val homeworkRevision = mutableIntStateOf(0)
+    private val googleAuthProvider = KSafeGoogleAuthProvider(kSafe)
+    private val homeworkRepository =
+        KSafeHomeworkRepository(
+            kSafe,
+            GoogleCalendarHomeworkSyncDataSource(GoogleCalendarApi(httpClient, googleAuthProvider)) { studentId.value },
+            homeworkSyncSettings,
+        )
 
     val hazeBackgroundState = HazeState()
     val hazeBackgroundState1 = HazeState()
@@ -122,6 +139,88 @@ class ViewModel(
     private var demoTotalLessonStudentCount: JournalLessonStudentCount? = null
 
     val isBesteSchuleNotReachable = mutableStateOf(false)
+
+    suspend fun getHomeworkForDate(date: LocalDate): List<HomeworkEntry> = homeworkRepository.getHomeworkForDate(date)
+
+    suspend fun getHomeworkForLesson(
+        timetableTimeLessonId: String,
+        sourceDate: LocalDate,
+    ): List<HomeworkEntry> = homeworkRepository.getHomeworkForLesson(timetableTimeLessonId, sourceDate)
+
+    suspend fun hasUserHomeworkForDate(date: LocalDate): Boolean = homeworkSyncSettings.homeworkEnabled && homeworkRepository.hasUserDayNotes(date)
+
+    suspend fun createHomework(entry: HomeworkEntry) {
+        homeworkRepository.createHomework(entry)
+        homeworkRevision.intValue++
+    }
+
+    suspend fun updateHomework(entry: HomeworkEntry) {
+        homeworkRepository.updateHomework(entry)
+        homeworkRevision.intValue++
+    }
+
+    suspend fun markHomeworkDone(
+        localId: String,
+        done: Boolean,
+    ) {
+        homeworkRepository.markHomeworkDone(localId, done)
+        homeworkRevision.intValue++
+    }
+
+    suspend fun deleteHomework(localId: String) {
+        homeworkRepository.deleteHomework(localId)
+        homeworkRevision.intValue++
+    }
+
+    suspend fun syncHomeworkNow(showSuccessToast: Boolean = true) {
+        homeworkRepository.syncNow()
+        homeworkSyncSettings.lastSyncError?.let {
+            toaster.show(
+                Toast(
+                    message = it,
+                    type = ToastType.Error,
+                    duration = ToasterDefaults.DurationLong,
+                ),
+            )
+        } ?: run {
+            homeworkRevision.intValue++
+            if (showSuccessToast) {
+                toaster.show(
+                    Toast(
+                        message = "Google Kalender wurde synchronisiert",
+                        type = ToastType.Success,
+                    ),
+                )
+            }
+        }
+    }
+
+    suspend fun connectGoogleCalendarForHomework(): Boolean {
+        try {
+            googleAuthProvider.signIn()
+            homeworkSyncSettings.googleSyncEnabled = true
+            return true
+        } catch (e: Exception) {
+            homeworkSyncSettings.lastSyncError = e.message ?: "Google Kalender konnte nicht verbunden werden"
+            homeworkSyncSettings.googleSyncEnabled = false
+            toaster.show(
+                Toast(
+                    message = homeworkSyncSettings.lastSyncError!!,
+                    type = ToastType.Error,
+                    duration = ToasterDefaults.DurationLong,
+                ),
+            )
+            return false
+        }
+    }
+
+    suspend fun disconnectGoogleCalendarForHomework() {
+        googleAuthProvider.signOut()
+        homeworkSyncSettings.googleSyncEnabled = false
+        homeworkSyncSettings.googleCalendarId = null
+        homeworkSyncSettings.googleCalendarResolved = false
+        homeworkSyncSettings.nextSyncToken = null
+    }
 
     private suspend fun couldReachBesteSchule() {
         if (isBesteSchuleNotReachable.value) init()
@@ -316,7 +415,7 @@ class ViewModel(
     }
 
     suspend fun closeOrOpenDrawer(windowWidthSizeClass: WindowWidthSizeClass) {
-        if (windowWidthSizeClass == WindowWidthSizeClass.Companion.COMPACT) {
+        if (windowWidthSizeClass == WindowWidthSizeClass.COMPACT) {
             if (compactDrawerState.value.isClosed) {
                 compactDrawerState.value.open()
             } else {
@@ -640,6 +739,7 @@ class ViewModel(
                 }
                 init()
                 GradeNotifications.onLogin()
+                syncHomeworkNow(false)
             } catch (e: Exception) {
                 e.printStackTrace()
                 toaster.show(
