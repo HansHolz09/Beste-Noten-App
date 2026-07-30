@@ -24,6 +24,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import bestenotenapp.composeApp.BuildConfig
@@ -61,6 +64,7 @@ import com.composables.icons.materialsymbols.rounded.Title
 import com.composables.icons.materialsymbols.rounded.Vibration
 import com.composables.icons.materialsymbols.rounded.Waving_hand
 import com.composables.icons.materialsymbols.rounded.Wifi
+import com.hansholz.bestenotenapp.components.InfoDialog
 import com.hansholz.bestenotenapp.components.PreferenceCategory
 import com.hansholz.bestenotenapp.components.PreferenceItem
 import com.hansholz.bestenotenapp.components.PreferencePosition
@@ -94,8 +98,10 @@ import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
 import com.hansholz.bestenotenapp.main.LocalShowNotes
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.LocalShowYearProgress
+import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getExactPlatform
+import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.screens.grades.GradeAverageCalculator
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
@@ -106,6 +112,7 @@ import com.hansholz.bestenotenapp.theme.LocalSupportsCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseSystemIsDark
 import com.hansholz.bestenotenapp.utils.formateInterval
+import com.hansholz.bestenotenapp.utils.openGoogleCalendar
 import com.hansholz.bestenotenapp.utils.roundToDecimals
 import dev.chrisbanes.haze.blur.HazeBlurDefaults
 import dev.chrisbanes.haze.hazeSource
@@ -159,6 +166,7 @@ fun Settings(
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
     val biometricAuthentificationAvailable = LocalBiometricAuthenticationAvailable.current
     val authToken by secureMutableStateOf("", "authToken")
+    val showReminderInfoDialog = remember { mutableStateOf(false) }
     var offlineCacheSize by remember { mutableStateOf<Long?>(null) }
 
     LaunchedEffect(Unit) {
@@ -532,6 +540,7 @@ fun Settings(
                         try {
                             if (enabled) {
                                 homeworkGoogleSyncEnabled = viewModel.connectGoogleCalendarForHomework()
+                                showReminderInfoDialog.value = true
                                 viewModel.syncHomeworkNow()
                             } else {
                                 viewModel.disconnectGoogleCalendarForHomework()
@@ -543,7 +552,7 @@ fun Settings(
                         }
                     }
                 },
-                text = "Mit Google Kalender synchronisieren",
+                text = "Eingetragenes mit Google Kalender synchronisieren",
                 icon = GoogleCalendar,
                 enabled = homeworkEnabled,
                 position = if (homeworkGoogleSyncEnabled) PreferencePosition.Middle else PreferencePosition.Bottom,
@@ -827,4 +836,22 @@ fun Settings(
     ExportConfigDialog(settingsViewModel, viewModel)
     LibrariesDialog(settingsViewModel)
     ConfettiEasterEgg(settingsViewModel)
+    InfoDialog(
+        visible = showReminderInfoDialog,
+        title = "Erinnerungen laufen über Google Kalender",
+        message =
+            buildAnnotatedString {
+                append("Erinnerungen werden nicht über diese App gesendet. ")
+                if (getPlatform() in listOf(Platform.ANDROID, Platform.IOS)) {
+                    append("Um Benachrichtigungen für Hausaufgaben zu erhalten, bitte die ")
+                    withLink(LinkAnnotation.Clickable("open_google_calendar") { openGoogleCalendar() }) {
+                        append("Google-Kalender-App")
+                    }
+                    append(" mit dem verknüpften Google-Konto installiert haben und die Berechtigung für Benachrichtigungen gewähren.")
+                } else {
+                    append("Um Benachrichtigungen für Hausaufgaben zu erhalten, bitte die Google-Kalender-App")
+                    append(" mit dem verknüpften Google-Konto auf einem mobilen Gerät installiert haben.")
+                }
+            },
+    )
 }

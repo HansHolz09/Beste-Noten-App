@@ -8,6 +8,10 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
 
+    <queries>
+        <package android:name="com.google.android.calendar" />
+    </queries>
+
     <application
             android:name="com.hansholz.bestenotenapp.BesteNotenApplication"
             android:allowBackup="true"

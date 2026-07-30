@@ -65,6 +65,7 @@ import com.hansholz.bestenotenapp.homework.HomeworkSource
 import com.hansholz.bestenotenapp.homework.HomeworkStatus
 import com.hansholz.bestenotenapp.homework.HomeworkType
 import com.hansholz.bestenotenapp.homework.newHomeworkId
+import com.hansholz.bestenotenapp.main.LocalHomeworkGoogleSyncEnabled
 import components.dialogs.EnhancedAlertDialog
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DatePeriod
@@ -221,34 +222,36 @@ fun HomeworkEditorDialog(
                         )
                     }
                 }
-                Row {
-                    EnhancedOutlinedButton(
-                        onClick = {
-                            focusRequester.requestFocus()
-                            keyboardController?.hide()
-                            datePickerVisible = true
-                        },
-                        enabled = !busy,
-                        modifier = Modifier.weight(1f),
-                    ) {
-                        Text(reminderAt?.formatReminder() ?: "Erinnerung einrichten", Modifier.padding(start = 8.dp))
-                    }
-                    EnhancedAnimatedVisibility(reminderAt != null) {
+                if (LocalHomeworkGoogleSyncEnabled.current.value) {
+                    Row {
                         EnhancedOutlinedButton(
                             onClick = {
-                                reminderAt = null
-                                selectedReminderDate = null
+                                focusRequester.requestFocus()
+                                keyboardController?.hide()
+                                datePickerVisible = true
                             },
-                            modifier = Modifier.padding(start = 10.dp),
                             enabled = !busy,
+                            modifier = Modifier.weight(1f),
                         ) {
-                            Icon(MaterialSymbols.Rounded.Close, null)
+                            Text(reminderAt?.formatReminder() ?: "Erinnerung einrichten", Modifier.padding(start = 8.dp))
+                        }
+                        EnhancedAnimatedVisibility(reminderAt != null) {
+                            EnhancedOutlinedButton(
+                                onClick = {
+                                    reminderAt = null
+                                    selectedReminderDate = null
+                                },
+                                modifier = Modifier.padding(start = 10.dp),
+                                enabled = !busy,
+                            ) {
+                                Icon(MaterialSymbols.Rounded.Close, null)
+                            }
                         }
                     }
-                }
-                EnhancedAnimatedContent(reminderError) { reminderError ->
-                    reminderError?.let {
-                        Text(it, color = colorScheme.error, style = typography.bodySmall)
+                    EnhancedAnimatedContent(reminderError) { reminderError ->
+                        reminderError?.let {
+                            Text(it, color = colorScheme.error, style = typography.bodySmall)
+                        }
                     }
                 }
             }
