@@ -153,6 +153,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.math.abs
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(
     ExperimentalMaterial3ExpressiveApi::class,
@@ -658,7 +659,7 @@ fun Grades(
                                 gradesViewModel.searchQuery = ""
                                 gradesViewModel.toolbarState = 0
                                 gradesViewModel.contentBlurred = false
-                                delay(250)
+                                delay(250.milliseconds)
                                 if (gradesViewModel.toolbarState == 0) gradesViewModel.userScrollEnabled = true
                                 isBackInProgress = false
                                 backProgress = 0f
@@ -1149,7 +1150,7 @@ fun Grades(
                 onDismissRequest = {
                     scope.launch {
                         weightingDialogVisible = false
-                        delay(300)
+                        delay(300.milliseconds)
                         weightingDialogState = null
                     }
                 },

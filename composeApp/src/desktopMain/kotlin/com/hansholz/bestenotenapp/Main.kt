@@ -51,6 +51,7 @@ import org.jetbrains.skiko.hostOs
 import java.awt.Color
 import java.awt.Dimension
 import kotlin.system.exitProcess
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3ComponentOverrideApi::class, ExperimentalMaterial3Api::class)
 fun main() {
@@ -68,7 +69,7 @@ fun main() {
 
             if (AotRuntime.isTraining()) {
                 LaunchedEffect(Unit) {
-                    delay(10000)
+                    delay(10.seconds)
                     exitProcess(0)
                 }
             }

@@ -79,6 +79,8 @@ import kotlinx.serialization.json.Json
 import org.publicvalue.multiplatform.oidc.DefaultOpenIdConnectClient
 import org.publicvalue.multiplatform.oidc.OpenIdConnectException
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import com.hansholz.bestenotenapp.data.readBesteSchuleCache as readStoredBesteSchuleCache
 import com.hansholz.bestenotenapp.data.writeBesteSchuleCache as writeStoredBesteSchuleCache
@@ -259,7 +261,7 @@ class ViewModel(
         besteSchuleRetryJob =
             viewModelScope.launch {
                 while (isUsingOfflineCache.value && !authToken.value.isNullOrEmpty()) {
-                    delay(5000)
+                    delay(5.seconds)
                     try {
                         user.value = api.userMe().data
                         user.value?.let { runCatching { writeBesteSchuleCache("user", it) } }
@@ -315,7 +317,7 @@ class ViewModel(
     ): T? {
         if (isUsingOfflineCache.value) return readBesteSchuleCache(key)
         return try {
-            withTimeout(10000) { request() }.also {
+            withTimeout(10.seconds) { request() }.also {
                 runCatching { writeBesteSchuleCache(key, it) }
                 couldReachBesteSchule()
             }
@@ -585,7 +587,7 @@ class ViewModel(
 
     suspend fun getIntervals(): List<Interval>? {
         if (isDemoAccount.value) {
-            delay(250)
+            delay(250.milliseconds)
             return years.lastOrNull()?.let { demoIntervalsByYear[it.id] }.orEmpty()
         }
         return loadBesteSchuleData("intervals") { api.studentsShow(studentId.value!!, listOf("intervals")).data.intervals }
@@ -593,7 +595,7 @@ class ViewModel(
 
     suspend fun getDayStudentCount(year: Year? = null): JournalDayStudentCount? {
         if (isDemoAccount.value) {
-            delay(250)
+            delay(250.milliseconds)
             return year?.let { demoDayStudentCountsByYear[it.id] } ?: demoTotalDayStudentCount
         }
         return loadBesteSchuleData("dayStudentCount_${year?.id ?: "all"}") {
@@ -608,7 +610,7 @@ class ViewModel(
 
     suspend fun getLessonStudentCount(year: Year? = null): JournalLessonStudentCount? {
         if (isDemoAccount.value) {
-            delay(250)
+            delay(250.milliseconds)
             return year?.let { demoLessonStudentCountsByYear[it.id] } ?: demoTotalLessonStudentCount
         }
         return loadBesteSchuleData("lessonStudentCount_${year?.id ?: "all"}") {
@@ -623,7 +625,7 @@ class ViewModel(
 
     suspend fun getLessonStudentBySlot(year: Year? = null): List<JournalLessonStudentBySlot>? {
         if (isDemoAccount.value) {
-            delay(250)
+            delay(250.milliseconds)
             return if (year == null) demoTotalLessonStudentBySlot else demoLessonStudentBySlotByYear[year.id].orEmpty()
         }
         return loadBesteSchuleData("lessonStudentBySlot_${year?.id ?: "all"}") {
@@ -637,7 +639,7 @@ class ViewModel(
 
     suspend fun getCollections(filterYears: List<Year>? = null): List<GradeCollection>? {
         if (isDemoAccount.value) {
-            delay(1000)
+            delay(1.seconds)
             val filterYearIds = filterYears.orEmpty().mapTo(mutableSetOf()) { it.id }
             return if (filterYears.isNullOrEmpty()) {
                 gradeCollections.toList()
@@ -684,7 +686,7 @@ class ViewModel(
             val cachedWeek = if (useCached) journalWeeks.firstOrNull { it.first == nr }?.second else null
             val week = cachedWeek ?: DemoDataGenerator.generateJournalWeek(targetDate, demoWeekPlan)
             if (cachedWeek == null) {
-                delay(1000)
+                delay(1.seconds)
                 if (!useCached) journalWeeks.removeAll { it.first == nr }
                 journalWeeks.add(nr to week)
             }
@@ -723,7 +725,7 @@ class ViewModel(
     }
 
     suspend fun getSubjectsAndTeachers(): List<Pair<Subject?, List<Teacher>?>>? {
-        if (isDemoAccount.value) delay(500)
+        if (isDemoAccount.value) delay(500.milliseconds)
         val timetable = getCurrentTimetable() ?: return null
         return timetable.lessons
             ?.groupBy { it.subject }
@@ -737,7 +739,7 @@ class ViewModel(
     }
 
     suspend fun getTeachersAndSubjects(): List<Pair<Teacher?, List<Subject?>>>? {
-        if (isDemoAccount.value) delay(500)
+        if (isDemoAccount.value) delay(500.milliseconds)
         val timetable = getCurrentTimetable() ?: return null
         return timetable.lessons
             ?.groupBy { it.teachers }
@@ -752,7 +754,7 @@ class ViewModel(
 
     suspend fun getSubjects(): List<Subject>? {
         if (isDemoAccount.value) {
-            delay(500)
+            delay(500.milliseconds)
             return subjects.toList()
         }
         return loadBesteSchuleData("subjects") { api.subjectsIndex().data }
@@ -760,7 +762,7 @@ class ViewModel(
 
     suspend fun getAbsences(filterYear: String? = null): List<Absence>? {
         if (isDemoAccount.value) {
-            delay(500)
+            delay(500.milliseconds)
             return if (filterYear != null) {
                 demoAbsencesByYear[filterYear.toIntOrNull()] ?: emptyList()
             } else {

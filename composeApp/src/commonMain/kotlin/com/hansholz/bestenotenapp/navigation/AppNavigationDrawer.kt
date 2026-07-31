@@ -56,6 +56,7 @@ import io.github.vinceglb.confettikit.compose.ConfettiKit
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.ltfan.multihaptic.compose.rememberVibrator
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -82,7 +83,7 @@ fun AppNavigationDrawer(
                 LaunchedEffect(viewModel.compactDrawerState.value.currentValue) {
                     while (viewModel.compactDrawerState.value.isOpen) {
                         animateState.animate()
-                        delay(5000)
+                        delay(5.seconds)
                     }
                 }
                 EnhancedAnimated(

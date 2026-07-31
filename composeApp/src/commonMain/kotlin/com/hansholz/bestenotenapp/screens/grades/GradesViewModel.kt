@@ -10,6 +10,8 @@ import androidx.lifecycle.viewModelScope
 import com.hansholz.bestenotenapp.api.models.Year
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class GradesViewModel(
     viewModel: com.hansholz.bestenotenapp.main.ViewModel,
@@ -37,7 +39,7 @@ class GradesViewModel(
             isLoading = true
             try {
                 if (viewModel.isDemoAccount.value) {
-                    delay(1000)
+                    delay(1.seconds)
                     return@launch
                 }
                 if (viewModel.years.isEmpty()) {
@@ -64,7 +66,7 @@ class GradesViewModel(
         viewModelScope.launch {
             toolbarState = 0
             contentBlurred = false
-            delay(250)
+            delay(250.milliseconds)
             if (toolbarState == 0) userScrollEnabled = true
         }
     }

@@ -75,6 +75,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import top.ltfan.multihaptic.compose.rememberVibrator
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -174,7 +175,7 @@ fun Login(
                                                     chooseStudent = { students, callback ->
                                                         loginViewModel.chooseStudentDialog = true to students
                                                         while (loginViewModel.chosenStudent == null) {
-                                                            delay(100)
+                                                            delay(100.milliseconds)
                                                         }
                                                         callback(loginViewModel.chosenStudent!!)
                                                     },
@@ -200,7 +201,7 @@ fun Login(
                                                 chooseStudent = { students, callback ->
                                                     loginViewModel.chooseStudentDialog = true to students
                                                     while (loginViewModel.chosenStudent == null) {
-                                                        delay(100)
+                                                        delay(100.milliseconds)
                                                     }
                                                     callback(loginViewModel.chosenStudent!!)
                                                 },
@@ -223,7 +224,7 @@ fun Login(
                                             chooseStudent = { students, callback ->
                                                 loginViewModel.chooseStudentDialog = true to students
                                                 while (loginViewModel.chosenStudent == null) {
-                                                    delay(100)
+                                                    delay(100.milliseconds)
                                                 }
                                                 callback(loginViewModel.chosenStudent!!)
                                             },

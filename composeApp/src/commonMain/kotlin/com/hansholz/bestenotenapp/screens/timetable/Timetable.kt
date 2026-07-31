@@ -139,6 +139,8 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.imageResource
 import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -224,7 +226,7 @@ fun Timetable(
                     LaunchedEffect(weekDate, showAbsences) {
                         isLoading = true
                         while (viewModel.years.isEmpty()) {
-                            delay(250)
+                            delay(250.milliseconds)
                         }
                         week = viewModel.getJournalWeek(weekDate, getAbsences = showAbsences && pagerState.currentPage == currentPage)
                         isLoading = false
@@ -238,7 +240,7 @@ fun Timetable(
                                 vibrator.enhancedVibrateN(EnhancedVibrations.SPIN)
                                 isRefreshLoading = true
                                 try {
-                                    delay(1000)
+                                    delay(1.seconds)
                                     week = viewModel.getJournalWeek(weekDate, false, showAbsences)
                                     vibrator.enhancedVibrateN(EnhancedVibrations.QUICK_FALL)
                                 } finally {
@@ -353,7 +355,7 @@ fun Timetable(
                             scope.launch {
                                 timetableViewModel.toolbarState = 0
                                 timetableViewModel.contentBlurred = false
-                                delay(250)
+                                delay(250.milliseconds)
                                 if (timetableViewModel.toolbarState == 0) timetableViewModel.userScrollEnabled = true
                                 isBackInProgress = false
                                 backProgress = 0f
@@ -627,7 +629,7 @@ fun Timetable(
                                                     scope.launch {
                                                         timetableViewModel.toolbarState = 0
                                                         timetableViewModel.contentBlurred = false
-                                                        delay(250)
+                                                        delay(250.milliseconds)
                                                         if (timetableViewModel.toolbarState == 0) timetableViewModel.userScrollEnabled = true
                                                     }
                                                 },
@@ -648,7 +650,7 @@ fun Timetable(
                                                                 .date
                                                         timetableViewModel.startPageDate = selectedDate
                                                         pagerState.scrollToPage(Int.MAX_VALUE / 2)
-                                                        delay(250)
+                                                        delay(250.milliseconds)
                                                         if (timetableViewModel.toolbarState == 0) timetableViewModel.userScrollEnabled = true
                                                     }
                                                 },

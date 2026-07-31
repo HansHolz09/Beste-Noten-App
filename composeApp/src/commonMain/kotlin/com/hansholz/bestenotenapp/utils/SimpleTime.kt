@@ -10,6 +10,7 @@ import kotlinx.coroutines.delay
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
 
 data class SimpleTime(
@@ -96,7 +97,7 @@ fun rememberCurrentSimpleTime(): State<SimpleTime> {
             while (true) {
                 val now = Clock.System.now().toEpochMilliseconds()
                 val untilNextMinute = 60_000 - (now % 60_000)
-                delay(untilNextMinute)
+                delay(untilNextMinute.milliseconds)
                 updateNow()
             }
         } finally {

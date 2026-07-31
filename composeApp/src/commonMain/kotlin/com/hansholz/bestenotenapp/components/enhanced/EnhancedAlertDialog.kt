@@ -60,6 +60,7 @@ import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import kotlinx.coroutines.delay
 import top.ltfan.multihaptic.compose.rememberVibrator
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun EnhancedAlertDialog(
@@ -154,7 +155,7 @@ fun BasicEnhancedAlertDialog(
             scale = 1f
             visibleAnimated = true
         } else if (getPlatform() != Platform.ANDROID) {
-            delay(200)
+            delay(200.milliseconds)
             visibleAnimated = false
         }
     }
@@ -237,7 +238,7 @@ fun BasicEnhancedAlertDialog(
                         scale = (1f - event.progress * 1.5f).coerceAtLeast(0.75f)
                     }
                     onDismissRequest()
-                    delay(400)
+                    delay(400.milliseconds)
                     scale = 1f
                 } catch (_: Exception) {
                     scale = 1f

@@ -23,6 +23,7 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlin.time.Duration.Companion.seconds
 
 class GoogleCalendarApi(
     private val httpClient: HttpClient,
@@ -40,7 +41,7 @@ class GoogleCalendarApi(
         summary: String,
         description: String? = null,
     ): GoogleCalendar =
-        withTimeout(5000) {
+        withTimeout(5.seconds) {
             httpClient
                 .post("$baseUrl/calendars") {
                     authorize()
@@ -50,7 +51,7 @@ class GoogleCalendarApi(
         }
 
     suspend fun listCalendars(pageToken: String? = null): GoogleCalendarListResponse =
-        withTimeout(5000) {
+        withTimeout(5.seconds) {
             httpClient
                 .get("$baseUrl/users/me/calendarList") {
                     authorize()
@@ -64,7 +65,7 @@ class GoogleCalendarApi(
         calendarId: String,
         event: GoogleCalendarEvent,
     ): GoogleCalendarEvent =
-        withTimeout(5000) {
+        withTimeout(5.seconds) {
             httpClient
                 .post("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events") {
                     authorize()
@@ -78,7 +79,7 @@ class GoogleCalendarApi(
         eventId: String,
         event: GoogleCalendarEvent,
     ): GoogleCalendarEvent =
-        withTimeout(5000) {
+        withTimeout(5.seconds) {
             httpClient
                 .patch("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events/${eventId.encodeURLPathPart()}") {
                     authorize()
@@ -91,7 +92,7 @@ class GoogleCalendarApi(
         calendarId: String,
         eventId: String,
     ) {
-        withTimeout(5000) {
+        withTimeout(5.seconds) {
             val response =
                 httpClient.delete("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events/${eventId.encodeURLPathPart()}") {
                     authorize()
@@ -108,7 +109,7 @@ class GoogleCalendarApi(
         pageToken: String? = null,
         privateExtendedProperties: List<String> = emptyList(),
     ): GoogleCalendarEventsResponse =
-        withTimeout(5000) {
+        withTimeout(5.seconds) {
             val response =
                 httpClient.get("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events") {
                     authorize()
@@ -131,7 +132,7 @@ class GoogleCalendarApi(
             connectTimeoutMillis = 3000
             socketTimeoutMillis = 5000
         }
-        val token = withTimeout(5000) { authProvider.getAccessToken() } ?: throw MissingGoogleAuthException()
+        val token = withTimeout(5.seconds) { authProvider.getAccessToken() } ?: throw MissingGoogleAuthException()
         bearerAuth(token)
         header(HttpHeaders.Accept, ContentType.Application.Json)
     }

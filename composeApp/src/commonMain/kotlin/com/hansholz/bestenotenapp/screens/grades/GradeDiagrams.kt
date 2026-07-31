@@ -93,6 +93,7 @@ import io.github.koalaplot.core.xygraph.XYGraph
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.ceil
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalKoalaPlotApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -735,7 +736,7 @@ fun GradeDiagrams(
                     scope.launch {
                         gradesViewModel.toolbarState = 0
                         gradesViewModel.contentBlurred = false
-                        delay(250)
+                        delay(250.milliseconds)
                         if (gradesViewModel.toolbarState == 0) gradesViewModel.userScrollEnabled = true
                     }
                 },
