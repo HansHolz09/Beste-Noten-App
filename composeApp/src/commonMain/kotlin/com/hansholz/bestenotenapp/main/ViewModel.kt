@@ -59,8 +59,6 @@ import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.utils.io.CancellationException
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
@@ -80,6 +78,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.publicvalue.multiplatform.oidc.DefaultOpenIdConnectClient
 import org.publicvalue.multiplatform.oidc.OpenIdConnectException
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import com.hansholz.bestenotenapp.data.readBesteSchuleCache as readStoredBesteSchuleCache
 import com.hansholz.bestenotenapp.data.writeBesteSchuleCache as writeStoredBesteSchuleCache
 
