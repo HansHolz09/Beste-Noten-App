@@ -22,6 +22,7 @@ import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.api.models.Interval
 import com.hansholz.bestenotenapp.api.models.JournalDay
 import com.hansholz.bestenotenapp.api.models.JournalDayStudentCount
+import com.hansholz.bestenotenapp.api.models.JournalLessonStudentBySlot
 import com.hansholz.bestenotenapp.api.models.JournalLessonStudentCount
 import com.hansholz.bestenotenapp.api.models.JournalWeek
 import com.hansholz.bestenotenapp.api.models.Level
@@ -58,6 +59,8 @@ import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.utils.io.CancellationException
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
@@ -77,8 +80,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.publicvalue.multiplatform.oidc.DefaultOpenIdConnectClient
 import org.publicvalue.multiplatform.oidc.OpenIdConnectException
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 import com.hansholz.bestenotenapp.data.readBesteSchuleCache as readStoredBesteSchuleCache
 import com.hansholz.bestenotenapp.data.writeBesteSchuleCache as writeStoredBesteSchuleCache
 
@@ -146,8 +147,10 @@ class ViewModel(
     val intervals = mutableStateListOf<Interval>()
     val dayStudentCount = mutableStateOf<JournalDayStudentCount?>(null)
     val lessonStudentCount = mutableStateOf<JournalLessonStudentCount?>(null)
+    val lessonStudentBySlot = mutableStateListOf<JournalLessonStudentBySlot>()
     val currentDayStudentCount = mutableStateOf<JournalDayStudentCount?>(null)
     val currentLessonStudentCount = mutableStateOf<JournalLessonStudentCount?>(null)
+    val currentLessonStudentBySlot = mutableStateListOf<JournalLessonStudentBySlot>()
 
     val isDemoAccount = mutableStateOf(false)
     private var demoWeekPlan: List<List<Subject>> = emptyList()
@@ -157,6 +160,8 @@ class ViewModel(
     private var demoLessonStudentCountsByYear: Map<Int, JournalLessonStudentCount> = emptyMap()
     private var demoTotalDayStudentCount: JournalDayStudentCount? = null
     private var demoTotalLessonStudentCount: JournalLessonStudentCount? = null
+    private var demoLessonStudentBySlotByYear: Map<Int, List<JournalLessonStudentBySlot>> = emptyMap()
+    private var demoTotalLessonStudentBySlot: List<JournalLessonStudentBySlot> = emptyList()
 
     suspend fun getHomeworkForDate(date: LocalDate): List<HomeworkEntry> = homeworkRepository.getHomeworkForDate(date)
 
@@ -469,9 +474,12 @@ class ViewModel(
             demoAbsencesByYear = data.absencesByYear
             demoDayStudentCountsByYear = data.dayStudentCountsByYear
             demoLessonStudentCountsByYear = data.lessonStudentCountsByYear
+            demoLessonStudentBySlotByYear = data.lessonStudentBySlotByYear
             demoTotalDayStudentCount = data.totalDayStudentCount
             demoTotalLessonStudentCount = data.totalLessonStudentCount
-            user.value = User(id = 0, username = "${data.student.forename} (Demo)", role = "student", students = listOf(data.student))
+            demoTotalLessonStudentBySlot = data.totalLessonStudentBySlot
+            level.value = data.level
+            user.value = data.user
             studentId.value = data.student.id.toString()
             isDemoAccount.value = true
             onNavigateHome()
@@ -610,6 +618,20 @@ class ViewModel(
                 }
                 ?: api.journalLessonStudentStatisticsCount().data.firstOrNull()
                 ?: return@loadBesteSchuleData null
+        }
+    }
+
+    suspend fun getLessonStudentBySlot(year: Year? = null): List<JournalLessonStudentBySlot>? {
+        if (isDemoAccount.value) {
+            delay(250)
+            return if (year == null) demoTotalLessonStudentBySlot else demoLessonStudentBySlotByYear[year.id].orEmpty()
+        }
+        return loadBesteSchuleData("lessonStudentBySlot_${year?.id ?: "all"}") {
+            year
+                ?.let {
+                    api.journalLessonStudentStatisticsBySlot(filterRange = "${it.from},${it.to}").data
+                }
+                ?: api.journalLessonStudentStatisticsBySlot().data
         }
     }
 
@@ -826,18 +848,23 @@ class ViewModel(
         subjectsAndTeachers.clear()
         teachersAndSubjects.clear()
         currentJournalDay.value = null
+        level.value = null
         intervals.clear()
         dayStudentCount.value = null
         lessonStudentCount.value = null
+        lessonStudentBySlot.clear()
         currentDayStudentCount.value = null
         currentLessonStudentCount.value = null
+        currentLessonStudentBySlot.clear()
         demoWeekPlan = emptyList()
         demoIntervalsByYear = emptyMap()
         demoAbsencesByYear = emptyMap()
         demoDayStudentCountsByYear = emptyMap()
         demoLessonStudentCountsByYear = emptyMap()
+        demoLessonStudentBySlotByYear = emptyMap()
         demoTotalDayStudentCount = null
         demoTotalLessonStudentCount = null
+        demoTotalLessonStudentBySlot = emptyList()
         isBesteSchuleNotReachable.value = false
         isUsingOfflineCache.value = false
     }

@@ -54,6 +54,7 @@ import com.hansholz.bestenotenapp.api.models.JournalDay
 import com.hansholz.bestenotenapp.api.models.JournalDayStudent
 import com.hansholz.bestenotenapp.api.models.JournalDayStudentCount
 import com.hansholz.bestenotenapp.api.models.JournalLessonStudent
+import com.hansholz.bestenotenapp.api.models.JournalLessonStudentBySlot
 import com.hansholz.bestenotenapp.api.models.JournalLessonStudentCount
 import com.hansholz.bestenotenapp.api.models.JournalNote
 import com.hansholz.bestenotenapp.api.models.JournalNoteType
@@ -2677,12 +2678,12 @@ class BesteSchuleApi(
     /** Access: Any role */
     suspend fun journalLessonStudentStatisticsBySlot(
         filterStudent: String? = null,
-        filterYear: String? = null,
-    ): JsonObject =
+        filterRange: String? = null,
+    ): ListDataWrapper<JournalLessonStudentBySlot> =
         client
             .get("$baseUrl/journal/lesson-student/by-slot") {
                 parameter("filter[student]", filterStudent)
-                parameter("filter[year]", filterYear)
+                parameter("filter[range]", filterRange)
             }.body()
 
     /** Access: Any role */

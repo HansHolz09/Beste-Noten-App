@@ -1,16 +1,21 @@
 package com.hansholz.bestenotenapp.screens.home
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,12 +23,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.buildAnnotatedString
@@ -32,10 +37,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Insights
 import com.composables.icons.materialsymbols.rounded.Refresh
+import com.hansholz.bestenotenapp.api.models.JournalLessonStudentBySlot
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
@@ -60,10 +67,15 @@ fun StatsDialog(
     viewModel: ViewModel,
     homeViewModel: HomeViewModel,
 ) {
-    val density = LocalDensity.current
-
     LaunchedEffect(homeViewModel.isStatsDialogShown) {
-        if (homeViewModel.isStatsDialogShown && (viewModel.intervals.isEmpty() || viewModel.dayStudentCount.value == null)) {
+        if (
+            homeViewModel.isStatsDialogShown &&
+            (
+                viewModel.intervals.isEmpty() ||
+                    viewModel.dayStudentCount.value == null ||
+                    viewModel.lessonStudentBySlot.isEmpty()
+            )
+        ) {
             homeViewModel.isStatsDialogLoading = true
             if (viewModel.intervals.isEmpty()) {
                 viewModel.getIntervals()?.let { viewModel.intervals.addAll(it) }
@@ -74,14 +86,20 @@ fun StatsDialog(
             if (viewModel.lessonStudentCount.value == null) {
                 viewModel.getLessonStudentCount()?.let { viewModel.lessonStudentCount.value = it }
             }
+            if (viewModel.lessonStudentBySlot.isEmpty()) {
+                viewModel.getLessonStudentBySlot()?.let { viewModel.lessonStudentBySlot.addAll(it) }
+            }
             if (viewModel.years.isEmpty()) {
                 viewModel.getYears()?.let { viewModel.years.addAll(it) }
             }
             if (viewModel.currentDayStudentCount.value == null) {
-                viewModel.getDayStudentCount(viewModel.years.lastOrNull())?.let { viewModel.currentDayStudentCount.value = it }
+                viewModel.getDayStudentCount(viewModel.user.value?.year)?.let { viewModel.currentDayStudentCount.value = it }
             }
             if (viewModel.currentLessonStudentCount.value == null) {
-                viewModel.getLessonStudentCount(viewModel.years.lastOrNull())?.let { viewModel.currentLessonStudentCount.value = it }
+                viewModel.getLessonStudentCount(viewModel.user.value?.year)?.let { viewModel.currentLessonStudentCount.value = it }
+            }
+            if (viewModel.currentLessonStudentBySlot.isEmpty()) {
+                viewModel.getLessonStudentBySlot(viewModel.user.value?.year)?.let { viewModel.currentLessonStudentBySlot.addAll(it) }
             }
             homeViewModel.isStatsDialogLoading = false
         }
@@ -111,12 +129,20 @@ fun StatsDialog(
                             }
                             viewModel.getDayStudentCount()?.let { viewModel.dayStudentCount.value = it }
                             viewModel.getLessonStudentCount()?.let { viewModel.lessonStudentCount.value = it }
+                            viewModel.getLessonStudentBySlot()?.let {
+                                viewModel.lessonStudentBySlot.clear()
+                                viewModel.lessonStudentBySlot.addAll(it)
+                            }
                             viewModel.getYears()?.let {
                                 viewModel.years.clear()
                                 viewModel.years.addAll(it)
                             }
-                            viewModel.getDayStudentCount(viewModel.years.lastOrNull())?.let { viewModel.currentDayStudentCount.value = it }
-                            viewModel.getLessonStudentCount(viewModel.years.lastOrNull())?.let { viewModel.currentLessonStudentCount.value = it }
+                            viewModel.getDayStudentCount(viewModel.user.value?.year)?.let { viewModel.currentDayStudentCount.value = it }
+                            viewModel.getLessonStudentCount(viewModel.user.value?.year)?.let { viewModel.currentLessonStudentCount.value = it }
+                            viewModel.getLessonStudentBySlot(viewModel.user.value?.year)?.let {
+                                viewModel.currentLessonStudentBySlot.clear()
+                                viewModel.currentLessonStudentBySlot.addAll(it)
+                            }
                             homeViewModel.isStatsDialogLoading = false
                         }
                     },
@@ -128,10 +154,10 @@ fun StatsDialog(
         icon = { Icon(MaterialSymbols.Rounded.Insights, null) },
         title = { Text("Jahresinformationen") },
         text = {
-            val dayData = remember(viewModel.dayStudentCount.value) { viewModel.dayStudentCount.value }
-            val lessonData = remember(viewModel.lessonStudentCount.value) { viewModel.lessonStudentCount.value }
-            val currentDayData = remember(viewModel.currentDayStudentCount.value) { viewModel.currentDayStudentCount.value }
-            val currentLessonData = remember(viewModel.currentLessonStudentCount.value) { viewModel.currentLessonStudentCount.value }
+            val dayData = viewModel.dayStudentCount.value
+            val lessonData = viewModel.lessonStudentCount.value
+            val currentDayData = viewModel.currentDayStudentCount.value
+            val currentLessonData = viewModel.currentLessonStudentCount.value
 
             val currentAverage =
                 tryRemember(currentLessonData, currentDayData) {
@@ -170,7 +196,6 @@ fun StatsDialog(
                     ContainedLoadingIndicator(Modifier.padding(100.dp))
                 } else {
                     Column(Modifier.verticalScroll(rememberScrollState())) {
-                        var width by remember { mutableStateOf(0.dp) }
                         Text(
                             text =
                                 buildAnnotatedString {
@@ -187,7 +212,7 @@ fun StatsDialog(
                                         },
                                     )
                                     withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
-                                        append("\n\nDaten zum aktuellen Schuljahr (${viewModel.years.lastOrNull()?.name}):\n")
+                                        append("\n\nDaten zum Schuljahr (${viewModel.user.value?.year?.name}):\n")
                                     }
                                     appendWithSymbols(
                                         "• Schultage: ${currentDayData?.count}\n" +
@@ -210,10 +235,22 @@ fun StatsDialog(
                                             " $lessonsNotPresentWithoutAbsenceCount nicht)\n" +
                                             "➜ Durchschnittlich $average Stunden/Tag, $presence% Anwesenheit",
                                     )
+                                    withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
+                                        append("\n\nAnwesenheit nach Stunden (${viewModel.user.value?.year?.name}):")
+                                    }
                                 },
-                            modifier = Modifier.onGloballyPositioned { with(density) { width = it.size.width.toDp() } },
                             color = colorScheme.onSurface.copy(0.8f),
                         )
+                        Spacer(Modifier.height(10.dp))
+                        LessonsBySlotView(viewModel.currentLessonStudentBySlot)
+                        Spacer(Modifier.height(20.dp))
+                        Text(
+                            text = "Anwesenheit nach Stunden (gesamte Zeit):",
+                            color = colorScheme.onSurface,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Spacer(Modifier.height(10.dp))
+                        LessonsBySlotView(viewModel.lessonStudentBySlot)
                         Spacer(Modifier.height(25.dp))
                         val annotatedString =
                             buildAnnotatedString {
@@ -226,7 +263,7 @@ fun StatsDialog(
                                 } else {
                                     append("beste.schule ")
                                 }
-                                append("stammen, besteht keine Sicherheit, dass alle der Informationen korrekt sind.")
+                                append("stammen, besteht keine Sicherheit, dass alle Informationen korrekt sind.")
                             }
                         var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
                         val strikeThroughColor = colorScheme.onSurfaceVariant
@@ -234,7 +271,7 @@ fun StatsDialog(
                             text = annotatedString,
                             modifier =
                                 Modifier
-                                    .width(width)
+                                    .fillMaxWidth()
                                     .drawBehind {
                                         textLayoutResult?.let { layout ->
                                             annotatedString
@@ -261,4 +298,52 @@ fun StatsDialog(
             }
         },
     )
+}
+
+@Composable
+fun LessonsBySlotView(lessonStudentBySlot: List<JournalLessonStudentBySlot>) {
+    Row {
+        lessonStudentBySlot.groupBy { it.weekday }.forEach {
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text =
+                        when (it.key) {
+                            1 -> "Mo"
+                            2 -> "Di"
+                            3 -> "Mi"
+                            4 -> "Do"
+                            5 -> "Fr"
+                            else -> ""
+                        },
+                    color = colorScheme.onSurface,
+                    fontWeight = FontWeight.Bold,
+                )
+                it.value.forEach {
+                    OutlinedCard(
+                        modifier = Modifier.fillMaxWidth().padding(5.dp),
+                        colors =
+                            CardDefaults.outlinedCardColors(
+                                containerColor =
+                                    Color.Red.copy(((it.count ?: 1).toFloat() / (it.presentCount ?: 1).toFloat() - 1)),
+                            ),
+                        border =
+                            BorderStroke(
+                                width = 2.dp,
+                                color = colorScheme.outline,
+                            ),
+                    ) {
+                        Text(
+                            text = "${it.presentCount}/${it.count}",
+                            modifier = Modifier.padding(5.dp).height(20.dp).align(Alignment.CenterHorizontally),
+                            autoSize = TextAutoSize.StepBased(stepSize = 5.sp),
+                            maxLines = 1,
+                        )
+                    }
+                }
+            }
+        }
+    }
 }

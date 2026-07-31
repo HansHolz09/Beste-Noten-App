@@ -592,6 +592,18 @@ data class JournalLessonStudentCount(
 )
 
 @Serializable
+data class JournalLessonStudentBySlot(
+    @SerialName("student_id") val studentId: Int? = null,
+    val weekday: Int? = null,
+    @SerialName("lesson_nr") val lessonNr: String? = null,
+    val count: Int? = null,
+    @SerialName("present_count") val presentCount: Int? = null,
+    @SerialName("not_present_count") val notPresentCount: Int? = null,
+    @SerialName("not_present_with_absence_count") val notPresentWithAbsenceCount: Int? = null,
+    @SerialName("not_present_without_absence_count") val notPresentWithoutAbsenceCount: Int? = null,
+)
+
+@Serializable
 data class JournalNote(
     val id: String? = null,
     val ids: String? = null,

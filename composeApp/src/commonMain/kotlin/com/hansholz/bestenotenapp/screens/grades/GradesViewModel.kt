@@ -49,7 +49,7 @@ class GradesViewModel(
                     if (viewModel.allGradeCollectionsLoaded.value) {
                         viewModel.getCollections(viewModel.years)
                     } else {
-                        viewModel.getCollections(listOf(viewModel.years.last()))
+                        viewModel.getCollections()
                     }
                 collections?.let {
                     viewModel.gradeCollections.addAll(it)

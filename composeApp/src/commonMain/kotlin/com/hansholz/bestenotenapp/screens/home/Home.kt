@@ -848,7 +848,7 @@ fun Home(
                             }
                         }
                     }
-                    if (viewModel.user.value != null && !viewModel.isDemoAccount.value) {
+                    if (viewModel.user.value != null) {
                         item {
                             Box(
                                 Modifier
