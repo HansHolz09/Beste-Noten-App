@@ -3,6 +3,10 @@ name: Test Build Compose Multiplatform
 on:
   workflow_dispatch:
     inputs:
+      run_smoke_tests:
+        description: "Run smoke tests"
+        type: boolean
+        default: true
       build_android:
         description: "Android"
         type: boolean
@@ -48,6 +52,7 @@ jobs:
     uses: ./.github/workflows/buildCompose.yml
     with:
       upload_wasm_as_pages_artifact: false
+      run_smoke_tests: ${{ inputs.run_smoke_tests }}
       build_android: ${{ inputs.build_android }}
       build_ios: ${{ inputs.build_ios }}
       build_windows_x64: ${{ inputs.build_windows_x64 }}
