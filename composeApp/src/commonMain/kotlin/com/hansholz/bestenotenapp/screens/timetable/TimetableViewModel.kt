@@ -14,21 +14,18 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 class TimetableViewModel(
     viewModel: com.hansholz.bestenotenapp.main.ViewModel,
 ) : ViewModel() {
     var toolbarPadding by mutableStateOf(0.dp)
 
-    @OptIn(ExperimentalTime::class)
     private val currentDate =
         Clock.System
             .now()
             .toLocalDateTime(TimeZone.currentSystemDefault())
             .date
 
-    @OptIn(ExperimentalTime::class)
     var startPageDate by mutableStateOf(
         when (currentDate.dayOfWeek) {
             DayOfWeek.SATURDAY -> {

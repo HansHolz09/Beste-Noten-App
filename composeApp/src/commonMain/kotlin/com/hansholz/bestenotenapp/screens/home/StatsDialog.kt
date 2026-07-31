@@ -59,9 +59,8 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.daysUntil
 import kotlinx.datetime.todayIn
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalTime::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun StatsDialog(
     viewModel: ViewModel,

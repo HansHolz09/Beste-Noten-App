@@ -9,7 +9,6 @@ import org.publicvalue.multiplatform.oidc.appsupport.CodeAuthFlowFactory
 import org.publicvalue.multiplatform.oidc.types.CodeChallengeMethod
 import org.publicvalue.multiplatform.oidc.types.remote.AccessTokenResponse
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 interface GoogleAuthProvider {
     suspend fun signIn()
@@ -68,7 +67,6 @@ class KSafeGoogleAuthProvider(
         }
     }
 
-    @OptIn(ExperimentalTime::class)
     override suspend fun getAccessToken(): String? {
         val accessToken = kSafeProvider(kSafe) { get("homeworkGoogleAccessToken", "") }.takeIf { it.isNotBlank() }
         val expiresAt = kSafeProvider(kSafe) { get("homeworkGoogleAccessTokenExpiresAt", 0L) }
@@ -86,7 +84,6 @@ class KSafeGoogleAuthProvider(
         }
     }
 
-    @OptIn(ExperimentalTime::class)
     private fun save(
         response: AccessTokenResponse,
         previousRefreshToken: String? = null,

@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.hansholz.bestenotenapp.components
 
 import androidx.compose.foundation.layout.Box
@@ -20,12 +18,12 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.VerticalDivider
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.window.core.layout.WindowWidthSizeClass
+import androidx.window.core.layout.WindowSizeClass
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 
@@ -37,12 +35,16 @@ fun NavigationDrawer(
     drawerContent: @Composable () -> Unit,
     content: @Composable () -> Unit,
 ) {
-    val windowWidthSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+    val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
+    val isCompactWindow = !windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
+    val isMediumWindow =
+        windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) &&
+            !windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
     val windowInsets =
         WindowInsets.safeDrawing.only(
             WindowInsetsSides.Vertical + WindowInsetsSides.Start,
         )
-    if (windowWidthSizeClass == WindowWidthSizeClass.COMPACT) {
+    if (isCompactWindow) {
         ModalNavigationDrawer(
             drawerState = drawerState,
             drawerContent = {
@@ -69,7 +71,7 @@ fun NavigationDrawer(
     } else {
         BoxWithConstraints {
             val drawerSheetModifier =
-                if (windowWidthSizeClass == WindowWidthSizeClass.MEDIUM) {
+                if (isMediumWindow) {
                     Modifier.width(maxWidth / 2.5f)
                 } else {
                     Modifier

@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.hansholz.bestenotenapp.screens.home
 
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -38,7 +36,7 @@ import androidx.compose.material3.MaterialShapes.Companion.ClamShell
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -60,6 +58,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.window.core.layout.WindowSizeClass
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Abc
 import com.composables.icons.materialsymbols.rounded.Account_circle
@@ -158,7 +157,10 @@ fun Home(
         val scope = rememberCoroutineScope()
         val vibrator = rememberVibrator()
         val isDark = LocalThemeIsDark.current
-        val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+        val isCompactWindow =
+            !currentWindowAdaptiveInfoV2()
+                .windowSizeClass
+                .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
         val backgroundAlpha = animateFloatAsState(if (LocalBackgroundEnabled.current.value) 0.2f else 0f, tween(750))
 
@@ -209,7 +211,7 @@ fun Home(
                 EnhancedIconButton(
                     onClick = {
                         scope.launch {
-                            viewModel.closeOrOpenDrawer(windowWithSizeClass)
+                            viewModel.closeOrOpenDrawer(isCompactWindow)
                         }
                     },
                 ) {

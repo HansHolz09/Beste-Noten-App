@@ -43,7 +43,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.HorizontalFloatingToolbar
@@ -54,7 +53,7 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -84,6 +83,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.window.core.layout.WindowSizeClass
 import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.logo
 import com.composables.icons.materialsymbols.MaterialSymbols
@@ -141,15 +141,12 @@ import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 @OptIn(
     ExperimentalSharedTransitionApi::class,
-    ExperimentalTime::class,
     ExperimentalMaterial3ExpressiveApi::class,
     ExperimentalComposeUiApi::class,
-    ExperimentalMaterial3Api::class,
     FormatStringsInDatetimeFormats::class,
 )
 @Composable
@@ -168,8 +165,10 @@ fun Timetable(
 
         var showAbsences by LocalShowAbsences.current
 
-        @Suppress("DEPRECATION")
-        val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+        val isCompactWindow =
+            !currentWindowAdaptiveInfoV2()
+                .windowSizeClass
+                .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
         TopAppBarScaffold(
             modifier =
@@ -190,7 +189,7 @@ fun Timetable(
                 EnhancedIconButton(
                     onClick = {
                         scope.launch {
-                            viewModel.closeOrOpenDrawer(windowWithSizeClass)
+                            viewModel.closeOrOpenDrawer(isCompactWindow)
                         }
                     },
                 ) {

@@ -8,7 +8,6 @@ import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 interface HomeworkRepository {
@@ -141,7 +140,6 @@ class KSafeHomeworkSyncSettings(
         get() = kSafeProvider(kSafe) { get("homeworkGoogleNextSyncToken", "") }.takeIf(String::isNotBlank)
         set(value) = kSafeProvider(kSafe) { put("homeworkGoogleNextSyncToken", value.orEmpty()) }
 
-    @OptIn(ExperimentalTime::class)
     override var lastSuccessfulSyncAt: Instant?
         get() =
             kSafeProvider(kSafe) { get("homeworkLastSuccessfulSyncAt", "") }
@@ -185,7 +183,6 @@ class KSafeHomeworkRepository(
         if (canAutoSync()) sync.syncNow()
     }
 
-    @OptIn(ExperimentalTime::class)
     override suspend fun updateHomework(entry: HomeworkEntry) {
         val updated = entry.copy(updatedAt = Clock.System.now())
         local.update(updated)
@@ -193,7 +190,6 @@ class KSafeHomeworkRepository(
         if (canAutoSync()) sync.syncNow()
     }
 
-    @OptIn(ExperimentalTime::class)
     override suspend fun markHomeworkDone(
         localId: String,
         done: Boolean,
@@ -204,7 +200,6 @@ class KSafeHomeworkRepository(
         if (canAutoSync()) sync.syncNow()
     }
 
-    @OptIn(ExperimentalTime::class)
     override suspend fun deleteHomework(localId: String) {
         val now = Clock.System.now()
         local.markStatus(localId, HomeworkStatus.DELETED, now, now)
@@ -220,7 +215,6 @@ private class HomeworkSyncManager(
     private val google: GoogleCalendarHomeworkSyncDataSource,
     private val settings: HomeworkSyncSettings,
 ) {
-    @OptIn(ExperimentalTime::class)
     suspend fun syncNow() {
         if (!settings.homeworkEnabled || !settings.googleSyncEnabled) return
         try {

@@ -2,7 +2,6 @@ package com.hansholz.bestenotenapp.screens.grades
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
@@ -63,7 +62,7 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -96,6 +95,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.window.core.layout.WindowSizeClass
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Arrow_back
 import com.composables.icons.materialsymbols.rounded.Arrow_back_ios_new
@@ -158,7 +158,6 @@ import kotlin.time.Duration.Companion.milliseconds
 @OptIn(
     ExperimentalMaterial3ExpressiveApi::class,
     ExperimentalSharedTransitionApi::class,
-    ExperimentalAnimationApi::class,
     ExperimentalComposeUiApi::class,
     ExperimentalKoalaPlotApi::class,
 )
@@ -178,8 +177,10 @@ fun Grades(
         val density = LocalDensity.current
         val layoutDirection = LocalLayoutDirection.current
 
-        @Suppress("DEPRECATION")
-        val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+        val isCompactWindow =
+            !currentWindowAdaptiveInfoV2()
+                .windowSizeClass
+                .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
         val animationsEnabled by LocalAnimationsEnabled.current
         var gradeAverageEnabled by LocalGradeAverageEnabled.current
@@ -227,7 +228,7 @@ fun Grades(
                     EnhancedIconButton(
                         onClick = {
                             scope.launch {
-                                viewModel.closeOrOpenDrawer(windowWithSizeClass)
+                                viewModel.closeOrOpenDrawer(isCompactWindow)
                             }
                         },
                     ) {
@@ -1191,7 +1192,6 @@ fun Grades(
                     gradeAverageCalculator.clearSubjectWeighting(
                         kSafe = kSafe,
                         subjectKey = dialogState.subjectKey,
-                        typeNames = dialogTypeNames,
                     )
                 },
             )

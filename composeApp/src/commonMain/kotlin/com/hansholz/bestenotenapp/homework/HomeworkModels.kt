@@ -5,7 +5,6 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 import kotlin.random.Random
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 @Serializable
@@ -94,10 +93,8 @@ enum class SyncState {
     ERROR,
 }
 
-@OptIn(ExperimentalTime::class)
 fun newHomeworkId(): String = "hw-${Clock.System.now().toEpochMilliseconds()}-${Random.nextInt(100_000, 999_999)}"
 
-@OptIn(ExperimentalTime::class)
 fun newOutboxId(): String = "outbox-${Clock.System.now().toEpochMilliseconds()}-${Random.nextInt(100_000, 999_999)}"
 
 fun HomeworkEntry.hasManualOrigin(): Boolean = source == HomeworkSource.USER && status != HomeworkStatus.DELETED

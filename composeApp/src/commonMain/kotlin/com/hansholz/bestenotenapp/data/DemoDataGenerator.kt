@@ -42,7 +42,6 @@ import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlin.random.Random
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 object DemoDataGenerator {
     data class DemoInitData(
@@ -187,7 +186,6 @@ object DemoDataGenerator {
                 ),
         )
 
-    @OptIn(ExperimentalTime::class)
     fun generateInitialData(): DemoInitData {
         val now =
             Clock.System
@@ -481,7 +479,6 @@ object DemoDataGenerator {
         )
     }
 
-    @OptIn(ExperimentalTime::class)
     fun generateJournalWeek(
         date: LocalDate,
         weekPlan: List<List<Subject>>,

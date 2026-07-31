@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.hansholz.bestenotenapp.screens.settings
 
 import androidx.compose.foundation.layout.Arrangement
@@ -14,7 +12,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,6 +27,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.window.core.layout.WindowSizeClass
 import bestenotenapp.composeApp.BuildConfig
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Account_circle
@@ -123,7 +122,6 @@ import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -136,7 +134,10 @@ fun Settings(
     val scope = rememberCoroutineScope()
     val vibrator = rememberVibrator()
     val uriHandler = LocalUriHandler.current
-    val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+    val isCompactWindow =
+        !currentWindowAdaptiveInfoV2()
+            .windowSizeClass
+            .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
     var useSystemIsDark by LocalUseSystemIsDark.current
     var isDark by LocalIsDark.current
@@ -179,7 +180,7 @@ fun Settings(
             EnhancedIconButton(
                 onClick = {
                     scope.launch {
-                        viewModel.closeOrOpenDrawer(windowWithSizeClass)
+                        viewModel.closeOrOpenDrawer(isCompactWindow)
                     }
                 },
             ) {
@@ -398,7 +399,6 @@ fun Settings(
 
                     scope.launch {
                         if (it && viewModel.currentJournalDay.value == null) {
-                            @OptIn(ExperimentalTime::class)
                             val currentDate =
                                 Clock.System
                                     .now()

@@ -11,7 +11,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 class HomeViewModel(
     viewModel: com.hansholz.bestenotenapp.main.ViewModel,
@@ -40,7 +39,6 @@ class HomeViewModel(
     fun refreshTimetable(viewModel: com.hansholz.bestenotenapp.main.ViewModel) {
         viewModelScope.launch {
             isTimetableLoading = true
-            @OptIn(ExperimentalTime::class)
             val currentDate =
                 Clock.System
                     .now()
@@ -81,7 +79,6 @@ class HomeViewModel(
                 if (get("showCurrentLesson", true)) {
                     isTimetableLoading = true
                     if (viewModel.currentJournalDay.value == null) {
-                        @OptIn(ExperimentalTime::class)
                         val currentDate =
                             Clock.System
                                 .now()

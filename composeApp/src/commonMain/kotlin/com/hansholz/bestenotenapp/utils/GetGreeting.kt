@@ -5,9 +5,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.random.Random
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalTime::class)
 fun getGreeting(name: String): String {
     val now = Clock.System.now()
     val localTime = now.toLocalDateTime(TimeZone.currentSystemDefault())

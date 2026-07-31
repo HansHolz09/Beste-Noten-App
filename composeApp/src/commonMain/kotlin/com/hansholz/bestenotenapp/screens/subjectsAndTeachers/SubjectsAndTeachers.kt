@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.hansholz.bestenotenapp.screens.subjectsAndTeachers
 
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -17,7 +15,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ContainedLoadingIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -28,7 +25,7 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,6 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.window.core.layout.WindowSizeClass
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Menu
 import com.hansholz.bestenotenapp.api.models.Subject
@@ -70,7 +68,7 @@ import kotlinx.coroutines.launch
 import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.math.abs
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun SubjectsAndTeachers(
     viewModel: ViewModel,
@@ -83,7 +81,10 @@ fun SubjectsAndTeachers(
         val scope = rememberCoroutineScope()
         val vibrator = rememberVibrator()
         val density = LocalDensity.current
-        val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+        val isCompactWindow =
+            !currentWindowAdaptiveInfoV2()
+                .windowSizeClass
+                .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
         val showAllSubjects by LocalShowAllSubjects.current
         val showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
@@ -107,7 +108,7 @@ fun SubjectsAndTeachers(
                 EnhancedIconButton(
                     onClick = {
                         scope.launch {
-                            viewModel.closeOrOpenDrawer(windowWithSizeClass)
+                            viewModel.closeOrOpenDrawer(isCompactWindow)
                         }
                     },
                 ) {

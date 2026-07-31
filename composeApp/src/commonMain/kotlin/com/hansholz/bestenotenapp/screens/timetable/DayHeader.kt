@@ -38,9 +38,7 @@ import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalTime::class)
 @Composable
 fun DayHeader(
     date: LocalDate,

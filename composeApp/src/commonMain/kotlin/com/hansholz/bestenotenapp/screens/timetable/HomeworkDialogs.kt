@@ -80,7 +80,6 @@ import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -136,7 +135,7 @@ fun LazyListScope.homeworkItems(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class, ExperimentalTime::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomeworkEditorDialog(
     visible: MutableState<Boolean>,
@@ -406,7 +405,6 @@ fun HomeworkEditorDialog(
     }
 }
 
-@OptIn(ExperimentalTime::class)
 fun newDayHomeworkEntry(
     date: LocalDate,
     title: String,
@@ -440,7 +438,6 @@ fun newDayHomeworkEntry(
     )
 }
 
-@OptIn(ExperimentalTime::class)
 fun newLessonHomeworkEntry(
     date: LocalDate,
     lesson: JournalLesson,

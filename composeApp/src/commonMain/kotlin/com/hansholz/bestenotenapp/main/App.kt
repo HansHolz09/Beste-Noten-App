@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.hansholz.bestenotenapp.main
 
 import androidx.compose.animation.core.animateFloatAsState

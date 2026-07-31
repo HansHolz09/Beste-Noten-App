@@ -15,9 +15,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalTime::class)
 @Composable
 fun UpdateOnNewDay(onUpdate: suspend () -> Unit) {
     val scope = rememberCoroutineScope()

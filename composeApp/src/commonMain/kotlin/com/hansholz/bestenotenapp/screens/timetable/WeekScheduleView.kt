@@ -89,13 +89,11 @@ import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 @OptIn(
     ExperimentalSharedTransitionApi::class,
     ExperimentalComposeUiApi::class,
     ExperimentalMaterial3ExpressiveApi::class,
-    ExperimentalTime::class,
 )
 @Composable
 fun WeekScheduleView(

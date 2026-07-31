@@ -3,7 +3,6 @@ package com.hansholz.bestenotenapp
 import androidx.compose.foundation.DarkDefaultContextMenuRepresentation
 import androidx.compose.foundation.LightDefaultContextMenuRepresentation
 import androidx.compose.foundation.LocalContextMenuRepresentation
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ComponentOverrideApi
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -53,7 +52,7 @@ import java.awt.Dimension
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalMaterial3ComponentOverrideApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3ComponentOverrideApi::class)
 fun main() {
     System.setProperty("ksafe.jvm.keyVault", "software") // because no signed macOS app
     FileKit.init(NucleusApp.appId)

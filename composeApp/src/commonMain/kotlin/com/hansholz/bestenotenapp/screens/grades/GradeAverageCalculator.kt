@@ -207,7 +207,6 @@ class GradeAverageCalculator {
     fun clearSubjectWeighting(
         kSafe: KSafe,
         subjectKey: String,
-        @Suppress("UNUSED_PARAMETER") typeNames: Collection<String>,
     ) {
         val store = loadStore(kSafe)
         if (!store.subjects.contains(subjectKey)) return

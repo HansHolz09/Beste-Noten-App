@@ -11,7 +11,6 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -24,7 +23,6 @@ import com.composables.icons.materialsymbols.rounded.Remove
 import java.awt.Frame
 import java.awt.event.WindowEvent
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun DecoratedWindowScope.TitleBarOnLinux(
     modifier: Modifier = Modifier,

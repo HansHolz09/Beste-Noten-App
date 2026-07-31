@@ -11,7 +11,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.ExperimentalTime
 
 data class SimpleTime(
     val hour: Int,
@@ -26,7 +25,6 @@ data class SimpleTime(
                 SimpleTime(0, 0)
             }
 
-        @OptIn(ExperimentalTime::class)
         fun now(): SimpleTime =
             try {
                 val time =
@@ -74,7 +72,6 @@ data class SimpleTime(
     operator fun minus(minutes: Int): SimpleTime = minusMinutes(minutes.toLong())
 }
 
-@OptIn(ExperimentalTime::class)
 @Composable
 fun rememberCurrentSimpleTime(): State<SimpleTime> {
     val lifecycleOwner = LocalLifecycleOwner.current

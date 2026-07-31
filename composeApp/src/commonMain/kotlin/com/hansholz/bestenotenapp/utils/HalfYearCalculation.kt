@@ -6,7 +6,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.until
 import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 
 fun switchPercent(
     firstStart: LocalDate,
@@ -28,7 +27,6 @@ fun switchPercent(
     return switchDate / totalDays
 }
 
-@OptIn(ExperimentalTime::class)
 fun percentOfSchoolYearAt(
     firstStart: LocalDate,
     firstEnd: LocalDate,

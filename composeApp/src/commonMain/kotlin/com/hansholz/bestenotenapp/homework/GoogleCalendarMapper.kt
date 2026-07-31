@@ -9,7 +9,6 @@ import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Duration.Companion.hours
-import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 fun HomeworkEntry.toGoogleCalendarEvent(studentId: String?): GoogleCalendarEvent {
@@ -149,10 +148,8 @@ private fun HomeworkEntry.toGoogleReminders(timeZone: TimeZone): GoogleCalendarR
     }
 }
 
-@OptIn(ExperimentalTime::class)
 private fun String.parseInstantOrNull(): Instant? = runCatching { Instant.parse(this) }.getOrNull()
 
-@OptIn(ExperimentalTime::class)
 private fun String.parseGoogleDateTimeOrNull(): LocalDateTime? {
     val currentTimeZone = TimeZone.currentSystemDefault()
     return runCatching { Instant.parse(this).toLocalDateTime(currentTimeZone) }
@@ -161,7 +158,6 @@ private fun String.parseGoogleDateTimeOrNull(): LocalDateTime? {
         }
 }
 
-@OptIn(ExperimentalTime::class)
 private fun LocalDateTime.plusOneHour(timeZone: TimeZone): LocalDateTime = toInstant(timeZone).plus(1.hours).toLocalDateTime(timeZone)
 
 private inline fun <reified T : Enum<T>> String.enumValueOrDefault(default: T): T = enumValues<T>().firstOrNull { it.name == this } ?: default

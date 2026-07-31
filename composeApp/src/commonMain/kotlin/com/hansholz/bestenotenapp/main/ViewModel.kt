@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.hansholz.bestenotenapp.main
 
 import androidx.compose.material3.DrawerState
@@ -9,7 +7,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.window.core.layout.WindowWidthSizeClass
 import com.dokar.sonner.Toast
 import com.dokar.sonner.ToastType
 import com.dokar.sonner.ToasterDefaults
@@ -81,7 +78,6 @@ import org.publicvalue.multiplatform.oidc.OpenIdConnectException
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
 import com.hansholz.bestenotenapp.data.readBesteSchuleCache as readStoredBesteSchuleCache
 import com.hansholz.bestenotenapp.data.writeBesteSchuleCache as writeStoredBesteSchuleCache
 
@@ -549,8 +545,8 @@ class ViewModel(
         onCleared()
     }
 
-    suspend fun closeOrOpenDrawer(windowWidthSizeClass: WindowWidthSizeClass) {
-        if (windowWidthSizeClass == WindowWidthSizeClass.COMPACT) {
+    suspend fun closeOrOpenDrawer(isCompactWindow: Boolean) {
+        if (isCompactWindow) {
             if (compactDrawerState.value.isClosed) {
                 compactDrawerState.value.open()
             } else {
@@ -670,7 +666,6 @@ class ViewModel(
         }
     }
 
-    @OptIn(ExperimentalTime::class)
     suspend fun getJournalWeek(
         date: LocalDate? = null,
         useCached: Boolean = true,

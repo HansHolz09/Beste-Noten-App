@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package com.hansholz.bestenotenapp.navigation
 
 import androidx.compose.animation.core.tween
@@ -23,7 +21,7 @@ import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,7 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.window.core.layout.WindowWidthSizeClass
+import androidx.window.core.layout.WindowSizeClass
 import com.hansholz.bestenotenapp.components.ConfettiPresets
 import com.hansholz.bestenotenapp.components.NavigationDrawer
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
@@ -67,14 +65,17 @@ fun AppNavigationDrawer(
 ) {
     val scope = rememberCoroutineScope()
     val vibrator = rememberVibrator()
-    val windowWithSizeClass = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+    val isCompactWindow =
+        !currentWindowAdaptiveInfoV2()
+            .windowSizeClass
+            .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
     var showConfetti by remember { mutableStateOf(false) }
 
     val navController = rememberNavController()
     val currentRoute by navController.currentBackStackEntryAsState()
     NavigationDrawer(
-        drawerState = if (windowWithSizeClass == WindowWidthSizeClass.COMPACT) viewModel.compactDrawerState.value else viewModel.mediumExpandedDrawerState.value,
+        drawerState = if (isCompactWindow) viewModel.compactDrawerState.value else viewModel.mediumExpandedDrawerState.value,
         hazeState = viewModel.hazeBackgroundState,
         drawerContent = {
             Column(Modifier.customTitleBarMouseEventHandler()) {
@@ -147,7 +148,7 @@ fun AppNavigationDrawer(
                             onClick = {
                                 scope.launch {
                                     navController.navigate(screen.route)
-                                    if (windowWithSizeClass == WindowWidthSizeClass.COMPACT) viewModel.closeOrOpenDrawer(windowWithSizeClass)
+                                    if (isCompactWindow) viewModel.closeOrOpenDrawer(isCompactWindow)
                                 }
                                 vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                             },
@@ -178,7 +179,7 @@ fun AppNavigationDrawer(
                         onClick = {
                             scope.launch {
                                 navController.navigate(Fragment.Settings.route)
-                                if (windowWithSizeClass == WindowWidthSizeClass.COMPACT) viewModel.closeOrOpenDrawer(windowWithSizeClass)
+                                if (isCompactWindow) viewModel.closeOrOpenDrawer(isCompactWindow)
                             }
                             vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                         },

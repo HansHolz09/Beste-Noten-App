@@ -92,8 +92,6 @@ data class Announcement(
     @SerialName("read_to") val readTo: String? = null,
     @SerialName("write_from") val writeFrom: String? = null,
     @SerialName("write_to") val writeTo: String? = null,
-    @Deprecated("Use readFrom") val from: String? = null,
-    @Deprecated("Use readTo") val to: String? = null,
     @SerialName("for") val for_: String,
     @SerialName("need_confirmation_from_student") val needConfirmationFromStudent: String? = null,
     @SerialName("need_confirmation_from_guardian") val needConfirmationFromGuardian: String? = null,
