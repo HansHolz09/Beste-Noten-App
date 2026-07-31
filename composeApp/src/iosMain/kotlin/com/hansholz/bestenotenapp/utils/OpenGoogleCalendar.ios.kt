@@ -2,15 +2,31 @@ package com.hansholz.bestenotenapp.utils
 
 import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
+import platform.UIKit.UIApplicationOpenURLOptionUniversalLinksOnly
 
 actual fun openGoogleCalendar() {
     val app = UIApplication.sharedApplication
-    val schemeUrl = NSURL(string = "googlecalendar://")
+    val universalLink = NSURL(string = "https://calendar.google.com/calendar/r")
 
-    if (app.canOpenURL(schemeUrl)) {
-        app.openURL(schemeUrl)
-    } else {
-        val appStoreUrl = NSURL(string = "https://apps.apple.com/app/id909319292")
-        app.openURL(appStoreUrl)
-    }
+    app.openURL(
+        url = universalLink,
+        options = mapOf(UIApplicationOpenURLOptionUniversalLinksOnly to true),
+        completionHandler = { success ->
+            if (!success) {
+                openAppStore(app, "909319292")
+            }
+        },
+    )
+}
+
+private fun openAppStore(
+    app: UIApplication,
+    appId: String,
+) {
+    val appStoreUrl = NSURL(string = "https://apps.apple.com/app/id$appId")
+    app.openURL(
+        url = appStoreUrl,
+        options = emptyMap<Any?, Any>(),
+        completionHandler = null,
+    )
 }

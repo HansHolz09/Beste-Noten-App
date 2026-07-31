@@ -21,6 +21,7 @@ fun LazyListScope.settingsToggleItem(
     onCheckedChange: (Boolean) -> Unit,
     text: String,
     icon: ImageVector? = null,
+    onIconClick: (() -> Unit)? = null,
     enabled: Boolean = true,
     modifier: Modifier = Modifier,
     textModifier: Modifier = Modifier,
@@ -35,6 +36,7 @@ fun LazyListScope.settingsToggleItem(
             textModifier = textModifier,
             title = text,
             icon = icon,
+            onIconClick = onIconClick,
             enabled = enabled,
             position = position,
         ) {

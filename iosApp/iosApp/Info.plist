@@ -58,9 +58,5 @@
     </array>
     <key>NSFaceIDUsageDescription</key>
     <string>$(PRODUCT_NAME) Authentication with TouchId or FaceID</string>
-    <key>LSApplicationQueriesSchemes</key>
-    <array>
-        <string>googlecalendar</string>
-    </array>
 </dict>
 </plist>

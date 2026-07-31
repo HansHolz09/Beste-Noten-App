@@ -554,6 +554,7 @@ fun Settings(
                 },
                 text = "Eingetragenes mit Google Kalender synchronisieren",
                 icon = GoogleCalendar,
+                onIconClick = { openGoogleCalendar() },
                 enabled = homeworkEnabled,
                 position = if (homeworkGoogleSyncEnabled) PreferencePosition.Middle else PreferencePosition.Bottom,
             )
