@@ -356,7 +356,7 @@ fun Home(
                                         vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                         makeItemVisibleAndNavigate(
                                             listState = lazyStaggeredGridState,
-                                            index = 1,
+                                            index = if (showGreetings) 2 else 1,
                                             onNavigate = {
                                                 onNavigateToScreen(Fragment.Grades)
                                             },
@@ -474,7 +474,7 @@ fun Home(
                                         vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                         makeItemVisibleAndNavigate(
                                             listState = lazyStaggeredGridState,
-                                            index = 2,
+                                            index = if (showGreetings) 3 else 2,
                                             onNavigate = {
                                                 onNavigateToScreen(Fragment.Timetable)
                                             },
@@ -719,7 +719,7 @@ fun Home(
                                         vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                         makeItemVisibleAndNavigate(
                                             listState = lazyStaggeredGridState,
-                                            index = 3,
+                                            index = if (showGreetings) 4 else 3,
                                             onNavigate = {
                                                 onNavigateToScreen(Fragment.SubjectsAndTeachers)
                                             },
