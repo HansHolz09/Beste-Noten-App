@@ -17,6 +17,7 @@ dependencyResolutionManagement {
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
         maven("https://jogamp.org/deployment/maven")
         maven("https://jitpack.io")
+        maven("https://central.sonatype.com/repository/maven-snapshots/")
     }
 }
 

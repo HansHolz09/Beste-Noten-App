@@ -1,9 +1,9 @@
 package com.hansholz.bestenotenapp.screens.timetable
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.SeekableTransitionState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -57,6 +57,7 @@ import androidx.compose.ui.backhandler.PredictiveBackHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Close
@@ -178,15 +179,6 @@ fun WeekScheduleView(
             popupVisibilityState.animateTo(popupVisible)
         }
     }
-    val popupBoundsTransform =
-        remember {
-            BoundsTransform { _, _ ->
-                spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessMediumLow,
-                )
-            }
-        }
     val animatedScheduleScale by animateFloatAsState(
         targetValue = if (popupVisible) 0.985f else 1f,
         animationSpec =
@@ -315,7 +307,6 @@ fun WeekScheduleView(
                                 sharedTransitionScope = this@SharedTransitionLayout,
                                 selectedLesson = selectedLesson,
                                 popupTransition = popupTransition,
-                                popupBoundsTransform = popupBoundsTransform,
                                 homeworkLessonIds = homeworkLessonIds,
                                 doneHomeworkLessonIds = doneHomeworkLessonIds,
                             ) { lesson ->
@@ -364,7 +355,10 @@ fun WeekScheduleView(
                                     sharedTransitionScope = this@SharedTransitionLayout,
                                     sharedContentState = rememberSharedContentState(selectedLesson ?: ""),
                                     animatedVisibilityScope = this@AnimatedVisibility,
-                                    boundsTransform = popupBoundsTransform,
+                                    boundsTransform = { _, _ ->
+                                        spring(0.65f, Spring.StiffnessMediumLow)
+                                    },
+                                    resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(ContentScale.Fit),
                                 ).clickable(null, null) {},
                         shape = RoundedCornerShape(24.dp),
                         colors =

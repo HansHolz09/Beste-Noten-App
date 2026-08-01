@@ -2,6 +2,9 @@ package com.hansholz.bestenotenapp.screens.grades
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.EnterExitState
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
@@ -86,6 +89,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -475,10 +479,7 @@ fun Grades(
                                                                         .fillMaxSize()
                                                                         .enhancedHazeEffect(viewModel.hazeBackgroundState3, colorScheme.secondaryContainer)
                                                                         .enhancedHazeEffect(viewModel.hazeBackgroundState2, colorScheme.secondaryContainer) {
-                                                                            mask =
-                                                                                Brush.verticalGradient(
-                                                                                    colors = listOf(Color.Transparent, Color.Red),
-                                                                                )
+                                                                            mask(Brush.verticalGradient(colors = listOf(Color.Transparent, Color.Red)))
                                                                         },
                                                                 )
                                                                 Row(
@@ -660,10 +661,13 @@ fun Grades(
                                 gradesViewModel.searchQuery = ""
                                 gradesViewModel.toolbarState = 0
                                 gradesViewModel.contentBlurred = false
+                                gradesViewModel.toolbarExpansionLocked = true
                                 delay(250.milliseconds)
                                 if (gradesViewModel.toolbarState == 0) gradesViewModel.userScrollEnabled = true
                                 isBackInProgress = false
                                 backProgress = 0f
+                                delay(750.milliseconds)
+                                gradesViewModel.toolbarExpansionLocked = false
                             }
                         } catch (_: CancellationException) {
                             isBackInProgress = false
@@ -677,6 +681,20 @@ fun Grades(
                             Modifier
                         }
 
+                    val isScreenExiting by remember {
+                        derivedStateOf { animatedVisibilityScope.transition.targetState == EnterExitState.PostExit }
+                    }
+                    LaunchedEffect(isScreenExiting) {
+                        if (isScreenExiting && gradesViewModel.toolbarState != 0) {
+                            gradesViewModel.toolbarState = 0
+                            gradesViewModel.searchQuery = ""
+                            gradesViewModel.contentBlurred = false
+                            gradesViewModel.userScrollEnabled = true
+                            isBackInProgress = false
+                            backProgress = 0f
+                        }
+                    }
+
                     AnimatedContent(
                         targetState = gradesViewModel.toolbarState,
                         modifier =
@@ -685,14 +703,16 @@ fun Grades(
                             },
                         contentAlignment = Alignment.BottomCenter,
                         transitionSpec = {
-                            fadeIn(animationSpec = tween(250)) togetherWith
-                                fadeOut(animationSpec = tween(250)) using
-                                SizeTransform(
-                                    clip = false,
-                                    sizeAnimationSpec = { _, _ ->
-                                        spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
-                                    },
-                                )
+                            if (isScreenExiting) {
+                                EnterTransition.None togetherWith ExitTransition.None
+                            } else {
+                                fadeIn(animationSpec = tween(250)) togetherWith
+                                    fadeOut(animationSpec = tween(250)) using
+                                    SizeTransform(
+                                        clip = false,
+                                        sizeAnimationSpec = { _, _ -> spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow) },
+                                    )
+                            }
                         },
                     ) { targetState ->
                         when (targetState) {
@@ -701,7 +721,7 @@ fun Grades(
                                     contentAlignment = Alignment.BottomCenter,
                                 ) {
                                     HorizontalFloatingToolbar(
-                                        expanded = if (animationsEnabled) currentLazyListState.isScrollingUp() else true,
+                                        expanded = if (animationsEnabled && !gradesViewModel.toolbarExpansionLocked) currentLazyListState.isScrollingUp() else true,
                                         modifier =
                                             Modifier
                                                 .enhancedSharedBounds(
@@ -709,10 +729,10 @@ fun Grades(
                                                     sharedContentState = sharedContentState,
                                                     animatedVisibilityScope = this@AnimatedContent,
                                                     boundsTransform = { _, _ ->
-                                                        spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
+                                                        spring(Spring.DampingRatioNoBouncy, Spring.StiffnessMediumLow)
                                                     },
-                                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
-                                                    renderInOverlayDuringTransition = false,
+                                                    resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(ContentScale.Fit),
+                                                    renderInOverlayDuringTransition = !isScreenExiting,
                                                 ).clip(FloatingToolbarDefaults.ContainerShape)
                                                 .enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
                                         colors = FloatingToolbarDefaults.standardFloatingToolbarColors(Color.Transparent),
@@ -837,9 +857,10 @@ fun Grades(
                                                     sharedContentState = sharedContentState,
                                                     animatedVisibilityScope = this@AnimatedContent,
                                                     boundsTransform = { _, _ ->
-                                                        spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
+                                                        spring(Spring.DampingRatioNoBouncy, Spring.StiffnessMediumLow)
                                                     },
-                                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
+                                                    resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(ContentScale.Fit),
+                                                    renderInOverlayDuringTransition = !isScreenExiting,
                                                 ).then(backHandlingModifier)
                                                 .padding(horizontal = 12.dp)
                                                 .sizeIn(maxWidth = 500.dp)
@@ -903,9 +924,10 @@ fun Grades(
                                                     sharedContentState = sharedContentState,
                                                     animatedVisibilityScope = this@AnimatedContent,
                                                     boundsTransform = { _, _ ->
-                                                        spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
+                                                        spring(0.65f, Spring.StiffnessMediumLow)
                                                     },
-                                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
+                                                    resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(ContentScale.Fit),
+                                                    renderInOverlayDuringTransition = !isScreenExiting,
                                                 ).then(backHandlingModifier)
                                                 .padding(horizontal = 12.dp)
                                                 .sizeIn(maxWidth = 500.dp)
@@ -989,9 +1011,10 @@ fun Grades(
                                                     sharedContentState = sharedContentState,
                                                     animatedVisibilityScope = this@AnimatedContent,
                                                     boundsTransform = { _, _ ->
-                                                        spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
+                                                        spring(0.65f, Spring.StiffnessMediumLow)
                                                     },
-                                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
+                                                    resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(ContentScale.Fit),
+                                                    renderInOverlayDuringTransition = !isScreenExiting,
                                                 ).then(backHandlingModifier)
                                                 .padding(horizontal = 12.dp)
                                                 .sizeIn(maxWidth = 500.dp)
@@ -1112,9 +1135,10 @@ fun Grades(
                                                     sharedContentState = sharedContentState,
                                                     animatedVisibilityScope = this@AnimatedContent,
                                                     boundsTransform = { _, _ ->
-                                                        spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
+                                                        spring(0.65f, Spring.StiffnessMediumLow)
                                                     },
-                                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
+                                                    resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(ContentScale.Fit),
+                                                    renderInOverlayDuringTransition = !isScreenExiting,
                                                 ).then(backHandlingModifier)
                                                 .padding(horizontal = 12.dp)
                                                 .sizeIn(maxWidth = 600.dp)

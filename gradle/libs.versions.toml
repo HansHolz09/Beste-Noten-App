@@ -15,7 +15,7 @@ composeMultiplatform = "1.11.1"
 emoji = "2.5.0"
 filekit = "0.14.2"
 fragment = "1.8.9"
-haze = "2.0.0-alpha03"
+haze = "2.0.1-20260731.153429-99" # TODO
 #noinspection NewerVersionAvailable
 koalaplotCore = "0.9.1"
 kotlin = "2.4.10"
@@ -68,7 +68,6 @@ confettikit = { module = "io.github.vinceglb:confettikit", version.ref = "confet
 emoji-compose-m3 = { module = "org.kodein.emoji:emoji-compose-m3", version.ref = "emoji" }
 filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekit" }
 foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
-haze = { module = "dev.chrisbanes.haze:haze", version.ref = "haze" }
 haze-blur = { module = "dev.chrisbanes.haze:haze-blur", version.ref = "haze" }
 material-symbols-rounded = { module = "com.composables:icons-material-symbols-rounded-cmp", version.ref = "composeIcons" }
 koalaplot-core = { module = "io.github.koalaplot:koalaplot-core", version.ref = "koalaplotCore" }

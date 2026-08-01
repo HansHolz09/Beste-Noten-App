@@ -116,7 +116,6 @@ kotlin {
             implementation(libs.aboutlibraries.compose.m3)
             implementation(libs.koalaplot.core)
             implementation(libs.jetlime)
-            implementation(libs.haze)
             implementation(libs.haze.blur)
             implementation(libs.material.kolor)
             implementation(libs.platformtools.darkmodedetector)

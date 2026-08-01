@@ -2,6 +2,9 @@ package com.hansholz.bestenotenapp.screens.timetable
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.EnterExitState
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
@@ -61,6 +64,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
@@ -76,6 +80,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -371,19 +376,34 @@ fun Timetable(
                             Modifier
                         }
 
+                    val isScreenExiting by remember {
+                        derivedStateOf { animatedVisibilityScope.transition.targetState == EnterExitState.PostExit }
+                    }
+                    LaunchedEffect(isScreenExiting) {
+                        if (isScreenExiting && timetableViewModel.toolbarState != 0) {
+                            timetableViewModel.toolbarState = 0
+                            timetableViewModel.contentBlurred = false
+                            timetableViewModel.userScrollEnabled = true
+                            isBackInProgress = false
+                            backProgress = 0f
+                        }
+                    }
+
                     AnimatedContent(
                         targetState = timetableViewModel.toolbarState,
                         modifier = Modifier.padding(top = topPadding + 24.dp + innerPadding.calculateBottomPadding()),
                         contentAlignment = Alignment.BottomCenter,
                         transitionSpec = {
-                            fadeIn(animationSpec = tween(250)) togetherWith
-                                fadeOut(animationSpec = tween(250)) using
-                                SizeTransform(
-                                    clip = false,
-                                    sizeAnimationSpec = { _, _ ->
-                                        spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
-                                    },
-                                )
+                            if (isScreenExiting) {
+                                EnterTransition.None togetherWith ExitTransition.None
+                            } else {
+                                fadeIn(animationSpec = tween(250)) togetherWith
+                                    fadeOut(animationSpec = tween(250)) using
+                                    SizeTransform(
+                                        clip = false,
+                                        sizeAnimationSpec = { _, _ -> spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow) },
+                                    )
+                            }
                         },
                     ) { targetState ->
                         when (targetState) {
@@ -402,10 +422,10 @@ fun Timetable(
                                                     sharedContentState = sharedContentState,
                                                     animatedVisibilityScope = this@AnimatedContent,
                                                     boundsTransform = { _, _ ->
-                                                        spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
+                                                        spring(Spring.DampingRatioNoBouncy, Spring.StiffnessMediumLow)
                                                     },
-                                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
-                                                    renderInOverlayDuringTransition = false,
+                                                    resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(ContentScale.Fit),
+                                                    renderInOverlayDuringTransition = !isScreenExiting,
                                                 ).clip(FloatingToolbarDefaults.ContainerShape)
                                                 .enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer),
                                         colors = FloatingToolbarDefaults.standardFloatingToolbarColors(Color.Transparent),
@@ -570,9 +590,10 @@ fun Timetable(
                                                     sharedContentState = sharedContentState,
                                                     animatedVisibilityScope = this@AnimatedContent,
                                                     boundsTransform = { _, _ ->
-                                                        spring(Spring.DampingRatioLowBouncy, Spring.StiffnessMediumLow)
+                                                        spring(0.65f, Spring.StiffnessMediumLow)
                                                     },
-                                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
+                                                    resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(ContentScale.Fit),
+                                                    renderInOverlayDuringTransition = !isScreenExiting,
                                                 ).then(backHandlingModifier)
                                                 .padding(horizontal = 12.dp)
                                                 .sizeIn(maxWidth = 500.dp)

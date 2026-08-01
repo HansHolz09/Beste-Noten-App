@@ -25,6 +25,7 @@ class GradesViewModel(
 
     var userScrollEnabled by mutableStateOf(true)
     var contentBlurred by mutableStateOf(false)
+    var toolbarExpansionLocked by mutableStateOf(false)
 
     var toolbarState by mutableStateOf(0)
     var analyzeYears by mutableStateOf(false)
@@ -66,8 +67,11 @@ class GradesViewModel(
         viewModelScope.launch {
             toolbarState = 0
             contentBlurred = false
+            toolbarExpansionLocked = true
             delay(250.milliseconds)
             if (toolbarState == 0) userScrollEnabled = true
+            delay(750.milliseconds)
+            toolbarExpansionLocked = false
         }
     }
 

@@ -1,12 +1,13 @@
 package com.hansholz.bestenotenapp.screens.timetable
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.BoundsTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.Transition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
@@ -27,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.SubcomposeLayout
@@ -59,7 +61,6 @@ fun DailyScheduleLayout(
     sharedTransitionScope: SharedTransitionScope,
     selectedLesson: JournalLesson?,
     popupTransition: Transition<Boolean>,
-    popupBoundsTransform: BoundsTransform,
     homeworkLessonIds: Set<String> = emptySet(),
     doneHomeworkLessonIds: Set<String> = emptySet(),
     onLessonPopupOpened: (JournalLesson) -> Unit,
@@ -202,8 +203,10 @@ fun DailyScheduleLayout(
                                                     animatedVisibilityScope = this@AnimatedVisibility,
                                                     enter = fadeIn(initialAlpha = if (selectedLesson == lesson) 0f else 1f),
                                                     exit = fadeOut(targetAlpha = if (selectedLesson == lesson) 0f else 1f),
-                                                    boundsTransform = popupBoundsTransform,
-                                                    resizeMode = SharedTransitionScope.ResizeMode.RemeasureToBounds,
+                                                    boundsTransform = { _, _ ->
+                                                        spring(0.8f, Spring.StiffnessMediumLow)
+                                                    },
+                                                    resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(ContentScale.Fit),
                                                     renderInOverlayDuringTransition = selectedLesson == lesson,
                                                 ),
                                         shape = RoundedCornerShape(18.dp),

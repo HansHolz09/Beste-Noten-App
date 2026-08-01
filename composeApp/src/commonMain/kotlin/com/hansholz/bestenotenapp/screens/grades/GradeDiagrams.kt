@@ -56,7 +56,7 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.utils.normalizeGrade
-import dev.chrisbanes.haze.blur.HazeProgressive
+import dev.chrisbanes.haze.HazeProgressive
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import io.github.koalaplot.core.ChartLayout
@@ -90,10 +90,8 @@ import io.github.koalaplot.core.xygraph.DefaultPoint
 import io.github.koalaplot.core.xygraph.FloatLinearAxisModel
 import io.github.koalaplot.core.xygraph.Point
 import io.github.koalaplot.core.xygraph.XYGraph
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.ceil
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalKoalaPlotApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -163,10 +161,9 @@ fun GradeDiagrams(
         }
 
         KoalaPlotTheme(animationSpec = if (LocalAnimationsEnabled.current.value) spring(2f) else snap()) {
-            EnhancedAnimatedContent(gradesViewModel.analyzeYears) { analyzeYears ->
+            EnhancedAnimatedContent(gradesViewModel.analyzeYears, Modifier.hazeSource(hazeState)) { analyzeYears ->
                 if (!analyzeYears) {
                     LazyColumn(
-                        modifier = Modifier.hazeSource(hazeState),
                         state = firstLazyListState,
                         contentPadding = PaddingValues(top = gradesViewModel.titleHeight, bottom = gradesViewModel.closeBarHeight),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -385,7 +382,6 @@ fun GradeDiagrams(
 
                                 @Suppress("UNCHECKED_CAST")
                                 LazyColumn(
-                                    modifier = Modifier.hazeSource(hazeState),
                                     state = secondLazyListState,
                                     contentPadding = PaddingValues(top = gradesViewModel.titleHeight, bottom = gradesViewModel.closeBarHeight),
                                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -619,8 +615,8 @@ fun GradeDiagrams(
                 .padding(bottom = gradesViewModel.closeBarHeight)
                 .align(Alignment.TopCenter)
                 .enhancedHazeEffect(hazeState, colorScheme.surfaceContainerHighest) {
-                    if (!lazyListState.canScrollForward && !lazyListState.canScrollBackward) blurEnabled = false
-                    progressive = HazeProgressive.verticalGradient(startIntensity = 1f, endIntensity = 0f)
+                    if (!lazyListState.canScrollForward && !lazyListState.canScrollBackward) blurEnabled(false)
+                    progressive(HazeProgressive.verticalGradient(startIntensity = 1f, endIntensity = 0f))
                 }.onGloballyPositioned {
                     gradesViewModel.titleHeight = with(density) { it.size.height.toDp() }
                 },
@@ -725,20 +721,15 @@ fun GradeDiagrams(
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
                 .enhancedHazeEffect(hazeState, colorScheme.surfaceContainerHighest) {
-                    if (!lazyListState.canScrollForward && !lazyListState.canScrollBackward) blurEnabled = false
-                    progressive = HazeProgressive.verticalGradient()
+                    if (!lazyListState.canScrollForward && !lazyListState.canScrollBackward) blurEnabled(false)
+                    progressive(HazeProgressive.verticalGradient())
                 }.onGloballyPositioned {
                     gradesViewModel.closeBarHeight = with(density) { it.size.height.toDp() }
                 },
         ) {
             EnhancedButton(
                 onClick = {
-                    scope.launch {
-                        gradesViewModel.toolbarState = 0
-                        gradesViewModel.contentBlurred = false
-                        delay(250.milliseconds)
-                        if (gradesViewModel.toolbarState == 0) gradesViewModel.userScrollEnabled = true
-                    }
+                    gradesViewModel.closeToolbar()
                 },
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp).align(Alignment.CenterEnd),
             ) {
