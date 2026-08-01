@@ -2,6 +2,7 @@ package com.hansholz.bestenotenapp.data
 
 import bestenotenapp.composeApp.BuildConfig
 import com.hansholz.bestenotenapp.api.models.GradeCollection
+import com.hansholz.bestenotenapp.api.models.Level
 import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.screens.grades.GradeAverageCalculator
 import kotlinx.serialization.Serializable
@@ -15,6 +16,7 @@ data class ExportData(
     val appSettings: AppSettings? = null,
     val gradeWeights: GradeAverageCalculator.GradeWeightingStore? = null,
     val gradeYears: Pair<List<GradeCollection>, List<Year>>? = null,
+    val gradeLevels: Map<Int, Level>? = null,
 )
 
 @Serializable

@@ -38,6 +38,7 @@ import com.composables.icons.materialsymbols.rounded.Add
 import com.composables.icons.materialsymbols.rounded.Balance
 import com.composables.icons.materialsymbols.rounded.Remove
 import com.hansholz.bestenotenapp.api.models.GradeCollection
+import com.hansholz.bestenotenapp.api.models.Level
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedFilterChip
@@ -50,6 +51,7 @@ internal fun GradeWeightingDialog(
     visible: Boolean,
     subjectTitle: String,
     collections: List<GradeCollection>,
+    level: Level?,
     weighting: GradeAverageCalculator.SubjectWeightingConfig,
     useWeightingInsteadOfPercent: Boolean,
     onDismissRequest: () -> Unit,
@@ -60,11 +62,12 @@ internal fun GradeWeightingDialog(
     val gradeAverageCalculator = remember { GradeAverageCalculator() }
     val typeNames = remember(collections) { gradeAverageCalculator.subjectTypeNames(collections) }
     val averageResult =
-        remember(collections, weighting, useWeightingInsteadOfPercent) {
+        remember(collections, level, weighting, useWeightingInsteadOfPercent) {
             gradeAverageCalculator.calculateSubjectAverage(
                 collections = collections,
                 weighting = weighting,
                 useWeightingInsteadOfPercent = useWeightingInsteadOfPercent,
+                level = level,
             )
         }
 

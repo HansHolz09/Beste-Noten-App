@@ -50,6 +50,7 @@ object DemoDataGenerator {
         val gradeCollections: List<GradeCollection>,
         val timeTable: TimeTable,
         val level: Level,
+        val levelsByYear: Map<Int, Level>,
         val school: School,
         val user: User,
         val weekPlan: List<List<Subject>>,
@@ -193,8 +194,11 @@ object DemoDataGenerator {
                 .toLocalDateTime(TimeZone.currentSystemDefault())
                 .date
         val currentSchoolYearStart = if (now.month.number < 8) now.year - 1 else now.year
-        val numYears = Random.nextInt(3, 7)
-        val startGrade = Random.nextInt(4, 11 - numYears)
+        val isSecondaryTwoUser = Random.nextBoolean()
+        val currentGrade = if (isSecondaryTwoUser) Random.nextInt(11, 13) else Random.nextInt(7, 11)
+        val maxYears = minOf(6, currentGrade - 3)
+        val numYears = Random.nextInt(3, maxYears + 1)
+        val startGrade = currentGrade - numYears + 1
         val firstSchoolYearStart = currentSchoolYearStart - (numYears - 1)
         val years = mutableListOf<Year>()
         val subjects = mutableListOf<Subject>()
@@ -214,6 +218,7 @@ object DemoDataGenerator {
 
         for (i in 0 until numYears) {
             val grade = startGrade + i
+            val isSecondaryTwoYear = grade >= 11
             val startYear = firstSchoolYearStart + i
             val from = LocalDate(startYear, 8, 1)
             val to = LocalDate(startYear + 1, 7, 31)
@@ -258,28 +263,37 @@ object DemoDataGenerator {
                 val daysBetween = from.daysUntil(to)
                 val gradeDate = from.plus(Random.nextInt(daysBetween), DateTimeUnit.DAY)
                 val gradeValue =
-                    when (Random.nextInt(100)) {
-                        in 0..15 -> "1"
-                        in 16..45 -> "2"
-                        in 46..80 -> "3"
-                        in 81..92 -> "4"
-                        in 93..98 -> "5"
-                        else -> "6"
+                    if (isSecondaryTwoYear) {
+                        when (Random.nextInt(100)) {
+                            in 0..4 -> Random.nextInt(14, 16)
+                            in 5..19 -> Random.nextInt(11, 14)
+                            in 20..51 -> Random.nextInt(8, 11)
+                            in 52..79 -> Random.nextInt(5, 8)
+                            in 80..94 -> Random.nextInt(2, 5)
+                            else -> Random.nextInt(0, 2)
+                        }.toString()
+                    } else {
+                        when (Random.nextInt(100)) {
+                            in 0..15 -> "1"
+                            in 16..45 -> "2"
+                            in 46..80 -> "3"
+                            in 81..92 -> "4"
+                            in 93..98 -> "5"
+                            else -> "6"
+                        }
                     }
                 val gradeType = listOf("Klassenarbeit", "Test", "Mündlich", "Sonstige").random()
                 val conductor = Conductor(teacher!!.id!!, teacher.localId, teacher.forename, teacher.name)
                 val gradHistory = mutableListOf(History(0, "grade", 0, "Created", conductorType = "teacher", conductor = conductor))
                 if (Random.nextInt(15) == 0) {
-                    val boy =
-                        when (gradeValue) {
-                            "1" -> "Updated Value ('2' -> '1')"
-                            "2" -> "Updated Value ('3' -> '2')"
-                            "3" -> "Updated Value ('4' -> '3')"
-                            "4" -> "Updated Value ('5' -> '4')"
-                            "5" -> "Updated Value ('6' -> '5')"
-                            else -> "Updated Value ('5' -> '6')"
+                    val previousValue =
+                        if (isSecondaryTwoYear) {
+                            (gradeValue.toInt() - 1).coerceIn(0, 15).toString()
+                        } else {
+                            (gradeValue.toInt() + 1).coerceIn(1, 6).toString()
                         }
-                    gradHistory += History(0, "grade", 0, boy, conductorType = "teacher", conductor = conductor)
+                    val historyBody = "Updated Value ('$previousValue' -> '$gradeValue')"
+                    gradHistory += History(0, "grade", 0, historyBody, conductorType = "teacher", conductor = conductor)
                 }
 
                 gradeCollections.add(
@@ -395,12 +409,27 @@ object DemoDataGenerator {
                     )
                 }.sortedWith(compareBy({ it.weekday }, { it.lessonNr?.toIntOrNull() }))
 
-        val currentGrade = startGrade + numYears - 1
+        val levelsByYear =
+            years
+                .mapIndexed { index, year ->
+                    val grade = startGrade + index
+                    val isSecondaryTwoYear = grade >= 11
+                    year.id to
+                        Level(
+                            id = grade,
+                            name = grade.toString(),
+                            intervalType = if (isSecondaryTwoYear) "Sek 2" else "Sek 1",
+                            timeType = if (isSecondaryTwoYear) "Sek 2" else "Sek 1",
+                            bestGrade = if (isSecondaryTwoYear) 15 else 1,
+                            worstGrade = if (isSecondaryTwoYear) 0 else 6,
+                            intervals = intervalsByYear[year.id],
+                        )
+                }.toMap()
         val schoolTimes =
             TimeTableTime(
                 id = 1,
                 name = "Zeitplan",
-                type = "Sek 1",
+                type = if (isSecondaryTwoUser) "Sek 2" else "Sek 1",
                 validFrom = years.last().from,
                 validTo = years.last().to,
                 default = 1,
@@ -414,17 +443,7 @@ object DemoDataGenerator {
                         )
                     },
             )
-        val level =
-            Level(
-                id = currentGrade,
-                name = currentGrade.toString(),
-                intervalType = "Sek 1",
-                timeType = "lesson",
-                bestGrade = 1,
-                worstGrade = 6,
-                intervals = intervalsByYear[years.last().id],
-                times = listOf(schoolTimes),
-            )
+        val level = levelsByYear.getValue(years.last().id).copy(times = listOf(schoolTimes))
         val school =
             School(
                 id = 0,
@@ -464,6 +483,7 @@ object DemoDataGenerator {
             gradeCollections = gradeCollections,
             timeTable = timeTable,
             level = level,
+            levelsByYear = levelsByYear + (years.last().id to level),
             school = school,
             user = user,
             weekPlan = weekPlan,

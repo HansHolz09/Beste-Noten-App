@@ -132,6 +132,7 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.components.icons.MathAvg
 import com.hansholz.bestenotenapp.components.rememberLazyListScrollSpeedState
@@ -146,9 +147,11 @@ import com.hansholz.bestenotenapp.main.isApplePlatform
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
+import com.hansholz.bestenotenapp.utils.SecondaryStage
 import com.hansholz.bestenotenapp.utils.filterHistory
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.isScrollingUp
+import com.hansholz.bestenotenapp.utils.secondaryStage
 import com.hansholz.bestenotenapp.utils.translateHistoryBody
 import com.nomanr.animate.compose.presets.zoomingextrances.ZoomIn
 import dev.chrisbanes.haze.hazeSource
@@ -388,7 +391,7 @@ fun Grades(
                                                             }
                                                         },
                                                         leadingContent = {
-                                                            GradeValueBox(it.grades?.getOrNull(0)?.value)
+                                                            GradeValueBox(it.grades?.getOrNull(0)?.value, viewModel.levelFor(it))
                                                         },
                                                         colors = ListItemDefaults.colors(Color.Transparent),
                                                     )
@@ -418,7 +421,14 @@ fun Grades(
                                                         }
                                                         val subjectKey = remember(title, subjectItems) { gradeAverageCalculator.subjectWeightingKey(title, subjectItems) }
                                                         val averageText =
-                                                            remember(gradeAverageEnabled, subjectKey, subjectWeightings.toMap(), gradeAverageUseWeighting) {
+                                                            remember(
+                                                                gradeAverageEnabled,
+                                                                subjectKey,
+                                                                subjectItems,
+                                                                subjectWeightings.toMap(),
+                                                                gradeAverageUseWeighting,
+                                                                viewModel.levelsByYear.toMap(),
+                                                            ) {
                                                                 if (gradeAverageEnabled) {
                                                                     val typeNames = gradeAverageCalculator.subjectTypeNames(subjectItems)
                                                                     val subjectWeighting =
@@ -433,6 +443,7 @@ fun Grades(
                                                                             collections = subjectItems,
                                                                             weighting = subjectWeighting,
                                                                             useWeightingInsteadOfPercent = gradeAverageUseWeighting,
+                                                                            level = subjectItems.firstNotNullOfOrNull { viewModel.levelFor(it) },
                                                                         ),
                                                                     )
                                                                 } else {
@@ -572,7 +583,7 @@ fun Grades(
                                                                 }
                                                             },
                                                             leadingContent = {
-                                                                GradeValueBox(it.grades?.getOrNull(0)?.value)
+                                                                GradeValueBox(it.grades?.getOrNull(0)?.value, viewModel.levelFor(it))
                                                             },
                                                             colors = ListItemDefaults.colors(Color.Transparent),
                                                             modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2),
@@ -782,6 +793,8 @@ fun Grades(
                                                                 if (viewModel.years.isNotEmpty()) {
                                                                     gradesViewModel.selectedYears.clear()
                                                                     gradesViewModel.selectedYears.add(viewModel.years.last())
+                                                                    gradesViewModel.selectedSecondaryStage =
+                                                                        viewModel.levelsByYear[viewModel.years.last().id]?.secondaryStage()
                                                                 }
                                                             }
                                                             if (viewModel.gradeCollections.isEmpty()) navigateBack()
@@ -956,29 +969,66 @@ fun Grades(
                                             style = typography.headlineSmall,
                                         )
                                         ProvideTextStyle(LocalTextStyle.current.copy(colorScheme.onPrimaryContainer)) {
-                                            LazyColumn(
-                                                verticalArrangement = Arrangement.spacedBy(8.dp),
-                                            ) {
-                                                items(viewModel.years) { year ->
-                                                    Row(
-                                                        modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-                                                        verticalAlignment = Alignment.CenterVertically,
-                                                    ) {
-                                                        EnhancedCheckbox(
-                                                            checked = gradesViewModel.selectedYears.contains(year),
-                                                            onCheckedChange = {
-                                                                if (gradesViewModel.selectedYears.contains(year)) {
-                                                                    gradesViewModel.selectedYears.remove(year)
-                                                                } else {
-                                                                    gradesViewModel.selectedYears.add(year)
-                                                                }
+                                            val availableStages =
+                                                viewModel.years
+                                                    .mapNotNull { viewModel.levelsByYear[it.id]?.secondaryStage() }
+                                                    .distinct()
+                                            val selectedStage =
+                                                gradesViewModel.selectedSecondaryStage
+                                                    ?.takeIf { it in availableStages }
+                                                    ?: availableStages.lastOrNull()
+                                            if (availableStages.size > 1) {
+                                                PrimaryTabRow(
+                                                    selectedTabIndex = availableStages.indexOf(selectedStage),
+                                                    containerColor = Color.Transparent,
+                                                    divider = {},
+                                                ) {
+                                                    availableStages.forEach { stage ->
+                                                        Tab(
+                                                            selected = selectedStage == stage,
+                                                            text = { Text(if (stage == SecondaryStage.ONE) "Sek. 1" else "Sek. 2") },
+                                                            onClick = {
+                                                                gradesViewModel.selectedSecondaryStage = stage
+                                                                gradesViewModel.selectedYears.clear()
+                                                                viewModel.years
+                                                                    .lastOrNull { viewModel.levelsByYear[it.id]?.secondaryStage() == stage }
+                                                                    ?.let { gradesViewModel.selectedYears.add(it) }
+                                                                vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                                             },
-                                                            enabled = !gradesViewModel.isLoading,
+                                                            modifier = Modifier.clip(RoundedCornerShape(8.dp)),
                                                         )
-                                                        Text(
-                                                            text = "${year.name} (${formateDate(year.from)} - ${formateDate(year.to)})",
-                                                            style = typography.bodyLarge,
-                                                        )
+                                                    }
+                                                }
+                                            }
+                                            EnhancedAnimatedContent(selectedStage) { stage ->
+                                                LazyColumn(
+                                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                                ) {
+                                                    items(
+                                                        viewModel.years.filter {
+                                                            viewModel.levelsByYear[it.id]?.secondaryStage() == stage
+                                                        },
+                                                    ) { year ->
+                                                        Row(
+                                                            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
+                                                            verticalAlignment = Alignment.CenterVertically,
+                                                        ) {
+                                                            EnhancedCheckbox(
+                                                                checked = gradesViewModel.selectedYears.contains(year),
+                                                                onCheckedChange = {
+                                                                    if (gradesViewModel.selectedYears.contains(year)) {
+                                                                        gradesViewModel.selectedYears.remove(year)
+                                                                    } else {
+                                                                        gradesViewModel.selectedYears.add(year)
+                                                                    }
+                                                                },
+                                                                enabled = !gradesViewModel.isLoading,
+                                                            )
+                                                            Text(
+                                                                text = "${year.name} (${formateDate(year.from)} - ${formateDate(year.to)})",
+                                                                style = typography.bodyLarge,
+                                                            )
+                                                        }
                                                     }
                                                 }
                                             }
@@ -1173,6 +1223,7 @@ fun Grades(
                 visible = weightingDialogVisible && gradeAverageEnabled,
                 subjectTitle = dialogState.subjectTitle,
                 collections = dialogState.subjectCollections,
+                level = dialogState.subjectCollections.firstNotNullOfOrNull { viewModel.levelFor(it) },
                 weighting = currentWeighting,
                 useWeightingInsteadOfPercent = gradeAverageUseWeighting,
                 onDismissRequest = {

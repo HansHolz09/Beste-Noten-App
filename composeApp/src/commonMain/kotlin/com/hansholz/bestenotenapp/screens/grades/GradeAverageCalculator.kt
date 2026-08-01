@@ -1,7 +1,12 @@
 package com.hansholz.bestenotenapp.screens.grades
 
 import com.hansholz.bestenotenapp.api.models.GradeCollection
+import com.hansholz.bestenotenapp.api.models.Level
 import com.hansholz.bestenotenapp.security.kSafeProvider
+import com.hansholz.bestenotenapp.utils.SecondaryStage
+import com.hansholz.bestenotenapp.utils.gradeScale
+import com.hansholz.bestenotenapp.utils.parseGradeValue
+import com.hansholz.bestenotenapp.utils.secondaryStage
 import eu.anifantakis.lib.ksafe.KSafe
 import kotlinx.serialization.Serializable
 import kotlin.math.abs
@@ -66,18 +71,23 @@ class GradeAverageCalculator {
         val hasError: Boolean,
         val weightsSum: Int,
         val ignoreWeightingValidation: Boolean,
+        val secondaryStage: SecondaryStage?,
     )
 
     fun calculateSubjectAverage(
         collections: List<GradeCollection>,
         weighting: SubjectWeightingConfig,
         useWeightingInsteadOfPercent: Boolean,
+        level: Level? = null,
     ): SubjectAverageResult {
         data class CategoryAggregation(
-            var sum: Int = 0,
+            var sum: Float = 0f,
             var count: Int = 0,
             val weight: Int,
         )
+
+        val secondaryStage = level?.secondaryStage()
+        val gradeScale = level?.gradeScale()
 
         val aggregations =
             mutableMapOf(
@@ -86,7 +96,8 @@ class GradeAverageCalculator {
             )
 
         collections.forEach { collection ->
-            val grade = parseSecondaryOneGrade(collection.grades?.getOrNull(0)?.value) ?: return@forEach
+            val grade = parseGradeValue(collection.grades?.getOrNull(0)?.value) ?: return@forEach
+            if (gradeScale?.contains(grade) == false || (gradeScale == null && grade !in 1f..6f)) return@forEach
             val categoryId = if (weighting.categoryFor(collection.type) == CATEGORY_EXAM) CATEGORY_EXAM else CATEGORY_OTHER
             val aggregation = aggregations.getValue(categoryId)
             aggregation.sum += grade
@@ -100,13 +111,14 @@ class GradeAverageCalculator {
                 hasError = true,
                 weightsSum = 0,
                 ignoreWeightingValidation = true,
+                secondaryStage = secondaryStage,
             )
         }
 
         var weightedSum = 0f
         var weightsSum = 0
         activeCategories.forEach { category ->
-            weightedSum += category.weight * (category.sum.toFloat() / category.count.toFloat())
+            weightedSum += category.weight * (category.sum / category.count.toFloat())
             weightsSum += category.weight
         }
 
@@ -117,6 +129,7 @@ class GradeAverageCalculator {
                 hasError = true,
                 weightsSum = weightsSum,
                 ignoreWeightingValidation = ignoreWeightingValidation,
+                secondaryStage = secondaryStage,
             )
         }
 
@@ -129,6 +142,7 @@ class GradeAverageCalculator {
             hasError = hasError,
             weightsSum = weightsSum,
             ignoreWeightingValidation = ignoreWeightingValidation,
+            secondaryStage = secondaryStage,
         )
     }
 
@@ -136,7 +150,11 @@ class GradeAverageCalculator {
         if (result.hasError || result.average == null || result.average.isNaN()) {
             return "∅ Fehler"
         }
-        return "∅ ${formatGermanDecimal(result.average)}"
+        return if (result.secondaryStage == SecondaryStage.TWO) {
+            "∅ ${formatPoints(result.average)} P. (Note ${secondaryTwoGrade(result.average)})"
+        } else {
+            "∅ ${formatGermanDecimal(result.average)}"
+        }
     }
 
     fun subjectWeightingKey(
@@ -245,18 +263,39 @@ class GradeAverageCalculator {
         }
     }
 
-    private fun parseSecondaryOneGrade(value: String?): Int? {
-        if (value.isNullOrBlank()) return null
-        val normalized = gradeRegex.find(value)?.value?.toIntOrNull() ?: return null
-        return normalized.takeIf { it in 1..6 }
-    }
-
     private fun formatGermanDecimal(value: Float): String {
         val scaled = (value * 100).roundToInt()
         val integerPart = scaled / 100
         val decimalPart = abs(scaled % 100).toString().padStart(2, '0')
         return "$integerPart,$decimalPart"
     }
+
+    private fun formatPoints(value: Float): String {
+        val scaled = (value * 10).roundToInt()
+        val integerPart = (scaled / 10).toString().padStart(2, '0')
+        val decimalPart = abs(scaled % 10)
+        return "$integerPart,$decimalPart"
+    }
+
+    private fun secondaryTwoGrade(value: Float): String =
+        when (value.toInt().coerceIn(0, 15)) {
+            15 -> "1+"
+            14 -> "1"
+            13 -> "1-"
+            12 -> "2+"
+            11 -> "2"
+            10 -> "2-"
+            9 -> "3+"
+            8 -> "3"
+            7 -> "3-"
+            6 -> "4+"
+            5 -> "4"
+            4 -> "4-"
+            3 -> "5+"
+            2 -> "5"
+            1 -> "5-"
+            else -> "6"
+        }
 
     private fun loadStore(kSafe: KSafe): GradeWeightingStore = kSafeProvider(kSafe) { get(WEIGHTING_STORAGE_KEY, GradeWeightingStore()) }
 
@@ -330,7 +369,6 @@ class GradeAverageCalculator {
         private const val MAX_WEIGHT = 100
         private const val WEIGHTING_STORAGE_KEY = "gradeWeightingData"
 
-        private val gradeRegex = Regex("\\d+")
         private val keyRegex = Regex("[^A-Za-z0-9_-]")
         private val examTypes = setOf("KL", "KLAUSUR", "KA", "KLASSENARBEIT", "K")
     }

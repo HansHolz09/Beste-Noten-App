@@ -21,36 +21,42 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Block
+import com.hansholz.bestenotenapp.api.models.Level
+import com.hansholz.bestenotenapp.utils.GradeScale
+import com.hansholz.bestenotenapp.utils.gradeScale
+import com.hansholz.bestenotenapp.utils.parseGradeValue
 import org.kodein.emoji.compose.m3.TextWithNotoImageEmoji
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun GradeValueBox(gradeValue: String?) {
+fun GradeValueBox(
+    gradeValue: String?,
+    level: Level? = null,
+) {
+    val value = parseGradeValue(gradeValue)
+    val scale = level?.gradeScale() ?: value?.let { if (it > 6f) GradeScale(15, 0) else GradeScale(1, 6) }
+    val quality = value?.takeIf { scale?.contains(it) == true }?.let { scale!!.quality(it) }
     val color =
-        when (gradeValue?.take(1)) {
-            "1" -> Color(0xFF4CAF50)
-            "2" -> Color(0xFF8BC34A)
-            "3" -> Color(0xFFCDDC39)
-            "4" -> Color(0xFFFFEB3B)
-            "5" -> Color(0xFFFF9800)
-            "6" -> Color(0xFFF44336)
-            else -> colorScheme.errorContainer
-        }
+        quality?.let {
+            if (it < 0.5f) {
+                lerp(Color(0xFFF44336), Color(0xFFFFEB3B), it * 2f)
+            } else {
+                lerp(Color(0xFFFFEB3B), Color(0xFF4CAF50), (it - 0.5f) * 2f)
+            }
+        } ?: colorScheme.errorContainer
+    val shapes = listOf(SoftBurst, Pill, Ghostish, Slanted, Gem, Cookie6Sided)
     val shape =
-        when (gradeValue?.take(1)) {
-            "1" -> SoftBurst
-            "2" -> Pill
-            "3" -> Ghostish
-            "4" -> Slanted
-            "5" -> Gem
-            "6" -> Cookie6Sided
-            else -> PixelCircle
-        }.toShape()
+        quality
+            ?.let { shapes[((1f - it) * shapes.lastIndex).roundToInt()] }
+            ?.toShape()
+            ?: PixelCircle.toShape()
     Box(Modifier.clip(shape).background(color).size(30.dp)) {
         gradeValue?.let {
             TextWithNotoImageEmoji(

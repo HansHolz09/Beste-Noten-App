@@ -8,6 +8,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hansholz.bestenotenapp.api.models.Year
+import com.hansholz.bestenotenapp.utils.SecondaryStage
+import com.hansholz.bestenotenapp.utils.secondaryStage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
@@ -19,6 +21,7 @@ class GradesViewModel(
     var isLoading by mutableStateOf(false)
     var searchQuery by mutableStateOf("")
     val selectedYears = mutableStateListOf<Year>()
+    var selectedSecondaryStage by mutableStateOf<SecondaryStage?>(null)
 
     var topPadding by mutableStateOf(0.dp)
     var toolbarPadding by mutableStateOf(0.dp)
@@ -94,6 +97,7 @@ class GradesViewModel(
                 }
                 selectedYears.clear()
                 selectedYears.add(currentYear)
+                selectedSecondaryStage = viewModel.levelsByYear[currentYear.id]?.secondaryStage()
             }
             isLoading = false
         }

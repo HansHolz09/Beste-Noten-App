@@ -7,7 +7,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -42,17 +41,15 @@ fun AccountSchoolDialog(
         icon = { Icon(MaterialSymbols.Rounded.Apartment, null) },
         title = { Text("Account- und Schuldaten") },
         text = {
-            val user = remember { viewModel.user.value }
+            val user = viewModel.user.value
             val student =
-                remember {
-                    viewModel.user.value
-                        ?.students
-                        ?.find { it.id.toString() == viewModel.studentId.value }
-                }
-            val level = remember { viewModel.level.value }
-            val school = remember { viewModel.user.value?.school }
-            val schoolAdress = remember { "${school?.street} ${school?.streetNr} ${school?.city}" }
-            val times = remember { school?.times?.getOrNull(0) }
+                viewModel.user.value
+                    ?.students
+                    ?.find { it.id.toString() == viewModel.studentId.value }
+            val level = viewModel.level.value
+            val school = viewModel.user.value?.school
+            val schoolAdress = "${school?.street} ${school?.streetNr} ${school?.city}"
+            val times = school?.times?.getOrNull(0)
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 Text(
                     text =

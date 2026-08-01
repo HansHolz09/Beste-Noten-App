@@ -105,6 +105,10 @@ class SettingsViewModel : ViewModel() {
                     } else {
                         null
                     }
+                val gradeLevelsData =
+                    gradeYears
+                        ?.mapNotNull { year -> viewModel.levelsByYear[year.id]?.let { year.id to it } }
+                        ?.toMap()
 
                 val date =
                     Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date.let {
@@ -118,6 +122,7 @@ class SettingsViewModel : ViewModel() {
                         appSettings = appSettingsData,
                         gradeWeights = gradeWeightsData,
                         gradeYears = gradeYearsData,
+                        gradeLevels = gradeLevelsData,
                     )
                 FileKit.saveOrDownloadBytes(
                     bytes = json.encodeToString(exportDate).toByteArray(),

@@ -4,6 +4,7 @@ import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -46,6 +47,7 @@ import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.hansholz.bestenotenapp.utils.IO
 import com.hansholz.bestenotenapp.utils.defaultFileKitDialogSettings
+import com.hansholz.bestenotenapp.utils.parseGradeValue
 import com.hansholz.bestenotenapp.utils.weekOfYear
 import dev.chrisbanes.haze.HazeState
 import io.github.vinceglb.filekit.FileKit
@@ -130,6 +132,7 @@ class ViewModel(
 
     val user = mutableStateOf<User?>(null)
     val level = mutableStateOf<Level?>(null)
+    val levelsByYear = mutableStateMapOf<Int, Level>()
     val currentJournalDay = mutableStateOf<JournalDay?>(null)
     val journalWeeks = mutableStateListOf<Pair<String, JournalWeek>>()
     val currentTimetable = mutableStateOf<TimeTable?>(null)
@@ -428,6 +431,7 @@ class ViewModel(
                         GradeNotifications.onLogin()
                     }
                 }
+                loadCurrentLevel()
                 writeBesteSchuleCache("user", user)
                 setCurrentYear()
                 if (stayLoggedIn) {
@@ -477,6 +481,7 @@ class ViewModel(
             demoTotalLessonStudentCount = data.totalLessonStudentCount
             demoTotalLessonStudentBySlot = data.totalLessonStudentBySlot
             level.value = data.level
+            levelsByYear.putAll(data.levelsByYear)
             user.value = data.user
             studentId.value = data.student.id.toString()
             isDemoAccount.value = true
@@ -513,8 +518,11 @@ class ViewModel(
                     }
                     gradeCollections.clear()
                     years.clear()
+                    levelsByYear.clear()
                     gradeCollections.addAll(data.gradeYears.first)
                     years.addAll(data.gradeYears.second)
+                    levelsByYear.putAll(data.gradeLevels ?: inferLevels(data.gradeYears.first, data.gradeYears.second))
+                    level.value = levelsByYear[years.lastOrNull()?.id]
                     allGradeCollectionsLoaded.value = true
                     onNavigateToGrades()
                 }
@@ -532,6 +540,8 @@ class ViewModel(
     fun clearOpenedGrades() {
         gradeCollections.clear()
         years.clear()
+        levelsByYear.clear()
+        level.value = null
         allGradeCollectionsLoaded.value = false
     }
 
@@ -567,9 +577,7 @@ class ViewModel(
         }
         if (!authToken.value.isNullOrEmpty()) {
             user.value = loadBesteSchuleData("user") { api.userMe().data }
-            user.value?.students?.find { it.id.toString() == studentId.value }?.metaGroups?.getOrNull(0)?.id?.let {
-                level.value = loadBesteSchuleData("level_$it") { api.groupsShow(it, listOf("level")).data.level }
-            }
+            loadCurrentLevel()
         }
         return user.value
     }
@@ -578,8 +586,84 @@ class ViewModel(
         if (isDemoAccount.value) {
             return years.toList()
         }
-        return loadBesteSchuleData("years") { api.yearIndex().data }
+        return loadBesteSchuleData<List<Year>>("years") { api.yearIndex().data }?.also { loadLevels(it) }
     }
+
+    fun levelFor(collection: GradeCollection): Level? = collection.interval?.yearId?.let { levelsByYear[it] } ?: if (collection.interval == null) level.value else null
+
+    private suspend fun loadLevels(years: List<Year>) {
+        if (years.isEmpty()) return
+        val yearIds = years.map { it.id }.sorted()
+        val groups =
+            loadBesteSchuleData("meta_groups_${yearIds.joinToString("-")}") {
+                api
+                    .groupsIndex(
+                        filterMeta = true,
+                        filterYear = yearIds.joinToString(","),
+                    ).data
+            } ?: return
+        val yearGroups =
+            years
+                .filter { it.id !in levelsByYear }
+                .mapNotNull { year ->
+                    groups
+                        .firstOrNull { group -> group.yearId == year.id }
+                        ?.let { year.id to it.id }
+                }
+        coroutineScope {
+            yearGroups
+                .map { (yearId, groupId) -> async { yearId to loadLevel(groupId, yearId) } }
+                .awaitAll()
+                .forEach { (yearId, loadedLevel) -> loadedLevel?.let { levelsByYear[yearId] = it } }
+        }
+    }
+
+    private suspend fun loadCurrentLevel() {
+        val currentYear = user.value?.year
+        val currentYearId = user.value?.config?.yearId ?: currentYear?.id
+        user.value
+            ?.students
+            ?.find { it.id.toString() == studentId.value }
+            ?.metaGroups
+            ?.let { groups -> groups.firstOrNull { it.yearId == currentYearId } ?: groups.lastOrNull() }
+            ?.let { group ->
+                loadLevel(group.id)?.let {
+                    currentYearId?.let { yearId -> levelsByYear[yearId] = it }
+                    level.value = it
+                }
+            }
+    }
+
+    private suspend fun loadLevel(
+        groupId: Int,
+        yearId: Int? = null,
+    ): Level? =
+        loadBesteSchuleData("level_$groupId") {
+            api.groupsShow(groupId, listOf("level"), yearId).data.level
+        }
+
+    private fun inferLevels(
+        collections: List<GradeCollection>,
+        years: List<Year>,
+    ): Map<Int, Level> =
+        years.associate { year ->
+            val isSecondaryTwo =
+                collections
+                    .asSequence()
+                    .filter { it.interval?.yearId == year.id }
+                    .flatMap { it.grades.orEmpty().asSequence() }
+                    .mapNotNull { parseGradeValue(it.value) }
+                    .any { it == 0f || it > 6f }
+            year.id to
+                Level(
+                    id = year.id,
+                    name = year.name,
+                    intervalType = if (isSecondaryTwo) "Sek 2" else "Sek 1",
+                    timeType = if (isSecondaryTwo) "Sek 2" else "Sek 1",
+                    bestGrade = if (isSecondaryTwo) 15 else 1,
+                    worstGrade = if (isSecondaryTwo) 0 else 6,
+                )
+        }
 
     suspend fun getIntervals(): List<Interval>? {
         if (isDemoAccount.value) {
@@ -643,6 +727,7 @@ class ViewModel(
                 gradeCollections.filter { it.interval?.yearId in filterYearIds || it.intervalId in filterYearIds }
             }
         }
+        filterYears?.let { loadLevels(it) }
         return loadBesteSchuleData(
             "collections_${filterYears.orEmpty().map { it.id }.sorted().joinToString("-").ifBlank { "all" }}",
         ) {
@@ -846,6 +931,7 @@ class ViewModel(
         teachersAndSubjects.clear()
         currentJournalDay.value = null
         level.value = null
+        levelsByYear.clear()
         intervals.clear()
         dayStudentCount.value = null
         lessonStudentCount.value = null

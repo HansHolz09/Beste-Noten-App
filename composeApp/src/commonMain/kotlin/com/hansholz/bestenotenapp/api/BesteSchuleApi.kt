@@ -894,6 +894,7 @@ class BesteSchuleApi(
 
     /** Access: Any role */
     suspend fun groupsIndex(
+        filterMeta: Boolean? = null,
         filterGroup: String? = null,
         filterStudent: String? = null,
         filterGuardian: String? = null,
@@ -906,6 +907,7 @@ class BesteSchuleApi(
     ): ListDataWrapper<Group> =
         client
             .get("$baseUrl/groups") {
+                filterMeta?.let { parameter("filter[meta]", it) }
                 parameter("filter[group]", filterGroup)
                 parameter("filter[student]", filterStudent)
                 parameter("filter[guardian]", filterGuardian)
@@ -935,10 +937,12 @@ class BesteSchuleApi(
     suspend fun groupsShow(
         group: Int,
         include: List<String>? = null,
+        filterYear: Int? = null,
     ): DataWrapper<Group> =
         client
             .get("$baseUrl/groups/$group") {
                 parameter("include", include?.joinToString(","))
+                filterYear?.let { parameter("filter[year]", it) }
             }.body()
 
     /** Access: Any role */

@@ -55,7 +55,11 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
+import com.hansholz.bestenotenapp.utils.SecondaryStage
+import com.hansholz.bestenotenapp.utils.gradeScale
 import com.hansholz.bestenotenapp.utils.normalizeGrade
+import com.hansholz.bestenotenapp.utils.parseGradeValue
+import com.hansholz.bestenotenapp.utils.secondaryStage
 import dev.chrisbanes.haze.HazeProgressive
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -122,12 +126,8 @@ fun GradeDiagrams(
                     .distinctBy { it.id }
                     .filter { it.interval?.yearId in selectedYearIds }
                     .filter {
-                        !it.grades.isNullOrEmpty() &&
-                            it.grades
-                                .firstOrNull()
-                                ?.value
-                                ?.take(1)
-                                ?.toIntOrNull() != null
+                        val value = parseGradeValue(it.grades?.firstOrNull()?.value)
+                        value != null && viewModel.levelFor(it)?.gradeScale()?.contains(value) != false
                     }.toList()
             }
         }
@@ -137,6 +137,7 @@ fun GradeDiagrams(
                     .asSequence()
                     .distinctBy { it.id }
                     .filter { it.interval?.yearId != null && !it.grades.isNullOrEmpty() }
+                    .filter { viewModel.levelFor(it)?.secondaryStage() == SecondaryStage.ONE }
                     .toList()
             }
         }
@@ -171,18 +172,18 @@ fun GradeDiagrams(
                         item {
                             val grades =
                                 visibleFilteredGrades
-                                    .map {
-                                        it.grades!![0]
-                                            .value
-                                            .take(1)
-                                            .toIntOrNull() ?: 0
-                                    }.sorted()
+                                    .mapNotNull { parseGradeValue(it.grades?.firstOrNull()?.value)?.toInt() }
+                                    .sorted()
 
                             if (grades.isNotEmpty()) {
                                 val counts: Map<Int, Int> = grades.groupingBy { it }.eachCount()
 
-                                val minX = counts.keys.minOrNull()!!
-                                val maxX = counts.keys.maxOrNull()!!
+                                val selectedScale =
+                                    gradesViewModel.selectedYears.firstNotNullOfOrNull {
+                                        viewModel.levelsByYear[it.id]?.gradeScale()
+                                    }
+                                val minX = selectedScale?.min ?: counts.keys.minOrNull()!!
+                                val maxX = selectedScale?.max ?: counts.keys.maxOrNull()!!
 
                                 val completeGrades: List<Pair<Int, Int>> = (minX..maxX).map { x -> x to (counts[x] ?: 0) }
 
@@ -655,10 +656,14 @@ fun GradeDiagrams(
                             }
                         }
                     },
-                    enabled = !gradesViewModel.isLoading && viewModel.years.size > 1,
+                    enabled =
+                        !gradesViewModel.isLoading &&
+                            viewModel.levelsByYear.values.count { it.secondaryStage() == SecondaryStage.ONE } > 1,
                 )
                 Text(
-                    text = "Jahre analysieren/vergleichen",
+                    text =
+                        "Jahre analysieren/vergleichen" +
+                            if (viewModel.level.value?.secondaryStage() == SecondaryStage.TWO) " (Sek. 1)" else "",
                     style = typography.bodyLarge,
                 )
             }

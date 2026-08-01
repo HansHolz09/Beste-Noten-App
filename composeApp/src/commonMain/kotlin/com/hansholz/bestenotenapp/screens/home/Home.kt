@@ -417,7 +417,7 @@ fun Home(
                                                             }
                                                         },
                                                         leadingContent = {
-                                                            GradeValueBox(it.grades?.getOrNull(0)?.value)
+                                                            GradeValueBox(it.grades?.getOrNull(0)?.value, viewModel.levelFor(it))
                                                         },
                                                         colors = ListItemDefaults.colors(Color.Transparent),
                                                     )
