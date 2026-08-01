@@ -31,16 +31,24 @@ fun LazyListScope.settingsToggleItem(
     hapticsEnabled: Boolean = true,
 ) {
     item {
+        val vibrator = rememberVibrator()
         PreferenceItem(
             modifier = modifier.padding(horizontal = 16.dp),
             textModifier = textModifier,
             title = text,
             icon = icon,
-            onIconClick = onIconClick,
+            onIconClick =
+                if (onIconClick != null) {
+                    {
+                        onIconClick()
+                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                    }
+                } else {
+                    null
+                },
             enabled = enabled,
             position = position,
         ) {
-            val vibrator = rememberVibrator()
             Switch(
                 checked = checked,
                 onCheckedChange = {

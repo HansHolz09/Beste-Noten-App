@@ -845,7 +845,12 @@ fun Settings(
                 append("Erinnerungen werden nicht über diese App gesendet. ")
                 if (getPlatform() in listOf(Platform.ANDROID, Platform.IOS)) {
                     append("Um Benachrichtigungen für Hausaufgaben zu erhalten, bitte die ")
-                    withLink(LinkAnnotation.Clickable("open_google_calendar") { openGoogleCalendar() }) {
+                    withLink(
+                        LinkAnnotation.Clickable("open_google_calendar") {
+                            vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                            openGoogleCalendar()
+                        },
+                    ) {
                         append("Google-Kalender-App")
                     }
                     append(" mit dem verknüpften Google-Konto installiert haben und die Berechtigung für Benachrichtigungen gewähren.")
