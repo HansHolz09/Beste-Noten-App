@@ -93,6 +93,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -180,6 +181,7 @@ fun Grades(
         val vibrator = rememberVibrator()
         val density = LocalDensity.current
         val layoutDirection = LocalLayoutDirection.current
+        val softwareKeyboardController = LocalSoftwareKeyboardController.current
 
         val isCompactWindow =
             !currentWindowAdaptiveInfoV2()
@@ -896,6 +898,7 @@ fun Grades(
                                             )
                                             EnhancedIconButton(
                                                 onClick = {
+                                                    softwareKeyboardController?.hide()
                                                     gradesViewModel.searchQuery = ""
                                                     gradesViewModel.closeToolbar()
                                                 },
