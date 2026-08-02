@@ -15,6 +15,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.hansholz.bestenotenapp.main.AppHazeState
+import com.hansholz.bestenotenapp.main.Platform
+import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.ktx.animateColorScheme
@@ -43,7 +45,7 @@ internal fun AppTheme(
     val useCustomColorSchemeState = remember { mutableStateOf(get("useCustomColorScheme", false)) }
     val supportsCustomColorSchemeState = remember { mutableStateOf(false) }
     val animationsEnabledState = remember { mutableStateOf(get("animationsEnabled", true)) }
-    val blurEnabledState = remember { mutableStateOf(get("blurEnabled", HazeBlurDefaults.blurEnabled())) }
+    val blurEnabledState = remember { mutableStateOf(get("blurEnabled", HazeBlurDefaults.blurEnabled() && getPlatform() != Platform.WEB)) }
     CompositionLocalProvider(
         LocalUseSystemIsDark provides useSystemIsDark,
         LocalIsDark provides isDark,
