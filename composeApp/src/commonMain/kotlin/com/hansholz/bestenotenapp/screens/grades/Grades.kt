@@ -889,6 +889,7 @@ fun Grades(
                                         ) {
                                             val focusRequester = remember { FocusRequester() }
                                             LaunchedEffect(Unit) {
+                                                delay(500.milliseconds)
                                                 focusRequester.requestFocus()
                                             }
                                             EnhancedIconButton(
