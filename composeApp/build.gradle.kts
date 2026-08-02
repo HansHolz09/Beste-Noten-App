@@ -146,6 +146,7 @@ kotlin {
             implementation(libs.nucleus.aot.runtime)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.ktor.client.apache5)
+            implementation(libs.ktor.server.core)
             implementation(libs.materialyou)
             implementation(libs.advanced.menubar)
             implementation(libs.jbr.api)
