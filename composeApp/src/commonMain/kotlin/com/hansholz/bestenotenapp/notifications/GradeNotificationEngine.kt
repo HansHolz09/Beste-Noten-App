@@ -12,8 +12,12 @@ import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.security.kSafeProvider
 import io.ktor.client.plugins.ClientRequestException
 import kotlinx.coroutines.CancellationException
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlin.time.Clock
 
 internal enum class GradeNotificationOutcome {
     Success,
@@ -26,7 +30,12 @@ internal object GradeNotificationEngine {
     private val json = Json { ignoreUnknownKeys = true }
     private val kSafe = kSafe()
 
-    fun isEnabled(): Boolean = kSafeProvider(kSafe) { get("gradeNotificationsEnabled", false) } && listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())
+    fun isEnabled(): Boolean =
+        kSafeProvider(kSafe) { get("gradeNotificationsEnabled", false) } &&
+            listOf(
+                Platform.ANDROID,
+                Platform.IOS,
+            ).contains(getPlatform())
 
     fun getIntervalMinutes(): Long = kSafeProvider(kSafe) { get("gradeNotificationsIntervalMinutes", 60L) }
 
@@ -94,19 +103,32 @@ internal object GradeNotificationEngine {
         }
 
     private suspend fun fetchAllCollections(api: BesteSchuleApi): List<GradeCollection> {
+        val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+
         val includes = listOf("grades")
         val collections = mutableStateListOf<GradeCollection>()
 
         val collection = api.collectionsIndex(include = includes)
-        collections.addAll(collection.data)
+        collections.addAll(collection.data.filter { it.isCurrent(today) })
         if ((collection.meta?.lastPage ?: 0) > 1) {
             for (i in 2..(collection.meta?.lastPage ?: 0)) {
-                collections.addAll(api.collectionsIndex(include = includes, page = i).data)
+                collections.addAll(api.collectionsIndex(include = includes, page = i).data.filter { it.isCurrent(today) })
             }
         }
 
         return collections
     }
+
+    private fun GradeCollection.isCurrent(today: LocalDate): Boolean =
+        try {
+            interval?.let { interval ->
+                val fromDate = LocalDate.parse(interval.from)
+                val toDate = LocalDate.parse(interval.to)
+                today in fromDate..toDate
+            } ?: true
+        } catch (_: IllegalArgumentException) {
+            true
+        }
 
     private fun notifyNewGrades(entries: List<Pair<Grade, GradeCollection>>) {
         if (entries.isEmpty()) return
