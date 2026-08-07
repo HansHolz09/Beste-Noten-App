@@ -2340,7 +2340,7 @@ class BesteSchuleApi(
             }.body()
 
     /** Access: Any role */
-    suspend fun usersShow(id: Int? = null): DataWrapper<User> = client.get("$baseUrl/users/$id").body()
+    suspend fun usersShow(id: String? = null): DataWrapper<User> = client.get("$baseUrl/users/$id").body()
 
     /** Access: Any role */
     suspend fun usersUpdate(
