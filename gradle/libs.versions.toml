@@ -15,7 +15,7 @@ composeMultiplatform = "1.11.1"
 emoji = "2.5.0"
 filekit = "0.14.2"
 fragment = "1.8.9"
-haze = "2.0.1-20260731.153429-99" # TODO
+haze = "2.0.0-alpha04"
 #noinspection NewerVersionAvailable
 koalaplotCore = "0.9.1"
 kotlin = "2.4.10"
