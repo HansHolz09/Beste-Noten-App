@@ -2,9 +2,11 @@ package com.hansholz.bestenotenapp.utils
 
 import com.hansholz.bestenotenapp.api.models.Level
 
-enum class SecondaryStage {
-    ONE,
-    TWO,
+enum class SecondaryStage(
+    val value: Int,
+) {
+    ONE(1),
+    TWO(2),
 }
 
 data class GradeScale(
@@ -21,8 +23,9 @@ data class GradeScale(
 
 fun Level.secondaryStage(): SecondaryStage? =
     when {
-        timeType.contains("2") -> SecondaryStage.TWO
-        timeType.contains("1") -> SecondaryStage.ONE
+        intervalType.contains("2") -> SecondaryStage.TWO
+        intervalType.contains("11") -> SecondaryStage.TWO
+        intervalType.contains("1") -> SecondaryStage.ONE
         else -> null
     }
 

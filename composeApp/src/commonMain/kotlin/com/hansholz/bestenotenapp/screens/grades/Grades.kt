@@ -147,7 +147,6 @@ import com.hansholz.bestenotenapp.main.isApplePlatform
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
-import com.hansholz.bestenotenapp.utils.SecondaryStage
 import com.hansholz.bestenotenapp.utils.filterHistory
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.isScrollingUp
@@ -987,7 +986,7 @@ fun Grades(
                                                     availableStages.forEach { stage ->
                                                         Tab(
                                                             selected = selectedStage == stage,
-                                                            text = { Text(if (stage == SecondaryStage.ONE) "Sek. 1" else "Sek. 2") },
+                                                            text = { Text("Sek. ${stage.value}") },
                                                             onClick = {
                                                                 gradesViewModel.selectedSecondaryStage = stage
                                                                 gradesViewModel.selectedYears.clear()

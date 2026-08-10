@@ -21,6 +21,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.utils.secondaryStage
 import components.dialogs.EnhancedAlertDialog
 import io.ktor.http.encodeURLParameter
 import top.ltfan.multihaptic.compose.rememberVibrator
@@ -102,7 +103,7 @@ fun AccountSchoolDialog(
                                 append("• Name: ${student.forename} ${student.name}\n")
                             }
                             if (level != null) {
-                                append("• Klassenstufe: ${level.name} (${level.intervalType})\n")
+                                append("• Klassenstufe: ${level.name} (Sek. ${level.secondaryStage()?.value})\n")
                             }
                             if (student?.gender != null) {
                                 append(
