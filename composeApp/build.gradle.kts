@@ -1,8 +1,11 @@
 
 import com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
 import com.mikepenz.aboutlibraries.plugin.DuplicateRule.GROUP
-import io.github.kdroidfilter.nucleus.desktop.application.dsl.CompressionLevel
-import io.github.kdroidfilter.nucleus.desktop.application.dsl.TargetFormat
+import dev.nucleusframework.desktop.application.dsl.CompressionLevel
+import dev.nucleusframework.desktop.application.dsl.GraalvmDistribution
+import dev.nucleusframework.desktop.application.dsl.NativeImageMarch
+import dev.nucleusframework.desktop.application.dsl.NativeImageOptimization
+import dev.nucleusframework.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -143,13 +146,15 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.nucleus.core.runtime)
-            implementation(libs.nucleus.aot.runtime)
-            implementation(libs.kotlinx.coroutinesSwing)
+            implementation(libs.nucleus.graalvm.runtime)
+            implementation(libs.nucleus.decorated.window.tao)
+            implementation(libs.advanced.menubar)
+            implementation(libs.navigation.event)
+            implementation(libs.navigation.event.compose)
             implementation(libs.ktor.client.apache5)
             implementation(libs.ktor.server.core)
             implementation(libs.materialyou)
-            implementation(libs.advanced.menubar)
-            implementation(libs.jbr.api)
+            compileOnly(libs.graalvm.svm)
         }
         wasmJsMain.dependencies {
             implementation(libs.ktor.client.js)
@@ -174,11 +179,15 @@ nucleus.application {
 
         appResourcesRootDir = layout.projectDirectory.dir("src/desktopMain/assets")
         splashImage = "splash.png"
+
         jvmArgs += "--enable-native-access=ALL-UNNAMED"
+        if (System.getProperty("os.name").startsWith("Mac")) {
+            jvmArgs += "-XstartOnFirstThread"
+        }
 
         modules += "jdk.unsupported"
 
-        compressionLevel = CompressionLevel.Maximum
+        compressionLevel = CompressionLevel.Ultra
         cleanupNativeLibs = true
         enableAotCache = true
 
@@ -214,11 +223,8 @@ nucleus.application {
         }
 
         macOS {
-            iconFile = project.file("src/desktopMain/icons/icon.icns")
-            val layeredIcons = layout.projectDirectory.dir("src/desktopMain/icons/macos-layered-icon/Beste-Noten-App.icon")
-            if (layeredIcons.asFile.exists()) {
-                layeredIconDir.set(layeredIcons)
-            }
+            iconFile.set(project.file("src/desktopMain/icons/icon.icns"))
+            layeredIconDir.set(layout.projectDirectory.dir("src/desktopMain/icons/icon.icon"))
             dockName = appName
             packageBuildVersion = libs.versions.appVersionCode.get()
             minimumSystemVersion =
@@ -227,7 +233,6 @@ nucleus.application {
             macOsSdkVersion =
                 libs.versions.macos.targetSdk
                     .get()
-            jvmArgs += "-Dapple.awt.application.appearance=system"
             infoPlist {
                 extraKeysRawXml =
                     """
@@ -236,8 +241,6 @@ nucleus.application {
                         <string>de</string>
                         <string>en</string>
                     </array>
-                    <key>CFBundleIconName</key>
-                    <string>Beste-Noten-App</string>
                     """.trimIndent()
             }
 
@@ -255,6 +258,35 @@ nucleus.application {
         obfuscate = true
         optimize = true
         configurationFiles.from(project.file("src/desktopMain/compose-desktop.pro"))
+    }
+
+    graalvm {
+        isEnabled = true
+        imageName = libs.versions.appName.get()
+        march = NativeImageMarch.COMPATIBILITY
+        allCharsets = true
+        autoIncludeResources = false
+        optimization = NativeImageOptimization.SIZE
+        toolchain {
+            distribution = GraalvmDistribution.ORACLE
+        }
+        windows {
+            bundleCRuntime = true
+        }
+        pgo {
+            enabled = true
+            profile = project.file("src/desktopMain/native-image-resources/pgo.iprof")
+        }
+        nativeImageConfigBaseDir.set(
+            layout.projectDirectory.dir("src/desktopMain/native-image-resources"),
+        )
+        buildArgs.addAll(
+            "-H:IncludeLocales=de,en",
+            "-H:-IncludeMethodData",
+            "-H:+RemoveUnusedSymbols",
+            "-H:-IncludeDebugHelperMethods",
+            "--enable-url-protocols=https",
+        )
     }
 }
 

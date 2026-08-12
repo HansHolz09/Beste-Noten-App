@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInput
-import dev.chrisbanes.haze.HazeSampling
+import dev.chrisbanes.haze.HazePerformanceMode
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.blur.HazeBlurStyle
 import dev.chrisbanes.haze.blur.HazeBlurStyleScope
@@ -41,7 +41,7 @@ fun Modifier.enhancedHazeEffect(
                         noiseFactor(0f)
                         block?.invoke(this)
                     },
-                sampling = HazeSampling.Adaptive,
+                performanceMode = HazePerformanceMode.Balanced,
             )
         }
 

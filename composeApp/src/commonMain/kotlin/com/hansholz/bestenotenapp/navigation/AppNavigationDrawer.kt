@@ -46,7 +46,6 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.theme.FontFamilies
-import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
 import com.nomanr.animate.compose.animated.rememberAnimatedState
 import com.nomanr.animate.compose.presets.attentionseekers.Jello
 import com.nomanr.animate.compose.presets.attentionseekers.RubberBand
@@ -78,7 +77,7 @@ fun AppNavigationDrawer(
         drawerState = if (isCompactWindow) viewModel.compactDrawerState.value else viewModel.mediumExpandedDrawerState.value,
         hazeState = viewModel.hazeBackgroundState,
         drawerContent = {
-            Column(Modifier.customTitleBarMouseEventHandler()) {
+            Column {
                 Spacer(Modifier.fillMaxWidth().height(LocalNavigationDrawerTopPadding.current ?: 15.dp))
                 val animateState = rememberAnimatedState()
                 LaunchedEffect(viewModel.compactDrawerState.value.currentValue) {

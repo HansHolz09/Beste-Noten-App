@@ -2,26 +2,24 @@ package com.hansholz.bestenotenapp.utils
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.hansholz.bestenotenapp.decoratedWindow.CustomTitleBarObject
-import com.hansholz.bestenotenapp.decoratedWindow.LocalDecoratedWindowScope
 import com.hansholz.bestenotenapp.main.ExactPlatform
 import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
-import org.jetbrains.skiko.hostOs
+import dev.nucleusframework.window.LocalWindowChromeInsets
 
 @Composable
 actual fun topAppBarStartPadding(sideMenuExpanded: Boolean): Dp {
     val animationsEnabled by LocalAnimationsEnabled.current
     val startPadding =
-        if (getExactPlatform() == ExactPlatform.MACOS && !sideMenuExpanded && !LocalDecoratedWindowScope.current.state.isFullscreen) {
-            CustomTitleBarObject.customTitleBar
-                ?.leftInset
-                ?.dp
-                ?.minus(15.dp) ?: 90.dp
+        if (getExactPlatform() == ExactPlatform.MACOS && !sideMenuExpanded) {
+            LocalWindowChromeInsets.current.controlsInsets.calculateStartPadding(LocalLayoutDirection.current)
         } else {
             0.dp
         }
@@ -29,11 +27,4 @@ actual fun topAppBarStartPadding(sideMenuExpanded: Boolean): Dp {
 }
 
 @Composable
-actual fun topAppBarEndPadding(): Dp =
-    if (hostOs.isWindows) {
-        CustomTitleBarObject.customTitleBar?.rightInset?.dp ?: 80.dp
-    } else if (hostOs.isLinux) {
-        80.dp
-    } else {
-        0.dp
-    }
+actual fun topAppBarEndPadding(): Dp = LocalWindowChromeInsets.current.controlsInsets.calculateEndPadding(LocalLayoutDirection.current)

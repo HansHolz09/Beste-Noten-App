@@ -25,9 +25,7 @@ import androidx.compose.ui.unit.Dp
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Cloud_off
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
-import com.hansholz.bestenotenapp.main.LocalTitleBarModifier
 import com.hansholz.bestenotenapp.main.LocalUsingOfflineCache
-import com.hansholz.bestenotenapp.utils.customTitleBarMouseEventHandler
 import com.hansholz.bestenotenapp.utils.topAppBarEndPadding
 import com.hansholz.bestenotenapp.utils.topAppBarStartPadding
 import dev.chrisbanes.haze.HazeState
@@ -60,7 +58,6 @@ fun TopAppBarScaffold(
                         style = typography.headlineSmall,
                     )
                 },
-                modifier = LocalTitleBarModifier.current.customTitleBarMouseEventHandler(),
                 navigationIcon = {
                     Row {
                         sideMenuExpanded?.let { Spacer(Modifier.width(topAppBarStartPadding(it))) }

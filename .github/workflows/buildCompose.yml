@@ -8,10 +8,10 @@ on:
         default: composeApp
       jbr_version:
         type: string
-        default: "25.0.2"
+        default: "25.0.4"
       jbr_build:
         type: string
-        default: "b329.72"
+        default: "b508.27"
       temurin_version:
         type: string
         default: "21"
@@ -585,35 +585,20 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Setup JetBrains Runtime (JBRSDK)
-        shell: bash
-        run: |
-          set -e
-          BASE="https://cache-redirector.jetbrains.com/intellij-jbr"
-          FILE="jbrsdk-${JBR_VERSION}-windows-x64-${JBR_BUILD}.tar.gz"
-          curl -fsSL "$BASE/$FILE" -o "$RUNNER_TEMP/jbr.tar.gz"
-          mkdir -p "$RUNNER_TEMP/jbr"
-          TARBALL="$(cygpath -u "$RUNNER_TEMP/jbr.tar.gz")"
-          DEST="$(cygpath -u "$RUNNER_TEMP/jbr")"
-          tar -xzf "$TARBALL" -C "$DEST" --strip-components=1
-          echo "JAVA_HOME=$RUNNER_TEMP/jbr" >> $GITHUB_ENV
-          echo "$RUNNER_TEMP/jbr/bin" >> $GITHUB_PATH
-          java -version
-
-      - uses: gradle/actions/setup-gradle@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
+      - uses: NucleusFramework/Nucleus/.github/actions/setup-nucleus@v2.4.2
         with:
-          node-version: ${{ inputs.node_version }}
+          graalvm: 'true'
+          graalvm-distribution: 'oracle'
+          setup-gradle: 'true'
+          setup-node: 'true'
 
       - name: Build EXE (x64)
         shell: bash
         run: |
           set -e
-          ./gradlew :${MODULE_PATH}:packageReleaseNsis
+          ./gradlew :${MODULE_PATH}:packageGraalvmNsis
           mkdir -p artifacts
-          EXE=$(find "${MODULE_PATH}/build/compose/binaries/main-release/nsis" -type f -name "*.exe" | head -n1)
+          EXE=$(find "${MODULE_PATH}/build/compose/binaries/main/graalvm-nsis" -type f -name "*.exe" | head -n1)
           cp "$EXE" artifacts/windows-x64.exe
 
       - name: Smoke test Windows app
@@ -964,30 +949,17 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Setup JetBrains Runtime (JBRSDK)
-        shell: bash
-        run: |
-          set -e
-          BASE="https://cache-redirector.jetbrains.com/intellij-jbr"
-          FILE="jbrsdk-${JBR_VERSION}-osx-aarch64-${JBR_BUILD}.tar.gz"
-          curl -fsSL "$BASE/$FILE" -o "$RUNNER_TEMP/jbr.tar.gz"
-          mkdir -p "$RUNNER_TEMP/jbr"
-          tar -xzf "$RUNNER_TEMP/jbr.tar.gz" -C "$RUNNER_TEMP/jbr" --strip-components=1
-          echo "JAVA_HOME=$RUNNER_TEMP/jbr/Contents/Home" >> $GITHUB_ENV
-          echo "$RUNNER_TEMP/jbr/Contents/Home/bin" >> $GITHUB_PATH
-          java -version
-
-      - uses: gradle/actions/setup-gradle@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
+      - uses: NucleusFramework/Nucleus/.github/actions/setup-nucleus@v2.4.2
         with:
-          node-version: ${{ inputs.node_version }}
+          graalvm: 'true'
+          graalvm-distribution: 'oracle'
+          setup-gradle: 'true'
+          setup-node: 'true'
 
       - name: Build DMG (Apple Silicon)
         run: |
           set -e
-          ./gradlew :${MODULE_PATH}:packageReleaseDmg
+          ./gradlew :${MODULE_PATH}:packageGraalvmDmg
           mkdir -p artifacts
           DMG=$(find "${MODULE_PATH}/build" -type f -name "*.dmg" | head -n1)
           cp "$DMG" "artifacts/macos-arm64.dmg"
@@ -1081,34 +1053,17 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Install packaging tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y fakeroot rpm
-
-      - name: Setup JetBrains Runtime (JBRSDK)
-        run: |
-          set -e
-          BASE="https://cache-redirector.jetbrains.com/intellij-jbr"
-          FILE="jbrsdk-${JBR_VERSION}-linux-x64-${JBR_BUILD}.tar.gz"
-          curl -fsSL "$BASE/$FILE" -o "$RUNNER_TEMP/jbr.tar.gz"
-          mkdir -p "$RUNNER_TEMP/jbr"
-          tar -xzf "$RUNNER_TEMP/jbr.tar.gz" -C "$RUNNER_TEMP/jbr" --strip-components=1
-          echo "JAVA_HOME=$RUNNER_TEMP/jbr" >> $GITHUB_ENV
-          echo "$RUNNER_TEMP/jbr/bin" >> $GITHUB_PATH
-          java -version
-
-      - uses: gradle/actions/setup-gradle@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
+      - uses: NucleusFramework/Nucleus/.github/actions/setup-nucleus@v2.4.2
         with:
-          node-version: ${{ inputs.node_version }}
+          graalvm: 'true'
+          graalvm-distribution: 'oracle'
+          setup-gradle: 'true'
+          setup-node: 'true'
 
       - name: Build DEB
         run: |
           set -e
-          ./gradlew :${MODULE_PATH}:packageReleaseDeb
+          ./gradlew :${MODULE_PATH}:packageGraalvmDeb
           mkdir -p artifacts
           DEB=$(find "${MODULE_PATH}/build" -maxdepth 6 -type f -name "*.deb" | head -n1)
           cp "$DEB" "artifacts/linux-x64.deb"
@@ -1235,34 +1190,17 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Install packaging tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y fakeroot rpm
-
-      - name: Setup JetBrains Runtime (JBRSDK)
-        run: |
-          set -e
-          BASE="https://cache-redirector.jetbrains.com/intellij-jbr"
-          FILE="jbrsdk-${JBR_VERSION}-linux-aarch64-${JBR_BUILD}.tar.gz"
-          curl -fsSL "$BASE/$FILE" -o "$RUNNER_TEMP/jbr.tar.gz"
-          mkdir -p "$RUNNER_TEMP/jbr"
-          tar -xzf "$RUNNER_TEMP/jbr.tar.gz" -C "$RUNNER_TEMP/jbr" --strip-components=1
-          echo "JAVA_HOME=$RUNNER_TEMP/jbr" >> $GITHUB_ENV
-          echo "$RUNNER_TEMP/jbr/bin" >> $GITHUB_PATH
-          java -version
-
-      - uses: gradle/actions/setup-gradle@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v7
+      - uses: NucleusFramework/Nucleus/.github/actions/setup-nucleus@v2.4.2
         with:
-          node-version: ${{ inputs.node_version }}
+          graalvm: 'true'
+          graalvm-distribution: 'oracle'
+          setup-gradle: 'true'
+          setup-node: 'true'
 
       - name: Build DEB
         run: |
           set -e
-          ./gradlew :${MODULE_PATH}:packageReleaseDeb
+          ./gradlew :${MODULE_PATH}:packageGraalvmDeb
           mkdir -p artifacts
           DEB=$(find "${MODULE_PATH}/build" -maxdepth 6 -type f -name "*.deb" | head -n1)
           cp "$DEB" "artifacts/linux-arm64.deb"

@@ -10,7 +10,7 @@
       </option>
       <option name="taskNames">
         <list>
-          <option value="composeApp:packageReleaseNsis" />
+          <option value="composeApp:packageGraalvmNsis" />
         </list>
       </option>
       <option name="vmOptions" />

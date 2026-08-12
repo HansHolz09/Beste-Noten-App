@@ -1,0 +1,163 @@
+{
+    "reflection": [
+        {
+            "type": "androidx.datastore.preferences.PreferencesProto$PreferenceMap",
+            "fields": [
+                {
+                    "name": "preferences_"
+                }
+            ]
+        },
+        {
+            "type": "androidx.datastore.preferences.PreferencesProto$Value",
+            "fields": [
+                {
+                    "name": "valueCase_"
+                },
+                {
+                    "name": "value_"
+                }
+            ]
+        },
+        {
+            "type": "com.sun.crypto.provider.HKDFKeyDerivation$HKDFSHA384",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+                        "javax.crypto.KDFParameters"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "com.sun.crypto.provider.HmacCore$HmacSHA384",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "de.jangassen.jfa.foundation.ID",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
+        },
+        {
+            "type": {
+                "proxy": [
+                    "de.jangassen.jfa.foundation.FoundationLibrary"
+                ]
+            }
+        },
+        {
+            "type": "dev.nucleusframework.window.tao.event.TaoSyntheticKeyKt$SyntheticAwtKeyEventSource$1"
+        },
+        {
+            "type": "dev.nucleusframework.window.tao.event.TaoSyntheticMouseWheelEvent$source$1"
+        },
+        {
+            "type": "dev.zwander.jfa.appkit.NSNumber"
+        },
+        {
+            "type": "dev.zwander.jfa.foundation.ID",
+            "methods": [
+                {
+                    "name": "<init>",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "eu.anifantakis.lib.ksafe.biometrics.MacLocalAuthentication$LAReplyCallback",
+            "methods": [
+                {
+                    "name": "invoke",
+                    "parameterTypes": [
+                        "com.sun.jna.Pointer",
+                        "byte",
+                        "com.sun.jna.Pointer"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "eu.anifantakis.lib.ksafe.biometrics.MacLocalAuthentication$evaluate$2$callback$1"
+        },
+        {
+            "type": {
+                "proxy": [
+                    "dev.zwander.jfa.appkit.NSNumber"
+                ]
+            }
+        },
+        {
+            "type": {
+                "proxy": [
+                    "dev.zwander.jfa.appkit.NSUserDefaults"
+                ]
+            }
+        },
+        {
+            "type": {
+                "proxy": [
+                    "dev.zwander.jfa.foundation.FoundationLibrary"
+                ]
+            }
+        },
+        {
+            "type": "io.github.kdroidfilter.platformtools.darkmodedetector.mac.MacOSThemeDetector$themeChangedCallback$1"
+        },
+        {
+            "type": "io.ktor.client.engine.apache5.ApacheResponseConsumer"
+        },
+        {
+            "type": "io.ktor.client.plugins.DefaultRequest"
+        },
+        {
+            "type": "io.ktor.client.plugins.HttpTimeoutConfig"
+        },
+        {
+            "type": "io.ktor.client.plugins.cache.HttpCache"
+        },
+        {
+            "type": "java.nio.Buffer",
+            "jniAccessible": true,
+            "fields": [
+                {
+                    "name": "address"
+                }
+            ],
+            "methods": [
+                {
+                    "name": "position",
+                    "parameterTypes": [
+                        
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "javax.net.ssl.SSLParameters",
+            "methods": [
+                {
+                    "name": "setEnableRetransmissions",
+                    "parameterTypes": [
+                        "boolean"
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -5,7 +5,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import dev.chrisbanes.haze.HazeState
@@ -35,7 +34,6 @@ internal val LocalRequireBiometricAuthentification = compositionLocalOf { mutabl
 
 internal val AppHazeState = compositionLocalOf { mutableStateOf(HazeState()) }
 
-internal val LocalTitleBarModifier = compositionLocalOf<Modifier> { Modifier }
 internal val LocalNavigationDrawerTopPadding = compositionLocalOf<Dp?> { null }
 
 val LocalBiometricAuthenticationAvailable = compositionLocalOf { false }
