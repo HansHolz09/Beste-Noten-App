@@ -576,7 +576,14 @@ class ViewModel(
             return user.value
         }
         if (!authToken.value.isNullOrEmpty()) {
-            user.value = loadBesteSchuleData("user") { api.usersShow(studentId.value).data }
+            user.value =
+                loadBesteSchuleData("user") {
+                    if (studentId.value != null) {
+                        api.usersShow(studentId.value).data
+                    } else {
+                        api.userMe().data
+                    }
+                }
             loadCurrentLevel()
         }
         return user.value
