@@ -38,7 +38,7 @@ android {
         base.archivesName = "${libs.versions.appName.get()}-${libs.versions.appVersion.get()}-${libs.versions.appVersionCode.get()}"
 
         addManifestPlaceholders(
-            mapOf("oidcRedirectScheme" to "bestenotenapp"),
+            mapOf("oidcRedirectScheme" to "bestenotenapp"), // de.schulverwalter.beste:/oauth
         )
     }
 
