@@ -48,8 +48,8 @@ jobs:
       build_android: true
       build_ios: true
       build_windows_x64: true
-      build_windows_arm64: false
-      build_macos_x64: false
+      build_windows_arm64: true
+      build_macos_x64: true
       build_macos_arm64: true
       build_linux_x64: true
       build_linux_arm64: true

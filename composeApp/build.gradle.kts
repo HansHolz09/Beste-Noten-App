@@ -146,6 +146,7 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.nucleus.core.runtime)
+            implementation(libs.nucleus.aot.runtime)
             implementation(libs.nucleus.graalvm.runtime)
             implementation(libs.nucleus.decorated.window.tao)
             implementation(libs.advanced.menubar)

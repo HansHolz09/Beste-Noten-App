@@ -92,6 +92,7 @@ material3 = { module = "org.jetbrains.compose.material3:material3", version.ref 
 materialyou = { module = "dev.zwander:materialyou", version.ref = "materialyou" }
 multihaptic-compose = { module = "top.ltfan.multihaptic:multihaptic-compose", version.ref = "multihapticCompose" }
 nucleus-core-runtime = { module = "dev.nucleusframework:nucleus.core-runtime", version.ref = "nucleus" }
+nucleus-aot-runtime = { module = "dev.nucleusframework:nucleus.aot-runtime", version.ref = "nucleus" }
 nucleus-graalvm-runtime = { module = "dev.nucleusframework:nucleus.graalvm-runtime", version.ref = "nucleus" }
 nucleus-decorated-window-tao = { module = "dev.nucleusframework:nucleus.decorated-window-tao", version.ref = "nucleus" }
 oidc-appsupport = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-appsupport", version.ref = "oidc" }

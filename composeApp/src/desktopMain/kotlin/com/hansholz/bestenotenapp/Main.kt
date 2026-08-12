@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3ComponentOverrideApi
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,8 +39,10 @@ import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.hansholz.bestenotenapp.navigation.Fragment
+import com.hansholz.bestenotenapp.utils.FileKitWindowObject
 import dev.hansholz.advancedmenubar.DefaultMacMenuBar
 import dev.hansholz.advancedmenubar.NativeTextContextMenuProvider
+import dev.nucleusframework.aot.runtime.AotRuntime
 import dev.nucleusframework.core.runtime.NucleusApp
 import dev.nucleusframework.core.runtime.SingleInstanceManager
 import dev.nucleusframework.graalvm.GraalVmInitializer
@@ -52,11 +55,13 @@ import dev.nucleusframework.window.tao.taoApplication
 import dev.nucleusframework.window.windowDragArea
 import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
 import io.github.vinceglb.filekit.FileKit
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.skiko.hostOs
 import kotlin.system.exitProcess
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalMaterial3ComponentOverrideApi::class)
 fun main() {
@@ -91,6 +96,19 @@ fun main() {
 
             val isSingle = SingleInstanceManager.isSingleInstance { window.focus() }
             if (!isSingle) exitProcess(0)
+
+            if (AotRuntime.isTraining()) {
+                LaunchedEffect(Unit) {
+                    delay(10.seconds)
+                    exitProcess(0)
+                }
+            }
+
+            LaunchedEffect(Unit) {
+                if (hostOs.isWindows) {
+                    FileKitWindowObject.setHandle(window.nativeHandle)
+                }
+            }
 
             val scope = rememberCoroutineScope()
             var navController by remember { mutableStateOf<NavController?>(null) }
