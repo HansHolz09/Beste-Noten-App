@@ -25,6 +25,8 @@ fun Level.secondaryStage(): SecondaryStage? =
     when {
         intervalType.contains("2") -> SecondaryStage.TWO
         intervalType.contains("11") -> SecondaryStage.TWO
+        intervalType.contains("II") -> SecondaryStage.TWO
+        intervalType.contains("I") -> SecondaryStage.ONE
         intervalType.contains("1") -> SecondaryStage.ONE
         else -> null
     }
