@@ -6,7 +6,6 @@ import androidx.compose.foundation.LocalContextMenuRepresentation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3ComponentOverrideApi
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -46,9 +45,11 @@ import dev.nucleusframework.aot.runtime.AotRuntime
 import dev.nucleusframework.core.runtime.NucleusApp
 import dev.nucleusframework.core.runtime.SingleInstanceManager
 import dev.nucleusframework.graalvm.GraalVmInitializer
+import dev.nucleusframework.window.DecoratedWindowDefaults
 import dev.nucleusframework.window.TitleBarPlacement
 import dev.nucleusframework.window.WindowControls
 import dev.nucleusframework.window.WindowScaffold
+import dev.nucleusframework.window.styling.LocalTitleBarStyle
 import dev.nucleusframework.window.tao.DecoratedWindow
 import dev.nucleusframework.window.tao.MacOSStyle
 import dev.nucleusframework.window.tao.taoApplication
@@ -133,10 +134,13 @@ fun main() {
                         Modifier
                             .fillMaxWidth()
                             .height(titleBarHeight.value)
-                            .windowDragArea()
-                            .padding(horizontal = 12.dp),
+                            .windowDragArea(),
                     ) {
-                        this@DecoratedWindow.WindowControls(Modifier.align(Alignment.CenterEnd))
+                        CompositionLocalProvider(
+                            LocalTitleBarStyle provides if (isDark) DecoratedWindowDefaults.darkTitleBarStyle() else DecoratedWindowDefaults.lightTitleBarStyle(),
+                        ) {
+                            this@DecoratedWindow.WindowControls(Modifier.align(Alignment.CenterEnd))
+                        }
                     }
                 },
                 titleBarPlacement = TitleBarPlacement.Overlay(false, true),
