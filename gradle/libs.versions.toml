@@ -13,7 +13,7 @@ coreSplashscreen = "1.2.0"
 composeIcons = "2.2.1"
 composeMultiplatform = "1.11.1"
 emoji = "2.5.0"
-filekit = "0.14.2"
+filekit = "0.15.0"
 fragment = "1.8.9"
 haze = "2.0.0-alpha04"
 #noinspection NewerVersionAvailable
