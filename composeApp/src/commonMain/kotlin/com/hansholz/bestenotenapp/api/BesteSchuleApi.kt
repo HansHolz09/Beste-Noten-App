@@ -175,7 +175,6 @@ import com.hansholz.bestenotenapp.api.models.Year
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.delete
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
@@ -196,14 +195,17 @@ class BesteSchuleApi(
     httpClient: HttpClient,
     authToken: MutableState<String?>,
     studentId: MutableState<String?> = mutableStateOf(null),
+    accessTokenProvider: suspend () -> String? = { authToken.value },
 ) {
     private val baseUrl = "https://beste.schule/api"
 
     private val client =
         httpClient.config {
-            install(studentFilterPlugin(studentId))
+            install(BesteSchulePlugin) {
+                this.accessTokenProvider = accessTokenProvider
+                studentIdProvider = { studentId.value }
+            }
             defaultRequest {
-                authToken.value?.let { bearerAuth(it) }
                 header(HttpHeaders.Accept, ContentType.Application.Json)
                 header(HttpHeaders.ContentType, ContentType.Application.Json)
             }

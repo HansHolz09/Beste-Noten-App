@@ -41,8 +41,6 @@ private const val SUCCESS_PAGE = """
     <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.4/dist/dotlottie-wc.js" type="module"></script>
   </head>
   <body align="center">
-    <img src="https://github.com/HansHolz09/Beste-Noten-App/blob/main/composeApp/src/commonMain/composeResources/drawable/logo.png?raw=true" alt="Beste-Noten-App Logo" style="width: 100px; height: auto; margin-top: 30px;">
-
     <h1 style="font-family: 'Keania One'">Anmeldung erfolgreich</h1>
     <h2 style="font-family: 'Sniglet'">Du kannst nun zur Beste-Noten-App zurückkehren</h2>
     

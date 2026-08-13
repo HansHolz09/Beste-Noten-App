@@ -13,6 +13,7 @@ import com.dokar.sonner.ToastType
 import com.dokar.sonner.ToasterDefaults
 import com.dokar.sonner.ToasterState
 import com.hansholz.bestenotenapp.api.BesteSchuleApi
+import com.hansholz.bestenotenapp.api.BesteSchuleAuth
 import com.hansholz.bestenotenapp.api.codeAuthFlowFactory
 import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.models.Absence
@@ -72,11 +73,10 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.io.IOException
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.publicvalue.multiplatform.oidc.DefaultOpenIdConnectClient
 import org.publicvalue.multiplatform.oidc.OpenIdConnectException
+import org.publicvalue.multiplatform.oidc.types.remote.AccessTokenResponse
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -105,12 +105,14 @@ class ViewModel(
     private val httpClient = createHttpClient()
 
     val authToken = mutableStateOf<String?>(null)
-    private val authFlow = codeAuthFlowFactory.createAuthFlow(DefaultOpenIdConnectClient(httpClient, oidcClient.config))
+    private val authClient = DefaultOpenIdConnectClient(httpClient, oidcClient.config)
+    private val authFlow = codeAuthFlowFactory.createAuthFlow(authClient)
+    private val besteSchuleAuth = BesteSchuleAuth(authClient, kSafe, authToken)
 
     val studentId = mutableStateOf<String?>(null)
     val isBesteSchuleNotReachable = mutableStateOf(false)
     val isUsingOfflineCache = mutableStateOf(false)
-    private val api = BesteSchuleApi(httpClient, authToken, studentId)
+    private val api = BesteSchuleApi(httpClient, authToken, studentId, besteSchuleAuth::getValidAccessToken)
     val homeworkSyncSettings = KSafeHomeworkSyncSettings(kSafe)
     val homeworkRevision = mutableIntStateOf(0)
     private val googleAuthProvider = KSafeGoogleAuthProvider(kSafe)
@@ -369,17 +371,12 @@ class ViewModel(
 
     suspend fun getAccessToken(): Boolean {
         try {
-            authToken.value = authFlow.getAccessToken().access_token
+            besteSchuleAuth.setTokenResponse(authFlow.getAccessToken())
             return !authToken.value.isNullOrEmpty()
         } catch (e: OpenIdConnectException.UnsuccessfulTokenRequest) {
             try {
-                @Serializable
-                data class TokenResponse(
-                    @SerialName("access_token") val accessToken: String,
-                )
-
                 val withUnknownKeys = Json { ignoreUnknownKeys = true }
-                authToken.value = withUnknownKeys.decodeFromString<TokenResponse>(e.body ?: "").accessToken
+                besteSchuleAuth.setTokenResponse(withUnknownKeys.decodeFromString<AccessTokenResponse>(e.body ?: ""))
                 return !authToken.value.isNullOrEmpty()
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -435,7 +432,7 @@ class ViewModel(
                 writeBesteSchuleCache("user", user)
                 setCurrentYear()
                 if (stayLoggedIn) {
-                    putSecure("authToken", authToken.value!!)
+                    besteSchuleAuth.persist()
                 }
                 onNavigateHome()
                 toaster.show(
@@ -548,8 +545,7 @@ class ViewModel(
     fun logout() {
         studentId.value = null
         kSafe.deleteDirect("studentId")
-        authToken.value = null
-        kSafe.deleteDirect("authToken")
+        besteSchuleAuth.clear()
         isDemoAccount.value = false
         GradeNotifications.onLogout()
         onCleared()
@@ -907,8 +903,8 @@ class ViewModel(
             try {
                 kSafeProvider(kSafe) {
                     studentId.value = get<String?>("studentId", null)
-                    authToken.value = get<String?>("authToken", null)
                 }
+                besteSchuleAuth.restore()
                 init()
                 GradeNotifications.onLogin()
                 if (!isUsingOfflineCache.value) syncHomeworkNow(false)

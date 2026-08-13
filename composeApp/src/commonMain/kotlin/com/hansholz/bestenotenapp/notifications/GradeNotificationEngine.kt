@@ -3,9 +3,11 @@ package com.hansholz.bestenotenapp.notifications
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import com.hansholz.bestenotenapp.api.BesteSchuleApi
+import com.hansholz.bestenotenapp.api.BesteSchuleAuth
 import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.models.Grade
 import com.hansholz.bestenotenapp.api.models.GradeCollection
+import com.hansholz.bestenotenapp.api.oidcClient
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.security.kSafe
@@ -17,6 +19,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import org.publicvalue.multiplatform.oidc.DefaultOpenIdConnectClient
 import kotlin.time.Clock
 
 internal enum class GradeNotificationOutcome {
@@ -58,7 +61,9 @@ internal object GradeNotificationEngine {
             return try {
                 val authState = mutableStateOf<String?>(token)
                 val studentState = mutableStateOf<String?>(studentId)
-                val api = BesteSchuleApi(httpClient, authState, studentState)
+                val authClient = DefaultOpenIdConnectClient(httpClient, oidcClient.config)
+                val auth = BesteSchuleAuth(authClient, kSafe, authState).also { it.restore() }
+                val api = BesteSchuleApi(httpClient, authState, studentState, auth::getValidAccessToken)
                 val collections = fetchAllCollections(api)
                 val currentIds = collections.flatMap { it.grades.orEmpty() }.map { it.id }.toSet()
 
