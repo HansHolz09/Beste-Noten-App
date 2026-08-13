@@ -30,6 +30,7 @@ import com.hansholz.bestenotenapp.api.models.Student
 import com.hansholz.bestenotenapp.api.models.Subject
 import com.hansholz.bestenotenapp.api.models.Teacher
 import com.hansholz.bestenotenapp.api.models.TimeTable
+import com.hansholz.bestenotenapp.api.models.TimeTableTime
 import com.hansholz.bestenotenapp.api.models.User
 import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.api.oidcClient
@@ -148,6 +149,7 @@ class ViewModel(
     val allGradeCollectionsLoaded = mutableStateOf(false)
     val years = mutableStateListOf<Year>()
     val intervals = mutableStateListOf<Interval>()
+    val times = mutableStateListOf<TimeTableTime>()
     val dayStudentCount = mutableStateOf<JournalDayStudentCount?>(null)
     val lessonStudentCount = mutableStateOf<JournalLessonStudentCount?>(null)
     val lessonStudentBySlot = mutableStateListOf<JournalLessonStudentBySlot>()
@@ -675,6 +677,8 @@ class ViewModel(
         }
         return loadBesteSchuleData("intervals") { api.studentsShow(studentId.value!!, listOf("intervals")).data.intervals }
     }
+
+    suspend fun getTimes(): List<TimeTableTime>? = loadBesteSchuleData("times") { api.timeTableTimesIndex().data }
 
     suspend fun getDayStudentCount(year: Year? = null): JournalDayStudentCount? {
         if (isDemoAccount.value) {

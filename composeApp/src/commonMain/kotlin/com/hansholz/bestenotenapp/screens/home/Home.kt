@@ -66,6 +66,8 @@ import com.composables.icons.materialsymbols.rounded.Alternate_email
 import com.composables.icons.materialsymbols.rounded.Apartment
 import com.composables.icons.materialsymbols.rounded.Architecture
 import com.composables.icons.materialsymbols.rounded.Calculate
+import com.composables.icons.materialsymbols.rounded.Calendar_clock
+import com.composables.icons.materialsymbols.rounded.Clock_loader_80
 import com.composables.icons.materialsymbols.rounded.Date_range
 import com.composables.icons.materialsymbols.rounded.Demography
 import com.composables.icons.materialsymbols.rounded.Electric_bolt
@@ -80,6 +82,8 @@ import com.composables.icons.materialsymbols.rounded.Face_6
 import com.composables.icons.materialsymbols.rounded.Format_list_numbered
 import com.composables.icons.materialsymbols.rounded.Globe
 import com.composables.icons.materialsymbols.rounded.Health_cross
+import com.composables.icons.materialsymbols.rounded.History_toggle_off
+import com.composables.icons.materialsymbols.rounded.Hourglass
 import com.composables.icons.materialsymbols.rounded.Info
 import com.composables.icons.materialsymbols.rounded.Insights
 import com.composables.icons.materialsymbols.rounded.Labs
@@ -94,6 +98,7 @@ import com.composables.icons.materialsymbols.rounded.Signature
 import com.composables.icons.materialsymbols.rounded.Sports
 import com.composables.icons.materialsymbols.rounded.Sports_and_outdoors
 import com.composables.icons.materialsymbols.rounded.Sticky_note_2
+import com.composables.icons.materialsymbols.rounded.Timelapse
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.components.GradeValueBox
 import com.hansholz.bestenotenapp.components.ScatterConfig
@@ -771,7 +776,7 @@ fun Home(
                                                 ScatterItem.IconItem(MaterialSymbols.Rounded.Sick),
                                                 ScatterItem.IconItem(MaterialSymbols.Rounded.Health_cross),
                                                 ScatterItem.IconItem(MaterialSymbols.Rounded.Event_busy),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Schedule),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.History_toggle_off),
                                                 ScatterItem.IconItem(MaterialSymbols.Rounded.Signature),
                                                 ScatterItem.IconItem(MaterialSymbols.Rounded.Sticky_note_2),
                                                 ScatterItem.IconItem(MaterialSymbols.Rounded.Insights),
@@ -850,6 +855,51 @@ fun Home(
                             }
                         }
                     }
+                    if (!viewModel.isDemoAccount.value) {
+                        item {
+                            Box(
+                                Modifier
+                                    .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
+                                    .fillMaxWidth()
+                                    .padding(10.dp)
+                                    .clip(RoundedCornerShape(24.dp))
+                                    .background(colorScheme.surfaceContainerHighest.copy(0.7f))
+                                    .scatteredIconBackground(
+                                        items =
+                                            remember {
+                                                listOf(
+                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Clock_loader_80),
+                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Timelapse),
+                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Hourglass),
+                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Schedule),
+                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Calendar_clock),
+                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Calendar_clock),
+                                                )
+                                            },
+                                        alpha = backgroundAlpha.value,
+                                    ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
+                                    .clickable {
+                                        homeViewModel.isTimesDialogShown = true
+                                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                                    },
+                            ) {
+                                Column(Modifier.fillMaxWidth()) {
+                                    Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
+                                        Text(
+                                            text = "Unterrichtszeiten",
+                                            modifier = Modifier.align(Alignment.Center),
+                                            style = typography.headlineSmall,
+                                        )
+                                    }
+                                    Text(
+                                        text = "Tippen, um die Unterrichtszeiten deiner Schule anschauen zu können",
+                                        modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                        textAlign = TextAlign.Center,
+                                    )
+                                }
+                            }
+                        }
+                    }
                     if (viewModel.user.value != null) {
                         item {
                             Box(
@@ -917,6 +967,7 @@ fun Home(
         }
 
         StatsDialog(viewModel, homeViewModel)
+        TimesDialog(viewModel, homeViewModel)
         AccountSchoolDialog(viewModel, homeViewModel)
         YearSelectionDialog(viewModel, homeViewModel)
     }

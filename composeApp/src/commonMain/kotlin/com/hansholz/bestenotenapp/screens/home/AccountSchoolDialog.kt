@@ -57,32 +57,31 @@ fun AccountSchoolDialog(
             val level = viewModel.level.value
             val school = viewModel.user.value?.school
             val schoolAdress = "${school?.street} ${school?.streetNr} ${school?.city}"
-            val times = school?.times?.getOrNull(0)
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 Text(
                     text =
                         buildAnnotatedString {
                             withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
-                                append("Dieser Account:\n")
+                                append("Dieser Account:")
                             }
-                            append("• ID: ${user?.id}\n")
+                            append("\n• ID: ${user?.id}")
                             if (user?.email != null) {
-                                append("• E-Mail: ")
+                                append("\n• E-Mail: ")
                                 withLink(
                                     LinkAnnotation.Clickable("mailto_user") {
                                         vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                         uriHandler.openUri("mailto:${user.email.encodeURLParameter()}")
                                     },
                                 ) {
-                                    append("${user.email}\n")
+                                    append(user.email)
                                 }
                             }
                             if (user?.username != null) {
-                                append("• Nutzername: ${user.username}\n")
+                                append("\n• Nutzername: ${user.username}")
                             }
                             if (user?.role != null) {
                                 append(
-                                    "• Rolle: ${
+                                    "\n• Rolle: ${
                                         when (user.role) {
                                             "student" -> "Schüler"
                                             "guardian" -> "Elternteil"
@@ -96,47 +95,47 @@ fun AccountSchoolDialog(
                                 )
                             }
                             withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
-                                append("\n\nAngemeldeter Schüler:\n")
+                                append("\n\nAngemeldeter Schüler:")
                             }
-                            append("• ID: ${student?.id}\n")
+                            append("\n• ID: ${student?.id}")
                             if (student?.forename != null && student.name != null) {
-                                append("• Name: ${student.forename} ${student.name}\n")
+                                append("\n• Name: ${student.forename} ${student.name}")
                             }
                             if (level != null) {
-                                append("• Klassenstufe: ${level.name} (Sek. ${level.secondaryStage()?.value})\n")
+                                append("\n• Klassenstufe: ${level.name} (Sek. ${level.secondaryStage()?.value})")
                             }
                             if (student?.gender != null) {
                                 append(
-                                    "• Geschlecht: ${
+                                    "\n• Geschlecht: ${
                                         when (student.gender) {
                                             "male" -> "männlich"
                                             "female" -> "weiblich"
                                             else -> "unbekannt"
                                         }
-                                    }\n",
+                                    }",
                                 )
                             }
                             if (!user?.guardians.isNullOrEmpty()) {
-                                append("• Eltern: ")
+                                append("\n• Eltern: ")
                                 append(user.guardians.joinToString { "${it.forename} ${it.name}" })
                             }
                             if (school?.name != null) {
                                 withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
-                                    append("\n\n${school.name}:\n")
+                                    append("\n\n${school.name}:")
                                 }
                                 if (school.email != null) {
-                                    append("• E-Mail: ")
+                                    append("\n• E-Mail: ")
                                     withLink(
                                         LinkAnnotation.Clickable("mailto_school") {
                                             vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                             uriHandler.openUri("mailto:${school.email.encodeURLParameter()}")
                                         },
                                     ) {
-                                        append("${school.email}\n")
+                                        append(school.email)
                                     }
                                 }
                                 if (!schoolAdress.contains(" null ")) {
-                                    append("• Adresse: ")
+                                    append("\n• Adresse: ")
                                     withLink(
                                         LinkAnnotation.Clickable("open_maps") {
                                             vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
@@ -148,14 +147,6 @@ fun AccountSchoolDialog(
                                     ) {
                                         append(schoolAdress)
                                     }
-                                }
-                            }
-                            if (times != null) {
-                                withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
-                                    append("\n\n${times.name} (${times.type}):")
-                                }
-                                times.lessons.forEach { lesson ->
-                                    append("\n${lesson.nr}. Stunde: ${lesson.from}-${lesson.to}")
                                 }
                             }
                         },

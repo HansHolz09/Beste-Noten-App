@@ -234,22 +234,28 @@ fun StatsDialog(
                                             " $lessonsNotPresentWithoutAbsenceCount nicht)\n" +
                                             "➜ Durchschnittlich $average Stunden/Tag, $presence% Anwesenheit",
                                     )
-                                    withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
-                                        append("\n\nAnwesenheit nach Stunden (${viewModel.user.value?.year?.name}):")
+                                    if (viewModel.currentLessonStudentBySlot.isNotEmpty()) {
+                                        withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
+                                            append("\n\nAnwesenheit nach Stunden (${viewModel.user.value?.year?.name}):")
+                                        }
                                     }
                                 },
                             color = colorScheme.onSurface.copy(0.8f),
                         )
-                        Spacer(Modifier.height(10.dp))
-                        LessonsBySlotView(viewModel.currentLessonStudentBySlot)
-                        Spacer(Modifier.height(20.dp))
-                        Text(
-                            text = "Anwesenheit nach Stunden (gesamte Zeit):",
-                            color = colorScheme.onSurface,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Spacer(Modifier.height(10.dp))
-                        LessonsBySlotView(viewModel.lessonStudentBySlot)
+                        if (viewModel.currentLessonStudentBySlot.isNotEmpty()) {
+                            Spacer(Modifier.height(10.dp))
+                            LessonsBySlotView(viewModel.currentLessonStudentBySlot)
+                        }
+                        if (viewModel.lessonStudentBySlot.isNotEmpty()) {
+                            Spacer(Modifier.height(20.dp))
+                            Text(
+                                text = "Anwesenheit nach Stunden (gesamte Zeit):",
+                                color = colorScheme.onSurface,
+                                fontWeight = FontWeight.Bold,
+                            )
+                            Spacer(Modifier.height(10.dp))
+                            LessonsBySlotView(viewModel.lessonStudentBySlot)
+                        }
                         Spacer(Modifier.height(25.dp))
                         val annotatedString =
                             buildAnnotatedString {
