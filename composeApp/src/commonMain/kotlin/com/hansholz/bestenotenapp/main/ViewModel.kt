@@ -865,8 +865,9 @@ class ViewModel(
         currentTimetable.value?.let { return it }
         currentTimetable.value =
             loadBesteSchuleData("timetable") {
-                val index = api.timeTablesIndex().data
-                api.timeTablesShow(index.last().id).data
+                api.timeTablesIndex().data.lastOrNull()?.id?.let {
+                    api.timeTablesShow(it).data
+                }
             }
         return currentTimetable.value
     }
