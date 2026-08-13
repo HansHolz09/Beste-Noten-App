@@ -17,6 +17,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
@@ -137,7 +138,20 @@ fun main() {
                             .windowDragArea(),
                     ) {
                         CompositionLocalProvider(
-                            LocalTitleBarStyle provides if (isDark) DecoratedWindowDefaults.darkTitleBarStyle() else DecoratedWindowDefaults.lightTitleBarStyle(),
+                            LocalTitleBarStyle provides
+                                if (isDark) {
+                                    DecoratedWindowDefaults.darkTitleBarStyle()
+                                } else {
+                                    DecoratedWindowDefaults.lightTitleBarStyle()
+                                }.let {
+                                    it.copy(
+                                        colors =
+                                            it.colors.copy(
+                                                controlButtonIconColor = if (isDark) Color.White else Color.Black,
+                                                controlButtonIconHoverColor = if (isDark) Color.White else Color.Black,
+                                            ),
+                                    )
+                                },
                         ) {
                             this@DecoratedWindow.WindowControls(Modifier.align(Alignment.CenterEnd))
                         }
