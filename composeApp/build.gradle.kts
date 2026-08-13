@@ -170,7 +170,7 @@ nucleus.application {
     val appVersion = libs.versions.appVersion.get()
 
     nativeDistributions {
-        targetFormats(TargetFormat.Dmg, TargetFormat.Nsis, TargetFormat.Deb)
+        targetFormats(TargetFormat.Dmg, TargetFormat.Nsis, TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.AppImage)
         packageName = appName
         packageVersion = appVersion
         description = appName
@@ -221,6 +221,10 @@ nucleus.application {
             shortcut = true
 
             modules += "jdk.security.auth"
+
+            appImage {
+                compressionLevel = CompressionLevel.Normal
+            }
         }
 
         macOS {

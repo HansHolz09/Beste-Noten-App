@@ -1175,11 +1175,39 @@ jobs:
             exit 1
           fi
 
+      - name: Build RPM
+        run: |
+          set -e
+          ./gradlew :${MODULE_PATH}:packageGraalvmRpm
+          mkdir -p artifacts
+          RPM=$(find "${MODULE_PATH}/build" -maxdepth 6 -type f -name "*.rpm" | head -n1)
+          cp "$RPM" "artifacts/linux-x64.rpm"
+
+      - name: Build AppImage
+        run: |
+          set -e
+          ./gradlew :${MODULE_PATH}:packageGraalvmAppImage
+          mkdir -p artifacts
+          AppImage=$(find "${MODULE_PATH}/build" -maxdepth 6 -type f -name "*.AppImage" | head -n1)
+          cp "$AppImage" "artifacts/linux-x64.AppImage"
+
       - uses: actions/upload-artifact@v7
         continue-on-error: ${{ inputs.ignore_artifact_upload_errors }}
         with:
           name: linux-x64-deb
           path: artifacts/*.deb
+
+      - uses: actions/upload-artifact@v7
+        continue-on-error: ${{ inputs.ignore_artifact_upload_errors }}
+        with:
+          name: linux-x64-rpm
+          path: artifacts/*.rpm
+
+      - uses: actions/upload-artifact@v7
+        continue-on-error: ${{ inputs.ignore_artifact_upload_errors }}
+        with:
+          name: linux-x64-appimage
+          path: artifacts/*.AppImage
 
   linux-arm64:
     if: ${{ inputs.build_linux_arm64 }}
@@ -1312,11 +1340,39 @@ jobs:
             exit 1
           fi
 
+      - name: Build RPM
+        run: |
+          set -e
+          ./gradlew :${MODULE_PATH}:packageGraalvmRpm
+          mkdir -p artifacts
+          RPM=$(find "${MODULE_PATH}/build" -maxdepth 6 -type f -name "*.rpm" | head -n1)
+          cp "$RPM" "artifacts/linux-arm64.rpm"
+
+      - name: Build AppImage
+        run: |
+          set -e
+          ./gradlew :${MODULE_PATH}:packageGraalvmAppImage
+          mkdir -p artifacts
+          AppImage=$(find "${MODULE_PATH}/build" -maxdepth 6 -type f -name "*.AppImage" | head -n1)
+          cp "$AppImage" "artifacts/linux-arm64.AppImage"
+
       - uses: actions/upload-artifact@v7
         continue-on-error: ${{ inputs.ignore_artifact_upload_errors }}
         with:
           name: linux-arm64-deb
           path: artifacts/*.deb
+
+      - uses: actions/upload-artifact@v7
+        continue-on-error: ${{ inputs.ignore_artifact_upload_errors }}
+        with:
+          name: linux-arm64-rpm
+          path: artifacts/*.rpm
+
+      - uses: actions/upload-artifact@v7
+        continue-on-error: ${{ inputs.ignore_artifact_upload_errors }}
+        with:
+          name: linux-arm64-appimage
+          path: artifacts/*.AppImage
 
   wasm:
     if: ${{ inputs.build_wasm }}
