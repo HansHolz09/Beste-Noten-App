@@ -18,6 +18,7 @@ import com.hansholz.bestenotenapp.api.codeAuthFlowFactory
 import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.models.Absence
 import com.hansholz.bestenotenapp.api.models.GradeCollection
+import com.hansholz.bestenotenapp.api.models.Group
 import com.hansholz.bestenotenapp.api.models.Interval
 import com.hansholz.bestenotenapp.api.models.JournalDay
 import com.hansholz.bestenotenapp.api.models.JournalDayStudentCount
@@ -68,6 +69,8 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlinx.datetime.LocalDate
@@ -136,6 +139,7 @@ class ViewModel(
     val user = mutableStateOf<User?>(null)
     val level = mutableStateOf<Level?>(null)
     val levelsByYear = mutableStateMapOf<Int, Level>()
+    val studentGroupsByYear = mutableStateMapOf<Int, List<Group>>()
     val currentJournalDay = mutableStateOf<JournalDay?>(null)
     val journalWeeks = mutableStateListOf<Pair<String, JournalWeek>>()
     val currentTimetable = mutableStateOf<TimeTable?>(null)
@@ -596,6 +600,36 @@ class ViewModel(
 
     fun levelFor(collection: GradeCollection): Level? = collection.interval?.yearId?.let { levelsByYear[it] } ?: if (collection.interval == null) level.value else null
 
+    private val loadStudentGroupsMutex = Mutex()
+
+    suspend fun loadStudentGroups(yearIds: Collection<Int>) {
+        if (isDemoAccount.value || yearIds.isEmpty()) return
+        loadStudentGroupsMutex.withLock {
+            val missingYearIds = (yearIds.toSet() - studentGroupsByYear.keys).sorted()
+            if (missingYearIds.isEmpty()) return
+            if (isUsingOfflineCache.value) {
+                missingYearIds.forEach { yearId ->
+                    readBesteSchuleCache<List<Group>>("student_groups_$yearId")?.let {
+                        studentGroupsByYear[yearId] = it
+                    }
+                }
+                return
+            }
+            val groups =
+                loadBesteSchuleData<List<Group>>(
+                    "student_groups_${missingYearIds.joinToString("-")}",
+                ) {
+                    api.groupsIndex(filterYear = missingYearIds.joinToString(",")).data
+                } ?: return
+            val groupsByYear = groups.groupBy(Group::yearId)
+            missingYearIds.forEach { yearId ->
+                val yearGroups = groupsByYear[yearId].orEmpty()
+                studentGroupsByYear[yearId] = yearGroups
+                runCatching { writeBesteSchuleCache("student_groups_$yearId", yearGroups) }
+            }
+        }
+    }
+
     private suspend fun loadLevels(years: List<Year>) {
         if (years.isEmpty()) return
         val yearIds = years.map { it.id }.sorted()
@@ -940,6 +974,7 @@ class ViewModel(
         currentJournalDay.value = null
         level.value = null
         levelsByYear.clear()
+        studentGroupsByYear.clear()
         intervals.clear()
         dayStudentCount.value = null
         lessonStudentCount.value = null

@@ -41,6 +41,7 @@ data class AppSettings(
     val showNotes: Boolean = true,
     val homeworkEnabled: Boolean? = true,
     val showTeachersWithFirstname: Boolean = false,
+    val showOnlyRelevantData: Boolean = true,
     val gradeNotificationsEnabled: Boolean = false,
     val gradeNotificationsIntervalMinutes: Long = 60L,
     val gradeNotificationsWifiOnly: Boolean = false,

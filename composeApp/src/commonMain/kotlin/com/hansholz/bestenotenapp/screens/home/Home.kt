@@ -122,6 +122,7 @@ import com.hansholz.bestenotenapp.main.LocalShowCurrentLesson
 import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
 import com.hansholz.bestenotenapp.main.LocalShowNotes
+import com.hansholz.bestenotenapp.main.LocalShowOnlyRelevantData
 import com.hansholz.bestenotenapp.main.LocalShowYearProgress
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.navigation.Fragment
@@ -135,6 +136,7 @@ import com.hansholz.bestenotenapp.utils.makeItemVisibleAndNavigate
 import com.hansholz.bestenotenapp.utils.percentOfSchoolYearAt
 import com.hansholz.bestenotenapp.utils.rememberCurrentSimpleTime
 import com.hansholz.bestenotenapp.utils.switchPercent
+import com.hansholz.bestenotenapp.utils.withRelevantLessons
 import com.pushpal.jetlime.EventPointType
 import com.pushpal.jetlime.EventPosition
 import com.pushpal.jetlime.JetLimeDefaults
@@ -174,10 +176,32 @@ fun Home(
         val showNewestGrades by LocalShowNewestGrades.current
         val showCurrentLesson by LocalShowCurrentLesson.current
         val showNotes by LocalShowNotes.current
+        val showOnlyRelevantData by LocalShowOnlyRelevantData.current
         val showYearProgress by LocalShowYearProgress.current
         val homeworkEnabled by LocalHomeworkEnabled.current
         val homeworkRevision = viewModel.homeworkRevision.intValue
         var homework by remember { mutableStateOf(emptyList<HomeworkEntry>()) }
+
+        val timetableYearIds by remember {
+            derivedStateOf {
+                buildSet {
+                    viewModel.currentJournalDay.value
+                        ?.lessons
+                        .orEmpty()
+                        .mapNotNullTo(this) { it.group?.yearId }
+                    (
+                        viewModel.user.value
+                            ?.config
+                            ?.yearId ?: viewModel.user.value
+                            ?.year
+                            ?.id
+                    )?.let(::add)
+                }
+            }
+        }
+        LaunchedEffect(showOnlyRelevantData, timetableYearIds) {
+            if (showOnlyRelevantData) viewModel.loadStudentGroups(timetableYearIds)
+        }
 
         LaunchedEffect(viewModel.currentJournalDay.value?.date, homeworkEnabled, homeworkRevision) {
             homework =
@@ -528,11 +552,19 @@ fun Home(
                                                 ContainedLoadingIndicator(Modifier.align(Alignment.Center))
                                             }
                                         } else {
-                                            if (!viewModel.currentJournalDay.value
+                                            val currentJournalDay =
+                                                viewModel.currentJournalDay.value?.let {
+                                                    if (showOnlyRelevantData) {
+                                                        it.withRelevantLessons(viewModel.studentGroupsByYear)
+                                                    } else {
+                                                        it
+                                                    }
+                                                }
+                                            if (!currentJournalDay
                                                     ?.lessons
                                                     .isNullOrEmpty()
                                             ) {
-                                                val lessons = viewModel.currentJournalDay.value!!.lessons!!
+                                                val lessons = currentJournalDay.lessons
                                                 val groupedLessons = remember(lessons) { lessons.sortedBy { it.nr }.groupBy { it.nr } }
                                                 val maxLessonNr = remember(lessons) { lessons.maxOf { it.nr.toInt() } }
                                                 val currentTime by rememberCurrentSimpleTime()
@@ -625,8 +657,8 @@ fun Home(
                                                     }
                                                     if (showNotes || homework.isNotEmpty()) {
                                                         val notes =
-                                                            viewModel.currentJournalDay.value
-                                                                ?.notes
+                                                            currentJournalDay
+                                                                .notes
                                                                 ?.filter { it.description != null }
                                                         if (!notes.isNullOrEmpty() || homework.isNotEmpty()) Spacer(Modifier.height(5.dp))
                                                         if (showNotes) {

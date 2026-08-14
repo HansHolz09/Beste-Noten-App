@@ -120,12 +120,14 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.main.LocalShowAbsences
+import com.hansholz.bestenotenapp.main.LocalShowOnlyRelevantData
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.main.isApplePlatform
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.utils.captureAsyncAndSaveOrShare
+import com.hansholz.bestenotenapp.utils.withRelevantLessons
 import dev.chrisbanes.haze.hazeSource
 import dev.wonddak.capturable.capturable
 import dev.wonddak.capturable.controller.rememberCaptureController
@@ -133,6 +135,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
@@ -169,6 +172,7 @@ fun Timetable(
         val layoutDirection = LocalLayoutDirection.current
 
         var showAbsences by LocalShowAbsences.current
+        val showOnlyRelevantData by LocalShowOnlyRelevantData.current
 
         val isCompactWindow =
             !currentWindowAdaptiveInfoV2()
@@ -227,12 +231,38 @@ fun Timetable(
                             timetableViewModel.startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK)
                         }
                     var week by remember { mutableStateOf<JournalWeek?>(null) }
-                    LaunchedEffect(weekDate, showAbsences) {
+
+                    suspend fun loadWeek(
+                        useCached: Boolean = true,
+                        getAbsences: Boolean = false,
+                    ): JournalWeek? {
+                        val loadedWeek = viewModel.getJournalWeek(weekDate, useCached, getAbsences) ?: return null
+                        if (!showOnlyRelevantData) return loadedWeek
+                        val yearIds =
+                            buildSet {
+                                loadedWeek.yearId?.toIntOrNull()?.let(::add)
+                                loadedWeek.days
+                                    .orEmpty()
+                                    .flatMap { it.lessons.orEmpty() }
+                                    .mapNotNullTo(this) { it.group?.yearId }
+                                if (isEmpty()) {
+                                    viewModel.years
+                                        .firstOrNull { year ->
+                                            weekDate in LocalDate.parse(year.from)..LocalDate.parse(year.to)
+                                        }?.id
+                                        ?.let(::add)
+                                }
+                            }
+                        viewModel.loadStudentGroups(yearIds)
+                        return loadedWeek.withRelevantLessons(viewModel.studentGroupsByYear)
+                    }
+
+                    LaunchedEffect(weekDate, showAbsences, showOnlyRelevantData) {
                         isLoading = true
                         while (viewModel.years.isEmpty()) {
                             delay(250.milliseconds)
                         }
-                        week = viewModel.getJournalWeek(weekDate, getAbsences = showAbsences && pagerState.currentPage == currentPage)
+                        week = loadWeek(getAbsences = showAbsences && pagerState.currentPage == currentPage)
                         isLoading = false
                         if (week?.days?.all { it.lessons.isNullOrEmpty() } ?: true) isLoaded(false)
                     }
@@ -245,7 +275,7 @@ fun Timetable(
                                 isRefreshLoading = true
                                 try {
                                     delay(1.seconds)
-                                    week = viewModel.getJournalWeek(weekDate, false, showAbsences)
+                                    week = loadWeek(false, showAbsences)
                                     vibrator.enhancedVibrateN(EnhancedVibrations.QUICK_FALL)
                                 } finally {
                                     isRefreshLoading = false

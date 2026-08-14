@@ -25,6 +25,7 @@ internal val LocalShowNotes = compositionLocalOf { mutableStateOf(false) }
 internal val LocalHomeworkEnabled = compositionLocalOf { mutableStateOf(true) }
 internal val LocalHomeworkGoogleSyncEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowTeachersWithFirstname = compositionLocalOf { mutableStateOf(false) }
+internal val LocalShowOnlyRelevantData = compositionLocalOf { mutableStateOf(true) }
 internal val LocalGradeNotificationsEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalGradeNotificationIntervalMinutes = compositionLocalOf { mutableStateOf(60L) }
 internal val LocalGradeNotificationsWifiOnly = compositionLocalOf { mutableStateOf(false) }
@@ -57,6 +58,7 @@ fun SettingsProvider(content: @Composable () -> Unit) =
         val homeworkEnabled = remember { mutableStateOf(get("homeworkEnabled", true)) }
         val homeworkGoogleSyncEnabled = remember { mutableStateOf(get("homeworkGoogleSyncEnabled", false)) }
         val showTeachersWithFirstnameState = remember { mutableStateOf(get("showTeachersWithFirstname", false)) }
+        val showOnlyRelevantDataState = remember { mutableStateOf(get("showOnlyRelevantData", get("showOnlyGroupRelevantData", true))) }
         val gradeNotificationsEnabledState = remember { mutableStateOf(get("gradeNotificationsEnabled", false)) }
         val gradeNotificationIntervalState = remember { mutableStateOf(get("gradeNotificationsIntervalMinutes", 60L)) }
         val gradeNotificationsWifiOnlyState = remember { mutableStateOf(get("gradeNotificationsWifiOnly", false)) }
@@ -78,6 +80,7 @@ fun SettingsProvider(content: @Composable () -> Unit) =
             LocalHomeworkEnabled provides homeworkEnabled,
             LocalHomeworkGoogleSyncEnabled provides homeworkGoogleSyncEnabled,
             LocalShowTeachersWithFirstname provides showTeachersWithFirstnameState,
+            LocalShowOnlyRelevantData provides showOnlyRelevantDataState,
             LocalGradeNotificationsEnabled provides gradeNotificationsEnabledState,
             LocalGradeNotificationIntervalMinutes provides gradeNotificationIntervalState,
             LocalGradeNotificationsWifiOnly provides gradeNotificationsWifiOnlyState,

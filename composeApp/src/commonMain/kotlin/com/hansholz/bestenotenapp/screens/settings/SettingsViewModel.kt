@@ -77,6 +77,7 @@ class SettingsViewModel : ViewModel() {
                             showNotes = get("showNotes", true),
                             homeworkEnabled = get("homeworkEnabled", true),
                             showTeachersWithFirstname = get("showTeachersWithFirstname", false),
+                            showOnlyRelevantData = get("showOnlyRelevantData", true),
                             gradeNotificationsEnabled = get("gradeNotificationsEnabled", false),
                             gradeNotificationsIntervalMinutes = get("gradeNotificationsIntervalMinutes", 60L),
                             gradeNotificationsWifiOnly = get("gradeNotificationsWifiOnly", false),

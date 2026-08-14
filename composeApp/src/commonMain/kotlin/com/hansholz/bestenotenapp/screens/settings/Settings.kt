@@ -42,6 +42,7 @@ import com.composables.icons.materialsymbols.rounded.Delete_sweep
 import com.composables.icons.materialsymbols.rounded.Disabled_visible
 import com.composables.icons.materialsymbols.rounded.Fiber_new
 import com.composables.icons.materialsymbols.rounded.File_export
+import com.composables.icons.materialsymbols.rounded.Filter_alt
 import com.composables.icons.materialsymbols.rounded.Format_list_bulleted
 import com.composables.icons.materialsymbols.rounded.History
 import com.composables.icons.materialsymbols.rounded.How_to_reg
@@ -95,6 +96,7 @@ import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
 import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
 import com.hansholz.bestenotenapp.main.LocalShowNotes
+import com.hansholz.bestenotenapp.main.LocalShowOnlyRelevantData
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.LocalShowYearProgress
 import com.hansholz.bestenotenapp.main.Platform
@@ -164,6 +166,7 @@ fun Settings(
     var homeworkEnabled by LocalHomeworkEnabled.current
     var homeworkGoogleSyncEnabled by LocalHomeworkGoogleSyncEnabled.current
     var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
+    var showOnlyRelevantData by LocalShowOnlyRelevantData.current
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
     val biometricAuthentificationAvailable = LocalBiometricAuthenticationAvailable.current
     val authToken by secureMutableStateOf("", "authToken")
@@ -490,6 +493,16 @@ fun Settings(
             }
             if (!viewModel.isDemoAccount.value) {
                 settingsToggleItem(
+                    checked = showOnlyRelevantData,
+                    onCheckedChange = {
+                        showOnlyRelevantData = it
+                        put("showOnlyRelevantData", it)
+                    },
+                    text = "Nur relevante Daten anzeigen",
+                    icon = MaterialSymbols.Rounded.Filter_alt,
+                    position = PreferencePosition.Top,
+                )
+                settingsToggleItem(
                     checked = showAbsences,
                     onCheckedChange = {
                         showAbsences = it
@@ -508,7 +521,7 @@ fun Settings(
                     },
                     text = "Abwesenheits-Einträge anzeigen",
                     icon = MaterialSymbols.Rounded.How_to_reg,
-                    position = PreferencePosition.Top,
+                    position = PreferencePosition.Middle,
                 )
             }
             settingsToggleItem(
@@ -718,6 +731,7 @@ fun Settings(
                                 homeworkEnabled = appSettings.homeworkEnabled ?: true
                                 viewModel.homeworkSyncSettings.homeworkEnabled = homeworkEnabled
                                 showTeachersWithFirstname = appSettings.showTeachersWithFirstname
+                                showOnlyRelevantData = appSettings.showOnlyRelevantData
                                 notificationsEnabled = appSettings.gradeNotificationsEnabled
                                 notificationIntervalMinutes = appSettings.gradeNotificationsIntervalMinutes
                                 notificationsWifiOnly = appSettings.gradeNotificationsWifiOnly
@@ -742,6 +756,7 @@ fun Settings(
                                 put("showNotes", appSettings.showNotes)
                                 put("homeworkEnabled", appSettings.homeworkEnabled)
                                 put("showTeachersWithFirstname", appSettings.showTeachersWithFirstname)
+                                put("showOnlyRelevantData", appSettings.showOnlyRelevantData)
                                 put("gradeNotificationsEnabled", appSettings.gradeNotificationsEnabled)
                                 put("gradeNotificationsIntervalMinutes", appSettings.gradeNotificationsIntervalMinutes)
                                 put("gradeNotificationsWifiOnly", appSettings.gradeNotificationsWifiOnly)
