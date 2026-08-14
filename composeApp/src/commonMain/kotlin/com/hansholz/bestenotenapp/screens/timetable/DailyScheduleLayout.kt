@@ -45,13 +45,14 @@ import com.hansholz.bestenotenapp.api.models.JournalLesson
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.utils.SimpleTime
+import com.hansholz.bestenotenapp.utils.TimetableLessonBlock
 import kotlinx.datetime.LocalDate
 import kotlin.math.min
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun DailyScheduleLayout(
-    lessons: List<JournalLesson>,
+internal fun DailyScheduleLayout(
+    lessonBlocks: List<TimetableLessonBlock>,
     absences: List<Absence>,
     date: LocalDate,
     modifier: Modifier = Modifier,
@@ -61,15 +62,15 @@ fun DailyScheduleLayout(
     sharedTransitionScope: SharedTransitionScope,
     selectedLesson: JournalLesson?,
     popupTransition: Transition<Boolean>,
-    homeworkLessonIds: Set<String> = emptySet(),
-    doneHomeworkLessonIds: Set<String> = emptySet(),
-    onLessonPopupOpened: (JournalLesson) -> Unit,
+    homeworkBlockKeys: Set<String> = emptySet(),
+    doneHomeworkBlockKeys: Set<String> = emptySet(),
+    onLessonPopupOpened: (TimetableLessonBlock) -> Unit,
 ) {
     val preparedLessons =
-        remember(lessons) {
-            lessons
-                .sortedBy { it.nr }
-                .mapIndexed { index, lesson ->
+        remember(lessonBlocks) {
+            lessonBlocks
+                .mapIndexed { index, block ->
+                    val lesson = block.lesson
                     val fallbackStart = SimpleTime.parse("07:30").plus(50 * index)
                     val normalized =
                         if (lesson.time?.from == null || lesson.time.to == null) {
@@ -85,6 +86,7 @@ fun DailyScheduleLayout(
                         }
 
                     PreparedLesson(
+                        block = block,
                         lesson = normalized,
                         start = SimpleTime.parse(normalized.time?.from ?: "00:00"),
                         end = SimpleTime.parse(normalized.time?.to ?: "00:00"),
@@ -171,16 +173,15 @@ fun DailyScheduleLayout(
                         (placement.width - 4.dp.roundToPx() * 2 - 5.dp.roundToPx() * 2)
                             .coerceAtLeast(1)
                     val contentHeight = (placement.height - 4.dp.roundToPx() * 2).coerceAtLeast(1)
-                    val rotate = contentHeight >= contentWidth * 1.35f && lesson.subject?.localId != null
+                    val rotate = contentHeight >= contentWidth * 1.35f && placement.width <= 100 && lesson.subject?.localId != null
                     val widthScale = (if (rotate) contentHeight else contentWidth).toFloat() / referenceTextSizes[index].width.coerceAtLeast(1)
                     val heightScale = (if (rotate) contentWidth else contentHeight).toFloat() / referenceTextSizes[index].height.coerceAtLeast(1)
                     val fontSize =
                         (100.sp.toPx() * min(widthScale, heightScale) * 0.9f)
-                            .coerceIn(8.sp.toPx(), 96.sp.toPx())
+                            .coerceIn(8.sp.toPx(), 38.sp.toPx())
                             .toSp()
-                    val homeworkId = lesson.homeworkLessonId()
-                    val homeworkDone = homeworkId in doneHomeworkLessonIds
-                    val hasHomework = homeworkId in homeworkLessonIds && !captureOnly
+                    val homeworkDone = prepared.block.stableKey in doneHomeworkBlockKeys
+                    val hasHomework = prepared.block.stableKey in homeworkBlockKeys && !captureOnly
                     val isAbsent = index in absentLessonIndices
 
                     val measurable =
@@ -192,7 +193,7 @@ fun DailyScheduleLayout(
                                     exit = ExitTransition.None,
                                 ) {
                                     OutlinedCard(
-                                        onClick = { onLessonPopupOpened(lesson) },
+                                        onClick = { onLessonPopupOpened(prepared.block.copy(lesson = lesson)) },
                                         modifier =
                                             Modifier
                                                 .fillMaxSize()
@@ -375,11 +376,12 @@ private fun calculateLessonPlacements(
 }
 
 private data class PreparedLesson(
+    val block: TimetableLessonBlock,
     val lesson: JournalLesson,
     val start: SimpleTime,
     val end: SimpleTime,
 ) {
-    val stableKey: String = lesson.homeworkLessonId() ?: "${lesson.nr}:$start-$end:${lesson.subject?.localId}"
+    val stableKey: String = block.stableKey
 }
 
 private data class ParsedAbsence(

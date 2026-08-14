@@ -39,6 +39,7 @@ data class AppSettings(
     val showCollectionsWithoutGrades: Boolean = false,
     val showAbsences: Boolean = true,
     val showNotes: Boolean = true,
+    val timetableBlockViewEnabled: Boolean? = null,
     val homeworkEnabled: Boolean? = true,
     val showTeachersWithFirstname: Boolean = false,
     val showOnlyRelevantData: Boolean = true,

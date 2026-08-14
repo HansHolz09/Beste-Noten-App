@@ -74,10 +74,13 @@ import com.hansholz.bestenotenapp.homework.HomeworkPlacement
 import com.hansholz.bestenotenapp.homework.HomeworkStatus
 import com.hansholz.bestenotenapp.main.LocalHomeworkEnabled
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
+import com.hansholz.bestenotenapp.main.LocalTimetableBlockViewEnabled
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.utils.SimpleTime
+import com.hansholz.bestenotenapp.utils.TimetableLessonBlock
+import com.hansholz.bestenotenapp.utils.createTimetableLessonBlocks
 import com.hansholz.bestenotenapp.utils.formateDate
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
@@ -113,12 +116,13 @@ fun WeekScheduleView(
     val blurEnabled = LocalBlurEnabled.current
     val showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
     val homeworkEnabled by LocalHomeworkEnabled.current
+    val timetableBlockViewEnabled by LocalTimetableBlockViewEnabled.current
     val homeworkRevision = viewModel.homeworkRevision.intValue
 
     val days = week?.days ?: return
 
     val preparedDays =
-        remember(days) {
+        remember(days, timetableBlockViewEnabled) {
             val firstDate = LocalDate.parse(days.firstOrNull()?.date ?: "2000-01-01")
             days.mapIndexedNotNull { dayIndex, day ->
                 val normalizedLessons =
@@ -144,19 +148,29 @@ fun WeekScheduleView(
                     PreparedScheduleDay(
                         sourceIndex = dayIndex,
                         date = firstDate.plus(dayIndex, DateTimeUnit.DAY),
-                        lessons = normalizedLessons,
+                        lessonBlocks =
+                            createTimetableLessonBlocks(
+                                normalizedLessons,
+                                timetableBlockViewEnabled,
+                            ),
                     )
                 }
             }
         }
 
-    val allLessons = remember(preparedDays) { preparedDays.flatMap(PreparedScheduleDay::lessons) }
+    val allLessons =
+        remember(preparedDays) {
+            preparedDays.flatMap { day ->
+                day.lessonBlocks.flatMap(TimetableLessonBlock::sourceLessons)
+            }
+        }
     if (allLessons.isEmpty()) return
 
     val minTimeHour = remember(allLessons) { allLessons.minOf { SimpleTime.parse(it.time?.from ?: "23:59") } }
     val latestLessonEnd = remember(allLessons) { allLessons.maxOf { SimpleTime.parse(it.time?.to ?: "00:00") } }
 
     var selectedLesson by remember { mutableStateOf<JournalLesson?>(null) }
+    var selectedLessonSources by remember { mutableStateOf(emptyList<JournalLesson>()) }
     var selectedDay by remember {
         mutableStateOf(
             Clock.System
@@ -265,26 +279,28 @@ fun WeekScheduleView(
                 preparedDays.forEach { day ->
                     key(day.date) {
                         val currentDate = day.date
-                        var homeworkLessonIds by remember(currentDate, homeworkEnabled) { mutableStateOf(emptySet<String>()) }
-                        var doneHomeworkLessonIds by remember(currentDate, homeworkEnabled) { mutableStateOf(emptySet<String>()) }
-                        LaunchedEffect(currentDate, homeworkEnabled, day.lessons, homeworkRevision) {
-                            val lessonIds = mutableSetOf<String>()
-                            val doneLessonIds = mutableSetOf<String>()
+                        var homeworkBlockKeys by remember(currentDate, homeworkEnabled) { mutableStateOf(emptySet<String>()) }
+                        var doneHomeworkBlockKeys by remember(currentDate, homeworkEnabled) { mutableStateOf(emptySet<String>()) }
+                        LaunchedEffect(currentDate, homeworkEnabled, day.lessonBlocks, homeworkRevision) {
+                            val blockKeys = mutableSetOf<String>()
+                            val doneBlockKeys = mutableSetOf<String>()
                             if (homeworkEnabled) {
-                                day.lessons.forEach { lesson ->
-                                    val lessonId = lesson.homeworkLessonId() ?: return@forEach
+                                day.lessonBlocks.forEach { block ->
                                     val entries =
-                                        viewModel
-                                            .getHomeworkForLesson(lessonId, currentDate)
-                                            .filter { it.belongsToCurrentLessonSubject(lesson) }
+                                        block.sourceLessons.flatMap { lesson ->
+                                            val lessonId = lesson.homeworkLessonId() ?: return@flatMap emptyList()
+                                            viewModel
+                                                .getHomeworkForLesson(lessonId, currentDate)
+                                                .filter { it.belongsToCurrentLessonSubject(lesson) }
+                                        }
                                     if (entries.isNotEmpty()) {
-                                        lessonIds += lessonId
-                                        if (entries.all { it.status == HomeworkStatus.DONE }) doneLessonIds += lessonId
+                                        blockKeys += block.stableKey
+                                        if (entries.all { it.status == HomeworkStatus.DONE }) doneBlockKeys += block.stableKey
                                     }
                                 }
                             }
-                            homeworkLessonIds = lessonIds
-                            doneHomeworkLessonIds = doneLessonIds
+                            homeworkBlockKeys = blockKeys
+                            doneHomeworkBlockKeys = doneBlockKeys
                         }
                         Column(
                             modifier = Modifier.weight(1f).fillMaxHeight(),
@@ -297,7 +313,7 @@ fun WeekScheduleView(
                                 captureOnly = captureOnly,
                             )
                             DailyScheduleLayout(
-                                lessons = day.lessons,
+                                lessonBlocks = day.lessonBlocks,
                                 absences = absences,
                                 date = currentDate,
                                 modifier = Modifier.fillMaxHeight(),
@@ -307,12 +323,13 @@ fun WeekScheduleView(
                                 sharedTransitionScope = this@SharedTransitionLayout,
                                 selectedLesson = selectedLesson,
                                 popupTransition = popupTransition,
-                                homeworkLessonIds = homeworkLessonIds,
-                                doneHomeworkLessonIds = doneHomeworkLessonIds,
-                            ) { lesson ->
+                                homeworkBlockKeys = homeworkBlockKeys,
+                                doneHomeworkBlockKeys = doneHomeworkBlockKeys,
+                            ) { block ->
                                 if (enabled) {
                                     vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
-                                    selectedLesson = lesson
+                                    selectedLesson = block.lesson
+                                    selectedLessonSources = block.sourceLessons
                                     selectedDay = currentDate
                                     lessonPopupShown.value = true
                                 }
@@ -508,6 +525,7 @@ fun WeekScheduleView(
                                 LessonHomeworkSection(
                                     viewModel = viewModel,
                                     lesson = lesson,
+                                    sourceLessons = selectedLessonSources,
                                     selectedDay = selectedDay,
                                 )
                             }
@@ -544,7 +562,7 @@ fun WeekScheduleView(
 private data class PreparedScheduleDay(
     val sourceIndex: Int,
     val date: LocalDate,
-    val lessons: List<JournalLesson>,
+    val lessonBlocks: List<TimetableLessonBlock>,
 )
 
 fun HomeworkEntry.belongsToCurrentLessonSubject(lesson: JournalLesson): Boolean {

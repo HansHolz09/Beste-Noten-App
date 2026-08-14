@@ -64,6 +64,7 @@ import com.hansholz.bestenotenapp.components.rotateForever
 import com.hansholz.bestenotenapp.main.ExactPlatform
 import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
+import com.hansholz.bestenotenapp.main.LocalTimetableBlockViewEnabled
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
@@ -93,6 +94,7 @@ fun Login(
     @Suppress("DEPRECATION")
     val clipboard = LocalClipboardManager.current
     val animationsEnabled by LocalAnimationsEnabled.current
+    var timetableBlockViewEnabled by LocalTimetableBlockViewEnabled.current
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
 
     TopAppBarScaffold(
@@ -171,6 +173,7 @@ fun Login(
                                                 viewModel.login(
                                                     stayLoggedIn = stayLoggedIn,
                                                     isLoading = { loginViewModel.isLoading = it },
+                                                    applySettings = { timetableBlockViewEnabled = it },
                                                     onNavigateHome = onNavigateHome,
                                                     chooseStudent = { students, callback ->
                                                         loginViewModel.chooseStudentDialog = true to students
@@ -197,6 +200,7 @@ fun Login(
                                             viewModel.login(
                                                 stayLoggedIn = stayLoggedIn,
                                                 isLoading = { loginViewModel.isLoading = it },
+                                                applySettings = { timetableBlockViewEnabled = it },
                                                 onNavigateHome = onNavigateHome,
                                                 chooseStudent = { students, callback ->
                                                     loginViewModel.chooseStudentDialog = true to students
@@ -220,6 +224,7 @@ fun Login(
                                         viewModel.login(
                                             stayLoggedIn = stayLoggedIn,
                                             isLoading = { loginViewModel.isLoading = it },
+                                            applySettings = { timetableBlockViewEnabled = it },
                                             onNavigateHome = onNavigateHome,
                                             chooseStudent = { students, callback ->
                                                 loginViewModel.chooseStudentDialog = true to students

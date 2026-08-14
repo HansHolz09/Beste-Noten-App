@@ -33,6 +33,7 @@ import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Account_circle
 import com.composables.icons.materialsymbols.rounded.Animation
 import com.composables.icons.materialsymbols.rounded.Article
+import com.composables.icons.materialsymbols.rounded.Auto_awesome_mosaic
 import com.composables.icons.materialsymbols.rounded.Balance
 import com.composables.icons.materialsymbols.rounded.Blur_on
 import com.composables.icons.materialsymbols.rounded.Brightness_4
@@ -99,6 +100,7 @@ import com.hansholz.bestenotenapp.main.LocalShowNotes
 import com.hansholz.bestenotenapp.main.LocalShowOnlyRelevantData
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.LocalShowYearProgress
+import com.hansholz.bestenotenapp.main.LocalTimetableBlockViewEnabled
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getExactPlatform
@@ -163,6 +165,7 @@ fun Settings(
     var showCollectionsWithoutGrades by LocalShowCollectionsWithoutGrades.current
     var showAbsences by LocalShowAbsences.current
     var showNotes by LocalShowNotes.current
+    var timetableBlockViewEnabled by LocalTimetableBlockViewEnabled.current
     var homeworkEnabled by LocalHomeworkEnabled.current
     var homeworkGoogleSyncEnabled by LocalHomeworkGoogleSyncEnabled.current
     var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
@@ -491,6 +494,16 @@ fun Settings(
             item {
                 PreferenceCategory("Stundenplan", Modifier.padding(horizontal = 15.dp))
             }
+            settingsToggleItem(
+                checked = timetableBlockViewEnabled,
+                onCheckedChange = {
+                    timetableBlockViewEnabled = it
+                    put("timetableBlockViewEnabled", it)
+                },
+                text = "Blockansicht verwenden",
+                icon = MaterialSymbols.Rounded.Auto_awesome_mosaic,
+                position = PreferencePosition.Top,
+            )
             if (!viewModel.isDemoAccount.value) {
                 settingsToggleItem(
                     checked = showOnlyRelevantData,
@@ -500,7 +513,7 @@ fun Settings(
                     },
                     text = "Nur relevante Daten anzeigen",
                     icon = MaterialSymbols.Rounded.Filter_alt,
-                    position = PreferencePosition.Top,
+                    position = PreferencePosition.Middle,
                 )
                 settingsToggleItem(
                     checked = showAbsences,
@@ -532,7 +545,7 @@ fun Settings(
                 },
                 text = "Tages-Notizen anzeigen",
                 icon = MaterialSymbols.Rounded.Article,
-                position = if (viewModel.isDemoAccount.value) PreferencePosition.Top else PreferencePosition.Middle,
+                position = PreferencePosition.Middle,
             )
             settingsToggleItem(
                 checked = homeworkEnabled,
@@ -728,6 +741,7 @@ fun Settings(
                                 showCollectionsWithoutGrades = appSettings.showCollectionsWithoutGrades
                                 showAbsences = appSettings.showAbsences
                                 showNotes = appSettings.showNotes
+                                timetableBlockViewEnabled = appSettings.timetableBlockViewEnabled ?: true
                                 homeworkEnabled = appSettings.homeworkEnabled ?: true
                                 viewModel.homeworkSyncSettings.homeworkEnabled = homeworkEnabled
                                 showTeachersWithFirstname = appSettings.showTeachersWithFirstname
@@ -754,6 +768,7 @@ fun Settings(
                                 put("showCollectionsWithoutGrades", appSettings.showCollectionsWithoutGrades)
                                 put("showAbsences", appSettings.showAbsences)
                                 put("showNotes", appSettings.showNotes)
+                                put("timetableBlockViewEnabled", appSettings.timetableBlockViewEnabled)
                                 put("homeworkEnabled", appSettings.homeworkEnabled)
                                 put("showTeachersWithFirstname", appSettings.showTeachersWithFirstname)
                                 put("showOnlyRelevantData", appSettings.showOnlyRelevantData)

@@ -75,6 +75,7 @@ class SettingsViewModel : ViewModel() {
                             showCollectionsWithoutGrades = get("showCollectionsWithoutGrades", false),
                             showAbsences = get("showAbsences", true),
                             showNotes = get("showNotes", true),
+                            timetableBlockViewEnabled = get("timetableBlockViewEnabled", false),
                             homeworkEnabled = get("homeworkEnabled", true),
                             showTeachersWithFirstname = get("showTeachersWithFirstname", false),
                             showOnlyRelevantData = get("showOnlyRelevantData", true),

@@ -41,6 +41,7 @@ import top.ltfan.multihaptic.compose.rememberVibrator
 fun LessonHomeworkSection(
     viewModel: ViewModel,
     lesson: JournalLesson,
+    sourceLessons: List<JournalLesson> = listOf(lesson),
     selectedDay: LocalDate,
 ) {
     val scope = rememberCoroutineScope()
@@ -51,14 +52,13 @@ fun LessonHomeworkSection(
     val busyEntryId = remember { mutableStateOf<String?>(null) }
     val homeworkRevision = viewModel.homeworkRevision.intValue
 
-    LaunchedEffect(lesson, selectedDay, homeworkRevision) {
-        val lessonId = lesson.homeworkLessonId()
+    LaunchedEffect(sourceLessons, selectedDay, homeworkRevision) {
         homework.value =
-            if (lessonId == null) {
-                emptyList()
-            } else {
-                viewModel.getHomeworkForLesson(lessonId, selectedDay).filter { it.belongsToCurrentLessonSubject(lesson) }
-            }
+            sourceLessons
+                .flatMap { sourceLesson ->
+                    val lessonId = sourceLesson.homeworkLessonId() ?: return@flatMap emptyList()
+                    viewModel.getHomeworkForLesson(lessonId, selectedDay).filter { it.belongsToCurrentLessonSubject(sourceLesson) }
+                }.distinctBy { it.localId }
     }
 
     HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)

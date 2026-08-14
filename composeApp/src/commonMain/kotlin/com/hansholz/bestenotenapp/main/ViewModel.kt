@@ -49,8 +49,10 @@ import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.hansholz.bestenotenapp.utils.IO
+import com.hansholz.bestenotenapp.utils.SecondaryStage
 import com.hansholz.bestenotenapp.utils.defaultFileKitDialogSettings
 import com.hansholz.bestenotenapp.utils.parseGradeValue
+import com.hansholz.bestenotenapp.utils.secondaryStage
 import com.hansholz.bestenotenapp.utils.weekOfYear
 import dev.chrisbanes.haze.HazeState
 import io.github.vinceglb.filekit.FileKit
@@ -394,6 +396,7 @@ class ViewModel(
     suspend fun login(
         stayLoggedIn: Boolean,
         isLoading: (Boolean) -> Unit,
+        applySettings: (timetableBlockViewEnabled: Boolean) -> Unit,
         onNavigateHome: () -> Unit,
         chooseStudent: suspend (List<Student>, (String) -> Unit) -> Unit,
         handleToken: suspend () -> Unit,
@@ -434,7 +437,12 @@ class ViewModel(
                         GradeNotifications.onLogin()
                     }
                 }
+                this@ViewModel.user.value = loadBesteSchuleData("user") { api.usersShow(studentId.value).data }
                 loadCurrentLevel()
+                if (level.value?.secondaryStage() == SecondaryStage.TWO && kSafe.getKeyInfo("timetableBlockViewEnabled") == null) {
+                    put("timetableBlockViewEnabled", true)
+                    applySettings(true)
+                }
                 writeBesteSchuleCache("user", user)
                 setCurrentYear()
                 if (stayLoggedIn) {
