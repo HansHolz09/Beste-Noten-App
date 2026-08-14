@@ -13,11 +13,13 @@ internal data class GitHubRelease(
 @Serializable
 internal data class GitHubReleaseAsset(
     val name: String,
+    val size: Long,
     @SerialName("browser_download_url") val browserDownloadUrl: String,
 )
 
 internal data class AvailableUpdate(
     val version: String,
+    val size: String,
     val releaseNotes: String,
     val downloadUrl: String,
 )

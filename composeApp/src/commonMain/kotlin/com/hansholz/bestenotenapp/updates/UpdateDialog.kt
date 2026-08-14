@@ -81,7 +81,7 @@ fun UpdateDialogHost() =
                                 .verticalScroll(rememberScrollState()),
                     ) {
                         Text(
-                            text = "von ${BuildConfig.VERSION_NAME} zu ${availableUpdate.version}",
+                            text = "von ${BuildConfig.VERSION_NAME} zu ${availableUpdate.version}\n${availableUpdate.size}",
                             modifier = Modifier.fillMaxWidth(),
                             textAlign = TextAlign.Center,
                         )

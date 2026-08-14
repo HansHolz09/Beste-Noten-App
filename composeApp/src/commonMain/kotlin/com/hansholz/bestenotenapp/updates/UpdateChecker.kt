@@ -2,6 +2,7 @@ package com.hansholz.bestenotenapp.updates
 
 import bestenotenapp.composeApp.BuildConfig
 import com.hansholz.bestenotenapp.api.createHttpClient
+import com.hansholz.bestenotenapp.utils.roundToDecimals
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -24,8 +25,10 @@ internal suspend fun checkForUpdate(): AvailableUpdate? {
 
         val target = updateAssetTarget() ?: return null
         val asset = release.assets.firstOrNull { it.matches(target) } ?: return null
+        val assetSize = "${(asset.size / 1048576f).roundToDecimals(2)} MB".replace('.', ',')
         AvailableUpdate(
             version = releaseVersion,
+            size = assetSize,
             releaseNotes = release.body,
             downloadUrl = asset.browserDownloadUrl,
         )
