@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ContainedLoadingIndicator
@@ -195,53 +196,55 @@ fun StatsDialog(
                     ContainedLoadingIndicator(Modifier.padding(100.dp))
                 } else {
                     Column(Modifier.verticalScroll(rememberScrollState())) {
-                        Text(
-                            text =
-                                buildAnnotatedString {
-                                    withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
-                                        append("Zeiträume:\n")
-                                    }
-                                    appendWithSymbols(
-                                        viewModel.intervals.joinToString("\n") { interval ->
-                                            val daysRemaining = Clock.System.todayIn(TimeZone.currentSystemDefault()).daysUntil(LocalDate.parse(interval.to))
-                                            interval.name.let { if (it.regionMatches(2, "HJ", 0, 2)) "${it.take(2)} ${it.substringAfter('.')}" else it } +
-                                                " vom ${formateDate(interval.from)} bis ${formateDate(interval.to)}" +
-                                                (if (interval.to != interval.editableTo) " mit Notenschluss am ${formateDate(interval.editableTo)}" else "") +
-                                                (if (daysRemaining > 1) "\n➜ noch $daysRemaining Tage" else "")
-                                        },
-                                    )
-                                    withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
-                                        append("\n\nDaten zum Schuljahr (${viewModel.user.value?.year?.name}):\n")
-                                    }
-                                    appendWithSymbols(
-                                        "• Schultage: ${currentDayData?.count}\n" +
-                                            "• Abwesende Tage: ${currentDayData?.notPresentCount} (davon ${currentDayData?.notPresentWithAbsenceCount} entschuldigt," +
-                                            " $currentDaysNotPresentWithoutAbsenceCount nicht)\n" +
-                                            "• Unterrichtsstunden: ${currentLessonData?.count}\n" +
-                                            "• Abwesende Stunden: ${currentLessonData?.notPresentCount} (davon ${currentLessonData?.notPresentWithAbsenceCount}" +
-                                            " entschuldigt, $currentLessonsNotPresentWithoutAbsenceCount nicht)\n" +
-                                            "➜ Durchschnittlich $currentAverage Stunden/Tag, $currentPresence% Anwesenheit",
-                                    )
-                                    withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
-                                        append("\n\nGesamtübersicht:\n")
-                                    }
-                                    appendWithSymbols(
-                                        "• Schultage: ${dayData?.count}\n" +
-                                            "• Abwesende Tage: ${dayData?.notPresentCount} (davon ${dayData?.notPresentWithAbsenceCount} entschuldigt," +
-                                            " $daysNotPresentWithoutAbsenceCount nicht)\n" +
-                                            "• Unterrichtsstunden: ${lessonData?.count}\n" +
-                                            "• Abwesende Stunden: ${lessonData?.notPresentCount} (davon ${lessonData?.notPresentWithAbsenceCount} entschuldigt," +
-                                            " $lessonsNotPresentWithoutAbsenceCount nicht)\n" +
-                                            "➜ Durchschnittlich $average Stunden/Tag, $presence% Anwesenheit",
-                                    )
-                                    if (viewModel.currentLessonStudentBySlot.isNotEmpty()) {
+                        SelectionContainer {
+                            Text(
+                                text =
+                                    buildAnnotatedString {
                                         withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
-                                            append("\n\nAnwesenheit nach Stunden (${viewModel.user.value?.year?.name}):")
+                                            append("Zeiträume:\n")
                                         }
-                                    }
-                                },
-                            color = colorScheme.onSurface.copy(0.8f),
-                        )
+                                        appendWithSymbols(
+                                            viewModel.intervals.joinToString("\n") { interval ->
+                                                val daysRemaining = Clock.System.todayIn(TimeZone.currentSystemDefault()).daysUntil(LocalDate.parse(interval.to))
+                                                interval.name.let { if (it.regionMatches(2, "HJ", 0, 2)) "${it.take(2)} ${it.substringAfter('.')}" else it } +
+                                                    " vom ${formateDate(interval.from)} bis ${formateDate(interval.to)}" +
+                                                    (if (interval.to != interval.editableTo) " mit Notenschluss am ${formateDate(interval.editableTo)}" else "") +
+                                                    (if (daysRemaining > 1) "\n➜ noch $daysRemaining Tage" else "")
+                                            },
+                                        )
+                                        withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
+                                            append("\n\nDaten zum Schuljahr (${viewModel.user.value?.year?.name}):\n")
+                                        }
+                                        appendWithSymbols(
+                                            "• Schultage: ${currentDayData?.count}\n" +
+                                                "• Abwesende Tage: ${currentDayData?.notPresentCount} (davon ${currentDayData?.notPresentWithAbsenceCount} entschuldigt," +
+                                                " $currentDaysNotPresentWithoutAbsenceCount nicht)\n" +
+                                                "• Unterrichtsstunden: ${currentLessonData?.count}\n" +
+                                                "• Abwesende Stunden: ${currentLessonData?.notPresentCount} (davon ${currentLessonData?.notPresentWithAbsenceCount}" +
+                                                " entschuldigt, $currentLessonsNotPresentWithoutAbsenceCount nicht)\n" +
+                                                "➜ Durchschnittlich $currentAverage Stunden/Tag, $currentPresence% Anwesenheit",
+                                        )
+                                        withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
+                                            append("\n\nGesamtübersicht:\n")
+                                        }
+                                        appendWithSymbols(
+                                            "• Schultage: ${dayData?.count}\n" +
+                                                "• Abwesende Tage: ${dayData?.notPresentCount} (davon ${dayData?.notPresentWithAbsenceCount} entschuldigt," +
+                                                " $daysNotPresentWithoutAbsenceCount nicht)\n" +
+                                                "• Unterrichtsstunden: ${lessonData?.count}\n" +
+                                                "• Abwesende Stunden: ${lessonData?.notPresentCount} (davon ${lessonData?.notPresentWithAbsenceCount} entschuldigt," +
+                                                " $lessonsNotPresentWithoutAbsenceCount nicht)\n" +
+                                                "➜ Durchschnittlich $average Stunden/Tag, $presence% Anwesenheit",
+                                        )
+                                        if (viewModel.currentLessonStudentBySlot.isNotEmpty()) {
+                                            withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
+                                                append("\n\nAnwesenheit nach Stunden (${viewModel.user.value?.year?.name}):")
+                                            }
+                                        }
+                                    },
+                                color = colorScheme.onSurface.copy(0.8f),
+                            )
+                        }
                         if (viewModel.currentLessonStudentBySlot.isNotEmpty()) {
                             Spacer(Modifier.height(10.dp))
                             LessonsBySlotView(viewModel.currentLessonStudentBySlot)

@@ -2,6 +2,7 @@ package com.hansholz.bestenotenapp.screens.home
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -58,100 +59,102 @@ fun AccountSchoolDialog(
             val school = viewModel.user.value?.school
             val schoolAdress = "${school?.street} ${school?.streetNr} ${school?.city}"
             Column(Modifier.verticalScroll(rememberScrollState())) {
-                Text(
-                    text =
-                        buildAnnotatedString {
-                            withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
-                                append("Dieser Account:")
-                            }
-                            append("\n• ID: ${user?.id}")
-                            if (user?.email != null) {
-                                append("\n• E-Mail: ")
-                                withLink(
-                                    LinkAnnotation.Clickable("mailto_user") {
-                                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
-                                        uriHandler.openUri("mailto:${user.email.encodeURLParameter()}")
-                                    },
-                                ) {
-                                    append(user.email)
-                                }
-                            }
-                            if (user?.username != null) {
-                                append("\n• Nutzername: ${user.username}")
-                            }
-                            if (user?.role != null) {
-                                append(
-                                    "\n• Rolle: ${
-                                        when (user.role) {
-                                            "student" -> "Schüler"
-                                            "guardian" -> "Elternteil"
-                                            "teacher" -> "Lehrer"
-                                            "management" -> "Manager"
-                                            "mod" -> "Moderator"
-                                            "admin" -> "Administrator"
-                                            else -> "unbekannt"
-                                        }
-                                    }",
-                                )
-                            }
-                            withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
-                                append("\n\nAngemeldeter Schüler:")
-                            }
-                            append("\n• ID: ${student?.id}")
-                            if (student?.forename != null && student.name != null) {
-                                append("\n• Name: ${student.forename} ${student.name}")
-                            }
-                            if (level != null) {
-                                append("\n• Klassenstufe: ${level.name} (Sek. ${level.secondaryStage()?.value})")
-                            }
-                            if (student?.gender != null) {
-                                append(
-                                    "\n• Geschlecht: ${
-                                        when (student.gender) {
-                                            "male" -> "männlich"
-                                            "female" -> "weiblich"
-                                            else -> "unbekannt"
-                                        }
-                                    }",
-                                )
-                            }
-                            if (!user?.guardians.isNullOrEmpty()) {
-                                append("\n• Eltern: ")
-                                append(user.guardians.joinToString { "${it.forename} ${it.name}" })
-                            }
-                            if (school?.name != null) {
+                SelectionContainer {
+                    Text(
+                        text =
+                            buildAnnotatedString {
                                 withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
-                                    append("\n\n${school.name}:")
+                                    append("Dieser Account:")
                                 }
-                                if (school.email != null) {
+                                append("\n• ID: ${user?.id}")
+                                if (user?.email != null) {
                                     append("\n• E-Mail: ")
                                     withLink(
-                                        LinkAnnotation.Clickable("mailto_school") {
+                                        LinkAnnotation.Clickable("mailto_user") {
                                             vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
-                                            uriHandler.openUri("mailto:${school.email.encodeURLParameter()}")
+                                            uriHandler.openUri("mailto:${user.email.encodeURLParameter()}")
                                         },
                                     ) {
-                                        append(school.email)
+                                        append(user.email)
                                     }
                                 }
-                                if (!schoolAdress.contains(" null ")) {
-                                    append("\n• Adresse: ")
-                                    withLink(
-                                        LinkAnnotation.Clickable("open_maps") {
-                                            vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
-                                            uriHandler.openUri(
-                                                "https://maps.google.com/?q=" +
-                                                    "${school.name} $schoolAdress".encodeURLParameter(),
-                                            )
-                                        },
-                                    ) {
-                                        append(schoolAdress)
+                                if (user?.username != null) {
+                                    append("\n• Nutzername: ${user.username}")
+                                }
+                                if (user?.role != null) {
+                                    append(
+                                        "\n• Rolle: ${
+                                            when (user.role) {
+                                                "student" -> "Schüler"
+                                                "guardian" -> "Elternteil"
+                                                "teacher" -> "Lehrer"
+                                                "management" -> "Manager"
+                                                "mod" -> "Moderator"
+                                                "admin" -> "Administrator"
+                                                else -> "unbekannt"
+                                            }
+                                        }",
+                                    )
+                                }
+                                withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
+                                    append("\n\nAngemeldeter Schüler:")
+                                }
+                                append("\n• ID: ${student?.id}")
+                                if (student?.forename != null && student.name != null) {
+                                    append("\n• Name: ${student.forename} ${student.name}")
+                                }
+                                if (level != null) {
+                                    append("\n• Klassenstufe: ${level.name} (Sek. ${level.secondaryStage()?.value})")
+                                }
+                                if (student?.gender != null) {
+                                    append(
+                                        "\n• Geschlecht: ${
+                                            when (student.gender) {
+                                                "male" -> "männlich"
+                                                "female" -> "weiblich"
+                                                else -> "unbekannt"
+                                            }
+                                        }",
+                                    )
+                                }
+                                if (!user?.guardians.isNullOrEmpty()) {
+                                    append("\n• Eltern: ")
+                                    append(user.guardians.joinToString { "${it.forename} ${it.name}" })
+                                }
+                                if (school?.name != null) {
+                                    withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
+                                        append("\n\n${school.name}:")
+                                    }
+                                    if (school.email != null) {
+                                        append("\n• E-Mail: ")
+                                        withLink(
+                                            LinkAnnotation.Clickable("mailto_school") {
+                                                vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                                                uriHandler.openUri("mailto:${school.email.encodeURLParameter()}")
+                                            },
+                                        ) {
+                                            append(school.email)
+                                        }
+                                    }
+                                    if (!schoolAdress.contains(" null ")) {
+                                        append("\n• Adresse: ")
+                                        withLink(
+                                            LinkAnnotation.Clickable("open_maps") {
+                                                vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                                                uriHandler.openUri(
+                                                    "https://maps.google.com/?q=" +
+                                                        "${school.name} $schoolAdress".encodeURLParameter(),
+                                                )
+                                            },
+                                        ) {
+                                            append(schoolAdress)
+                                        }
                                     }
                                 }
-                            }
-                        },
-                    color = colorScheme.onSurface.copy(0.8f),
-                )
+                            },
+                        color = colorScheme.onSurface.copy(0.8f),
+                    )
+                }
             }
         },
     )

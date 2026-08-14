@@ -3,6 +3,7 @@ package com.hansholz.bestenotenapp.screens.home
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.Icon
@@ -60,21 +61,23 @@ fun TimesDialog(
                     Text("Es sind keine Unterrichtszeiten verfügbar.")
                 } else {
                     Column(Modifier.verticalScroll(rememberScrollState())) {
-                        Text(
-                            text =
-                                buildAnnotatedString {
-                                    viewModel.times.forEachIndexed { index, times ->
-                                        if (index > 0) append("\n\n")
-                                        withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
-                                            append("${times.name}:")
+                        SelectionContainer {
+                            Text(
+                                text =
+                                    buildAnnotatedString {
+                                        viewModel.times.forEachIndexed { index, times ->
+                                            if (index > 0) append("\n\n")
+                                            withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
+                                                append("${times.name}:")
+                                            }
+                                            times.lessons.forEach { lesson ->
+                                                append("\n${lesson.nr}. Stunde: ${lesson.from}-${lesson.to}")
+                                            }
                                         }
-                                        times.lessons.forEach { lesson ->
-                                            append("\n${lesson.nr}. Stunde: ${lesson.from}-${lesson.to}")
-                                        }
-                                    }
-                                },
-                            color = colorScheme.onSurface.copy(0.8f),
-                        )
+                                    },
+                                color = colorScheme.onSurface.copy(0.8f),
+                            )
+                        }
                     }
                 }
             }
