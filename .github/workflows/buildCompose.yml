@@ -585,7 +585,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: NucleusFramework/Nucleus/.github/actions/setup-nucleus@v2.4.2
+      - uses: NucleusFramework/Nucleus/.github/actions/setup-nucleus@v2.4.4
         with:
           graalvm: 'true'
           graalvm-distribution: 'oracle'
@@ -949,7 +949,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: NucleusFramework/Nucleus/.github/actions/setup-nucleus@v2.4.2
+      - uses: NucleusFramework/Nucleus/.github/actions/setup-nucleus@v2.4.4
         with:
           graalvm: 'true'
           graalvm-distribution: 'oracle'
@@ -1053,7 +1053,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: NucleusFramework/Nucleus/.github/actions/setup-nucleus@v2.4.2
+      - uses: NucleusFramework/Nucleus/.github/actions/setup-nucleus@v2.4.4
         with:
           graalvm: 'true'
           graalvm-distribution: 'oracle'
@@ -1218,7 +1218,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: NucleusFramework/Nucleus/.github/actions/setup-nucleus@v2.4.2
+      - uses: NucleusFramework/Nucleus/.github/actions/setup-nucleus@v2.4.4
         with:
           graalvm: 'true'
           graalvm-distribution: 'oracle'

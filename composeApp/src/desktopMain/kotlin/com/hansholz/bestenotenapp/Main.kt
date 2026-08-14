@@ -112,21 +112,6 @@ fun main() {
                 }
             }
 
-            val scope = rememberCoroutineScope()
-            var navController by remember { mutableStateOf<NavController?>(null) }
-            val uriHandler = LocalUriHandler.current
-            DefaultMacMenuBar(
-                appName = NucleusApp.appId,
-                onSettingsClick = {
-                    scope.launch {
-                        navController?.navigate(Fragment.Settings.route)
-                    }
-                },
-                onHelpClick = {
-                    uriHandler.openUri("https://github.com/HansHolz09/Beste-Noten-App")
-                },
-            )
-
             val titleBarHeight = remember { mutableStateOf(64.dp) }
             var isDark by remember { mutableStateOf(false) }
             WindowScaffold(
@@ -166,6 +151,20 @@ fun main() {
                     LocalBiometricAuthenticationAvailable provides runBlocking { KSafeBiometrics.biometricsAvailable() },
                 ) {
                     NativeTextContextMenuProvider(isDark) {
+                        val scope = rememberCoroutineScope()
+                        var navController by remember { mutableStateOf<NavController?>(null) }
+                        val uriHandler = LocalUriHandler.current
+                        DefaultMacMenuBar(
+                            appName = NucleusApp.appId,
+                            onSettingsClick = {
+                                scope.launch {
+                                    navController?.navigate(Fragment.Settings.route)
+                                }
+                            },
+                            onHelpClick = {
+                                uriHandler.openUri("https://github.com/HansHolz09/Beste-Noten-App")
+                            },
+                        )
                         App(
                             isDark = { isDark = it },
                             onNavHostReady = {
