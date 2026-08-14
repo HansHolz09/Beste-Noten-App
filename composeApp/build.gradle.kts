@@ -121,6 +121,7 @@ kotlin {
             implementation(libs.jetlime)
             implementation(libs.haze.blur)
             implementation(libs.material.kolor)
+            implementation(libs.markdown.renderer.m3)
             implementation(libs.platformtools.darkmodedetector)
             implementation(libs.multihaptic.compose)
             implementation(libs.animate.compose)

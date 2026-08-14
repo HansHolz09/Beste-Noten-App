@@ -29,6 +29,7 @@ ktor = "3.5.2"
 jetlime = "4.3.0"
 material3 = "1.11.0-alpha07"
 materialyou = "0.4.0"
+markdownRenderer = "0.43.0"
 multihapticCompose = "0.3.2"
 nucleus = "2.4.2"
 permission = "0.15.0"
@@ -90,6 +91,7 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
 materialyou = { module = "dev.zwander:materialyou", version.ref = "materialyou" }
+markdown-renderer-m3 = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdownRenderer" }
 multihaptic-compose = { module = "top.ltfan.multihaptic:multihaptic-compose", version.ref = "multihapticCompose" }
 nucleus-core-runtime = { module = "dev.nucleusframework:nucleus.core-runtime", version.ref = "nucleus" }
 nucleus-aot-runtime = { module = "dev.nucleusframework:nucleus.aot-runtime", version.ref = "nucleus" }

@@ -38,6 +38,7 @@ import com.hansholz.bestenotenapp.navigation.AppNavigation
 import com.hansholz.bestenotenapp.theme.AppTheme
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
+import com.hansholz.bestenotenapp.updates.UpdateDialogHost
 import dev.chrisbanes.haze.hazeSource
 import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
 
@@ -101,6 +102,8 @@ fun App(
                 CompositionLocalProvider(LocalUsingOfflineCache provides viewModel.isUsingOfflineCache) {
                     AppNavigation(viewModel, onNavHostReady)
                 }
+
+                UpdateDialogHost()
 
                 Toaster(
                     state = toasterState,
