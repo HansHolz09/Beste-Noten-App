@@ -71,6 +71,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -214,10 +215,10 @@ fun Timetable(
                 val contentPadding = PaddingValues(top = topPadding, bottom = innerPadding.calculateBottomPadding() + timetableViewModel.toolbarPadding)
                 val verticalPadding = PaddingValues(start = innerPadding.calculateStartPadding(layoutDirection), end = innerPadding.calculateEndPadding(layoutDirection))
 
-                val lessonPopupShown = remember { mutableStateOf(false) }
+                val lessonPopupShown = retain { mutableStateOf(false) }
                 val pagerState = rememberEnhancedPagerState(Int.MAX_VALUE, Int.MAX_VALUE / 2)
                 val contentBlurRadius = animateDpAsState(if (timetableViewModel.contentBlurred) 10.dp else 0.dp)
-                var refreshTick by remember { mutableStateOf(0) }
+                var refreshTick by retain { mutableStateOf(0) }
 
                 @Composable
                 fun pageContent(
@@ -225,12 +226,12 @@ fun Timetable(
                     captureOnly: Boolean = false,
                     isLoaded: (Boolean) -> Unit = {},
                 ) {
-                    var isLoading by remember { mutableStateOf(false) }
+                    var isLoading by retain { mutableStateOf(false) }
                     val weekDate =
-                        remember(timetableViewModel.startPageDate, currentPage) {
+                        retain(timetableViewModel.startPageDate, currentPage) {
                             timetableViewModel.startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK)
                         }
-                    var week by remember { mutableStateOf<JournalWeek?>(null) }
+                    var week by retain { mutableStateOf<JournalWeek?>(null) }
 
                     suspend fun loadWeek(
                         useCached: Boolean = true,
@@ -308,7 +309,7 @@ fun Timetable(
                         ) {
                             item {
                                 Box(
-                                    modifier = Modifier.fillParentMaxSize(),
+                                    modifier = Modifier.fillParentMaxSize().padding(verticalPadding),
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     EnhancedAnimatedContent(isLoading || week?.days?.all { it.lessons.isNullOrEmpty() } ?: true, animationEnabled = !captureOnly) { targetState ->

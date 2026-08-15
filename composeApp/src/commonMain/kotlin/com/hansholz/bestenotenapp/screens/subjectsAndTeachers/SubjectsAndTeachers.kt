@@ -6,6 +6,8 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -39,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -81,6 +84,7 @@ fun SubjectsAndTeachers(
         val scope = rememberCoroutineScope()
         val vibrator = rememberVibrator()
         val density = LocalDensity.current
+        val layoutDirection = LocalLayoutDirection.current
         val isCompactWindow =
             !currentWindowAdaptiveInfoV2()
                 .windowSizeClass
@@ -119,6 +123,7 @@ fun SubjectsAndTeachers(
             hazeState = viewModel.hazeBackgroundState,
         ) { innerPadding, topAppBarBackground ->
             val contentPadding = PaddingValues(top = subjectsAndTeachersViewModel.topPadding, bottom = innerPadding.calculateBottomPadding())
+            val verticalPadding = PaddingValues(start = innerPadding.calculateStartPadding(layoutDirection), end = innerPadding.calculateEndPadding(layoutDirection))
 
             val pagerState = rememberEnhancedPagerState(2)
             HorizontalPager(pagerState, Modifier.hazeSource(viewModel.hazeBackgroundState)) {
@@ -152,6 +157,7 @@ fun SubjectsAndTeachers(
                                         ) {
                                             items(items) { (subject, teachers) ->
                                                 EnhancedAnimated(
+                                                    modifier = Modifier.padding(verticalPadding),
                                                     preset = ZoomIn(),
                                                     durationMillis = 200,
                                                 ) { isAnimated ->
@@ -212,6 +218,7 @@ fun SubjectsAndTeachers(
                                         ) {
                                             items(viewModel.teachersAndSubjects) { (teacher, subjects) ->
                                                 EnhancedAnimated(
+                                                    modifier = Modifier.padding(verticalPadding),
                                                     preset = ZoomIn(),
                                                     durationMillis = 200,
                                                 ) { isAnimated ->
@@ -254,6 +261,7 @@ fun SubjectsAndTeachers(
                 selectedTabIndex = pagerState.currentPage,
                 modifier =
                     Modifier
+                        .padding(verticalPadding)
                         .padding(top = innerPadding.calculateTopPadding())
                         .onGloballyPositioned {
                             subjectsAndTeachersViewModel.topPadding = with(density) { it.size.height.toDp() } + innerPadding.calculateTopPadding()

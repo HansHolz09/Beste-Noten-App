@@ -20,6 +20,10 @@ import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -35,6 +39,8 @@ fun NavigationDrawer(
     drawerContent: @Composable () -> Unit,
     content: @Composable () -> Unit,
 ) {
+    val currentContent by rememberUpdatedState(content)
+    val movableContent = remember { movableContentOf { currentContent() } }
     val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
     val isCompactWindow = !windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
     val isMediumWindow =
@@ -65,7 +71,7 @@ fun NavigationDrawer(
             },
         ) {
             Box(Modifier.hazeSource(hazeState, 1f)) {
-                content()
+                movableContent()
             }
         }
     } else {
@@ -98,7 +104,7 @@ fun NavigationDrawer(
                     }
                 },
             ) {
-                content()
+                movableContent()
             }
         }
     }

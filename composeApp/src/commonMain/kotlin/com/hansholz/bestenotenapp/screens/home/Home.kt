@@ -14,8 +14,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -44,7 +49,6 @@ import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -54,6 +58,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
@@ -163,6 +168,7 @@ fun Home(
 
         val scope = rememberCoroutineScope()
         val vibrator = rememberVibrator()
+        val layoutDirection = LocalLayoutDirection.current
         val isDark = LocalThemeIsDark.current
         val isCompactWindow =
             !currentWindowAdaptiveInfoV2()
@@ -251,455 +257,458 @@ fun Home(
             hazeState = viewModel.hazeBackgroundState1,
         ) { innerPadding, topAppBarBackground ->
             val lazyStaggeredGridState = rememberLazyStaggeredGridState()
-            key(lazyStaggeredGridState.layoutInfo.orientation) {
-                LazyVerticalStaggeredGrid(
-                    columns = StaggeredGridCells.Adaptive(400.dp),
-                    modifier = Modifier.hazeSource(viewModel.hazeBackgroundState1),
-                    state = lazyStaggeredGridState,
-                    contentPadding = innerPadding,
-                ) {
-                    item {
-                        EnhancedAnimatedVisibility(
-                            viewModel.user.value
-                                ?.config
-                                ?.yearId
-                                ?.let { true } ?: false,
+            LazyVerticalStaggeredGrid(
+                columns = StaggeredGridCells.Adaptive(400.dp),
+                modifier = Modifier.hazeSource(viewModel.hazeBackgroundState1),
+                state = lazyStaggeredGridState,
+                contentPadding =
+                    PaddingValues(
+                        top = innerPadding.calculateTopPadding(),
+                        bottom = innerPadding.calculateBottomPadding(),
+                        end = WindowInsets.displayCutout.asPaddingValues().calculateEndPadding(layoutDirection),
+                    ),
+            ) {
+                item {
+                    EnhancedAnimatedVisibility(
+                        viewModel.user.value
+                            ?.config
+                            ?.yearId
+                            ?.let { true } ?: false,
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(top = 20.dp, bottom = 10.dp),
+                            contentAlignment = Alignment.Center,
                         ) {
-                            Box(
-                                modifier = Modifier.fillMaxWidth().padding(top = 20.dp, bottom = 10.dp),
-                                contentAlignment = Alignment.Center,
+                            EnhancedOutlinedButton(
+                                onClick = {
+                                    viewModel.viewModelScope.launch {
+                                        viewModel.setCurrentYear()
+                                        viewModel.reload()
+                                        homeViewModel.refreshGrades(viewModel)
+                                        homeViewModel.refreshTimetable(viewModel)
+                                        homeViewModel.refreshStats(viewModel)
+                                    }
+                                },
                             ) {
-                                EnhancedOutlinedButton(
-                                    onClick = {
-                                        viewModel.viewModelScope.launch {
-                                            viewModel.setCurrentYear()
-                                            viewModel.reload()
-                                            homeViewModel.refreshGrades(viewModel)
-                                            homeViewModel.refreshTimetable(viewModel)
-                                            homeViewModel.refreshStats(viewModel)
-                                        }
-                                    },
-                                ) {
-                                    Text("Zum aktuellen Schuljahr wechseln")
-                                }
+                                Text("Zum aktuellen Schuljahr wechseln")
                             }
                         }
                     }
-                    if (showGreetings) {
-                        item {
-                            EnhancedAnimatedContent(viewModel.isBesteSchuleNotReachable.value) { notReachable ->
-                                if (notReachable) {
-                                    Text(
-                                        text =
-                                            "beste.schule konnte nicht erreicht werden, somit können deine Daten momentan nicht geladen werden." +
-                                                "\n\nBitte überprüfe deine Internetverbindung und den Status von beste.schule." +
-                                                "\n\nSollte der Fehler weiterhin auftreten, versuche dich erneut anzumelden.",
-                                        modifier = Modifier.padding(20.dp),
-                                        textAlign = TextAlign.Center,
-                                        style = typography.bodyLarge,
-                                    )
-                                } else {
-                                    var greeting by rememberSaveable { mutableStateOf("") }
-                                    LaunchedEffect(viewModel.user.value) {
-                                        val student =
-                                            viewModel.user.value
-                                                ?.students
-                                                ?.find { it.id.toString() == viewModel.studentId.value }
-                                        if (student != null && greeting.isEmpty()) {
-                                            greeting = getGreeting(student.forename ?: "du")
-                                        }
-                                    }
-                                    EnhancedAnimatedContent(greeting) {
-                                        val textModifier =
-                                            Modifier
-                                                .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
-                                                .padding(20.dp)
-                                                .clickable(
-                                                    interactionSource = null,
-                                                    indication = null,
-                                                    enabled = !viewModel.isBesteSchuleNotReachable.value,
-                                                ) {
-                                                    var newGreeting = greeting
-                                                    while (newGreeting == greeting) {
-                                                        newGreeting =
-                                                            getGreeting(
-                                                                viewModel.user.value
-                                                                    ?.students
-                                                                    ?.firstOrNull()
-                                                                    ?.forename ?: "du",
-                                                            )
-                                                    }
-                                                    greeting = newGreeting
-                                                    vibrator.enhancedVibrateN(EnhancedVibrations.SPIN)
-                                                }
-                                        if (animationsEnabled) {
-                                            TextWithNotoAnimatedEmoji(
-                                                text = it,
-                                                modifier = textModifier,
-                                                textAlign = TextAlign.Center,
-                                                fontFamily = FontFamilies.Schoolbell,
-                                                style = typography.titleLarge,
-                                            )
-                                        } else {
-                                            Text(
-                                                text = it,
-                                                modifier = textModifier,
-                                                textAlign = TextAlign.Center,
-                                                fontFamily = FontFamilies.Schoolbell,
-                                                style = typography.titleLarge,
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                }
+                if (showGreetings) {
                     item {
-                        Box(
-                            Modifier
-                                .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
-                                .fillMaxWidth()
-                                .padding(10.dp)
-                                .clip(RoundedCornerShape(24.dp))
-                                .background(colorScheme.surfaceContainerHighest.copy(0.7f))
-                                .scatteredIconBackground(
-                                    items =
-                                        remember {
-                                            listOf(
-                                                ScatterItem.TextItem("1+"),
-                                                ScatterItem.TextItem("1"),
-                                                ScatterItem.TextItem("1-"),
-                                                ScatterItem.TextItem("2"),
-                                                ScatterItem.TextItem("3+"),
-                                                ScatterItem.TextItem("4-"),
-                                                ScatterItem.TextItem("5"),
-                                                ScatterItem.TextItem("6"),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.School),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.School),
-                                            )
-                                        },
-                                    alpha = backgroundAlpha.value,
-                                ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
-                                .clickable {
-                                    scope.launch {
-                                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
-                                        makeItemVisibleAndNavigate(
-                                            listState = lazyStaggeredGridState,
-                                            index = if (showGreetings) 2 else 1,
-                                            onNavigate = {
-                                                onNavigateToScreen(Fragment.Grades)
-                                            },
-                                        )
-                                    }
-                                }.enhancedSharedBounds(
-                                    sharedTransitionScope = sharedTransitionScope,
-                                    sharedContentState = rememberSharedContentState(key = "grades-card"),
-                                    animatedVisibilityScope = animatedVisibilityScope,
-                                ),
-                        ) {
-                            Column(Modifier.fillMaxWidth()) {
-                                Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
-                                    Text(
-                                        text = "Noten",
-                                        modifier =
-                                            Modifier
-                                                .align(Alignment.Center)
-                                                .enhancedSharedElement(
-                                                    sharedTransitionScope = sharedTransitionScope,
-                                                    sharedContentState = rememberSharedContentState(key = "grades-title"),
-                                                    animatedVisibilityScope = animatedVisibilityScope,
-                                                ).skipToLookaheadSize(),
-                                        style = typography.headlineSmall,
-                                    )
-                                    EnhancedIconButton(
-                                        onClick = {
-                                            homeViewModel.refreshGrades(viewModel)
-                                        },
-                                        modifier = Modifier.align(Alignment.CenterEnd),
-                                        enabled = !homeViewModel.isGradesLoading && showNewestGrades,
-                                    ) {
-                                        this@Column.EnhancedAnimatedVisibility(
-                                            visible = !homeViewModel.isGradesLoading && showNewestGrades,
-                                            enter = scaleIn(),
-                                            exit = scaleOut(),
-                                        ) {
-                                            Icon(MaterialSymbols.Rounded.Refresh, null)
-                                        }
-                                    }
-                                }
-                                if (showNewestGrades) {
-                                    EnhancedAnimatedContent(homeViewModel.isGradesLoading) { targetState ->
-                                        if (targetState) {
-                                            Box(Modifier.fillMaxWidth().sizeIn(minHeight = 100.dp)) {
-                                                ContainedLoadingIndicator(Modifier.align(Alignment.Center))
-                                            }
-                                        } else {
-                                            Column {
-                                                newestGrades.forEach {
-                                                    ListItem(
-                                                        headlineContent = {
-                                                            Text("${it.subject?.name}: ${it.name}")
-                                                        },
-                                                        supportingContent = {
-                                                            Column {
-                                                                Text("${it.type} vom ${formateDate(it.givenAt)}")
-                                                            }
-                                                        },
-                                                        leadingContent = {
-                                                            GradeValueBox(it.grades?.getOrNull(0)?.value, viewModel.levelFor(it))
-                                                        },
-                                                        colors = ListItemDefaults.colors(Color.Transparent),
-                                                    )
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                        EnhancedAnimatedContent(viewModel.isBesteSchuleNotReachable.value) { notReachable ->
+                            if (notReachable) {
                                 Text(
-                                    text = "Tippen, um deine Noten ansehen und analysieren zu können",
-                                    modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                    text =
+                                        "beste.schule konnte nicht erreicht werden, somit können deine Daten momentan nicht geladen werden." +
+                                            "\n\nBitte überprüfe deine Internetverbindung und den Status von beste.schule." +
+                                            "\n\nSollte der Fehler weiterhin auftreten, versuche dich erneut anzumelden.",
+                                    modifier = Modifier.padding(20.dp),
                                     textAlign = TextAlign.Center,
+                                    style = typography.bodyLarge,
                                 )
+                            } else {
+                                var greeting by rememberSaveable { mutableStateOf("") }
+                                LaunchedEffect(viewModel.user.value) {
+                                    val student =
+                                        viewModel.user.value
+                                            ?.students
+                                            ?.find { it.id.toString() == viewModel.studentId.value }
+                                    if (student != null && greeting.isEmpty()) {
+                                        greeting = getGreeting(student.forename ?: "du")
+                                    }
+                                }
+                                EnhancedAnimatedContent(greeting) {
+                                    val textModifier =
+                                        Modifier
+                                            .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
+                                            .padding(20.dp)
+                                            .clickable(
+                                                interactionSource = null,
+                                                indication = null,
+                                                enabled = !viewModel.isBesteSchuleNotReachable.value,
+                                            ) {
+                                                var newGreeting = greeting
+                                                while (newGreeting == greeting) {
+                                                    newGreeting =
+                                                        getGreeting(
+                                                            viewModel.user.value
+                                                                ?.students
+                                                                ?.firstOrNull()
+                                                                ?.forename ?: "du",
+                                                        )
+                                                }
+                                                greeting = newGreeting
+                                                vibrator.enhancedVibrateN(EnhancedVibrations.SPIN)
+                                            }
+                                    if (animationsEnabled) {
+                                        TextWithNotoAnimatedEmoji(
+                                            text = it,
+                                            modifier = textModifier,
+                                            textAlign = TextAlign.Center,
+                                            fontFamily = FontFamilies.Schoolbell,
+                                            style = typography.titleLarge,
+                                        )
+                                    } else {
+                                        Text(
+                                            text = it,
+                                            modifier = textModifier,
+                                            textAlign = TextAlign.Center,
+                                            fontFamily = FontFamilies.Schoolbell,
+                                            style = typography.titleLarge,
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
-                    item {
-                        Box(
-                            Modifier
-                                .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
-                                .fillMaxWidth()
-                                .padding(10.dp)
-                                .clip(RoundedCornerShape(24.dp))
-                                .background(colorScheme.surfaceContainerHighest.copy(0.7f))
-                                .scatteredIconBackground(
-                                    items =
-                                        remember {
-                                            listOf(
-                                                ScatterItem.TextItem("Ast"),
-                                                ScatterItem.TextItem("Bio"),
-                                                ScatterItem.TextItem("Ch"),
-                                                ScatterItem.TextItem("De"),
-                                                ScatterItem.TextItem("Eng"),
-                                                ScatterItem.TextItem("Eth"),
-                                                ScatterItem.TextItem("Geo"),
-                                                ScatterItem.TextItem("Ge"),
-                                                ScatterItem.TextItem("Inf"),
-                                                ScatterItem.TextItem("Ku"),
-                                                ScatterItem.TextItem("Ma"),
-                                                ScatterItem.TextItem("Mu"),
-                                                ScatterItem.TextItem("Ph"),
-                                                ScatterItem.TextItem("Spo"),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Date_range),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Date_range),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Date_range),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Date_range),
-                                            )
-                                        },
-                                    config = ScatterConfig(cellSize = 85.dp, itemSizeFraction = 0.4f),
-                                    alpha = backgroundAlpha.value,
-                                ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
-                                .clickable {
-                                    scope.launch {
-                                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
-                                        makeItemVisibleAndNavigate(
-                                            listState = lazyStaggeredGridState,
-                                            index = if (showGreetings) 3 else 2,
-                                            onNavigate = {
-                                                onNavigateToScreen(Fragment.Timetable)
-                                            },
+                }
+                item {
+                    Box(
+                        Modifier
+                            .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(colorScheme.surfaceContainerHighest.copy(0.7f))
+                            .scatteredIconBackground(
+                                items =
+                                    remember {
+                                        listOf(
+                                            ScatterItem.TextItem("1+"),
+                                            ScatterItem.TextItem("1"),
+                                            ScatterItem.TextItem("1-"),
+                                            ScatterItem.TextItem("2"),
+                                            ScatterItem.TextItem("3+"),
+                                            ScatterItem.TextItem("4-"),
+                                            ScatterItem.TextItem("5"),
+                                            ScatterItem.TextItem("6"),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.School),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.School),
                                         )
-                                    }
-                                }.enhancedSharedBounds(
-                                    sharedTransitionScope = sharedTransitionScope,
-                                    sharedContentState = rememberSharedContentState(key = "timetable-card"),
-                                    animatedVisibilityScope = animatedVisibilityScope,
-                                ),
-                        ) {
-                            Column(Modifier.fillMaxWidth()) {
-                                Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
-                                    Text(
-                                        text = "Stundenplan",
-                                        modifier =
-                                            Modifier
-                                                .align(Alignment.Center)
-                                                .enhancedSharedElement(
-                                                    sharedTransitionScope = sharedTransitionScope,
-                                                    sharedContentState = rememberSharedContentState(key = "timetable-title"),
-                                                    animatedVisibilityScope = animatedVisibilityScope,
-                                                ).skipToLookaheadSize(),
-                                        style = typography.headlineSmall,
-                                    )
-                                    EnhancedIconButton(
-                                        onClick = {
-                                            homeViewModel.refreshTimetable(viewModel)
+                                    },
+                                alpha = backgroundAlpha.value,
+                            ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
+                            .clickable {
+                                scope.launch {
+                                    vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                                    makeItemVisibleAndNavigate(
+                                        listState = lazyStaggeredGridState,
+                                        index = if (showGreetings) 2 else 1,
+                                        onNavigate = {
+                                            onNavigateToScreen(Fragment.Grades)
                                         },
-                                        modifier = Modifier.align(Alignment.CenterEnd),
-                                        enabled = !homeViewModel.isTimetableLoading && showCurrentLesson,
+                                    )
+                                }
+                            }.enhancedSharedBounds(
+                                sharedTransitionScope = sharedTransitionScope,
+                                sharedContentState = rememberSharedContentState(key = "grades-card"),
+                                animatedVisibilityScope = animatedVisibilityScope,
+                            ),
+                    ) {
+                        Column(Modifier.fillMaxWidth()) {
+                            Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
+                                Text(
+                                    text = "Noten",
+                                    modifier =
+                                        Modifier
+                                            .align(Alignment.Center)
+                                            .enhancedSharedElement(
+                                                sharedTransitionScope = sharedTransitionScope,
+                                                sharedContentState = rememberSharedContentState(key = "grades-title"),
+                                                animatedVisibilityScope = animatedVisibilityScope,
+                                            ).skipToLookaheadSize(),
+                                    style = typography.headlineSmall,
+                                )
+                                EnhancedIconButton(
+                                    onClick = {
+                                        homeViewModel.refreshGrades(viewModel)
+                                    },
+                                    modifier = Modifier.align(Alignment.CenterEnd),
+                                    enabled = !homeViewModel.isGradesLoading && showNewestGrades,
+                                ) {
+                                    this@Column.EnhancedAnimatedVisibility(
+                                        visible = !homeViewModel.isGradesLoading && showNewestGrades,
+                                        enter = scaleIn(),
+                                        exit = scaleOut(),
                                     ) {
-                                        this@Column.EnhancedAnimatedVisibility(
-                                            visible = !homeViewModel.isTimetableLoading && showCurrentLesson,
-                                            enter = scaleIn(),
-                                            exit = scaleOut(),
-                                        ) {
-                                            Icon(MaterialSymbols.Rounded.Refresh, null)
+                                        Icon(MaterialSymbols.Rounded.Refresh, null)
+                                    }
+                                }
+                            }
+                            if (showNewestGrades) {
+                                EnhancedAnimatedContent(homeViewModel.isGradesLoading) { targetState ->
+                                    if (targetState) {
+                                        Box(Modifier.fillMaxWidth().sizeIn(minHeight = 100.dp)) {
+                                            ContainedLoadingIndicator(Modifier.align(Alignment.Center))
+                                        }
+                                    } else {
+                                        Column {
+                                            newestGrades.forEach {
+                                                ListItem(
+                                                    headlineContent = {
+                                                        Text("${it.subject?.name}: ${it.name}")
+                                                    },
+                                                    supportingContent = {
+                                                        Column {
+                                                            Text("${it.type} vom ${formateDate(it.givenAt)}")
+                                                        }
+                                                    },
+                                                    leadingContent = {
+                                                        GradeValueBox(it.grades?.getOrNull(0)?.value, viewModel.levelFor(it))
+                                                    },
+                                                    colors = ListItemDefaults.colors(Color.Transparent),
+                                                )
+                                            }
                                         }
                                     }
                                 }
-                                if (showCurrentLesson) {
-                                    EnhancedAnimatedContent(homeViewModel.isTimetableLoading) { targetState ->
-                                        if (targetState) {
-                                            Box(Modifier.fillMaxWidth().sizeIn(minHeight = 100.dp)) {
-                                                ContainedLoadingIndicator(Modifier.align(Alignment.Center))
-                                            }
-                                        } else {
-                                            val currentJournalDay =
-                                                viewModel.currentJournalDay.value?.let {
-                                                    if (showOnlyRelevantData) {
-                                                        it.withRelevantLessons(viewModel.studentGroupsByYear)
-                                                    } else {
-                                                        it
-                                                    }
+                            }
+                            Text(
+                                text = "Tippen, um deine Noten ansehen und analysieren zu können",
+                                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                textAlign = TextAlign.Center,
+                            )
+                        }
+                    }
+                }
+                item {
+                    Box(
+                        Modifier
+                            .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(colorScheme.surfaceContainerHighest.copy(0.7f))
+                            .scatteredIconBackground(
+                                items =
+                                    remember {
+                                        listOf(
+                                            ScatterItem.TextItem("Ast"),
+                                            ScatterItem.TextItem("Bio"),
+                                            ScatterItem.TextItem("Ch"),
+                                            ScatterItem.TextItem("De"),
+                                            ScatterItem.TextItem("Eng"),
+                                            ScatterItem.TextItem("Eth"),
+                                            ScatterItem.TextItem("Geo"),
+                                            ScatterItem.TextItem("Ge"),
+                                            ScatterItem.TextItem("Inf"),
+                                            ScatterItem.TextItem("Ku"),
+                                            ScatterItem.TextItem("Ma"),
+                                            ScatterItem.TextItem("Mu"),
+                                            ScatterItem.TextItem("Ph"),
+                                            ScatterItem.TextItem("Spo"),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Date_range),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Date_range),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Date_range),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Date_range),
+                                        )
+                                    },
+                                config = ScatterConfig(cellSize = 85.dp, itemSizeFraction = 0.4f),
+                                alpha = backgroundAlpha.value,
+                            ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
+                            .clickable {
+                                scope.launch {
+                                    vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                                    makeItemVisibleAndNavigate(
+                                        listState = lazyStaggeredGridState,
+                                        index = if (showGreetings) 3 else 2,
+                                        onNavigate = {
+                                            onNavigateToScreen(Fragment.Timetable)
+                                        },
+                                    )
+                                }
+                            }.enhancedSharedBounds(
+                                sharedTransitionScope = sharedTransitionScope,
+                                sharedContentState = rememberSharedContentState(key = "timetable-card"),
+                                animatedVisibilityScope = animatedVisibilityScope,
+                            ),
+                    ) {
+                        Column(Modifier.fillMaxWidth()) {
+                            Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
+                                Text(
+                                    text = "Stundenplan",
+                                    modifier =
+                                        Modifier
+                                            .align(Alignment.Center)
+                                            .enhancedSharedElement(
+                                                sharedTransitionScope = sharedTransitionScope,
+                                                sharedContentState = rememberSharedContentState(key = "timetable-title"),
+                                                animatedVisibilityScope = animatedVisibilityScope,
+                                            ).skipToLookaheadSize(),
+                                    style = typography.headlineSmall,
+                                )
+                                EnhancedIconButton(
+                                    onClick = {
+                                        homeViewModel.refreshTimetable(viewModel)
+                                    },
+                                    modifier = Modifier.align(Alignment.CenterEnd),
+                                    enabled = !homeViewModel.isTimetableLoading && showCurrentLesson,
+                                ) {
+                                    this@Column.EnhancedAnimatedVisibility(
+                                        visible = !homeViewModel.isTimetableLoading && showCurrentLesson,
+                                        enter = scaleIn(),
+                                        exit = scaleOut(),
+                                    ) {
+                                        Icon(MaterialSymbols.Rounded.Refresh, null)
+                                    }
+                                }
+                            }
+                            if (showCurrentLesson) {
+                                EnhancedAnimatedContent(homeViewModel.isTimetableLoading) { targetState ->
+                                    if (targetState) {
+                                        Box(Modifier.fillMaxWidth().sizeIn(minHeight = 100.dp)) {
+                                            ContainedLoadingIndicator(Modifier.align(Alignment.Center))
+                                        }
+                                    } else {
+                                        val currentJournalDay =
+                                            viewModel.currentJournalDay.value?.let {
+                                                if (showOnlyRelevantData) {
+                                                    it.withRelevantLessons(viewModel.studentGroupsByYear)
+                                                } else {
+                                                    it
                                                 }
-                                            if (!currentJournalDay
-                                                    ?.lessons
-                                                    .isNullOrEmpty()
-                                            ) {
-                                                val lessons = currentJournalDay.lessons
-                                                val groupedLessons = remember(lessons) { lessons.sortedBy { it.nr }.groupBy { it.nr } }
-                                                val maxLessonNr = remember(lessons) { lessons.maxOf { it.nr.toInt() } }
-                                                val currentTime by rememberCurrentSimpleTime()
-                                                Column(Modifier.padding(10.dp).padding(start = 5.dp)) {
-                                                    CompositionLocalProvider(
-                                                        LocalJetLimeStyle provides
-                                                            JetLimeDefaults
-                                                                .columnStyle(
-                                                                    lineBrush = JetLimeDefaults.lineSolidBrush(colorScheme.primary.copy(0.7f)),
+                                            }
+                                        if (!currentJournalDay
+                                                ?.lessons
+                                                .isNullOrEmpty()
+                                        ) {
+                                            val lessons = currentJournalDay.lessons
+                                            val groupedLessons = remember(lessons) { lessons.sortedBy { it.nr }.groupBy { it.nr } }
+                                            val maxLessonNr = remember(lessons) { lessons.maxOf { it.nr.toInt() } }
+                                            val currentTime by rememberCurrentSimpleTime()
+                                            Column(Modifier.padding(10.dp).padding(start = 5.dp)) {
+                                                CompositionLocalProvider(
+                                                    LocalJetLimeStyle provides
+                                                        JetLimeDefaults
+                                                            .columnStyle(
+                                                                lineBrush = JetLimeDefaults.lineSolidBrush(colorScheme.primary.copy(0.7f)),
+                                                            ),
+                                                ) {
+                                                    groupedLessons.forEach { groupLessons ->
+                                                        val firstLesson = groupLessons.value[0]
+                                                        val position = EventPosition.dynamic(firstLesson.nr.toInt() - 1, maxLessonNr)
+                                                        val lessonTimeStart = SimpleTime.parse(firstLesson.time?.from ?: "00:00")
+                                                        val lessonTimeEnd = SimpleTime.parse(firstLesson.time?.to ?: "00:00")
+                                                        @OptIn(ExperimentalComposeApi::class)
+                                                        JetLimeExtendedEvent(
+                                                            style =
+                                                                JetLimeEventDefaults.eventStyle(
+                                                                    position = position,
+                                                                    pointAnimation =
+                                                                        if (currentTime in
+                                                                            lessonTimeStart..lessonTimeEnd
+                                                                        ) {
+                                                                            JetLimeEventDefaults.pointAnimation(targetValue = 1.4f)
+                                                                        } else {
+                                                                            null
+                                                                        },
+                                                                    pointType = if (lessonTimeStart <= currentTime) EventPointType.Default else EventPointType.EMPTY,
+                                                                    pointColor =
+                                                                        if (groupLessons.value.size > 1) {
+                                                                            colorScheme.surface
+                                                                        } else {
+                                                                            when (firstLesson.status) {
+                                                                                "hold" -> if (isDark) Color(48, 99, 57) else Color(226, 251, 232)
+                                                                                "canceled" -> colorScheme.errorContainer
+                                                                                "initial" -> if (isDark) Color.DarkGray else Color.LightGray
+                                                                                "planned" -> if (isDark) Color(38, 63, 168) else Color(222, 233, 252)
+                                                                                else -> colorScheme.surface
+                                                                            }
+                                                                        },
                                                                 ),
-                                                    ) {
-                                                        groupedLessons.forEach { groupLessons ->
-                                                            val firstLesson = groupLessons.value[0]
-                                                            val position = EventPosition.dynamic(firstLesson.nr.toInt() - 1, maxLessonNr)
-                                                            val lessonTimeStart = SimpleTime.parse(firstLesson.time?.from ?: "00:00")
-                                                            val lessonTimeEnd = SimpleTime.parse(firstLesson.time?.to ?: "00:00")
-                                                            @OptIn(ExperimentalComposeApi::class)
-                                                            JetLimeExtendedEvent(
-                                                                style =
-                                                                    JetLimeEventDefaults.eventStyle(
-                                                                        position = position,
-                                                                        pointAnimation =
-                                                                            if (currentTime in
-                                                                                lessonTimeStart..lessonTimeEnd
-                                                                            ) {
-                                                                                JetLimeEventDefaults.pointAnimation(targetValue = 1.4f)
-                                                                            } else {
-                                                                                null
-                                                                            },
-                                                                        pointType = if (lessonTimeStart <= currentTime) EventPointType.Default else EventPointType.EMPTY,
-                                                                        pointColor =
-                                                                            if (groupLessons.value.size > 1) {
-                                                                                colorScheme.surface
-                                                                            } else {
-                                                                                when (firstLesson.status) {
-                                                                                    "hold" -> if (isDark) Color(48, 99, 57) else Color(226, 251, 232)
-                                                                                    "canceled" -> colorScheme.errorContainer
-                                                                                    "initial" -> if (isDark) Color.DarkGray else Color.LightGray
-                                                                                    "planned" -> if (isDark) Color(38, 63, 168) else Color(222, 233, 252)
-                                                                                    else -> colorScheme.surface
-                                                                                }
-                                                                            },
-                                                                    ),
-                                                                additionalContent = {
-                                                                    Box(Modifier.clip(ClamShell.toShape()).background(colorScheme.primaryContainer)) {
-                                                                        Text(
-                                                                            text =
-                                                                                groupLessons.value
-                                                                                    .flatMap { it.rooms.orEmpty() }
-                                                                                    .map { it.localId }
-                                                                                    .toSet()
-                                                                                    .joinToString()
-                                                                                    .ifEmpty { "?" },
-                                                                            modifier = Modifier.width(60.dp).padding(vertical = 2.dp),
-                                                                            color = colorScheme.onPrimaryContainer,
-                                                                            textAlign = TextAlign.Center,
-                                                                        )
-                                                                    }
-                                                                },
-                                                            ) {
-                                                                Column(Modifier.padding(start = 5.dp)) {
+                                                            additionalContent = {
+                                                                Box(Modifier.clip(ClamShell.toShape()).background(colorScheme.primaryContainer)) {
                                                                     Text(
                                                                         text =
                                                                             groupLessons.value
-                                                                                .map { it.subject?.name ?: "?" }
+                                                                                .flatMap { it.rooms.orEmpty() }
+                                                                                .map { it.localId }
                                                                                 .toSet()
-                                                                                .joinToString(),
-                                                                        color = if (currentTime in lessonTimeStart..lessonTimeEnd) colorScheme.primary else Color.Unspecified,
+                                                                                .joinToString()
+                                                                                .ifEmpty { "?" },
+                                                                        modifier = Modifier.width(60.dp).padding(vertical = 2.dp),
+                                                                        color = colorScheme.onPrimaryContainer,
+                                                                        textAlign = TextAlign.Center,
                                                                     )
-                                                                    groupLessons.value.flatMap { it.notes.orEmpty() }.forEach {
-                                                                        Text(
-                                                                            text =
-                                                                                (it.type?.name?.replace("Substitution Plan", "Vertretungsplan") ?: "?") +
-                                                                                    ": ${it.description ?: "Keine Beschreibung"}",
-                                                                            modifier = Modifier.padding(vertical = 5.dp),
-                                                                            color =
-                                                                                if (currentTime in
-                                                                                    lessonTimeStart..lessonTimeEnd
-                                                                                ) {
-                                                                                    colorScheme.primary
-                                                                                } else {
-                                                                                    Color.Unspecified
-                                                                                },
-                                                                            style = typography.bodyMedium,
-                                                                        )
-                                                                    }
+                                                                }
+                                                            },
+                                                        ) {
+                                                            Column(Modifier.padding(start = 5.dp)) {
+                                                                Text(
+                                                                    text =
+                                                                        groupLessons.value
+                                                                            .map { it.subject?.name ?: "?" }
+                                                                            .toSet()
+                                                                            .joinToString(),
+                                                                    color = if (currentTime in lessonTimeStart..lessonTimeEnd) colorScheme.primary else Color.Unspecified,
+                                                                )
+                                                                groupLessons.value.flatMap { it.notes.orEmpty() }.forEach {
+                                                                    Text(
+                                                                        text =
+                                                                            (it.type?.name?.replace("Substitution Plan", "Vertretungsplan") ?: "?") +
+                                                                                ": ${it.description ?: "Keine Beschreibung"}",
+                                                                        modifier = Modifier.padding(vertical = 5.dp),
+                                                                        color =
+                                                                            if (currentTime in
+                                                                                lessonTimeStart..lessonTimeEnd
+                                                                            ) {
+                                                                                colorScheme.primary
+                                                                            } else {
+                                                                                Color.Unspecified
+                                                                            },
+                                                                        style = typography.bodyMedium,
+                                                                    )
                                                                 }
                                                             }
                                                         }
                                                     }
-                                                    if (showNotes || homework.isNotEmpty()) {
-                                                        val notes =
-                                                            currentJournalDay
-                                                                .notes
-                                                                ?.filter { it.description != null }
-                                                        if (!notes.isNullOrEmpty() || homework.isNotEmpty()) Spacer(Modifier.height(5.dp))
-                                                        if (showNotes) {
-                                                            notes?.forEach { note ->
-                                                                Column {
-                                                                    HorizontalDivider(
-                                                                        Modifier.fillMaxWidth().padding(top = 5.dp),
-                                                                        2.dp,
-                                                                        colorScheme.outline,
-                                                                    )
-                                                                    Row(
-                                                                        modifier = Modifier.padding(top = 5.dp),
-                                                                        verticalAlignment = Alignment.CenterVertically,
-                                                                    ) {
-                                                                        Icon(MaterialSymbols.Rounded.News, null, Modifier.padding(end = 10.dp))
-                                                                        Text(note.description ?: "Keine Beschreibung vorhanden")
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                        homework.forEach { entry ->
+                                                }
+                                                if (showNotes || homework.isNotEmpty()) {
+                                                    val notes =
+                                                        currentJournalDay
+                                                            .notes
+                                                            ?.filter { it.description != null }
+                                                    if (!notes.isNullOrEmpty() || homework.isNotEmpty()) Spacer(Modifier.height(5.dp))
+                                                    if (showNotes) {
+                                                        notes?.forEach { note ->
                                                             Column {
-                                                                HorizontalDivider(Modifier.fillMaxWidth().padding(top = 5.dp), 2.dp, colorScheme.outline)
+                                                                HorizontalDivider(
+                                                                    Modifier.fillMaxWidth().padding(top = 5.dp),
+                                                                    2.dp,
+                                                                    colorScheme.outline,
+                                                                )
                                                                 Row(
                                                                     modifier = Modifier.padding(top = 5.dp),
                                                                     verticalAlignment = Alignment.CenterVertically,
                                                                 ) {
-                                                                    Icon(
-                                                                        MaterialSymbols.Rounded.News,
-                                                                        null,
-                                                                        Modifier.padding(end = 10.dp),
-                                                                        tint = colorScheme.error,
-                                                                    )
-                                                                    Text(
-                                                                        if (entry.subjectName.isNullOrBlank()) {
-                                                                            entry.title
-                                                                        } else {
-                                                                            "${entry.subjectName}: ${entry.title}"
-                                                                        },
-                                                                    )
+                                                                    Icon(MaterialSymbols.Rounded.News, null, Modifier.padding(end = 10.dp))
+                                                                    Text(note.description ?: "Keine Beschreibung vorhanden")
                                                                 }
+                                                            }
+                                                        }
+                                                    }
+                                                    homework.forEach { entry ->
+                                                        Column {
+                                                            HorizontalDivider(Modifier.fillMaxWidth().padding(top = 5.dp), 2.dp, colorScheme.outline)
+                                                            Row(
+                                                                modifier = Modifier.padding(top = 5.dp),
+                                                                verticalAlignment = Alignment.CenterVertically,
+                                                            ) {
+                                                                Icon(
+                                                                    MaterialSymbols.Rounded.News,
+                                                                    null,
+                                                                    Modifier.padding(end = 10.dp),
+                                                                    tint = colorScheme.error,
+                                                                )
+                                                                Text(
+                                                                    if (entry.subjectName.isNullOrBlank()) {
+                                                                        entry.title
+                                                                    } else {
+                                                                        "${entry.subjectName}: ${entry.title}"
+                                                                    },
+                                                                )
                                                             }
                                                         }
                                                     }
@@ -708,91 +717,187 @@ fun Home(
                                         }
                                     }
                                 }
-                                Text(
-                                    text = "Tippen, um deinen wöchentlichen Stundenplan zu sehen",
-                                    modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
-                                    textAlign = TextAlign.Center,
-                                )
                             }
+                            Text(
+                                text = "Tippen, um deinen wöchentlichen Stundenplan zu sehen",
+                                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                textAlign = TextAlign.Center,
+                            )
                         }
                     }
-                    item {
-                        Box(
-                            Modifier
-                                .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
-                                .fillMaxWidth()
-                                .padding(10.dp)
-                                .clip(RoundedCornerShape(24.dp))
-                                .background(colorScheme.surfaceContainerHighest.copy(0.7f))
-                                .scatteredIconBackground(
-                                    items =
-                                        remember {
-                                            listOf(
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Experiment),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Labs),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Electric_bolt),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Calculate),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Globe),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Sports),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Sports_and_outdoors),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Architecture),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Abc),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Face),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Face_2),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Face_3),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Face_4),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Face_5),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Face_6),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Demography),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Demography),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Demography),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Demography),
-                                            )
-                                        },
-                                    alpha = backgroundAlpha.value,
-                                ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
-                                .clickable {
-                                    scope.launch {
-                                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
-                                        makeItemVisibleAndNavigate(
-                                            listState = lazyStaggeredGridState,
-                                            index = if (showGreetings) 4 else 3,
-                                            onNavigate = {
-                                                onNavigateToScreen(Fragment.SubjectsAndTeachers)
-                                            },
+                }
+                item {
+                    Box(
+                        Modifier
+                            .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(colorScheme.surfaceContainerHighest.copy(0.7f))
+                            .scatteredIconBackground(
+                                items =
+                                    remember {
+                                        listOf(
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Experiment),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Labs),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Electric_bolt),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Calculate),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Globe),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Sports),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Sports_and_outdoors),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Architecture),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Abc),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Face),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Face_2),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Face_3),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Face_4),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Face_5),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Face_6),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Demography),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Demography),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Demography),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Demography),
                                         )
-                                    }
-                                }.enhancedSharedBounds(
-                                    sharedTransitionScope = sharedTransitionScope,
-                                    sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-card"),
-                                    animatedVisibilityScope = animatedVisibilityScope,
-                                ),
-                        ) {
-                            Column(Modifier.fillMaxWidth()) {
-                                Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
-                                    Text(
-                                        text = "Fächer und Lehrer",
-                                        modifier =
-                                            Modifier
-                                                .align(Alignment.Center)
-                                                .enhancedSharedElement(
-                                                    sharedTransitionScope = sharedTransitionScope,
-                                                    sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-title"),
-                                                    animatedVisibilityScope = animatedVisibilityScope,
-                                                ).skipToLookaheadSize(),
-                                        fontFamily = FontFamilies.KeaniaOne,
-                                        style = typography.headlineSmall,
+                                    },
+                                alpha = backgroundAlpha.value,
+                            ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
+                            .clickable {
+                                scope.launch {
+                                    vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                                    makeItemVisibleAndNavigate(
+                                        listState = lazyStaggeredGridState,
+                                        index = if (showGreetings) 4 else 3,
+                                        onNavigate = {
+                                            onNavigateToScreen(Fragment.SubjectsAndTeachers)
+                                        },
                                     )
-                                    EnhancedIconButton(onClick = {}, enabled = false) {}
                                 }
+                            }.enhancedSharedBounds(
+                                sharedTransitionScope = sharedTransitionScope,
+                                sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-card"),
+                                animatedVisibilityScope = animatedVisibilityScope,
+                            ),
+                    ) {
+                        Column(Modifier.fillMaxWidth()) {
+                            Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
                                 Text(
-                                    text = "Tippen, um einen Überblick über Fächer und Lehrer zu bekommen",
-                                    modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
-                                    textAlign = TextAlign.Center,
+                                    text = "Fächer und Lehrer",
+                                    modifier =
+                                        Modifier
+                                            .align(Alignment.Center)
+                                            .enhancedSharedElement(
+                                                sharedTransitionScope = sharedTransitionScope,
+                                                sharedContentState = rememberSharedContentState(key = "subjects-and-teachers-title"),
+                                                animatedVisibilityScope = animatedVisibilityScope,
+                                            ).skipToLookaheadSize(),
+                                    fontFamily = FontFamilies.KeaniaOne,
+                                    style = typography.headlineSmall,
                                 )
+                                EnhancedIconButton(onClick = {}, enabled = false) {}
                             }
+                            Text(
+                                text = "Tippen, um einen Überblick über Fächer und Lehrer zu bekommen",
+                                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                textAlign = TextAlign.Center,
+                            )
                         }
                     }
+                }
+                item {
+                    Box(
+                        Modifier
+                            .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(colorScheme.surfaceContainerHighest.copy(0.7f))
+                            .scatteredIconBackground(
+                                items =
+                                    remember {
+                                        listOf(
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Sick),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Health_cross),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Event_busy),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.History_toggle_off),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Signature),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Sticky_note_2),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Insights),
+                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Insights),
+                                        )
+                                    },
+                                alpha = backgroundAlpha.value,
+                            ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
+                            .clickable {
+                                homeViewModel.isStatsDialogShown = true
+                                vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                            },
+                    ) {
+                        Column(Modifier.fillMaxWidth()) {
+                            Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
+                                Text(
+                                    text = "Jahresinformationen",
+                                    modifier = Modifier.align(Alignment.Center),
+                                    style = typography.headlineSmall,
+                                )
+                                EnhancedIconButton(
+                                    onClick = {
+                                        homeViewModel.refreshStats(viewModel)
+                                    },
+                                    modifier = Modifier.align(Alignment.CenterEnd),
+                                    enabled = !homeViewModel.isStatsLoading && showYearProgress,
+                                ) {
+                                    this@Column.EnhancedAnimatedVisibility(
+                                        visible = !homeViewModel.isStatsLoading && showYearProgress,
+                                        enter = scaleIn(),
+                                        exit = scaleOut(),
+                                    ) {
+                                        Icon(MaterialSymbols.Rounded.Refresh, null)
+                                    }
+                                }
+                            }
+                            if (showYearProgress) {
+                                EnhancedAnimatedContent(homeViewModel.isStatsLoading || viewModel.intervals.isEmpty()) {
+                                    if (it) {
+                                        LinearWavyProgressIndicator(Modifier.height(40.dp).fillMaxWidth().padding(10.dp))
+                                    } else {
+                                        val firstIntervalFrom = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[0].from) }
+                                        val firstIntervalTo = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[0].to) }
+                                        val secondIntervalFrom = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[1].from) }
+                                        val secondIntervalTo = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[1].to) }
+                                        val progress =
+                                            remember(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo) {
+                                                percentOfSchoolYearAt(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo)
+                                            }
+                                        val split =
+                                            remember(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo) {
+                                                switchPercent(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo)
+                                            }
+                                        Column {
+                                            TwoToneLinearWavyProgressIndicator(
+                                                progress = progress,
+                                                split = split,
+                                                firstColor = colorScheme.primary,
+                                                secondColor = colorScheme.inversePrimary,
+                                                modifier = Modifier.height(40.dp).fillMaxWidth().padding(10.dp),
+                                            )
+                                            Text(
+                                                text = "Du hast aktuell ${(progress * 100).roundToInt()}% des Schuljahres geschafft",
+                                                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                                textAlign = TextAlign.Center,
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            Text(
+                                text = "Tippen, um Informationen zum aktuellen Schuljahr zu erhalten",
+                                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                textAlign = TextAlign.Center,
+                            )
+                        }
+                    }
+                }
+                if (!viewModel.isDemoAccount.value) {
                     item {
                         Box(
                             Modifier
@@ -805,191 +910,95 @@ fun Home(
                                     items =
                                         remember {
                                             listOf(
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Sick),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Health_cross),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Event_busy),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.History_toggle_off),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Signature),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Sticky_note_2),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Insights),
-                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Insights),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Clock_loader_80),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Timelapse),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Hourglass),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Schedule),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Calendar_clock),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Calendar_clock),
                                             )
                                         },
                                     alpha = backgroundAlpha.value,
                                 ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
                                 .clickable {
-                                    homeViewModel.isStatsDialogShown = true
+                                    homeViewModel.isTimesDialogShown = true
                                     vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                 },
                         ) {
                             Column(Modifier.fillMaxWidth()) {
                                 Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
                                     Text(
-                                        text = "Jahresinformationen",
+                                        text = "Unterrichtszeiten",
                                         modifier = Modifier.align(Alignment.Center),
                                         style = typography.headlineSmall,
                                     )
-                                    EnhancedIconButton(
-                                        onClick = {
-                                            homeViewModel.refreshStats(viewModel)
-                                        },
-                                        modifier = Modifier.align(Alignment.CenterEnd),
-                                        enabled = !homeViewModel.isStatsLoading && showYearProgress,
-                                    ) {
-                                        this@Column.EnhancedAnimatedVisibility(
-                                            visible = !homeViewModel.isStatsLoading && showYearProgress,
-                                            enter = scaleIn(),
-                                            exit = scaleOut(),
-                                        ) {
-                                            Icon(MaterialSymbols.Rounded.Refresh, null)
-                                        }
-                                    }
-                                }
-                                if (showYearProgress) {
-                                    EnhancedAnimatedContent(homeViewModel.isStatsLoading || viewModel.intervals.isEmpty()) {
-                                        if (it) {
-                                            LinearWavyProgressIndicator(Modifier.height(40.dp).fillMaxWidth().padding(10.dp))
-                                        } else {
-                                            val firstIntervalFrom = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[0].from) }
-                                            val firstIntervalTo = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[0].to) }
-                                            val secondIntervalFrom = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[1].from) }
-                                            val secondIntervalTo = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[1].to) }
-                                            val progress =
-                                                remember(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo) {
-                                                    percentOfSchoolYearAt(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo)
-                                                }
-                                            val split =
-                                                remember(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo) {
-                                                    switchPercent(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo)
-                                                }
-                                            Column {
-                                                TwoToneLinearWavyProgressIndicator(
-                                                    progress = progress,
-                                                    split = split,
-                                                    firstColor = colorScheme.primary,
-                                                    secondColor = colorScheme.inversePrimary,
-                                                    modifier = Modifier.height(40.dp).fillMaxWidth().padding(10.dp),
-                                                )
-                                                Text(
-                                                    text = "Du hast aktuell ${(progress * 100).roundToInt()}% des Schuljahres geschafft",
-                                                    modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
-                                                    textAlign = TextAlign.Center,
-                                                )
-                                            }
-                                        }
-                                    }
                                 }
                                 Text(
-                                    text = "Tippen, um Informationen zum aktuellen Schuljahr zu erhalten",
+                                    text = "Tippen, um die Unterrichtszeiten deiner Schule anschauen zu können",
                                     modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
                                     textAlign = TextAlign.Center,
                                 )
                             }
                         }
                     }
-                    if (!viewModel.isDemoAccount.value) {
-                        item {
-                            Box(
-                                Modifier
-                                    .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
-                                    .fillMaxWidth()
-                                    .padding(10.dp)
-                                    .clip(RoundedCornerShape(24.dp))
-                                    .background(colorScheme.surfaceContainerHighest.copy(0.7f))
-                                    .scatteredIconBackground(
-                                        items =
-                                            remember {
-                                                listOf(
-                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Clock_loader_80),
-                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Timelapse),
-                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Hourglass),
-                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Schedule),
-                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Calendar_clock),
-                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Calendar_clock),
-                                                )
-                                            },
-                                        alpha = backgroundAlpha.value,
-                                    ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
-                                    .clickable {
-                                        homeViewModel.isTimesDialogShown = true
-                                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
-                                    },
-                            ) {
-                                Column(Modifier.fillMaxWidth()) {
-                                    Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
-                                        Text(
-                                            text = "Unterrichtszeiten",
-                                            modifier = Modifier.align(Alignment.Center),
-                                            style = typography.headlineSmall,
-                                        )
-                                    }
+                }
+                if (viewModel.user.value != null) {
+                    item {
+                        Box(
+                            Modifier
+                                .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
+                                .fillMaxWidth()
+                                .padding(10.dp)
+                                .clip(RoundedCornerShape(24.dp))
+                                .background(colorScheme.surfaceContainerHighest.copy(0.7f))
+                                .scatteredIconBackground(
+                                    items =
+                                        remember {
+                                            listOf(
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Account_circle),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Info),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Alternate_email),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Format_list_numbered),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Location_on),
+                                                ScatterItem.IconItem(MaterialSymbols.Rounded.Apartment),
+                                            )
+                                        },
+                                    alpha = backgroundAlpha.value,
+                                ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
+                                .clickable {
+                                    homeViewModel.isAccountSchoolDialogShown = true
+                                    vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                                },
+                        ) {
+                            Column(Modifier.fillMaxWidth()) {
+                                Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
                                     Text(
-                                        text = "Tippen, um die Unterrichtszeiten deiner Schule anschauen zu können",
-                                        modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
-                                        textAlign = TextAlign.Center,
+                                        text = "Account- und Schuldaten",
+                                        modifier = Modifier.align(Alignment.Center),
+                                        style = typography.headlineSmall,
                                     )
                                 }
+                                Text(
+                                    text = "Tippen, um deine Account- und Schuldaten einsehen zu können",
+                                    modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                    textAlign = TextAlign.Center,
+                                )
                             }
                         }
                     }
-                    if (viewModel.user.value != null) {
-                        item {
-                            Box(
-                                Modifier
-                                    .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
-                                    .fillMaxWidth()
-                                    .padding(10.dp)
-                                    .clip(RoundedCornerShape(24.dp))
-                                    .background(colorScheme.surfaceContainerHighest.copy(0.7f))
-                                    .scatteredIconBackground(
-                                        items =
-                                            remember {
-                                                listOf(
-                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Account_circle),
-                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Info),
-                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Alternate_email),
-                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Format_list_numbered),
-                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Location_on),
-                                                    ScatterItem.IconItem(MaterialSymbols.Rounded.Apartment),
-                                                )
-                                            },
-                                        alpha = backgroundAlpha.value,
-                                    ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
-                                    .clickable {
-                                        homeViewModel.isAccountSchoolDialogShown = true
-                                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
-                                    },
+                }
+                if (!viewModel.isDemoAccount.value) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 20.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            EnhancedOutlinedButton(
+                                onClick = {
+                                    homeViewModel.isYearSelectionDialogShown = true
+                                },
                             ) {
-                                Column(Modifier.fillMaxWidth()) {
-                                    Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
-                                        Text(
-                                            text = "Account- und Schuldaten",
-                                            modifier = Modifier.align(Alignment.Center),
-                                            style = typography.headlineSmall,
-                                        )
-                                    }
-                                    Text(
-                                        text = "Tippen, um deine Account- und Schuldaten einsehen zu können",
-                                        modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
-                                        textAlign = TextAlign.Center,
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    if (!viewModel.isDemoAccount.value) {
-                        item {
-                            Box(
-                                modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 20.dp),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                EnhancedOutlinedButton(
-                                    onClick = {
-                                        homeViewModel.isYearSelectionDialogShown = true
-                                    },
-                                ) {
-                                    Text("Schuljahr ${viewModel.user.value?.year?.name}")
-                                }
+                                Text("Schuljahr ${viewModel.user.value?.year?.name}")
                             }
                         }
                     }

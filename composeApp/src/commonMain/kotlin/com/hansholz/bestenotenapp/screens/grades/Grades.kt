@@ -495,7 +495,7 @@ fun Grades(
                                                                         },
                                                                 )
                                                                 Row(
-                                                                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                                                                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp).padding(verticalPadding),
                                                                     verticalAlignment = Alignment.CenterVertically,
                                                                 ) {
                                                                     Text(
