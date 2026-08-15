@@ -470,6 +470,7 @@ class ViewModel(
 
     fun loginDemo(
         isLoading: (Boolean) -> Unit,
+        applySettings: (timetableBlockViewEnabled: Boolean) -> Unit,
         onNavigateHome: () -> Unit,
     ) {
         isLoading(true)
@@ -496,6 +497,11 @@ class ViewModel(
             user.value = data.user
             studentId.value = data.student.id.toString()
             isDemoAccount.value = true
+            val timetableBlockViewEnabled = data.level.secondaryStage() == SecondaryStage.TWO
+            kSafeProvider(kSafe) {
+                put("timetableBlockViewEnabled", timetableBlockViewEnabled)
+            }
+            applySettings(timetableBlockViewEnabled)
             onNavigateHome()
             toaster.show(
                 Toast(

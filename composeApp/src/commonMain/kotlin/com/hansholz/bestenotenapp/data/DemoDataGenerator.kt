@@ -329,9 +329,12 @@ object DemoDataGenerator {
                 repeat(5) {
                     val lessonsCount = Random.nextInt(5, 9)
                     val subjectsForDay = mutableListOf<Subject>()
-                    repeat(lessonsCount) {
+                    while (subjectsForDay.size < lessonsCount) {
                         val subj = gradeSubjects.random().let { subjectMap[it.first]!! }
                         subjectsForDay.add(subj)
+                        if (isSecondaryTwoUser && subjectsForDay.size < lessonsCount && Random.nextInt(100) < 80) {
+                            subjectsForDay.add(subj)
+                        }
                     }
                     weekPlan.add(subjectsForDay)
                 }
@@ -559,9 +562,13 @@ object DemoDataGenerator {
                         emptyList()
                     }
                 }
+            var previousSubject: Subject? = null
+            var previousNotes: List<JournalNote> = emptyList()
+            var previousRoom: Room? = null
             val lessons =
                 plan.mapIndexed { lessonIndex, subject ->
                     val slot = timeSlots[lessonIndex]
+                    val isDoubleLesson = subject == previousSubject
                     val rndStatus = Random.nextInt(100)
                     val status =
                         if (dayDate < nowDate) {
@@ -586,6 +593,10 @@ object DemoDataGenerator {
                     val rndNote = Random.nextInt(100)
                     val notes =
                         when {
+                            isDoubleLesson -> {
+                                previousNotes
+                            }
+
                             rndNote < 5 -> {
                                 listOf(
                                     JournalNote(
@@ -617,6 +628,15 @@ object DemoDataGenerator {
                                 emptyList()
                             }
                         }
+                    val room =
+                        if (isDoubleLesson) {
+                            previousRoom!!
+                        } else {
+                            Room(id = lessonIndex, localId = "R${Random.nextInt(100, 300)}")
+                        }
+                    previousSubject = subject
+                    previousNotes = notes
+                    previousRoom = room
 
                     JournalLesson(
                         id = "demo-$dayIndex-$lessonIndex",
@@ -640,7 +660,7 @@ object DemoDataGenerator {
                             ),
                         subject = subject,
                         teachers = subject.teachers,
-                        rooms = listOf(Room(id = lessonIndex, localId = "R${Random.nextInt(100, 300)}")),
+                        rooms = listOf(room),
                         notes = notes,
                     )
                 }

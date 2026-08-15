@@ -258,6 +258,7 @@ fun Login(
                                     scope.launch {
                                         viewModel.loginDemo(
                                             isLoading = { loginViewModel.isLoading = it },
+                                            applySettings = { timetableBlockViewEnabled = it },
                                             onNavigateHome = onNavigateHome,
                                         )
                                     }
