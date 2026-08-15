@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -265,10 +266,11 @@ fun Home(
                     PaddingValues(
                         top = innerPadding.calculateTopPadding(),
                         bottom = innerPadding.calculateBottomPadding(),
+                        start = innerPadding.calculateStartPadding(layoutDirection),
                         end = WindowInsets.displayCutout.asPaddingValues().calculateEndPadding(layoutDirection),
                     ),
             ) {
-                item {
+                item("switch-to-current-year") {
                     EnhancedAnimatedVisibility(
                         viewModel.user.value
                             ?.config
@@ -296,7 +298,7 @@ fun Home(
                     }
                 }
                 if (showGreetings) {
-                    item {
+                    item("greeting-text") {
                         EnhancedAnimatedContent(viewModel.isBesteSchuleNotReachable.value) { notReachable ->
                             if (notReachable) {
                                 Text(
@@ -364,7 +366,7 @@ fun Home(
                         }
                     }
                 }
-                item {
+                item("grades-card") {
                     Box(
                         Modifier
                             .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
@@ -473,7 +475,7 @@ fun Home(
                         }
                     }
                 }
-                item {
+                item("timetable-card") {
                     Box(
                         Modifier
                             .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
@@ -726,7 +728,7 @@ fun Home(
                         }
                     }
                 }
-                item {
+                item("subjects-and-teachers-card") {
                     Box(
                         Modifier
                             .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
@@ -803,7 +805,7 @@ fun Home(
                         }
                     }
                 }
-                item {
+                item("stats-card") {
                     Box(
                         Modifier
                             .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
@@ -898,7 +900,7 @@ fun Home(
                     }
                 }
                 if (!viewModel.isDemoAccount.value) {
-                    item {
+                    item("times-card") {
                         Box(
                             Modifier
                                 .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
@@ -943,7 +945,7 @@ fun Home(
                     }
                 }
                 if (viewModel.user.value != null) {
-                    item {
+                    item("account-and-school-card") {
                         Box(
                             Modifier
                                 .then(if (animationsEnabled) Modifier.animateItem().animateContentSize() else Modifier)
@@ -988,7 +990,7 @@ fun Home(
                     }
                 }
                 if (!viewModel.isDemoAccount.value) {
-                    item {
+                    item("year-selection") {
                         Box(
                             modifier = Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 20.dp),
                             contentAlignment = Alignment.Center,
