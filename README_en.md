@@ -14,8 +14,8 @@ This cross-platform school app makes everyday school life more organized and is 
 **Native Apps:** [see Releases](https://github.com/HansHolz09/Beste-Noten-App/releases)
 > [!IMPORTANT]  
 > The IPA file provided for iOS/iPadOS is not signed and therefore cannot be installed directly on these devices.
-> It is therefore recommended to sideload this file using apps such as AltStore or Sideloadly.
-> Alternatively, the app can be completely recompiled ([see **Building/Running the App**](#buildingrunning-the-app)) and then installed directly on the desired device via XCode.
+> It is therefore recommended to sideload this file using SideStore ([setup](https://docs.sidestore.io/docs/installation/prerequisites)).
+> Alternatively, the app can be compiled directly ([see **Building/Running the App**](#buildingrunning-the-app)) and then installed directly on the desired device via XCode.
 
 
 ## Features
@@ -25,16 +25,21 @@ This cross-platform school app makes everyday school life more organized and is 
 - Simple grade overview with the option to view grade history and configurable average calculation
 - Grade charts for comparing different school years
 - Clear timetable view with substitute teacher schedule changes, absence entries, and current daily notes
+- Alternative block view for the timetable (automatically enabled in upper secondary school) with automatic filtering of unnecessary lessons
+- Digital homework planner including Google Calendar synchronization
 - Overview of current subjects and teachers with their abbreviations
-- Annual information on half-year periods and absence statistics
+- Annual information on half-year periods and absence statistics, including a heatmap of attendance by lesson
+- Dialogs for viewing lesson times as well as account and school data
+- Direct support for changing the school year
 - Import/export of app settings and grade weightings as well as grades with the option to view them later without a beste.schule account
-- Adaptive Material 3 Expressive design on all platforms
+- Full offline mode thanks to caching
+- Adaptive Material 3 Expressive design on all platforms with dynamically generated background images
 - Beautiful animations and transitions
 - Immersive haptic feedback on supported devices
 - Notifications for new grades with a customizable check interval for Android and iOS
-- Optional biometric authentication on every app launch for Android and iOS
+- Optional biometric authentication on every app launch for Android, iOS, and supported desktop devices
+- Native desktop apps (including via GraalVM) with platform-specific context menus
 - Some customization options
-- Integration of native window controls (except on Linux)
 - and more...
 
 
@@ -88,14 +93,15 @@ This cross-platform school app makes everyday school life more organized and is 
 - [Emoji.kt](https://github.com/kosi-libs/Emoji.kt) - Support for animated emojis
 - [Compose Sonner](https://github.com/dokar3/compose-sonner) - Apache 2.0 - Toast component
 - [AboutLibraries](https://github.com/mikepenz/AboutLibraries) - Apache 2.0 - Component for displaying the libraries used
+- [multiplatform-markdown-renderer](https://github.com/mikepenz/multiplatform-markdown-renderer) - Apache 2.0 - Displaying Markdown text for the in-app updater
 - [Capturable](https://github.com/jmseb3/Capturable) - MIT - Share/save Composables as images
 - [FileKit](https://github.com/vinceglb/FileKit) - MIT - File dialogs for import/export
 - [Alarmee](https://github.com/Tweener/alarmee) - Apache 2.0 - Notifications for Android and iOS
 - [KMM Permission](https://github.com/reyazoct/Kmm-Permissions) - MIT - Requesting notification permissions
 - [multihaptic](https://github.com/xfqwdsj/multihaptic) - MIT - Highly customizable haptic feedback
 - [Advanced MenuBar for Compose Desktop](https://github.com/HansHolz09/Advanced-MenuBar) - Apache 2.0 - German macOS menu bar with more options
-- [JBR API](https://github.com/JetBrains/JetBrainsRuntimeApi) - Apache 2.0 - API from JetBrains Runtime for accessing native window controls
-- [Nucleus](https://github.com/kdroidFilter/Nucleus) - MIT - Create optimized app installers for desktop targets
+- [Nucleus](https://github.com/kdroidFilter/Nucleus) - MIT - Creating optimized Tao windows and app installers for desktop targets
+- [Oracle GraalVM](https://www.oracle.com/de/developer/graalvm-developers/) - [GFTC](https://www.oracle.com/downloads/licenses/graal-free-license.html) - Compiling desktop apps to native code
 - [Ktlint Gradle](https://github.com/JLLeitschuh/ktlint-gradle) - MIT - Wrapper plugin for [ktlint](https://github.com/pinterest/ktlint)
 - [gradle-buildconfig-plugin](https://github.com/gmazzo/gradle-buildconfig-plugin) - Apache 2.0 - Automatic generation of BuildConfig class for app version
 
@@ -109,7 +115,7 @@ This cross-platform school app makes everyday school life more organized and is 
     - Run Desktop App / `./gradlew run`
     - Run Web App / `./gradlew wasmJsBrowserDevelopmentRun`
     - Run Android App
-    - Package Release as DMG / `./gradlew createReleaseDmg` (macOS only)
-    - Package Release as EXE / `./gradlew packageReleaseNsis` (Windows only)
-    - Package Release as DEB / `./gradlew packageReleaseDeb` (Linux only)
+    - Package Release as DMG / `./gradlew packageReleaseDmg` / `./gradlew packageGraalvmDmg` (macOS only)
+    - Package Release as EXE / `./gradlew packageReleaseNsis` / `./gradlew packageGraalvmNsis` (Windows only)
+    - Package Release as DEB / `./gradlew packageReleaseDeb` / `./gradlew packageGraalvmDeb` (Linux only)
     - Package Web App / `./gradlew wasmJsBrowserDistribution`
