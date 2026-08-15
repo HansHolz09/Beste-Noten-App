@@ -72,8 +72,6 @@ This cross-platform school app makes everyday school life more organized and is 
     <img src="screenshots/web.png" height="500"/>
 </details>
 
-[More Screenshots](SCREENSHOTS.md)
-
 
 ## Libraries and Plugins Used
 - [Ktor Client](https://github.com/ktorio/ktor) - Apache 2.0 - Access to the beste.schule API

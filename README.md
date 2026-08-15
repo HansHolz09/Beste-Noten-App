@@ -72,8 +72,6 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
     <img src="screenshots/web.png" height="500"/>
 </details>
 
-[Weitere Screenshots](SCREENSHOTS.md)
-
 
 ## Genutzte Bibliotheken und Plugins
 - [Ktor Client](https://github.com/ktorio/ktor) - Apache 2.0 - Zugriff auf Api von beste.schule
