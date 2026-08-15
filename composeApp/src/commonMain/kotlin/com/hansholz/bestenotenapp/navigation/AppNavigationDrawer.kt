@@ -74,7 +74,8 @@ fun AppNavigationDrawer(
     val navController = rememberNavController()
     val currentRoute by navController.currentBackStackEntryAsState()
     NavigationDrawer(
-        drawerState = if (isCompactWindow) viewModel.compactDrawerState.value else viewModel.mediumExpandedDrawerState.value,
+        compactDrawerState = viewModel.compactDrawerState.value,
+        mediumExpandedDrawerState = viewModel.mediumExpandedDrawerState.value,
         hazeState = viewModel.hazeBackgroundState,
         drawerContent = {
             Column {

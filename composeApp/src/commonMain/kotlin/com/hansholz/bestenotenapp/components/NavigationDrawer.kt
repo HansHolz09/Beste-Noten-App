@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DrawerState
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.ModalNavigationDrawer
@@ -20,10 +21,8 @@ import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.movableContentOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -34,13 +33,13 @@ import dev.chrisbanes.haze.hazeSource
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NavigationDrawer(
-    drawerState: DrawerState,
+    compactDrawerState: DrawerState,
+    mediumExpandedDrawerState: DrawerState,
     hazeState: HazeState,
     drawerContent: @Composable () -> Unit,
     content: @Composable () -> Unit,
 ) {
-    val currentContent by rememberUpdatedState(content)
-    val movableContent = remember { movableContentOf { currentContent() } }
+    val hiddenDrawerState = remember { DrawerState(DrawerValue.Closed) }
     val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
     val isCompactWindow = !windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
     val isMediumWindow =
@@ -50,31 +49,29 @@ fun NavigationDrawer(
         WindowInsets.safeDrawing.only(
             WindowInsetsSides.Vertical + WindowInsetsSides.Start,
         )
-    if (isCompactWindow) {
-        ModalNavigationDrawer(
-            drawerState = drawerState,
-            drawerContent = {
-                HazeModalDrawerSheet(
-                    drawerState = drawerState,
-                    hazeState = hazeState,
-                    drawerContainerColor = Color.Transparent,
-                    windowInsets = WindowInsets(),
+    LaunchedEffect(isCompactWindow) {
+        compactDrawerState.close()
+    }
+    ModalNavigationDrawer(
+        drawerState = compactDrawerState,
+        drawerContent = {
+            HazeModalDrawerSheet(
+                drawerState = compactDrawerState,
+                hazeState = hazeState,
+                drawerContainerColor = Color.Transparent,
+                windowInsets = WindowInsets(),
+            ) {
+                Column(
+                    Modifier
+                        .verticalScroll(rememberScrollState())
+                        .windowInsetsPadding(windowInsets),
                 ) {
-                    Column(
-                        Modifier
-                            .verticalScroll(rememberScrollState())
-                            .windowInsetsPadding(windowInsets),
-                    ) {
-                        drawerContent()
-                    }
+                    drawerContent()
                 }
-            },
-        ) {
-            Box(Modifier.hazeSource(hazeState, 1f)) {
-                movableContent()
             }
-        }
-    } else {
+        },
+        gesturesEnabled = isCompactWindow,
+    ) {
         BoxWithConstraints {
             val drawerSheetModifier =
                 if (isMediumWindow) {
@@ -83,28 +80,36 @@ fun NavigationDrawer(
                     Modifier
                 }
             CloseableNavigationDrawer(
-                drawerState = drawerState,
+                drawerState = if (isCompactWindow) hiddenDrawerState else mediumExpandedDrawerState,
                 drawerContent = {
-                    Row {
-                        PermanentDrawerSheet(
-                            modifier = drawerSheetModifier,
-                            drawerContainerColor = Color.Transparent,
-                            windowInsets = WindowInsets(),
-                        ) {
-                            Column(
-                                Modifier
-                                    .weight(1f)
-                                    .verticalScroll(rememberScrollState())
-                                    .windowInsetsPadding(windowInsets),
+                    if (!isCompactWindow) {
+                        Row {
+                            PermanentDrawerSheet(
+                                modifier = drawerSheetModifier,
+                                drawerContainerColor = Color.Transparent,
+                                windowInsets = WindowInsets(),
                             ) {
-                                drawerContent()
+                                Column(
+                                    Modifier
+                                        .weight(1f)
+                                        .verticalScroll(rememberScrollState())
+                                        .windowInsetsPadding(windowInsets),
+                                ) {
+                                    drawerContent()
+                                }
                             }
+                            VerticalDivider(thickness = 2.dp, color = colorScheme.outline)
                         }
-                        VerticalDivider(thickness = 2.dp, color = colorScheme.outline)
                     }
                 },
             ) {
-                movableContent()
+                Box(
+                    Modifier.then(
+                        if (isCompactWindow) Modifier.hazeSource(hazeState, 1f) else Modifier,
+                    ),
+                ) {
+                    content()
+                }
             }
         }
     }
