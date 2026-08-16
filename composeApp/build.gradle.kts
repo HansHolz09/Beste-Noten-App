@@ -327,6 +327,17 @@ aboutLibraries {
     }
 }
 
+tasks.matching {
+    it.name in setOf(
+        "copyGraalvmAwtSoLibs",
+        "copyGraalvmJvmSo",
+    )
+}.configureEach {
+    doNotTrackState(
+        "Nucleus GraalVM output directory is modified in-place by strip/patchelf"
+    )
+}
+
 gradle.projectsEvaluated {
     val cfg = file("../iosApp/iosApp/build/Generated.xcconfig")
     cfg.parentFile.mkdirs()
