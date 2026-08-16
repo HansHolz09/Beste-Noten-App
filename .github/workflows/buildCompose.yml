@@ -24,6 +24,9 @@ on:
       run_smoke_tests:
         type: boolean
         default: false
+      quick_build:
+        type: boolean
+        default: false
       ignore_artifact_upload_errors:
         type: boolean
         default: false
@@ -335,7 +338,7 @@ jobs:
           path: ios-unsigned.ipa
 
   ios_simulator:
-    if: ${{ inputs.build_ios && inputs.run_smoke_tests }}
+    if: ${{ inputs.run_smoke_tests }}
     runs-on: macos-26
     env:
       GOOGLE_CLIENT_ID_IOS: ${{ secrets.GOOGLE_CLIENT_ID_IOS }}
@@ -582,6 +585,7 @@ jobs:
     env:
       GOOGLE_CLIENT_ID_DESKTOP: ${{ secrets.GOOGLE_CLIENT_ID_DESKTOP }}
       GOOGLE_CLIENT_SECRET_DESKTOP: ${{ secrets.GOOGLE_CLIENT_SECRET_DESKTOP }}
+      QUICK_BUILD: ${{ inputs.quick_build }}
     steps:
       - uses: actions/checkout@v7
 
@@ -697,6 +701,7 @@ jobs:
     env:
       GOOGLE_CLIENT_ID_DESKTOP: ${{ secrets.GOOGLE_CLIENT_ID_DESKTOP }}
       GOOGLE_CLIENT_SECRET_DESKTOP: ${{ secrets.GOOGLE_CLIENT_SECRET_DESKTOP }}
+      QUICK_BUILD: ${{ inputs.quick_build }}
     steps:
       - uses: actions/checkout@v7
 
@@ -829,6 +834,7 @@ jobs:
     env:
       GOOGLE_CLIENT_ID_DESKTOP: ${{ secrets.GOOGLE_CLIENT_ID_DESKTOP }}
       GOOGLE_CLIENT_SECRET_DESKTOP: ${{ secrets.GOOGLE_CLIENT_SECRET_DESKTOP }}
+      QUICK_BUILD: ${{ inputs.quick_build }}
     steps:
       - uses: actions/checkout@v7
 
@@ -946,6 +952,7 @@ jobs:
     env:
       GOOGLE_CLIENT_ID_DESKTOP: ${{ secrets.GOOGLE_CLIENT_ID_DESKTOP }}
       GOOGLE_CLIENT_SECRET_DESKTOP: ${{ secrets.GOOGLE_CLIENT_SECRET_DESKTOP }}
+      QUICK_BUILD: ${{ inputs.quick_build }}
     steps:
       - uses: actions/checkout@v7
 
@@ -1050,6 +1057,7 @@ jobs:
     env:
       GOOGLE_CLIENT_ID_DESKTOP: ${{ secrets.GOOGLE_CLIENT_ID_DESKTOP }}
       GOOGLE_CLIENT_SECRET_DESKTOP: ${{ secrets.GOOGLE_CLIENT_SECRET_DESKTOP }}
+      QUICK_BUILD: ${{ inputs.quick_build }}
     steps:
       - uses: actions/checkout@v7
 
@@ -1215,6 +1223,7 @@ jobs:
     env:
       GOOGLE_CLIENT_ID_DESKTOP: ${{ secrets.GOOGLE_CLIENT_ID_DESKTOP }}
       GOOGLE_CLIENT_SECRET_DESKTOP: ${{ secrets.GOOGLE_CLIENT_SECRET_DESKTOP }}
+      QUICK_BUILD: ${{ inputs.quick_build }}
     steps:
       - uses: actions/checkout@v7
 

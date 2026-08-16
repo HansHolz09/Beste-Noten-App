@@ -4,9 +4,25 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "composeApp/**"
+      - "androidApp/**"
+      - "iosApp/**"
+      - "gradle/**"
+      - "build.gradle.kts"
+      - "settings.gradle.kts"
+      - ".github/workflows/**"
   pull_request:
     branches:
       - main
+    paths:
+      - "composeApp/**"
+      - "androidApp/**"
+      - "iosApp/**"
+      - "gradle/**"
+      - "build.gradle.kts"
+      - "settings.gradle.kts"
+      - ".github/workflows/**"
   workflow_dispatch:
 
 permissions:
@@ -44,9 +60,10 @@ jobs:
     with:
       upload_wasm_as_pages_artifact: false
       run_smoke_tests: true
+      quick_build: true
       ignore_artifact_upload_errors: true
       build_android: true
-      build_ios: true
+      build_ios: false
       build_windows_x64: true
       build_windows_arm64: true
       build_macos_x64: true

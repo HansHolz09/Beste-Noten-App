@@ -170,6 +170,8 @@ nucleus.application {
     val appName = libs.versions.appName.get()
     val appVersion = libs.versions.appVersion.get()
 
+    val isQuickBuild = System.getenv("QUICK_BUILD")?.toBoolean() ?: false
+
     nativeDistributions {
         targetFormats(TargetFormat.Dmg, TargetFormat.Nsis, TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.AppImage)
         packageName = appName
@@ -262,7 +264,7 @@ nucleus.application {
         version = libs.versions.proguard.get()
         isEnabled = true
         obfuscate = true
-        optimize = true
+        optimize = !isQuickBuild
         configurationFiles.from(project.file("src/desktopMain/compose-desktop.pro"))
     }
 
@@ -272,7 +274,7 @@ nucleus.application {
         march = NativeImageMarch.COMPATIBILITY
         allCharsets = true
         autoIncludeResources = false
-        optimization = NativeImageOptimization.SIZE
+        optimization = if (isQuickBuild) NativeImageOptimization.QUICK_BUILD else NativeImageOptimization.SIZE
         toolchain {
             distribution = GraalvmDistribution.ORACLE
         }
@@ -280,7 +282,7 @@ nucleus.application {
             bundleCRuntime = true
         }
         pgo {
-            enabled = true
+            enabled = !isQuickBuild
             profile = project.file("src/desktopMain/native-image-resources/pgo.iprof")
         }
         nativeImageConfigBaseDir.set(
@@ -327,16 +329,18 @@ aboutLibraries {
     }
 }
 
-tasks.matching {
-    it.name in setOf(
-        "copyGraalvmAwtSoLibs",
-        "copyGraalvmJvmSo",
-    )
-}.configureEach {
-    doNotTrackState(
-        "Nucleus GraalVM output directory is modified in-place by strip/patchelf"
-    )
-}
+tasks
+    .matching {
+        it.name in
+            setOf(
+                "copyGraalvmAwtSoLibs",
+                "copyGraalvmJvmSo",
+            )
+    }.configureEach {
+        doNotTrackState(
+            "Nucleus GraalVM output directory is modified in-place by strip/patchelf",
+        )
+    }
 
 gradle.projectsEvaluated {
     val cfg = file("../iosApp/iosApp/build/Generated.xcconfig")
