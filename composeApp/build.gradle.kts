@@ -294,6 +294,8 @@ nucleus.application {
             "-H:+RemoveUnusedSymbols",
             "-H:-IncludeDebugHelperMethods",
             "--enable-url-protocols=https",
+            "-J-XX:+UnlockExperimentalVMOptions",
+            "-J-XX:+UseCompactObjectHeaders",
         )
     }
 }
