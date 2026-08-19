@@ -1,15 +1,18 @@
 package com.hansholz.bestenotenapp.screens.settings
 
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import bestenotenapp.composeapp.generated.resources.Res
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Local_library
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
+import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.mikepenz.aboutlibraries.ui.compose.DefaultChipColors
 import com.mikepenz.aboutlibraries.ui.compose.LibraryDefaults
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
@@ -39,8 +42,11 @@ fun LibrariesDialog(settingsViewModel: SettingsViewModel) {
         icon = { Icon(MaterialSymbols.Rounded.Local_library, null) },
         title = { Text("Open-Source-Lizenzen") },
         text = {
+            val listState = rememberLazyListState()
             LibrariesContainer(
                 libraries = libraries,
+                modifier = Modifier.scrollableEdgeFade(listState),
+                lazyListState = listState,
                 detailMode = LibraryDetailMode.Sheet,
                 colors =
                     LibraryDefaults.libraryColors(

@@ -31,6 +31,7 @@ import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.System_update_alt
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
+import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.hansholz.bestenotenapp.utils.IO
 import com.mikepenz.markdown.m3.Markdown
@@ -73,12 +74,14 @@ fun UpdateDialogHost() =
                 icon = { Icon(MaterialSymbols.Rounded.System_update_alt, null) },
                 title = { Text("Update verfügbar") },
                 text = {
+                    val scrollState = rememberScrollState()
                     Column(
                         modifier =
                             Modifier
                                 .fillMaxWidth()
                                 .heightIn(max = 520.dp)
-                                .verticalScroll(rememberScrollState()),
+                                .scrollableEdgeFade(scrollState)
+                                .verticalScroll(scrollState),
                     ) {
                         Text(
                             text = "von ${BuildConfig.VERSION_NAME} zu ${availableUpdate.version}\n${availableUpdate.size}",

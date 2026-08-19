@@ -48,6 +48,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
+import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.utils.appendWithSymbols
 import com.hansholz.bestenotenapp.utils.formateDate
@@ -195,7 +196,8 @@ fun StatsDialog(
                 if (isLoading) {
                     ContainedLoadingIndicator(Modifier.padding(100.dp))
                 } else {
-                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                    val scrollState = rememberScrollState()
+                    Column(Modifier.scrollableEdgeFade(scrollState).verticalScroll(scrollState)) {
                         SelectionContainer {
                             Text(
                                 text =

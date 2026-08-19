@@ -21,6 +21,7 @@ import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Calendar_clock
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
+import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.main.ViewModel
 import components.dialogs.EnhancedAlertDialog
 
@@ -60,7 +61,8 @@ fun TimesDialog(
                 } else if (viewModel.times.isEmpty()) {
                     Text("Es sind keine Unterrichtszeiten verfügbar.")
                 } else {
-                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                    val scrollState = rememberScrollState()
+                    Column(Modifier.scrollableEdgeFade(scrollState).verticalScroll(scrollState)) {
                         SelectionContainer {
                             Text(
                                 text =

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.RadioButton
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import components.dialogs.EnhancedAlertDialog
 import top.ltfan.multihaptic.compose.rememberVibrator
 
@@ -53,7 +55,11 @@ fun ChooseStudentDialog(loginViewModel: LoginViewModel) {
             )
         },
         text = {
-            LazyColumn {
+            val listState = rememberLazyListState()
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.scrollableEdgeFade(listState),
+            ) {
                 loginViewModel.chooseStudentDialog.second?.forEach { student ->
                     item {
                         Row(

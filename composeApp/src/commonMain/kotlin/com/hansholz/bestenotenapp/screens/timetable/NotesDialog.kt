@@ -3,6 +3,7 @@ package com.hansholz.bestenotenapp.screens.timetable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -12,6 +13,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Add
@@ -24,6 +26,7 @@ import com.hansholz.bestenotenapp.components.PreferencePosition
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.homework.HomeworkEntry
 import com.hansholz.bestenotenapp.homework.HomeworkStatus
 import com.hansholz.bestenotenapp.main.ViewModel
@@ -62,7 +65,12 @@ fun NotesDialog(
         icon = { Icon(MaterialSymbols.Rounded.Article, null) },
         title = { Text("Notizen vom $dateLabel") },
         text = {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            val listState = rememberLazyListState()
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.scrollableEdgeFade(listState),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
                 if (!notes.isNullOrEmpty()) {
                     item {
                         PreferenceCategory("beste.schule", reduceTopPadding = true)

@@ -207,10 +207,12 @@ fun HomeworkEditorDialog(
         icon = { Icon(if (initialEntry == null) MaterialSymbols.Rounded.Add_task else MaterialSymbols.Rounded.Task_alt, null) },
         title = { Text(if (initialEntry == null) "Eintrag hinzufügen" else "Eintrag bearbeiten") },
         text = {
+            val editorScrollState = rememberScrollState()
             Column(
                 modifier =
                     Modifier
-                        .verticalScroll(rememberScrollState())
+                        .scrollableEdgeFade(editorScrollState)
+                        .verticalScroll(editorScrollState)
                         .focusRequester(focusRequester)
                         .focusable(),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -240,11 +242,8 @@ fun HomeworkEditorDialog(
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .scrollableEdgeFade(
-                                canScrollBackward = typeScrollState.canScrollBackward,
-                                canScrollForward = typeScrollState.canScrollForward,
-                                orientation = Orientation.Horizontal,
-                            ).horizontalScroll(typeScrollState),
+                            .scrollableEdgeFade(typeScrollState, Orientation.Horizontal)
+                            .horizontalScroll(typeScrollState),
                 ) {
                     val displayedTypes = if (type in homeworkTypes) homeworkTypes else listOf(type) + homeworkTypes
                     displayedTypes.forEach { option ->
@@ -486,6 +485,7 @@ private fun HomeworkTypeEditorDialog(
     EnhancedAlertDialog(
         visible = visible,
         onDismissRequest = onDismissRequest,
+        maxWidth = 400.dp,
         icon = { Icon(MaterialSymbols.Rounded.Edit_note, null) },
         title = { Text("Eintragstypen bearbeiten") },
         text = {
@@ -497,11 +497,7 @@ private fun HomeworkTypeEditorDialog(
                             .fillMaxWidth()
                             .animateContentSize()
                             .weight(1f, false)
-                            .scrollableEdgeFade(
-                                canScrollBackward = listState.canScrollBackward,
-                                canScrollForward = listState.canScrollForward,
-                                orientation = Orientation.Vertical,
-                            ),
+                            .scrollableEdgeFade(listState),
                     verticalArrangement = Arrangement.spacedBy(2.dp),
                 ) {
                     items(draft, key = HomeworkType::value) { option ->

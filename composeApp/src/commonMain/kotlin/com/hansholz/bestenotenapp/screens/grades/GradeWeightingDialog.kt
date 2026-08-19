@@ -44,6 +44,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedFilterChip
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
+import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import components.dialogs.EnhancedAlertDialog
 
 @Composable
@@ -78,8 +79,9 @@ internal fun GradeWeightingDialog(
         title = { Text("Gewichtungen für $subjectTitle") },
         modifier = Modifier.width(IntrinsicSize.Min),
         text = {
+            val scrollState = rememberScrollState()
             Column(
-                modifier = Modifier.verticalScroll(rememberScrollState()),
+                modifier = Modifier.scrollableEdgeFade(scrollState).verticalScroll(scrollState),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {

@@ -21,6 +21,7 @@ import com.composables.icons.materialsymbols.rounded.Apartment
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.utils.secondaryStage
 import components.dialogs.EnhancedAlertDialog
@@ -58,7 +59,8 @@ fun AccountSchoolDialog(
             val level = viewModel.level.value
             val school = viewModel.user.value?.school
             val schoolAdress = "${school?.street} ${school?.streetNr} ${school?.city}"
-            Column(Modifier.verticalScroll(rememberScrollState())) {
+            val scrollState = rememberScrollState()
+            Column(Modifier.scrollableEdgeFade(scrollState).verticalScroll(scrollState)) {
                 SelectionContainer {
                     Text(
                         text =

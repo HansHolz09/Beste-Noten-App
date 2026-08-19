@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -41,6 +42,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.utils.formateDate
 import components.dialogs.EnhancedAlertDialog
@@ -112,7 +114,12 @@ fun ExportConfigDialog(
                         ContainedLoadingIndicator(Modifier.align(Alignment.Center))
                     }
                 } else {
-                    LazyColumn(horizontalAlignment = Alignment.CenterHorizontally) {
+                    val listState = rememberLazyListState()
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier.scrollableEdgeFade(listState),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
                         item {
                             Row(
                                 Modifier

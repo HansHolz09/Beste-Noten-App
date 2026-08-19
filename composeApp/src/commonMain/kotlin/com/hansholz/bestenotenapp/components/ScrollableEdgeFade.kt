@@ -1,7 +1,9 @@
 package com.hansholz.bestenotenapp.components
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -16,6 +18,32 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun Modifier.scrollableEdgeFade(
+    state: ScrollState,
+    orientation: Orientation = Orientation.Vertical,
+    edgeSize: Dp = 20.dp,
+): Modifier =
+    scrollableEdgeFade(
+        canScrollBackward = state.canScrollBackward,
+        canScrollForward = state.canScrollForward,
+        orientation = orientation,
+        edgeSize = edgeSize,
+    )
+
+@Composable
+fun Modifier.scrollableEdgeFade(
+    state: LazyListState,
+    orientation: Orientation = Orientation.Vertical,
+    edgeSize: Dp = 20.dp,
+): Modifier =
+    scrollableEdgeFade(
+        canScrollBackward = state.canScrollBackward,
+        canScrollForward = state.canScrollForward,
+        orientation = orientation,
+        edgeSize = edgeSize,
+    )
+
+@Composable
+private fun Modifier.scrollableEdgeFade(
     canScrollBackward: Boolean,
     canScrollForward: Boolean,
     orientation: Orientation,
