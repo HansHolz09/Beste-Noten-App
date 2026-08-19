@@ -13,6 +13,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -593,75 +594,79 @@ fun Home(
                                                         val position = EventPosition.dynamic(firstLesson.nr.toInt() - 1, maxLessonNr)
                                                         val lessonTimeStart = SimpleTime.parse(firstLesson.time?.from ?: "00:00")
                                                         val lessonTimeEnd = SimpleTime.parse(firstLesson.time?.to ?: "00:00")
-                                                        @OptIn(ExperimentalComposeApi::class)
-                                                        JetLimeExtendedEvent(
-                                                            style =
-                                                                JetLimeEventDefaults.eventStyle(
-                                                                    position = position,
-                                                                    pointAnimation =
-                                                                        if (currentTime in
-                                                                            lessonTimeStart..lessonTimeEnd
-                                                                        ) {
-                                                                            JetLimeEventDefaults.pointAnimation(targetValue = 1.4f)
-                                                                        } else {
-                                                                            null
-                                                                        },
-                                                                    pointType = if (lessonTimeStart <= currentTime) EventPointType.Default else EventPointType.EMPTY,
-                                                                    pointColor =
-                                                                        if (groupLessons.value.size > 1) {
-                                                                            colorScheme.surface
-                                                                        } else {
-                                                                            when (firstLesson.status) {
-                                                                                "hold" -> if (isDark) Color(48, 99, 57) else Color(226, 251, 232)
-                                                                                "canceled" -> colorScheme.errorContainer
-                                                                                "initial" -> if (isDark) Color.DarkGray else Color.LightGray
-                                                                                "planned" -> if (isDark) Color(38, 63, 168) else Color(222, 233, 252)
-                                                                                else -> colorScheme.surface
-                                                                            }
-                                                                        },
-                                                                ),
-                                                            additionalContent = {
-                                                                Box(Modifier.clip(ClamShell.toShape()).background(colorScheme.primaryContainer)) {
-                                                                    Text(
-                                                                        text =
-                                                                            groupLessons.value
-                                                                                .flatMap { it.rooms.orEmpty() }
-                                                                                .map { it.localId }
-                                                                                .toSet()
-                                                                                .joinToString()
-                                                                                .ifEmpty { "?" },
-                                                                        modifier = Modifier.width(60.dp).padding(vertical = 2.dp),
-                                                                        color = colorScheme.onPrimaryContainer,
-                                                                        textAlign = TextAlign.Center,
-                                                                    )
-                                                                }
-                                                            },
-                                                        ) {
-                                                            Column(Modifier.padding(start = 5.dp)) {
-                                                                Text(
-                                                                    text =
-                                                                        groupLessons.value
-                                                                            .map { it.subject?.name ?: "?" }
-                                                                            .toSet()
-                                                                            .joinToString(),
-                                                                    color = if (currentTime in lessonTimeStart..lessonTimeEnd) colorScheme.primary else Color.Unspecified,
-                                                                )
-                                                                groupLessons.value.flatMap { it.notes.orEmpty() }.forEach {
-                                                                    Text(
-                                                                        text =
-                                                                            (it.type?.name?.replace("Substitution Plan", "Vertretungsplan") ?: "?") +
-                                                                                ": ${it.description ?: "Keine Beschreibung"}",
-                                                                        modifier = Modifier.padding(vertical = 5.dp),
-                                                                        color =
-                                                                            if (currentTime in
-                                                                                lessonTimeStart..lessonTimeEnd
-                                                                            ) {
-                                                                                colorScheme.primary
-                                                                            } else {
-                                                                                Color.Unspecified
-                                                                            },
-                                                                        style = typography.bodyMedium,
-                                                                    )
+                                                        BoxWithConstraints {
+                                                            if (maxWidth >= 96.dp) {
+                                                                @OptIn(ExperimentalComposeApi::class)
+                                                                JetLimeExtendedEvent(
+                                                                    style =
+                                                                        JetLimeEventDefaults.eventStyle(
+                                                                            position = position,
+                                                                            pointAnimation =
+                                                                                if (currentTime in
+                                                                                    lessonTimeStart..lessonTimeEnd
+                                                                                ) {
+                                                                                    JetLimeEventDefaults.pointAnimation(targetValue = 1.4f)
+                                                                                } else {
+                                                                                    null
+                                                                                },
+                                                                            pointType = if (lessonTimeStart <= currentTime) EventPointType.Default else EventPointType.EMPTY,
+                                                                            pointColor =
+                                                                                if (groupLessons.value.size > 1) {
+                                                                                    colorScheme.surface
+                                                                                } else {
+                                                                                    when (firstLesson.status) {
+                                                                                        "hold" -> if (isDark) Color(48, 99, 57) else Color(226, 251, 232)
+                                                                                        "canceled" -> colorScheme.errorContainer
+                                                                                        "initial" -> if (isDark) Color.DarkGray else Color.LightGray
+                                                                                        "planned" -> if (isDark) Color(38, 63, 168) else Color(222, 233, 252)
+                                                                                        else -> colorScheme.surface
+                                                                                    }
+                                                                                },
+                                                                        ),
+                                                                    additionalContent = {
+                                                                        Box(Modifier.clip(ClamShell.toShape()).background(colorScheme.primaryContainer)) {
+                                                                            Text(
+                                                                                text =
+                                                                                    groupLessons.value
+                                                                                        .flatMap { it.rooms.orEmpty() }
+                                                                                        .map { it.localId }
+                                                                                        .toSet()
+                                                                                        .joinToString()
+                                                                                        .ifEmpty { "?" },
+                                                                                modifier = Modifier.width(60.dp).padding(vertical = 2.dp),
+                                                                                color = colorScheme.onPrimaryContainer,
+                                                                                textAlign = TextAlign.Center,
+                                                                            )
+                                                                        }
+                                                                    },
+                                                                ) {
+                                                                    Column(Modifier.padding(start = 5.dp)) {
+                                                                        Text(
+                                                                            text =
+                                                                                groupLessons.value
+                                                                                    .map { it.subject?.name ?: "?" }
+                                                                                    .toSet()
+                                                                                    .joinToString(),
+                                                                            color = if (currentTime in lessonTimeStart..lessonTimeEnd) colorScheme.primary else Color.Unspecified,
+                                                                        )
+                                                                        groupLessons.value.flatMap { it.notes.orEmpty() }.forEach {
+                                                                            Text(
+                                                                                text =
+                                                                                    (it.type?.name?.replace("Substitution Plan", "Vertretungsplan") ?: "?") +
+                                                                                        ": ${it.description ?: "Keine Beschreibung"}",
+                                                                                modifier = Modifier.padding(vertical = 5.dp),
+                                                                                color =
+                                                                                    if (currentTime in
+                                                                                        lessonTimeStart..lessonTimeEnd
+                                                                                    ) {
+                                                                                        colorScheme.primary
+                                                                                    } else {
+                                                                                        Color.Unspecified
+                                                                                    },
+                                                                                style = typography.bodyMedium,
+                                                                            )
+                                                                        }
+                                                                    }
                                                                 }
                                                             }
                                                         }
