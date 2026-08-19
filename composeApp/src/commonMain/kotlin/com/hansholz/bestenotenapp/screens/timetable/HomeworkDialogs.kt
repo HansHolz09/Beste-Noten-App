@@ -330,79 +330,75 @@ fun HomeworkEditorDialog(
         },
     )
 
-    if (datePickerVisible) {
-        val initialDate = reminderAt?.date ?: dueDate.minus(DatePeriod(days = 1))
-        val datePickerState =
-            rememberDatePickerState(
-                initialSelectedDateMillis = initialDate.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds(),
-            )
-        EnhancedAlertDialog(
-            visible = true,
-            withBlur = false,
-            onDismissRequest = { datePickerVisible = false },
-            title = { Text("Datum wählen") },
-            confirmButton = {
-                EnhancedButton(
-                    onClick = {
-                        selectedReminderDate =
-                            datePickerState.selectedDateMillis?.let {
-                                Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date
-                            }
-                        datePickerVisible = false
-                        if (selectedReminderDate != null) timePickerVisible = true
-                    },
-                    enabled = datePickerState.selectedDateMillis != null,
-                ) {
-                    Text("Weiter")
-                }
-            },
-            dismissButton = {
-                EnhancedOutlinedButton(onClick = { datePickerVisible = false }) {
-                    Text("Abbrechen")
-                }
-            },
-            text = {
-                DatePicker(
-                    state = datePickerState,
-                    title = {},
-                )
-            },
+    val initialDate = reminderAt?.date ?: dueDate.minus(DatePeriod(days = 1))
+    val datePickerState =
+        rememberDatePickerState(
+            initialSelectedDateMillis = initialDate.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds(),
         )
-    }
-
-    if (timePickerVisible) {
-        val initialTime = reminderAt?.time ?: LocalTime(18, 0)
-        val timePickerState =
-            rememberTimePickerState(
-                initialHour = initialTime.hour,
-                initialMinute = initialTime.minute,
-                is24Hour = true,
-            )
-        EnhancedAlertDialog(
-            visible = true,
-            withBlur = false,
-            onDismissRequest = { timePickerVisible = false },
-            title = { Text("Uhrzeit wählen") },
-            confirmButton = {
-                EnhancedButton(
-                    onClick = {
-                        selectedReminderDate?.let {
-                            reminderAt = LocalDateTime(it, LocalTime(timePickerState.hour, timePickerState.minute))
+    EnhancedAlertDialog(
+        visible = datePickerVisible,
+        withBlur = false,
+        onDismissRequest = { datePickerVisible = false },
+        title = { Text("Datum wählen") },
+        confirmButton = {
+            EnhancedButton(
+                onClick = {
+                    selectedReminderDate =
+                        datePickerState.selectedDateMillis?.let {
+                            Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date
                         }
-                        timePickerVisible = false
-                    },
-                ) {
-                    Text("Übernehmen")
-                }
-            },
-            dismissButton = {
-                EnhancedOutlinedButton(onClick = { timePickerVisible = false }) {
-                    Text("Abbrechen")
-                }
-            },
-            text = { TimePicker(state = timePickerState) },
+                    datePickerVisible = false
+                    if (selectedReminderDate != null) timePickerVisible = true
+                },
+                enabled = datePickerState.selectedDateMillis != null,
+            ) {
+                Text("Weiter")
+            }
+        },
+        dismissButton = {
+            EnhancedOutlinedButton(onClick = { datePickerVisible = false }) {
+                Text("Abbrechen")
+            }
+        },
+        text = {
+            DatePicker(
+                state = datePickerState,
+                title = {},
+            )
+        },
+    )
+
+    val initialTime = reminderAt?.time ?: LocalTime(18, 0)
+    val timePickerState =
+        rememberTimePickerState(
+            initialHour = initialTime.hour,
+            initialMinute = initialTime.minute,
+            is24Hour = true,
         )
-    }
+    EnhancedAlertDialog(
+        visible = timePickerVisible,
+        withBlur = false,
+        onDismissRequest = { timePickerVisible = false },
+        title = { Text("Uhrzeit wählen") },
+        confirmButton = {
+            EnhancedButton(
+                onClick = {
+                    selectedReminderDate?.let {
+                        reminderAt = LocalDateTime(it, LocalTime(timePickerState.hour, timePickerState.minute))
+                    }
+                    timePickerVisible = false
+                },
+            ) {
+                Text("Übernehmen")
+            }
+        },
+        dismissButton = {
+            EnhancedOutlinedButton(onClick = { timePickerVisible = false }) {
+                Text("Abbrechen")
+            }
+        },
+        text = { TimePicker(state = timePickerState) },
+    )
 }
 
 fun newDayHomeworkEntry(
