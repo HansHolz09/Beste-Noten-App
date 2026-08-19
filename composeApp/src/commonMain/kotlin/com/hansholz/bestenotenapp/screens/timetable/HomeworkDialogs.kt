@@ -1,7 +1,12 @@
 package com.hansholz.bestenotenapp.screens.timetable
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,9 +14,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
@@ -21,6 +30,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
@@ -31,22 +41,31 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.composables.icons.materialsymbols.MaterialSymbols
+import com.composables.icons.materialsymbols.rounded.Add
 import com.composables.icons.materialsymbols.rounded.Add_task
 import com.composables.icons.materialsymbols.rounded.Close
+import com.composables.icons.materialsymbols.rounded.Delete
 import com.composables.icons.materialsymbols.rounded.Done
+import com.composables.icons.materialsymbols.rounded.Drag_indicator
+import com.composables.icons.materialsymbols.rounded.Edit_note
 import com.composables.icons.materialsymbols.rounded.News
 import com.composables.icons.materialsymbols.rounded.Task_alt
 import com.hansholz.bestenotenapp.api.models.JournalLesson
@@ -59,6 +78,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.homework.HomeworkEntry
 import com.hansholz.bestenotenapp.homework.HomeworkPlacement
 import com.hansholz.bestenotenapp.homework.HomeworkSource
@@ -66,6 +86,8 @@ import com.hansholz.bestenotenapp.homework.HomeworkStatus
 import com.hansholz.bestenotenapp.homework.HomeworkType
 import com.hansholz.bestenotenapp.homework.newHomeworkId
 import com.hansholz.bestenotenapp.main.LocalHomeworkGoogleSyncEnabled
+import com.hansholz.bestenotenapp.main.LocalHomeworkTypes
+import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import components.dialogs.EnhancedAlertDialog
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DatePeriod
@@ -144,7 +166,7 @@ fun HomeworkEditorDialog(
     createEntry: (String, String?, HomeworkType) -> HomeworkEntry,
     onSave: suspend (HomeworkEntry) -> Unit,
     onDelete: (suspend (HomeworkEntry) -> Unit)? = null,
-) {
+) = kSafeProviderCompose {
     val scope = rememberCoroutineScope()
     val vibrator = rememberVibrator()
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -152,7 +174,10 @@ fun HomeworkEditorDialog(
 
     var title by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.title.orEmpty()) }
     var description by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.description.orEmpty()) }
-    var type by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.type ?: HomeworkType.HOMEWORK) }
+    val homeworkTypesState = LocalHomeworkTypes.current
+    val homeworkTypes = homeworkTypesState.value
+    var type by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.type ?: homeworkTypes.firstOrNull() ?: HomeworkType.HOMEWORK) }
+    var typeEditorVisible by remember(visible.value) { mutableStateOf(false) }
     var reminderAt by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.reminderAt) }
     var selectedReminderDate by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.reminderAt?.date) }
     var datePickerVisible by remember(visible.value) { mutableStateOf(false) }
@@ -208,8 +233,21 @@ fun HomeworkEditorDialog(
                     minLines = 2,
                     enabled = !busy,
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
-                    HomeworkType.entries.forEach { option ->
+                val typeScrollState = rememberScrollState()
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .scrollableEdgeFade(
+                                canScrollBackward = typeScrollState.canScrollBackward,
+                                canScrollForward = typeScrollState.canScrollForward,
+                                orientation = Orientation.Horizontal,
+                            ).horizontalScroll(typeScrollState),
+                ) {
+                    val displayedTypes = if (type in homeworkTypes) homeworkTypes else listOf(type) + homeworkTypes
+                    displayedTypes.forEach { option ->
                         FilterChip(
                             selected = type == option,
                             onClick = {
@@ -219,6 +257,12 @@ fun HomeworkEditorDialog(
                             label = { Text(option.label) },
                             enabled = !busy,
                         )
+                    }
+                    EnhancedIconButton(
+                        onClick = { typeEditorVisible = true },
+                        enabled = !busy,
+                    ) {
+                        Icon(MaterialSymbols.Rounded.Edit_note, null)
                     }
                 }
                 if (LocalHomeworkGoogleSyncEnabled.current.value) {
@@ -399,6 +443,189 @@ fun HomeworkEditorDialog(
         },
         text = { TimePicker(state = timePickerState) },
     )
+
+    HomeworkTypeEditorDialog(
+        visible = typeEditorVisible,
+        types = homeworkTypes,
+        onDismissRequest = { typeEditorVisible = false },
+        onSave = { updatedTypes ->
+            homeworkTypesState.value = updatedTypes
+            put("homeworkTypes", updatedTypes.map(HomeworkType::value))
+            typeEditorVisible = false
+        },
+    )
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun HomeworkTypeEditorDialog(
+    visible: Boolean,
+    types: List<HomeworkType>,
+    onDismissRequest: () -> Unit,
+    onSave: (List<HomeworkType>) -> Unit,
+) {
+    val scope = rememberCoroutineScope()
+    val vibrator = rememberVibrator()
+    val draft = remember(visible) { types.toMutableStateList() }
+    val listState = rememberLazyListState()
+    var newType by remember(visible) { mutableStateOf("") }
+    var draggedType by remember(visible) { mutableStateOf<HomeworkType?>(null) }
+    var draggedOffset by remember(visible) { mutableFloatStateOf(0f) }
+
+    fun addType() {
+        val label = newType.trim()
+        val type = HomeworkType(label)
+        if (label.isBlank() || draft.any { it == type || it.label.equals(label, ignoreCase = true) }) return
+        draft += type
+        newType = ""
+        scope.launch {
+            listState.animateScrollToItem(draft.lastIndex)
+        }
+    }
+
+    EnhancedAlertDialog(
+        visible = visible,
+        onDismissRequest = onDismissRequest,
+        icon = { Icon(MaterialSymbols.Rounded.Edit_note, null) },
+        title = { Text("Eintragstypen bearbeiten") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                LazyColumn(
+                    state = listState,
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .animateContentSize()
+                            .weight(1f, false)
+                            .scrollableEdgeFade(
+                                canScrollBackward = listState.canScrollBackward,
+                                canScrollForward = listState.canScrollForward,
+                                orientation = Orientation.Vertical,
+                            ),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    items(draft, key = HomeworkType::value) { option ->
+                        val index = draft.indexOf(option)
+                        PreferenceItem(
+                            title = option.label,
+                            icon = MaterialSymbols.Rounded.Drag_indicator,
+                            position =
+                                when {
+                                    draft.size == 1 -> PreferencePosition.Single
+                                    index == 0 -> PreferencePosition.Top
+                                    index == draft.lastIndex -> PreferencePosition.Bottom
+                                    else -> PreferencePosition.Middle
+                                },
+                            modifier =
+                                Modifier
+                                    .then(if (draggedType == option) Modifier else Modifier.animateItem())
+                                    .zIndex(if (draggedType == option) 1f else 0f)
+                                    .graphicsLayer {
+                                        translationY = if (draggedType == option) draggedOffset else 0f
+                                    }.pointerInput(option) {
+                                        detectDragGesturesAfterLongPress(
+                                            onDragStart = {
+                                                draggedType = option
+                                                draggedOffset = 0f
+                                                vibrator.enhancedVibrateN(EnhancedVibrations.TICK)
+                                            },
+                                            onDragEnd = {
+                                                draggedType = null
+                                                draggedOffset = 0f
+                                                vibrator.enhancedVibrateN(EnhancedVibrations.TICK)
+                                            },
+                                            onDragCancel = {
+                                                draggedType = null
+                                                draggedOffset = 0f
+                                            },
+                                        ) { _, dragAmount ->
+                                            draggedOffset += dragAmount.y
+                                            val currentInfo =
+                                                listState.layoutInfo.visibleItemsInfo.firstOrNull {
+                                                    it.key == option.value
+                                                } ?: return@detectDragGesturesAfterLongPress
+                                            val draggedCenter = currentInfo.offset + currentInfo.size / 2 + draggedOffset
+                                            val scrollDelta =
+                                                when {
+                                                    draggedCenter < listState.layoutInfo.viewportStartOffset -> -24f
+                                                    draggedCenter > listState.layoutInfo.viewportEndOffset -> 24f
+                                                    else -> 0f
+                                                }
+                                            if (scrollDelta != 0f) {
+                                                scope.launch {
+                                                    draggedOffset += listState.scrollBy(scrollDelta)
+                                                }
+                                            }
+                                            val targetInfo =
+                                                listState.layoutInfo.visibleItemsInfo.firstOrNull {
+                                                    draggedCenter.toInt() in it.offset..(it.offset + it.size)
+                                                } ?: return@detectDragGesturesAfterLongPress
+                                            if (targetInfo.key != option.value) {
+                                                val from = draft.indexOf(option)
+                                                val target = draft.indexOfFirst { it.value == targetInfo.key }
+                                                if (from >= 0 && target >= 0) {
+                                                    val wasAtAbsoluteTop =
+                                                        listState.firstVisibleItemIndex == 0 &&
+                                                            listState.firstVisibleItemScrollOffset == 0
+                                                    draft.add(target, draft.removeAt(from))
+                                                    draggedOffset += currentInfo.offset - targetInfo.offset
+                                                    if (wasAtAbsoluteTop) {
+                                                        listState.requestScrollToItem(0)
+                                                    }
+                                                }
+                                                vibrator.enhancedVibrateN(EnhancedVibrations.LOW_TICK)
+                                            }
+                                        }
+                                    },
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    draft.remove(option)
+                                    vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                                },
+                            ) {
+                                Icon(MaterialSymbols.Rounded.Delete, null)
+                            }
+                        }
+                    }
+                }
+                OutlinedTextField(
+                    value = newType,
+                    onValueChange = { newType = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Neuer Eintragstyp") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { addType() }),
+                    trailingIcon = {
+                        IconButton(
+                            onClick = {
+                                addType()
+                                vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                            },
+                            enabled =
+                                newType.isNotBlank() &&
+                                    draft.none {
+                                        it == HomeworkType(newType.trim()) || it.label.equals(newType.trim(), ignoreCase = true)
+                                    },
+                        ) {
+                            Icon(MaterialSymbols.Rounded.Add, null)
+                        }
+                    },
+                )
+            }
+        },
+        confirmButton = {
+            EnhancedButton(onClick = { onSave(draft.toList()) }) {
+                Text("Fertig")
+            }
+        },
+        dismissButton = {
+            EnhancedOutlinedButton(onClick = onDismissRequest) {
+                Text("Abbrechen")
+            }
+        },
+    )
 }
 
 fun newDayHomeworkEntry(
@@ -476,15 +703,6 @@ fun newLessonHomeworkEntry(
         deletedAt = null,
     )
 }
-
-private val HomeworkType.label: String
-    get() =
-        when (this) {
-            HomeworkType.HOMEWORK -> "Hausaufgabe"
-            HomeworkType.TEST -> "Test"
-            HomeworkType.APPOINTMENT -> "Termin"
-            HomeworkType.NOTE -> "Notiz"
-        }
 
 private fun LocalDateTime.formatReminder(): String =
     "Erinnerung: " +

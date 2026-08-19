@@ -56,7 +56,7 @@ fun GoogleCalendarEvent.toHomeworkEntryOrNull(): HomeworkEntry? {
         localId = localId,
         title = metadata["title"] ?: summary.orEmpty(),
         description = description ?: metadata["description"],
-        type = metadata["type"]?.enumValueOrDefault(HomeworkType.HOMEWORK) ?: HomeworkType.HOMEWORK,
+        type = metadata["type"]?.let(::HomeworkType) ?: HomeworkType.HOMEWORK,
         status = status,
         placement = metadata["placement"]?.enumValueOrDefault(HomeworkPlacement.DAY) ?: HomeworkPlacement.DAY,
         dueDate = dueDate,
@@ -112,7 +112,7 @@ private fun HomeworkEntry.toPrivateProperties(studentId: String?): Map<String, S
         studentId?.let { put("studentId", it) }
         put("title", title)
         description?.let { put("description", it) }
-        put("type", type.name)
+        put("type", type.value)
         put("status", status.name)
         put("placement", placement.name)
         put("source", source.name)

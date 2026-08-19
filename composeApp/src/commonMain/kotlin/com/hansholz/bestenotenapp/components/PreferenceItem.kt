@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -21,9 +23,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
@@ -50,7 +54,7 @@ fun PreferenceItem(
     position: PreferencePosition = PreferencePosition.Single,
     trailingContent: @Composable (() -> Unit)? = null,
 ) {
-    val shape =
+    val targetShape =
         when (position) {
             PreferencePosition.Single -> {
                 MaterialTheme.shapes.large
@@ -74,6 +78,19 @@ fun PreferenceItem(
                 MaterialTheme.shapes.extraSmall
             }
         }
+    val density = LocalDensity.current
+    val referenceSize = Size(100f, 100f)
+    val topStart by animateFloatAsState(targetShape.topStart.toPx(referenceSize, density))
+    val topEnd by animateFloatAsState(targetShape.topEnd.toPx(referenceSize, density))
+    val bottomStart by animateFloatAsState(targetShape.bottomStart.toPx(referenceSize, density))
+    val bottomEnd by animateFloatAsState(targetShape.bottomEnd.toPx(referenceSize, density))
+    val shape =
+        RoundedCornerShape(
+            topStart = CornerSize(topStart),
+            topEnd = CornerSize(topEnd),
+            bottomStart = CornerSize(bottomStart),
+            bottomEnd = CornerSize(bottomEnd),
+        )
     val animatedEnabled by animateFloatAsState(if (enabled) 1f else 0.5f)
 
     Surface(

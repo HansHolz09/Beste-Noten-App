@@ -3,6 +3,7 @@ package com.hansholz.bestenotenapp.homework
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -35,11 +36,28 @@ data class HomeworkEntry(
 )
 
 @Serializable
-enum class HomeworkType {
-    HOMEWORK,
-    TEST,
-    APPOINTMENT,
-    NOTE,
+@JvmInline
+value class HomeworkType(
+    val value: String,
+) {
+    val label: String
+        get() =
+            when (value) {
+                HOMEWORK.value -> "Hausaufgabe"
+                TEST.value -> "Test"
+                APPOINTMENT.value -> "Termin"
+                NOTE.value -> "Notiz"
+                else -> value
+            }
+
+    companion object {
+        val HOMEWORK = HomeworkType("HOMEWORK")
+        val TEST = HomeworkType("TEST")
+        val APPOINTMENT = HomeworkType("APPOINTMENT")
+        val NOTE = HomeworkType("NOTE")
+
+        val defaults = listOf(HOMEWORK, TEST, APPOINTMENT, NOTE)
+    }
 }
 
 @Serializable
@@ -104,7 +122,7 @@ fun HomeworkEntry.stableSyncHash(): String =
         localId,
         title,
         description.orEmpty(),
-        type.name,
+        type.value,
         status.name,
         placement.name,
         dueDate.toString(),

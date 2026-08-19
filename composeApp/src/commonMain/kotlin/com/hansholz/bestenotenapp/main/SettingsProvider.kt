@@ -6,6 +6,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.Dp
+import com.hansholz.bestenotenapp.homework.HomeworkType
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import dev.chrisbanes.haze.HazeState
 
@@ -25,6 +26,7 @@ internal val LocalShowNotes = compositionLocalOf { mutableStateOf(false) }
 internal val LocalTimetableBlockViewEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalHomeworkEnabled = compositionLocalOf { mutableStateOf(true) }
 internal val LocalHomeworkGoogleSyncEnabled = compositionLocalOf { mutableStateOf(false) }
+internal val LocalHomeworkTypes = compositionLocalOf { mutableStateOf(HomeworkType.defaults) }
 internal val LocalShowTeachersWithFirstname = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowOnlyRelevantData = compositionLocalOf { mutableStateOf(true) }
 internal val LocalGradeNotificationsEnabled = compositionLocalOf { mutableStateOf(false) }
@@ -59,6 +61,7 @@ fun SettingsProvider(content: @Composable () -> Unit) =
         val timetableBlockViewEnabled = remember { mutableStateOf(get("timetableBlockViewEnabled", false)) }
         val homeworkEnabled = remember { mutableStateOf(get("homeworkEnabled", true)) }
         val homeworkGoogleSyncEnabled = remember { mutableStateOf(get("homeworkGoogleSyncEnabled", false)) }
+        val homeworkTypes = remember { mutableStateOf(get("homeworkTypes", HomeworkType.defaults.map(HomeworkType::value)).map(::HomeworkType).distinct()) }
         val showTeachersWithFirstnameState = remember { mutableStateOf(get("showTeachersWithFirstname", false)) }
         val showOnlyRelevantDataState = remember { mutableStateOf(get("showOnlyRelevantData", get("showOnlyGroupRelevantData", true))) }
         val gradeNotificationsEnabledState = remember { mutableStateOf(get("gradeNotificationsEnabled", false)) }
@@ -82,6 +85,7 @@ fun SettingsProvider(content: @Composable () -> Unit) =
             LocalTimetableBlockViewEnabled provides timetableBlockViewEnabled,
             LocalHomeworkEnabled provides homeworkEnabled,
             LocalHomeworkGoogleSyncEnabled provides homeworkGoogleSyncEnabled,
+            LocalHomeworkTypes provides homeworkTypes,
             LocalShowTeachersWithFirstname provides showTeachersWithFirstnameState,
             LocalShowOnlyRelevantData provides showOnlyRelevantDataState,
             LocalGradeNotificationsEnabled provides gradeNotificationsEnabledState,
