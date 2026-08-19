@@ -79,7 +79,7 @@ jobs:
     needs:
       - ktlint
       - release-binaries
-    if: always()
+    if: always() && !cancelled()
     steps:
       - name: Check CI result
         run: |
