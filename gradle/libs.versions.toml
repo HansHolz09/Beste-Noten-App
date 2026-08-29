@@ -16,7 +16,7 @@ emoji = "2.5.0"
 filekit = "0.15.0"
 fragment = "1.9.0"
 graalvm = "25.0.4.1"
-haze = "2.0.0-alpha05"
+haze = "2.0.0-beta02"
 #noinspection NewerVersionAvailable
 koalaplotCore = "0.9.1"
 kotlin = "2.4.10"
