@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import bestenotenapp.composeapp.generated.resources.Res
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Local_library
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.mikepenz.aboutlibraries.ui.compose.DefaultChipColors
@@ -20,7 +21,6 @@ import com.mikepenz.aboutlibraries.ui.compose.m3.libraryColors
 import com.mikepenz.aboutlibraries.ui.compose.m3.style.m3VariantColors
 import com.mikepenz.aboutlibraries.ui.compose.produceLibraries
 import com.mikepenz.aboutlibraries.ui.compose.variant.LibraryDetailMode
-import components.dialogs.EnhancedAlertDialog
 
 @Composable
 fun LibrariesDialog(settingsViewModel: SettingsViewModel) {

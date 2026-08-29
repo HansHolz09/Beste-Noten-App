@@ -39,13 +39,13 @@ import com.composables.icons.materialsymbols.rounded.Balance
 import com.composables.icons.materialsymbols.rounded.Remove
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.api.models.Level
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedFilterChip
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
-import components.dialogs.EnhancedAlertDialog
 
 @Composable
 internal fun GradeWeightingDialog(

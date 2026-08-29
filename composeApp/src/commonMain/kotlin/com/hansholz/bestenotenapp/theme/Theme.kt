@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.hansholz.bestenotenapp.main.AppHazeState
+import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
@@ -32,6 +33,7 @@ internal val LocalUseCustomColorScheme = compositionLocalOf { mutableStateOf(fal
 internal val LocalSupportsCustomColorScheme = compositionLocalOf { mutableStateOf(false) }
 internal val LocalAnimationsEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalBlurEnabled = compositionLocalOf { mutableStateOf(false) }
+internal val LocalNativeSystemIsDark = compositionLocalOf<Boolean?> { null }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -41,11 +43,18 @@ internal fun AppTheme(
 ) = kSafeProviderCompose {
     val useSystemIsDark = remember { mutableStateOf(get("useSystemIsDark", true)) }
     val isDark = remember { mutableStateOf(get("isDark", false)) }
-    val isDarkState = if (useSystemIsDark.value) isSystemInDarkMode() else isDark.value
+    val detectedSystemIsDark = isSystemInDarkMode()
+    val nativeSystemIsDark = LocalNativeSystemIsDark.current
+    val isDarkState =
+        if (useSystemIsDark.value) {
+            nativeSystemIsDark ?: detectedSystemIsDark
+        } else {
+            isDark.value
+        }
     val useCustomColorSchemeState = remember { mutableStateOf(get("useCustomColorScheme", false)) }
     val supportsCustomColorSchemeState = remember { mutableStateOf(false) }
     val animationsEnabledState = remember { mutableStateOf(get("animationsEnabled", true)) }
-    val blurEnabledState = remember { mutableStateOf(get("blurEnabled", HazeBlurDefaults.blurEnabled() && getPlatform() != Platform.WEB)) }
+    val blurEnabledState = remember { mutableStateOf(get("blurEnabled", HazeBlurDefaults.isBlurEnabledByDefault() && getPlatform() != Platform.WEB)) }
     CompositionLocalProvider(
         LocalUseSystemIsDark provides useSystemIsDark,
         LocalIsDark provides isDark,
@@ -71,8 +80,13 @@ internal fun AppTheme(
         LaunchedEffect(colorScheme) {
             finalTheme(colorScheme)
         }
+        val animatedColorScheme =
+            animateColorScheme(
+                colorScheme,
+                { tween(if (LocalAnimationsEnabled.current.value && !LocalNativeComponentsEnabled.current.value) 750 else 0) },
+            )
         MaterialExpressiveTheme(
-            colorScheme = animateColorScheme(colorScheme, { tween(if (LocalAnimationsEnabled.current.value) 750 else 0) }),
+            colorScheme = animatedColorScheme,
             typography = AppTypography,
             content = {
                 Surface(

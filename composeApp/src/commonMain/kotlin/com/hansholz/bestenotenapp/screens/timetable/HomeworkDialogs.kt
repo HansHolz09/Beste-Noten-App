@@ -69,8 +69,11 @@ import com.composables.icons.materialsymbols.rounded.Edit_note
 import com.composables.icons.materialsymbols.rounded.News
 import com.composables.icons.materialsymbols.rounded.Task_alt
 import com.hansholz.bestenotenapp.api.models.JournalLesson
+import com.hansholz.bestenotenapp.components.AdaptiveDatePicker
+import com.hansholz.bestenotenapp.components.AdaptiveTimePicker
 import com.hansholz.bestenotenapp.components.PreferenceItem
 import com.hansholz.bestenotenapp.components.PreferencePosition
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
@@ -88,7 +91,6 @@ import com.hansholz.bestenotenapp.homework.newHomeworkId
 import com.hansholz.bestenotenapp.main.LocalHomeworkGoogleSyncEnabled
 import com.hansholz.bestenotenapp.main.LocalHomeworkTypes
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
-import components.dialogs.EnhancedAlertDialog
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -376,7 +378,7 @@ fun HomeworkEditorDialog(
     val initialDate = reminderAt?.date ?: dueDate.minus(DatePeriod(days = 1))
     val datePickerState =
         rememberDatePickerState(
-            initialSelectedDateMillis = initialDate.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds(),
+            initialSelectedDateMillis = initialDate.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
         )
     EnhancedAlertDialog(
         visible = datePickerVisible,
@@ -388,7 +390,7 @@ fun HomeworkEditorDialog(
                 onClick = {
                     selectedReminderDate =
                         datePickerState.selectedDateMillis?.let {
-                            Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date
+                            Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()).date
                         }
                     datePickerVisible = false
                     if (selectedReminderDate != null) timePickerVisible = true
@@ -404,10 +406,16 @@ fun HomeworkEditorDialog(
             }
         },
         text = {
-            DatePicker(
-                state = datePickerState,
-                title = {},
-            )
+            AdaptiveDatePicker(
+                selectedDateMillis = datePickerState.selectedDateMillis,
+                onSelectedDateChanged = { datePickerState.selectedDateMillis = it },
+                modifier = Modifier.fillMaxWidth().size(height = 350.dp, width = 400.dp),
+            ) {
+                DatePicker(
+                    state = datePickerState,
+                    title = {},
+                )
+            }
         },
     )
 
@@ -440,7 +448,19 @@ fun HomeworkEditorDialog(
                 Text("Abbrechen")
             }
         },
-        text = { TimePicker(state = timePickerState) },
+        text = {
+            AdaptiveTimePicker(
+                hour = timePickerState.hour,
+                minute = timePickerState.minute,
+                onTimeChanged = { hour, minute ->
+                    timePickerState.hour = hour
+                    timePickerState.minute = minute
+                },
+                modifier = Modifier.fillMaxWidth().size(height = 216.dp, width = 320.dp),
+            ) {
+                TimePicker(state = timePickerState)
+            }
+        },
     )
 
     HomeworkTypeEditorDialog(

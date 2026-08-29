@@ -16,6 +16,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.indication
@@ -118,6 +119,7 @@ import com.composables.icons.materialsymbols.rounded.Search_off
 import com.composables.icons.materialsymbols.rounded.Settings
 import com.composables.icons.materialsymbols.rounded.Title
 import com.hansholz.bestenotenapp.api.models.GradeCollection
+import com.hansholz.bestenotenapp.components.AdaptivePrimaryTabRow
 import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.GradeValueBox
 import com.hansholz.bestenotenapp.components.PreferencePosition
@@ -139,10 +141,14 @@ import com.hansholz.bestenotenapp.components.rememberLazyListScrollSpeedState
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.LocalGradeAverageEnabled
 import com.hansholz.bestenotenapp.main.LocalGradeAverageUseWeighting
+import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
+import com.hansholz.bestenotenapp.main.LocalNativePrimaryTabRow
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
 import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
+import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.main.isApplePlatform
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.hansholz.bestenotenapp.theme.FontFamilies
@@ -191,6 +197,9 @@ fun Grades(
                 .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
         val animationsEnabled by LocalAnimationsEnabled.current
+        val nativeComponentsEnabled by LocalNativeComponentsEnabled.current
+        val nativePrimaryTabRow = LocalNativePrimaryTabRow.current
+        val usesNativePrimaryTabs = nativeComponentsEnabled && nativePrimaryTabRow != null
         var gradeAverageEnabled by LocalGradeAverageEnabled.current
         var gradeAverageUseWeighting by LocalGradeAverageUseWeighting.current
         var showGradeHistory by LocalShowGradeHistory.current
@@ -248,9 +257,18 @@ fun Grades(
             hazeState = viewModel.hazeBackgroundState,
         ) { innerPadding, topAppBarBackground ->
             Box(Modifier.fillMaxSize()) {
-                val toolbarContentPadding = PaddingValues(top = gradesViewModel.topPadding, bottom = innerPadding.calculateBottomPadding())
-                val contentPadding = PaddingValues(top = gradesViewModel.topPadding, bottom = innerPadding.calculateBottomPadding() + gradesViewModel.toolbarPadding)
+                val effectiveTopPadding =
+                    if (usesNativePrimaryTabs) innerPadding.calculateTopPadding() else gradesViewModel.topPadding
+                val toolbarContentPadding = PaddingValues(top = effectiveTopPadding, bottom = innerPadding.calculateBottomPadding())
+                val contentPadding = PaddingValues(top = effectiveTopPadding, bottom = innerPadding.calculateBottomPadding() + gradesViewModel.toolbarPadding)
                 val verticalPadding = PaddingValues(start = innerPadding.calculateStartPadding(layoutDirection), end = innerPadding.calculateEndPadding(layoutDirection))
+                val overlayPadding =
+                    PaddingValues(
+                        start = innerPadding.calculateStartPadding(layoutDirection),
+                        top = effectiveTopPadding,
+                        end = innerPadding.calculateEndPadding(layoutDirection),
+                        bottom = innerPadding.calculateBottomPadding() + gradesViewModel.toolbarPadding,
+                    )
 
                 val pagerState = rememberEnhancedPagerState(2)
                 val contentBlurRadius = animateDpAsState(if (gradesViewModel.contentBlurred) 10.dp else 0.dp)
@@ -306,7 +324,7 @@ fun Grades(
                                 EnhancedAnimatedContent(gradesViewModel.isLoading) { isLoading ->
                                     if (isLoading) {
                                         Box(
-                                            modifier = Modifier.padding(contentPadding).fillMaxSize(),
+                                            modifier = Modifier.padding(overlayPadding).fillMaxSize(),
                                             contentAlignment = Alignment.Center,
                                         ) {
                                             ContainedLoadingIndicator()
@@ -315,7 +333,7 @@ fun Grades(
                                         EmptyStateMessage(
                                             title = if (gradesViewModel.searchQuery.isEmpty()) "Keine Noten vorhanden" else "Keine Noten gefunden",
                                             icon = if (gradesViewModel.searchQuery.isEmpty()) MaterialSymbols.Rounded.Playlist_remove else MaterialSymbols.Rounded.Search_off,
-                                            modifier = Modifier.padding(contentPadding).consumeWindowInsets(contentPadding).imePadding(),
+                                            modifier = Modifier.padding(overlayPadding).consumeWindowInsets(overlayPadding).imePadding(),
                                         )
                                     }
                                 }
@@ -458,8 +476,10 @@ fun Grades(
                                                                     if (gradeAverageEnabled && !isOpened) {
                                                                         Modifier
                                                                             .hoverable(interactionSource)
-                                                                            .indication(interactionSource, ripple())
-                                                                            .pointerInput(Unit) {
+                                                                            .indication(
+                                                                                interactionSource,
+                                                                                if (getPlatform() == Platform.ANDROID) ripple() else LocalIndication.current,
+                                                                            ).pointerInput(Unit) {
                                                                                 detectTapGestures(
                                                                                     onPress = { offset ->
                                                                                         val press = PressInteraction.Press(offset)
@@ -484,15 +504,28 @@ fun Grades(
                                                                     },
                                                                 ),
                                                         ) {
-                                                            HorizontalDivider(thickness = 1.dp)
+                                                            if (!nativeComponentsEnabled) HorizontalDivider(thickness = 1.dp)
                                                             Box(Modifier.weight(1f)) {
                                                                 Box(
                                                                     Modifier
                                                                         .fillMaxSize()
-                                                                        .enhancedHazeEffect(viewModel.hazeBackgroundState3, colorScheme.secondaryContainer)
-                                                                        .enhancedHazeEffect(viewModel.hazeBackgroundState2, colorScheme.secondaryContainer) {
-                                                                            mask(Brush.verticalGradient(colors = listOf(Color.Transparent, Color.Red)))
-                                                                        },
+                                                                        .enhancedHazeEffect(
+                                                                            hazeState =
+                                                                                if (nativeComponentsEnabled) {
+                                                                                    viewModel.hazeBackgroundState2
+                                                                                } else {
+                                                                                    viewModel.hazeBackgroundState3
+                                                                                },
+                                                                            color = colorScheme.secondaryContainer,
+                                                                        ).then(
+                                                                            if (nativeComponentsEnabled) {
+                                                                                Modifier
+                                                                            } else {
+                                                                                Modifier.enhancedHazeEffect(viewModel.hazeBackgroundState2, colorScheme.secondaryContainer) {
+                                                                                    mask(Brush.verticalGradient(colors = listOf(Color.Transparent, Color.Red)))
+                                                                                }
+                                                                            },
+                                                                        ),
                                                                 )
                                                                 Row(
                                                                     modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp).padding(verticalPadding),
@@ -516,7 +549,7 @@ fun Grades(
                                                                     }
                                                                 }
                                                             }
-                                                            HorizontalDivider(thickness = 1.dp)
+                                                            if (!nativeComponentsEnabled) HorizontalDivider(thickness = 1.dp)
                                                         }
                                                     }
                                                 }
@@ -597,16 +630,24 @@ fun Grades(
                         }
                     }
                 }
-                topAppBarBackground(gradesViewModel.topPadding)
-                PrimaryTabRow(
+                topAppBarBackground(effectiveTopPadding)
+                AdaptivePrimaryTabRow(
+                    labels = listOf("Nach Datum", "Nach Fächern"),
                     selectedTabIndex = pagerState.currentPage,
+                    onTabSelected = { page -> scope.launch { pagerState.animateScrollToPage(page) } },
                     modifier =
-                        Modifier
-                            .padding(verticalPadding)
-                            .padding(top = innerPadding.calculateTopPadding())
-                            .onGloballyPositioned {
-                                gradesViewModel.topPadding = with(density) { it.size.height.toDp() } + innerPadding.calculateTopPadding()
-                            },
+                        if (usesNativePrimaryTabs) {
+                            Modifier.onGloballyPositioned {
+                                gradesViewModel.topPadding = innerPadding.calculateTopPadding()
+                            }
+                        } else {
+                            Modifier
+                                .padding(verticalPadding)
+                                .padding(top = innerPadding.calculateTopPadding())
+                                .onGloballyPositioned {
+                                    gradesViewModel.topPadding = with(density) { it.size.height.toDp() } + innerPadding.calculateTopPadding()
+                                }
+                        },
                     containerColor = Color.Transparent,
                     divider = {
                         HorizontalDivider(thickness = if (pagerState.currentPage == 0) 2.dp else 1.dp)
@@ -1100,6 +1141,7 @@ fun Grades(
                                                         icon = MathAvg,
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Top,
+                                                        controlVisible = targetState == gradesViewModel.toolbarState,
                                                     )
                                                     settingsToggleItem(
                                                         checked = gradeAverageUseWeighting,
@@ -1118,6 +1160,7 @@ fun Grades(
                                                         icon = MaterialSymbols.Rounded.Balance,
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Middle,
+                                                        controlVisible = targetState == gradesViewModel.toolbarState,
                                                     )
                                                 }
                                                 settingsToggleItem(
@@ -1137,6 +1180,7 @@ fun Grades(
                                                         } else {
                                                             PreferencePosition.Middle
                                                         },
+                                                    controlVisible = targetState == gradesViewModel.toolbarState,
                                                 )
                                                 if (!viewModel.isDemoAccount.value && !isOpened) {
                                                     settingsToggleItem(
@@ -1149,6 +1193,7 @@ fun Grades(
                                                         icon = MaterialSymbols.Rounded.Disabled_visible,
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Middle,
+                                                        controlVisible = targetState == gradesViewModel.toolbarState,
                                                     )
                                                     settingsToggleItem(
                                                         checked = showTeachersWithFirstname,
@@ -1160,6 +1205,7 @@ fun Grades(
                                                         icon = MaterialSymbols.Rounded.Title,
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Bottom,
+                                                        controlVisible = targetState == gradesViewModel.toolbarState,
                                                     )
                                                 }
                                             }

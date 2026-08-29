@@ -166,7 +166,7 @@ fun main() {
                             },
                         )
                         App(
-                            isDark = { isDark = it },
+                            theme = { dark, _ -> isDark = dark },
                             onNavHostReady = {
                                 navController = it
                             },

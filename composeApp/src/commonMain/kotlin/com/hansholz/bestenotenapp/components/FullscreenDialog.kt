@@ -6,5 +6,6 @@ import androidx.compose.runtime.Composable
 expect fun FullscreenDialog(
     onDismiss: () -> Unit = {},
     placeAboveAll: Boolean = false,
+    visible: Boolean = true,
     content: @Composable () -> Unit,
 )

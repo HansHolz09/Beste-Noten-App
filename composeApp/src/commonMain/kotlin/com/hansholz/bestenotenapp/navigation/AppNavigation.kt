@@ -5,12 +5,14 @@ import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
@@ -26,6 +28,9 @@ import kotlinx.coroutines.launch
 fun AppNavigation(
     viewModel: ViewModel,
     onNavHostReady: suspend (NavController) -> Unit = {},
+    onRootDestinationChanged: (String) -> Unit = {},
+    onFragmentDestinationChanged: (String) -> Unit = {},
+    onCanNavigateBackChanged: (Boolean) -> Unit = {},
 ) = kSafeProviderCompose(viewModel.kSafe) {
     val scope = rememberCoroutineScope()
     val requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
@@ -41,6 +46,10 @@ fun AppNavigation(
             }
         }
     val navController = rememberNavController()
+    val currentDestination by navController.currentBackStackEntryAsState()
+    LaunchedEffect(currentDestination?.destination?.route) {
+        currentDestination?.destination?.route?.let(onRootDestinationChanged)
+    }
     SharedTransitionLayout {
         NavHost(
             navController = navController,
@@ -88,6 +97,8 @@ fun AppNavigation(
                 AppNavigationDrawer(
                     viewModel = viewModel,
                     onNavHostReady = onNavHostReady,
+                    onDestinationChanged = onFragmentDestinationChanged,
+                    onCanNavigateBackChanged = onCanNavigateBackChanged,
                     onNavigateToLogin = {
                         navController.navigate(Screen.Login.route) {
                             popUpTo(navController.graph.id) { inclusive = true }
