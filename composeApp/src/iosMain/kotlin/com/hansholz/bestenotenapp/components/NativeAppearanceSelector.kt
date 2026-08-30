@@ -50,6 +50,7 @@ internal fun hideNativeAppearanceButtons() {
 
 internal fun showNativeAppearanceButtons() {
     nativeIosAppearanceSelectorsSuppressed = false
+    appearanceSelectors.forEach { it.hidden = false }
 }
 
 @OptIn(BetaInteropApi::class, ExperimentalForeignApi::class, ExperimentalComposeUiApi::class)

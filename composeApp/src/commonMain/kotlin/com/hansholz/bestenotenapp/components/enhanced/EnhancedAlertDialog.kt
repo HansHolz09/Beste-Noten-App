@@ -67,10 +67,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.components.FullscreenDialog
 import com.hansholz.bestenotenapp.components.clippedShadow
-import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
-import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
-import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
-import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.main.AppHazeState
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNativeDialogBackdrop
@@ -224,7 +220,7 @@ fun BasicEnhancedAlertDialog(
                 animationSpec = tween(180, easing = IosDialogEnterEasing),
                 label = "native dialog scrim alpha",
             )
-        FullscreenDialog(onDismiss = onDismissRequest, visible = visible) {
+        FullscreenDialog(onDismiss = onDismissRequest) {
             CompositionLocalProvider(
                 LocalEnhancedDialogDepth provides dialogDepth + 1,
             ) {

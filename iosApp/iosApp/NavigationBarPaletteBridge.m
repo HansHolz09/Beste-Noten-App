@@ -4,6 +4,9 @@
 
 @implementation NavigationBarPaletteBridge
 
+// Using private Api to achieve a calendar like behaviour for the tab bar
+// It's okay as long as the app isn't going to be published and the api exists
+
 + (nullable UIView *)makePaletteWithContentView:(UIView *)contentView
                                 preferredHeight:(CGFloat)preferredHeight {
     Class paletteClass = NSClassFromString(@"_UINavigationBarPalette");

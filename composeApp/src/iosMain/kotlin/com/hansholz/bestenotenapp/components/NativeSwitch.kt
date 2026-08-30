@@ -39,6 +39,7 @@ internal fun hideNativeSwitches() {
 
 internal fun showNativeSwitches() {
     nativeIosSwitchesSuppressed = false
+    activeNativeSwitchContainers.forEach { it.hidden = false }
     showNativeAppearanceButtons()
 }
 

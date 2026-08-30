@@ -75,7 +75,7 @@ internal fun NativeDialogBackdrop(
     modifier: Modifier,
     glassFrames: List<Rect>,
 ) {
-    UIKitView<NativeDialogBackdropView>(
+    UIKitView(
         factory = { NativeDialogBackdropView() },
         update = { it.updateGlassFrames(glassFrames) },
         modifier = modifier,

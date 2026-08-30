@@ -13,7 +13,6 @@ import androidx.compose.ui.window.DialogProperties
 actual fun FullscreenDialog(
     onDismiss: () -> Unit,
     placeAboveAll: Boolean,
-    visible: Boolean,
     content: @Composable () -> Unit,
 ) {
     Dialog(

@@ -51,7 +51,6 @@ import java.util.UUID
 actual fun FullscreenDialog(
     onDismiss: () -> Unit,
     placeAboveAll: Boolean,
-    visible: Boolean,
     content: @Composable () -> Unit,
 ) {
     val view = LocalView.current
