@@ -33,6 +33,7 @@ fun LazyListScope.settingsToggleItem(
     uncheckedIcon: ImageVector = MaterialSymbols.Rounded.Close,
     hapticsEnabled: Boolean = true,
     controlVisible: Boolean = true,
+    nativeControlFadeIn: Boolean = false,
 ) {
     item {
         val vibrator = rememberVibrator()
@@ -66,7 +67,7 @@ fun LazyListScope.settingsToggleItem(
             if (!controlVisible) {
                 Spacer(Modifier.size(width = 64.dp, height = 44.dp))
             } else if (nativeComponentsEnabled && nativeSwitch != null) {
-                nativeSwitch(checked, change, enabled, Modifier)
+                nativeSwitch(checked, change, enabled, Modifier, nativeControlFadeIn)
             } else {
                 Switch(
                     checked = checked,

@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.Dp
 
 internal val LocalNativeComponentsEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalNativeSwitch =
-    compositionLocalOf<(@Composable (Boolean, (Boolean) -> Unit, Boolean, Modifier) -> Unit)?> { null }
+    compositionLocalOf<(@Composable (Boolean, (Boolean) -> Unit, Boolean, Modifier, Boolean) -> Unit)?> { null }
 internal val LocalNativeAppearanceSelector =
     compositionLocalOf<(@Composable (Int, (Int) -> Unit, Modifier) -> Unit)?> { null }
 internal val LocalNativeDialogBackdrop =
@@ -20,8 +20,8 @@ internal val LocalNativeDatePicker =
     compositionLocalOf<(@Composable (Long?, (Long) -> Unit, Modifier) -> Unit)?> { null }
 internal val LocalNativeTimePicker =
     compositionLocalOf<(@Composable (Int, Int, (Int, Int) -> Unit, Modifier) -> Unit)?> { null }
-internal val LocalHideNativeDateTimePickers = compositionLocalOf<() -> Unit> { {} }
+internal val LocalHideNativeDateTimePickers = compositionLocalOf { {} }
 internal val LocalGlobalEasterEgg = compositionLocalOf<((String) -> Unit)?> { null }
-internal val LocalHideNativeInterop = compositionLocalOf<() -> Unit> { {} }
+internal val LocalHideNativeInterop = compositionLocalOf { {} }
 internal val LocalNavigationDrawerTopPadding = compositionLocalOf<Dp?> { null }
 internal val LocalNativeContentTopPadding = compositionLocalOf<Dp?> { null }

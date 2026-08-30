@@ -71,8 +71,8 @@ fun mainViewController(nativeBridge: NativeComponentBridge? = null): UIViewContr
                     },
                 LocalGlobalEasterEgg provides { type -> nativeBridge?.showEasterEgg(type) },
                 LocalHideNativeInterop provides { hideNativeSwitches() },
-                LocalNativeSwitch provides { checked, onCheckedChange, enabled, modifier ->
-                    NativeSwitch(checked, onCheckedChange, enabled, modifier)
+                LocalNativeSwitch provides { checked, onCheckedChange, enabled, modifier, fadeIn ->
+                    NativeSwitch(checked, onCheckedChange, enabled, modifier, fadeIn)
                 },
                 LocalNativeAppearanceSelector provides { selected, onSelected, modifier ->
                     NativeAppearanceSelector(selected, onSelected, modifier)

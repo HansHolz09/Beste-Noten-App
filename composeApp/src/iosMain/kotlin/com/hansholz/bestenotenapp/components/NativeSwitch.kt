@@ -2,6 +2,8 @@ package com.hansholz.bestenotenapp.components
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -15,6 +17,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSSelectorFromString
@@ -23,6 +26,7 @@ import platform.UIKit.UIControlEventValueChanged
 import platform.UIKit.UISwitch
 import platform.UIKit.UIView
 import platform.darwin.NSObject
+import kotlin.time.Duration.Companion.milliseconds
 
 private val activeNativeSwitchContainers = mutableSetOf<UIView>()
 private var nativeIosSwitchesSuppressed = false
@@ -45,20 +49,29 @@ internal fun NativeSwitch(
     onCheckedChange: (Boolean) -> Unit,
     enabled: Boolean,
     modifier: Modifier,
+    fadeIn: Boolean,
 ) {
     val scope = rememberCoroutineScope()
     val target = remember { SwitchTarget(scope, onCheckedChange) }
+    val fadeVisible = remember(fadeIn) { mutableStateOf(!fadeIn) }
     target.onCheckedChange = onCheckedChange
     target.checked = checked
+    LaunchedEffect(fadeIn) {
+        if (fadeIn) {
+            delay(50.milliseconds)
+            fadeVisible.value = true
+        }
+    }
     UIKitView(
         factory = {
-            NativeSwitchContainerView()
+            NativeSwitchContainerView(fadeIn)
                 .apply {
                     hidden = nativeIosSwitchesSuppressed
                     val toggle =
                         UISwitch().apply {
                             translatesAutoresizingMaskIntoConstraints = false
                             onTintColor = null
+                            alpha = if (fadeIn) 0.0 else 1.0
                             addTarget(target, NSSelectorFromString("valueChanged:"), UIControlEventValueChanged)
                         }
                     addSubview(toggle)
@@ -77,6 +90,7 @@ internal fun NativeSwitch(
             val toggle = it.subviews.firstOrNull() as? UISwitch ?: return@UIKitView
             it.hidden = nativeIosSwitchesSuppressed
             it.clipInteropWrapper()
+            it.setContentVisible(fadeVisible.value)
             if (toggle.on != checked) {
                 toggle.setOn(checked, animated = true)
             }
@@ -96,7 +110,11 @@ internal fun NativeSwitch(
 }
 
 @OptIn(ExperimentalForeignApi::class)
-private class NativeSwitchContainerView : UIView(frame = CGRectMake(0.0, 0.0, 0.0, 0.0)) {
+private class NativeSwitchContainerView(
+    fadeIn: Boolean,
+) : UIView(frame = CGRectMake(0.0, 0.0, 0.0, 0.0)) {
+    private var contentVisible = !fadeIn
+
     override fun didMoveToSuperview() {
         super.didMoveToSuperview()
         clipInteropWrapper()
@@ -105,6 +123,19 @@ private class NativeSwitchContainerView : UIView(frame = CGRectMake(0.0, 0.0, 0.
     override fun layoutSubviews() {
         super.layoutSubviews()
         clipInteropWrapper()
+    }
+
+    fun setContentVisible(visible: Boolean) {
+        if (contentVisible == visible) return
+        contentVisible = visible
+        val toggle = subviews.firstOrNull() as? UISwitch ?: return
+        if (visible) {
+            animateWithDuration(0.25) {
+                toggle.alpha = 1.0
+            }
+        } else {
+            toggle.alpha = 0.0
+        }
     }
 
     fun clipInteropWrapper() {

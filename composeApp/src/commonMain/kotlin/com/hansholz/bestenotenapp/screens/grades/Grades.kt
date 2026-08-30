@@ -45,6 +45,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Card
@@ -419,9 +420,64 @@ fun Grades(
 
                                     1 -> {
                                         val speedState = rememberLazyListScrollSpeedState(secondLazyListState)
+                                        val stickyHeaderStartInset =
+                                            with(density) {
+                                                (verticalPadding.calculateStartPadding(layoutDirection) + 10.dp).toPx()
+                                            }
+                                        val stickyHeaderEndInset =
+                                            with(density) {
+                                                (verticalPadding.calculateEndPadding(layoutDirection) + 10.dp).toPx()
+                                            }
+                                        val stickyHeaderCornerRadius = with(density) { 28.5.dp.toPx() }
+                                        val stickyHeaderClipTopInset = with(density) { 1.5.dp.toPx() }
+                                        val nativeStickyHeaderClipShape =
+                                            remember(stickyHeaderStartInset, stickyHeaderEndInset, stickyHeaderCornerRadius, stickyHeaderClipTopInset) {
+                                                GenericShape { size, _ ->
+                                                    val left = stickyHeaderStartInset
+                                                    val right = size.width - stickyHeaderEndInset
+                                                    val radius = stickyHeaderCornerRadius
+                                                    val top = stickyHeaderClipTopInset
+                                                    val cornerBottom = top + radius
+                                                    val control = radius * 0.5522848f
+                                                    moveTo(left + radius, top)
+                                                    lineTo(right - radius, top)
+                                                    cubicTo(
+                                                        right - radius + control,
+                                                        top,
+                                                        right,
+                                                        cornerBottom - control,
+                                                        right,
+                                                        cornerBottom,
+                                                    )
+                                                    lineTo(size.width, cornerBottom)
+                                                    lineTo(size.width, size.height)
+                                                    lineTo(0f, size.height)
+                                                    lineTo(0f, cornerBottom)
+                                                    lineTo(left, cornerBottom)
+                                                    cubicTo(
+                                                        left,
+                                                        cornerBottom - control,
+                                                        left + radius - control,
+                                                        top,
+                                                        left + radius,
+                                                        top,
+                                                    )
+                                                    close()
+                                                }
+                                            }
                                         LazyColumn(
                                             state = secondLazyListState,
-                                            modifier = Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding()),
+                                            modifier =
+                                                Modifier
+                                                    .fillMaxSize()
+                                                    .padding(top = contentPadding.calculateTopPadding())
+                                                    .then(
+                                                        if (nativeComponentsEnabled) {
+                                                            Modifier.clip(nativeStickyHeaderClipShape)
+                                                        } else {
+                                                            Modifier
+                                                        },
+                                                    ),
                                             contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
                                             userScrollEnabled = gradesViewModel.userScrollEnabled,
                                         ) {
@@ -473,6 +529,15 @@ fun Grades(
                                                                 .fillMaxWidth()
                                                                 .height(56.dp)
                                                                 .then(
+                                                                    if (nativeComponentsEnabled) {
+                                                                        Modifier
+                                                                            .padding(verticalPadding)
+                                                                            .padding(horizontal = 10.dp)
+                                                                            .clip(RoundedCornerShape(28.dp))
+                                                                    } else {
+                                                                        Modifier
+                                                                    },
+                                                                ).then(
                                                                     if (gradeAverageEnabled && !isOpened) {
                                                                         Modifier
                                                                             .hoverable(interactionSource)
@@ -528,7 +593,11 @@ fun Grades(
                                                                         ),
                                                                 )
                                                                 Row(
-                                                                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp).padding(verticalPadding),
+                                                                    modifier =
+                                                                        Modifier
+                                                                            .fillMaxSize()
+                                                                            .padding(horizontal = 16.dp)
+                                                                            .then(if (nativeComponentsEnabled) Modifier else Modifier.padding(verticalPadding)),
                                                                     verticalAlignment = Alignment.CenterVertically,
                                                                 ) {
                                                                     Text(
@@ -1142,6 +1211,7 @@ fun Grades(
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Top,
                                                         controlVisible = targetState == gradesViewModel.toolbarState,
+                                                        nativeControlFadeIn = true,
                                                     )
                                                     settingsToggleItem(
                                                         checked = gradeAverageUseWeighting,
@@ -1161,6 +1231,7 @@ fun Grades(
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Middle,
                                                         controlVisible = targetState == gradesViewModel.toolbarState,
+                                                        nativeControlFadeIn = true,
                                                     )
                                                 }
                                                 settingsToggleItem(
@@ -1181,6 +1252,7 @@ fun Grades(
                                                             PreferencePosition.Middle
                                                         },
                                                     controlVisible = targetState == gradesViewModel.toolbarState,
+                                                    nativeControlFadeIn = true,
                                                 )
                                                 if (!viewModel.isDemoAccount.value && !isOpened) {
                                                     settingsToggleItem(
@@ -1194,6 +1266,7 @@ fun Grades(
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Middle,
                                                         controlVisible = targetState == gradesViewModel.toolbarState,
+                                                        nativeControlFadeIn = true,
                                                     )
                                                     settingsToggleItem(
                                                         checked = showTeachersWithFirstname,
@@ -1206,6 +1279,7 @@ fun Grades(
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Bottom,
                                                         controlVisible = targetState == gradesViewModel.toolbarState,
+                                                        nativeControlFadeIn = true,
                                                     )
                                                 }
                                             }
