@@ -112,7 +112,6 @@ fun EnhancedAlertDialog(
     textContentColor: Color = AlertDialogDefaults.textContentColor,
     shadowElevation: Dp = ShadowElevation,
 ) {
-    val nativeComponentsEnabled = LocalNativeComponentsEnabled.current.value
     val blurEnabled = LocalBlurEnabled.current
     CompositionLocalProvider(
         LocalBlurEnabled provides if (withBlur) blurEnabled else mutableStateOf(false),
@@ -156,7 +155,7 @@ fun EnhancedAlertDialog(
                     modifier =
                         modifier
                             .sizeIn(
-                                minWidth = if (nativeComponentsEnabled) 0.dp else DialogMinWidth,
+                                minWidth = DialogMinWidth,
                                 maxWidth = maxWidth ?: DialogMaxWidth,
                             ).then(if (maxWidth == Dp.Unspecified && getPlatform() == Platform.DESKTOP) Modifier.padding(top = 30.dp) else Modifier)
                             .then(Modifier.semantics { paneTitle = "Dialog" }),
@@ -516,7 +515,7 @@ fun ProvideContentColorTextStyle(
     )
 }
 
-private val DialogMinWidth = 280.dp
+private val DialogMinWidth = 200.dp
 private val DialogMaxWidth = 560.dp
 
 private val ButtonsHorizontalSpacing = 8.dp
