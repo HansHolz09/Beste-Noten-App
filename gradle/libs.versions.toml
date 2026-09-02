@@ -1,5 +1,5 @@
 [versions]
-agp = "9.3.2"
+agp = "9.4.0"
 aboutLibraries = "15.1.1"
 adaptive = "1.3.0-beta02"
 advancedMenubar = "0.2.0"
