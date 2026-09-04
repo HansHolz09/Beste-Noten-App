@@ -37,7 +37,7 @@ platformtools = "0.7.5"
 proguard = "7.9.1"
 navigationCompose = "2.9.2"
 navigationEvent = "1.1.2"
-materialKolor = "5.0.0"
+materialKolor = "5.0.1"
 #noinspection NewerVersionAvailable
 oidc = "0.15.3"
 sonner = "0.4.0"
