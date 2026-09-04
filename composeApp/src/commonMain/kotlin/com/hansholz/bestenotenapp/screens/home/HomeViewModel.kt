@@ -11,9 +11,10 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
+import com.hansholz.bestenotenapp.main.ViewModel as AppViewModel
 
 class HomeViewModel(
-    viewModel: com.hansholz.bestenotenapp.main.ViewModel,
+    viewModel: AppViewModel,
 ) : ViewModel() {
     var isGradesLoading by mutableStateOf(false)
     var isTimetableLoading by mutableStateOf(false)
@@ -27,7 +28,7 @@ class HomeViewModel(
     var isYearSelectionDialogShown by mutableStateOf(false)
     var isYearSelectionDialogLoading by mutableStateOf(true)
 
-    fun refreshGrades(viewModel: com.hansholz.bestenotenapp.main.ViewModel) {
+    fun refreshGrades(viewModel: AppViewModel) {
         viewModelScope.launch {
             isGradesLoading = true
             viewModel.getCollections()?.let {
@@ -38,7 +39,7 @@ class HomeViewModel(
         }
     }
 
-    fun refreshTimetable(viewModel: com.hansholz.bestenotenapp.main.ViewModel) {
+    fun refreshTimetable(viewModel: AppViewModel) {
         viewModelScope.launch {
             isTimetableLoading = true
             val currentDate =
@@ -55,7 +56,7 @@ class HomeViewModel(
         }
     }
 
-    fun refreshStats(viewModel: com.hansholz.bestenotenapp.main.ViewModel) {
+    fun refreshStats(viewModel: AppViewModel) {
         viewModelScope.launch {
             isStatsLoading = true
             viewModel.getIntervals()?.let {

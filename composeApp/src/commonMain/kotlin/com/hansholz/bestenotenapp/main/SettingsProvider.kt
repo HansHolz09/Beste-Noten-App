@@ -5,7 +5,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.unit.Dp
 import com.hansholz.bestenotenapp.homework.HomeworkType
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import dev.chrisbanes.haze.HazeState
@@ -37,8 +36,6 @@ internal val LocalUsingOfflineCache = compositionLocalOf { mutableStateOf(false)
 internal val LocalRequireBiometricAuthentification = compositionLocalOf { mutableStateOf(false) }
 
 internal val AppHazeState = compositionLocalOf { mutableStateOf(HazeState()) }
-
-internal val LocalNavigationDrawerTopPadding = compositionLocalOf<Dp?> { null }
 
 val LocalBiometricAuthenticationAvailable = compositionLocalOf { false }
 

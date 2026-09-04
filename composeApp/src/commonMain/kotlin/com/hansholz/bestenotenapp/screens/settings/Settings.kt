@@ -80,14 +80,18 @@ import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.ExactPlatform
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
+import com.hansholz.bestenotenapp.main.LocalGlobalEasterEgg
 import com.hansholz.bestenotenapp.main.LocalGradeAverageEnabled
 import com.hansholz.bestenotenapp.main.LocalGradeAverageUseWeighting
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationIntervalMinutes
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationsEnabled
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationsWifiOnly
 import com.hansholz.bestenotenapp.main.LocalHapticsEnabled
+import com.hansholz.bestenotenapp.main.LocalHideNativeInterop
 import com.hansholz.bestenotenapp.main.LocalHomeworkEnabled
 import com.hansholz.bestenotenapp.main.LocalHomeworkGoogleSyncEnabled
+import com.hansholz.bestenotenapp.main.LocalNativeAppearanceSelector
+import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.LocalShowAbsences
 import com.hansholz.bestenotenapp.main.LocalShowAllSubjects
@@ -138,6 +142,9 @@ fun Settings(
     val scope = rememberCoroutineScope()
     val vibrator = rememberVibrator()
     val uriHandler = LocalUriHandler.current
+    val globalEasterEgg = LocalGlobalEasterEgg.current
+    val hideNativeInterop = LocalHideNativeInterop.current
+    val nativeAppearanceSelector = LocalNativeAppearanceSelector.current
     val isCompactWindow =
         !currentWindowAdaptiveInfoV2()
             .windowSizeClass
@@ -171,6 +178,7 @@ fun Settings(
     var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
     var showOnlyRelevantData by LocalShowOnlyRelevantData.current
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
+    val nativeComponentsEnabled = LocalNativeComponentsEnabled.current.value
     val biometricAuthentificationAvailable = LocalBiometricAuthenticationAvailable.current
     val authToken by secureMutableStateOf("", "authToken")
     val showReminderInfoDialog = remember { mutableStateOf(false) }
@@ -211,43 +219,61 @@ fun Settings(
                     icon = MaterialSymbols.Rounded.Brightness_4,
                     position = PreferencePosition.Top,
                 ) {
-                    Row {
-                        FilledIconToggleButton(
-                            checked = useSystemIsDark,
-                            onCheckedChange = {
+                    val appearanceActions =
+                        listOf(
+                            {
                                 useSystemIsDark = true
                                 put("useSystemIsDark", true)
                                 vibrator.enhancedVibrate(EnhancedVibrations.SLOW_RISE)
                             },
-                            shapes = IconButtonDefaults.toggleableShapes(),
-                        ) {
-                            Icon(MaterialSymbols.Rounded.Brightness_auto, null)
-                        }
-                        FilledIconToggleButton(
-                            checked = !useSystemIsDark && !isDark,
-                            onCheckedChange = {
+                            {
                                 useSystemIsDark = false
                                 put("useSystemIsDark", false)
                                 isDark = false
                                 put("isDark", false)
                                 vibrator.enhancedVibrate(EnhancedVibrations.SLOW_RISE)
                             },
-                            shapes = IconButtonDefaults.toggleableShapes(),
-                        ) {
-                            Icon(MaterialSymbols.Rounded.Light_mode, null)
-                        }
-                        FilledIconToggleButton(
-                            checked = !useSystemIsDark && isDark,
-                            onCheckedChange = {
+                            {
                                 useSystemIsDark = false
                                 put("useSystemIsDark", false)
                                 isDark = true
                                 put("isDark", true)
                                 vibrator.enhancedVibrate(EnhancedVibrations.SLOW_RISE)
                             },
-                            shapes = IconButtonDefaults.toggleableShapes(),
-                        ) {
-                            Icon(MaterialSymbols.Rounded.Dark_mode, null)
+                        )
+                    val selectedAppearance =
+                        if (useSystemIsDark) {
+                            0
+                        } else if (isDark) {
+                            2
+                        } else {
+                            1
+                        }
+                    if (nativeComponentsEnabled && nativeAppearanceSelector != null) {
+                        nativeAppearanceSelector(selectedAppearance, { appearanceActions[it]() }, Modifier)
+                    } else {
+                        Row {
+                            FilledIconToggleButton(
+                                checked = selectedAppearance == 0,
+                                onCheckedChange = { appearanceActions[0]() },
+                                shapes = IconButtonDefaults.toggleableShapes(),
+                            ) {
+                                Icon(MaterialSymbols.Rounded.Brightness_auto, null)
+                            }
+                            FilledIconToggleButton(
+                                checked = selectedAppearance == 1,
+                                onCheckedChange = { appearanceActions[1]() },
+                                shapes = IconButtonDefaults.toggleableShapes(),
+                            ) {
+                                Icon(MaterialSymbols.Rounded.Light_mode, null)
+                            }
+                            FilledIconToggleButton(
+                                checked = selectedAppearance == 2,
+                                onCheckedChange = { appearanceActions[2]() },
+                                shapes = IconButtonDefaults.toggleableShapes(),
+                            ) {
+                                Icon(MaterialSymbols.Rounded.Dark_mode, null)
+                            }
                         }
                     }
                 }
@@ -264,27 +290,29 @@ fun Settings(
                     position = PreferencePosition.Middle,
                 )
             }
-            settingsToggleItem(
-                checked = animationsEnabled,
-                onCheckedChange = {
-                    animationsEnabled = it
-                    put("animationsEnabled", it)
-                },
-                text = "Animationen",
-                icon = MaterialSymbols.Rounded.Animation,
-                position = PreferencePosition.Middle,
-            )
-            if (HazeBlurDefaults.blurEnabled()) {
+            if (!nativeComponentsEnabled) {
                 settingsToggleItem(
-                    checked = blurEnabled,
+                    checked = animationsEnabled,
                     onCheckedChange = {
-                        blurEnabled = it
-                        put("blurEnabled", it)
+                        animationsEnabled = it
+                        put("animationsEnabled", it)
                     },
-                    text = "Unschärfe-Effekt",
-                    icon = MaterialSymbols.Rounded.Blur_on,
+                    text = "Animationen",
+                    icon = MaterialSymbols.Rounded.Animation,
                     position = PreferencePosition.Middle,
                 )
+                if (HazeBlurDefaults.isBlurEnabledByDefault()) {
+                    settingsToggleItem(
+                        checked = blurEnabled,
+                        onCheckedChange = {
+                            blurEnabled = it
+                            put("blurEnabled", it)
+                        },
+                        text = "Unschärfe-Effekt",
+                        icon = MaterialSymbols.Rounded.Blur_on,
+                        position = PreferencePosition.Middle,
+                    )
+                }
             }
             settingsToggleItem(
                 checked = backgroundEnabled,
@@ -727,7 +755,7 @@ fun Settings(
                                 isDark = appSettings.isDark
                                 useCustomColorScheme = appSettings.useCustomColorScheme
                                 animationsEnabled = appSettings.animationsEnabled
-                                blurEnabled = appSettings.blurEnabled && HazeBlurDefaults.blurEnabled()
+                                blurEnabled = appSettings.blurEnabled && HazeBlurDefaults.isBlurEnabledByDefault()
                                 backgroundEnabled = appSettings.backgroundEnabled
                                 hapticsEnabled = appSettings.hapticsEnabled
                                 showGreetings = appSettings.showGreetings
@@ -754,7 +782,7 @@ fun Settings(
                                 put("isDark", appSettings.isDark)
                                 put("useCustomColorScheme", appSettings.useCustomColorScheme)
                                 put("animationsEnabled", appSettings.animationsEnabled)
-                                put("blurEnabled", appSettings.blurEnabled && HazeBlurDefaults.blurEnabled())
+                                put("blurEnabled", appSettings.blurEnabled && HazeBlurDefaults.isBlurEnabledByDefault())
                                 put("backgroundEnabled", appSettings.backgroundEnabled)
                                 put("hapticsEnabled", appSettings.hapticsEnabled)
                                 put("showGreetings", appSettings.showGreetings)
@@ -801,6 +829,7 @@ fun Settings(
                     title = "Abmelden",
                     icon = MaterialSymbols.Rounded.Logout,
                     onClick = {
+                        hideNativeInterop()
                         viewModel.logout()
                         onNavigateToLogin()
                         vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
@@ -841,12 +870,12 @@ fun Settings(
                 val func = {
                     tapCount++
                     if (tapCount % 7 == 0) {
-                        settingsViewModel.showConfetti = true
+                        globalEasterEgg?.invoke("fireworks") ?: run { settingsViewModel.showConfetti = true }
                     } else {
                         vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                     }
                 }
-                val onClick: (() -> Unit)? = if (!settingsViewModel.showConfetti) func else null
+                val onClick: (() -> Unit)? = if (globalEasterEgg != null || !settingsViewModel.showConfetti) func else null
                 PreferenceItem(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     title = "Beste-Noten-App",
@@ -866,7 +895,7 @@ fun Settings(
     NotificationIntervalDialog(settingsViewModel)
     ExportConfigDialog(settingsViewModel, viewModel)
     LibrariesDialog(settingsViewModel)
-    ConfettiEasterEgg(settingsViewModel)
+    if (globalEasterEgg == null) ConfettiEasterEgg(settingsViewModel)
     InfoDialog(
         visible = showReminderInfoDialog,
         title = "Erinnerungen laufen über Google Kalender",

@@ -11,6 +11,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -42,6 +43,7 @@ import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Text_snippet
 import com.hansholz.bestenotenapp.api.models.Absence
 import com.hansholz.bestenotenapp.api.models.JournalLesson
+import com.hansholz.bestenotenapp.components.cupertinoHighlight
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.utils.SimpleTime
@@ -192,12 +194,15 @@ internal fun DailyScheduleLayout(
                                     enter = EnterTransition.None,
                                     exit = ExitTransition.None,
                                 ) {
+                                    val cardShape = RoundedCornerShape(18.dp)
+                                    val interactionSource = remember(lesson) { MutableInteractionSource() }
                                     OutlinedCard(
                                         onClick = { onLessonPopupOpened(prepared.block.copy(lesson = lesson)) },
                                         modifier =
                                             Modifier
                                                 .fillMaxSize()
                                                 .padding(horizontal = 4.dp)
+                                                .cupertinoHighlight(interactionSource, cardShape)
                                                 .enhancedSharedBounds(
                                                     sharedTransitionScope = sharedTransitionScope,
                                                     sharedContentState = rememberSharedContentState(lesson),
@@ -210,7 +215,7 @@ internal fun DailyScheduleLayout(
                                                     resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(ContentScale.Fit),
                                                     renderInOverlayDuringTransition = selectedLesson == lesson,
                                                 ),
-                                        shape = RoundedCornerShape(18.dp),
+                                        shape = cardShape,
                                         colors =
                                             CardDefaults.outlinedCardColors(
                                                 containerColor =
@@ -237,6 +242,7 @@ internal fun DailyScheduleLayout(
                                                             ?: if (!isDark) Color(38, 63, 168) else Color(222, 233, 252)
                                                     },
                                             ),
+                                        interactionSource = interactionSource,
                                     ) {
                                         Box(
                                             modifier = Modifier.fillMaxSize(),

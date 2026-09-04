@@ -44,6 +44,7 @@ import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Insights
 import com.composables.icons.materialsymbols.rounded.Refresh
 import com.hansholz.bestenotenapp.api.models.JournalLessonStudentBySlot
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
@@ -54,7 +55,6 @@ import com.hansholz.bestenotenapp.utils.appendWithSymbols
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.roundToDecimals
 import com.hansholz.bestenotenapp.utils.tryRemember
-import components.dialogs.EnhancedAlertDialog
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone

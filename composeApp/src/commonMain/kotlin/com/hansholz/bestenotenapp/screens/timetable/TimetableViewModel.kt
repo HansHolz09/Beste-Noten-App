@@ -14,9 +14,10 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
+import com.hansholz.bestenotenapp.main.ViewModel as AppViewModel
 
 class TimetableViewModel(
-    viewModel: com.hansholz.bestenotenapp.main.ViewModel,
+    viewModel: AppViewModel,
 ) : ViewModel() {
     var toolbarPadding by mutableStateOf(0.dp)
 
