@@ -31,7 +31,6 @@ import com.hansholz.bestenotenapp.main.LocalNativePrimaryTabRow
 import com.hansholz.bestenotenapp.main.LocalNativeSwitch
 import com.hansholz.bestenotenapp.main.LocalNativeTimePicker
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
-import com.hansholz.bestenotenapp.notifications.ensureIosNotificationsInitialized
 import com.hansholz.bestenotenapp.theme.LocalNativeSystemIsDark
 import com.hansholz.bestenotenapp.utils.isInWindowMode
 import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
@@ -43,7 +42,6 @@ fun mainViewController(nativeBridge: NativeComponentBridge? = null): UIViewContr
     val controller =
         ComposeUIViewController(configure = { opaque = nativeBridge == null }) {
             PlatformImeOptions { usingNativeTextInput(true) }
-            ensureIosNotificationsInitialized()
             val nativeComponentsEnabled = nativeBridge?.enabledState ?: remember { mutableStateOf(false) }
             val biometricAuthenticationAvailable = remember { runBlocking { KSafeBiometrics.biometricsAvailable() } }
             CompositionLocalProvider(

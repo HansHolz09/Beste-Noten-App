@@ -10,6 +10,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import platform.BackgroundTasks.BGAppRefreshTaskRequest
 import platform.BackgroundTasks.BGTask
 import platform.BackgroundTasks.BGTaskScheduler
@@ -42,18 +44,19 @@ actual object GradeNotifications {
     private var initialized = false
     private var taskRegistered = false
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    private val checkMutex = Mutex()
 
     actual fun initialize(platformContext: Any?) {
         GradeNotificationNotifier.ensureInitialized(platformContext)
         if (!initialized) {
             initialized = true
             registerTaskHandler()
+            refreshScheduling()
         }
-        refreshScheduling()
     }
 
     actual fun refreshScheduling() {
-        if (!initialized) return
+        if (!initialized || !taskRegistered) return
         if (!GradeNotificationEngine.shouldSchedule()) {
             cancelScheduledTasks()
             return
@@ -63,10 +66,12 @@ actual object GradeNotifications {
 
     actual fun onSettingsUpdated() {
         refreshScheduling()
+        checkNowIfEnabled()
     }
 
     actual fun onLogin() {
         refreshScheduling()
+        checkNowIfEnabled()
     }
 
     actual fun onLogout() {
@@ -103,7 +108,6 @@ actual object GradeNotifications {
     @OptIn(ExperimentalForeignApi::class)
     private fun scheduleTask() {
         val scheduler = BGTaskScheduler.sharedScheduler()
-        scheduler.cancelTaskRequestWithIdentifier(TASK_IDENTIFIER)
         val request =
             BGAppRefreshTaskRequest(identifier = TASK_IDENTIFIER).apply {
                 earliestBeginDate = NSDate().dateByAddingTimeInterval(GradeNotificationEngine.getIntervalMinutes().toDouble() * 60.0)
@@ -119,26 +123,38 @@ actual object GradeNotifications {
     }
 
     private fun handleTask(task: BGTask) {
+        if (!GradeNotificationEngine.shouldSchedule()) {
+            task.setTaskCompletedWithSuccess(true)
+            return
+        }
         scheduleTask()
+        var success = false
         val job =
             scope.launch {
-                val success = runCheckIfPermitted()
-                task.setTaskCompletedWithSuccess(success)
+                success = runCheckIfPermitted()
             }
+        job.invokeOnCompletion { task.setTaskCompletedWithSuccess(success) }
         task.expirationHandler = {
             job.cancel()
         }
     }
 
-    private suspend fun runCheckIfPermitted(): Boolean {
-        if (GradeNotificationEngine.isWifiOnlyEnabled() && !isOnWifi()) {
-            return true
-        }
-        return when (GradeNotificationEngine.runCheck()) {
-            GradeNotificationOutcome.Success -> true
-            GradeNotificationOutcome.Retry -> false
+    private fun checkNowIfEnabled() {
+        if (GradeNotificationEngine.shouldSchedule()) {
+            scope.launch { runCheckIfPermitted() }
         }
     }
+
+    private suspend fun runCheckIfPermitted(): Boolean =
+        checkMutex.withLock {
+            if (GradeNotificationEngine.isWifiOnlyEnabled() && !isOnWifi()) {
+                return@withLock true
+            }
+            when (GradeNotificationEngine.runCheck()) {
+                GradeNotificationOutcome.Success -> true
+                GradeNotificationOutcome.Retry -> false
+            }
+        }
 
     @OptIn(ExperimentalForeignApi::class)
     private suspend fun isOnWifi(): Boolean =

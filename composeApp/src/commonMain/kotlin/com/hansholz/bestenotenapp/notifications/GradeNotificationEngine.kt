@@ -7,20 +7,19 @@ import com.hansholz.bestenotenapp.api.BesteSchuleAuth
 import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.models.Grade
 import com.hansholz.bestenotenapp.api.models.GradeCollection
+import com.hansholz.bestenotenapp.api.models.Level
 import com.hansholz.bestenotenapp.api.oidcClient
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.security.kSafeProvider
+import com.hansholz.bestenotenapp.utils.SecondaryStage
+import com.hansholz.bestenotenapp.utils.secondaryStage
 import io.ktor.client.plugins.ClientRequestException
 import kotlinx.coroutines.CancellationException
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.todayIn
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.publicvalue.multiplatform.oidc.DefaultOpenIdConnectClient
-import kotlin.time.Clock
 
 internal enum class GradeNotificationOutcome {
     Success,
@@ -68,9 +67,9 @@ internal object GradeNotificationEngine {
                 val currentIds = collections.flatMap { it.grades.orEmpty() }.map { it.id }.toSet()
 
                 val knownIds = loadKnownGradeIds()
-                val newIds = currentIds - knownIds
+                val newIds = knownIds?.let { currentIds - it }.orEmpty()
 
-                if (newIds.isNotEmpty() && knownIds.isNotEmpty()) {
+                if (newIds.isNotEmpty()) {
                     val newGrades =
                         collections
                             .flatMap { collection ->
@@ -79,7 +78,7 @@ internal object GradeNotificationEngine {
                                     .filter { it.id in newIds }
                                     .map { it to collection }
                             }.sortedBy { it.second.givenAt }
-                    notifyNewGrades(newGrades)
+                    notifyNewGrades(newGrades, loadLevelsFor(api, newGrades))
                 }
 
                 storeKnownGradeIds(currentIds)
@@ -108,40 +107,51 @@ internal object GradeNotificationEngine {
         }
 
     private suspend fun fetchAllCollections(api: BesteSchuleApi): List<GradeCollection> {
-        val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
-
-        val includes = listOf("grades")
+        val includes = listOf("grades", "interval")
         val collections = mutableStateListOf<GradeCollection>()
 
         val collection = api.collectionsIndex(include = includes)
-        collections.addAll(collection.data.filter { it.isCurrent(today) })
+        collections.addAll(collection.data)
         if ((collection.meta?.lastPage ?: 0) > 1) {
             for (i in 2..(collection.meta?.lastPage ?: 0)) {
-                collections.addAll(api.collectionsIndex(include = includes, page = i).data.filter { it.isCurrent(today) })
+                collections.addAll(api.collectionsIndex(include = includes, page = i).data)
             }
         }
 
         return collections
     }
 
-    private fun GradeCollection.isCurrent(today: LocalDate): Boolean =
-        try {
-            interval?.let { interval ->
-                val fromDate = LocalDate.parse(interval.from)
-                val toDate = LocalDate.parse(interval.to)
-                today in fromDate..toDate
-            } ?: true
-        } catch (_: IllegalArgumentException) {
-            true
-        }
+    private suspend fun loadLevelsFor(
+        api: BesteSchuleApi,
+        entries: List<Pair<Grade, GradeCollection>>,
+    ): Map<Int, Level> {
+        val yearIds = entries.mapNotNull { it.second.interval?.yearId }.distinct()
+        if (yearIds.isEmpty()) return emptyMap()
 
-    private fun notifyNewGrades(entries: List<Pair<Grade, GradeCollection>>) {
+        val groups = api.groupsIndex(filterMeta = true, filterYear = yearIds.joinToString(",")).data
+        val levels = mutableMapOf<Int, Level>()
+        for (yearId in yearIds) {
+            val groupId = groups.firstOrNull { it.yearId == yearId }?.id ?: continue
+            api
+                .groupsShow(groupId, listOf("level"), yearId)
+                .data.level
+                ?.let { levels[yearId] = it }
+        }
+        return levels
+    }
+
+    private fun notifyNewGrades(
+        entries: List<Pair<Grade, GradeCollection>>,
+        levelsByYear: Map<Int, Level>,
+    ) {
         if (entries.isEmpty()) return
 
         val notifications =
             entries.map { (grade, collection) ->
                 val title = collection.subject?.name?.let { "Neue Note in $it" } ?: "Neue Note"
-                val body = "Bei " + (collection.name ?: "einer unbekannten Leistung") + " hast du die Note " + grade.value + " erreicht"
+                val isSecondaryTwo = collection.interval?.yearId?.let { levelsByYear[it]?.secondaryStage() } == SecondaryStage.TWO
+                val value = if (isSecondaryTwo) "${grade.value} Punkte" else "die Note ${grade.value}"
+                val body = "Bei " + (collection.name ?: "einer unbekannten Leistung") + " hast du $value erreicht"
                 GradeNotificationPayload(
                     id = grade.id.toString(),
                     title = title,
@@ -152,10 +162,10 @@ internal object GradeNotificationEngine {
         GradeNotificationNotifier.notifyNewGrades(notifications)
     }
 
-    private fun loadKnownGradeIds(): Set<Int> =
+    private fun loadKnownGradeIds(): Set<Int>? =
         kSafeProvider(kSafe) {
-            val raw = get<String?>(KEY_KNOWN_GRADE_IDS, null) ?: return emptySet()
-            return runCatching { json.decodeFromString<KnownGrades>(raw).ids.toSet() }.getOrElse { emptySet() }
+            val raw = get<String?>(KEY_KNOWN_GRADE_IDS, null) ?: return null
+            return runCatching { json.decodeFromString<KnownGrades>(raw).ids.toSet() }.getOrNull()
         }
 
     private fun storeKnownGradeIds(ids: Set<Int>) =
