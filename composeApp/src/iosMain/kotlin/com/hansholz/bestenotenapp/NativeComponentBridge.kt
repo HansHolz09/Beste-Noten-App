@@ -22,6 +22,7 @@ class NativeComponentBridge {
     private var canNavigateBackChanged: ((Boolean) -> Unit)? = null
     private var themeChanged: ((Boolean, Boolean) -> Unit)? = null
     private var primaryTabsChanged: ((String, Int, Boolean) -> Unit)? = null
+    private var offlineStatusChanged: ((Boolean) -> Unit)? = null
     private var primaryTabsOwner: String? = null
     private var primaryTabSelected: ((Int) -> Unit)? = null
 
@@ -31,12 +32,14 @@ class NativeComponentBridge {
         onCanNavigateBackChanged: (Boolean) -> Unit,
         onThemeChanged: (Boolean, Boolean) -> Unit,
         onPrimaryTabsChanged: (String, Int, Boolean) -> Unit,
+        onOfflineStatusChanged: (Boolean) -> Unit,
     ) {
         rootDestinationChanged = onRootDestinationChanged
         fragmentDestinationChanged = onFragmentDestinationChanged
         canNavigateBackChanged = onCanNavigateBackChanged
         themeChanged = onThemeChanged
         primaryTabsChanged = onPrimaryTabsChanged
+        offlineStatusChanged = onOfflineStatusChanged
     }
 
     fun selectFragment(route: String) {
@@ -95,6 +98,10 @@ class NativeComponentBridge {
 
     internal fun attach(controller: NavController) {
         navController = controller
+    }
+
+    internal fun offlineStatusChanged(offline: Boolean) {
+        offlineStatusChanged?.invoke(offline)
     }
 
     internal fun rootDestinationChanged(route: String) {

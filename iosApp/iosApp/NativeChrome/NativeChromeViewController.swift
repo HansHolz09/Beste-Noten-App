@@ -2,9 +2,20 @@ import ComposeApp
 import CoreText
 import UIKit
 
-final class NativeChromeViewController: UIViewController, UISplitViewControllerDelegate, UITabBarDelegate {
+final class NativeChromeViewController: UIViewController, UISplitViewControllerDelegate, UITabBarDelegate, UIGestureRecognizerDelegate {
     private let splitController = UISplitViewController(style: .doubleColumn)
     private let tabBar = UITabBar()
+    private lazy var offlineItem: UIBarButtonItem = {
+        let item = UIBarButtonItem(
+            image: UIImage(named: "material-cloud-off")?.withRenderingMode(.alwaysTemplate),
+            style: .plain,
+            target: nil,
+            action: nil
+        )
+        item.isEnabled = false
+        item.accessibilityLabel = "Offline"
+        return item
+    }()
     private lazy var composeBackItem = UIBarButtonItem(
         image: UIImage(systemName: "chevron.backward"),
         style: .plain,
@@ -14,6 +25,10 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
     private lazy var composeBackGesture = UIScreenEdgePanGestureRecognizer(
         target: self,
         action: #selector(handleComposeBackGesture(_:))
+    )
+    private lazy var sidebarRevealGesture = UIScreenEdgePanGestureRecognizer(
+        target: self,
+        action: #selector(handleSidebarRevealGesture(_:))
     )
     private lazy var sidebarToggleItem = UIBarButtonItem(
         image: UIImage(systemName: "sidebar.left"),
@@ -30,6 +45,8 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
     private var selectedSection: AppSection = .home
     private var displaysMainContent = false
     private var usesSidebar = false
+    private var hasRefreshedSidebarPresentation = false
+    private var isSidebarCollapsed = false
     private var canNavigateBack = false
     private var isDarkTheme = false
     private var usesSystemAppearance = true
@@ -43,11 +60,9 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
             self?.bridge.selectPrimaryTab(index: Int32(index))
         }
     )
-    private lazy var primaryTabsPalette = NavigationBarPaletteBridge.makePalette(
-        contentView: primaryTabsContent,
-        preferredHeight: 56
-    )
     private var primaryTabsVisible = false
+    private var primaryTabsAnimator: UIViewPropertyAnimator?
+    private var primaryTabsInsetLink: CADisplayLink?
 
     init() {
         super.init(nibName: nil, bundle: nil)
@@ -72,6 +87,7 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        layoutPrimaryTabs()
         primaryTabsContent.updateHorizontalCenter()
         primaryTabsContent.layoutIfNeeded()
         updateComposeInsets()
@@ -82,6 +98,22 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
         view.window?.tintColor = .systemYellow
         bridge.systemAppearanceChanged(isDark: currentSystemIsDark)
         applyTheme(isDark: isDarkTheme, usesSystemAppearance: usesSystemAppearance)
+        refreshSidebarPresentationIfNeeded()
+    }
+
+    private func refreshSidebarPresentationIfNeeded() {
+        guard view.window != nil, !hasRefreshedSidebarPresentation else { return }
+        DispatchQueue.main.async { [weak self] in
+            guard let self, !self.hasRefreshedSidebarPresentation, self.usesSidebar,
+                  self.splitController.displayMode == .oneBesideSecondary else { return }
+            self.hasRefreshedSidebarPresentation = true
+            UIView.performWithoutAnimation {
+                self.splitController.hide(.primary)
+                self.splitController.view.layoutIfNeeded()
+                self.splitController.show(.primary)
+                self.splitController.view.layoutIfNeeded()
+            }
+        }
     }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -123,6 +155,15 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
                         visible: visible.boolValue
                     )
                 }
+            },
+            onOfflineStatusChanged: { [weak self] offline in
+                DispatchQueue.main.async {
+                    guard let self else { return }
+                    self.contentHostController.navigationItem.setRightBarButton(
+                        offline.boolValue ? self.offlineItem : nil,
+                        animated: true
+                    )
+                }
             }
         )
     }
@@ -143,6 +184,9 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
         composeBackGesture.edges = .left
         composeBackGesture.cancelsTouchesInView = false
         composeController.view.addGestureRecognizer(composeBackGesture)
+        sidebarRevealGesture.edges = .left
+        sidebarRevealGesture.cancelsTouchesInView = false
+        sidebarRevealGesture.delegate = self
 
         sidebarController = SidebarContainerViewController(
             contentController: SidebarViewControllerKt.sidebarViewController(nativeBridge: bridge),
@@ -151,7 +195,6 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
             }
         )
 
-        splitController.setViewController(sidebarController, for: .primary)
         splitController.setViewController(contentNavigationController, for: .secondary)
         splitController.preferredSplitBehavior = .tile
         splitController.delegate = self
@@ -161,6 +204,7 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
         splitController.presentsWithGesture = false
         splitController.displayModeButtonVisibility = .never
         splitController.view.backgroundColor = .clear
+        contentHostController.view.addGestureRecognizer(sidebarRevealGesture)
 
         addChild(splitController)
         view.addSubview(splitController.view)
@@ -172,6 +216,8 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
             splitController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
         splitController.didMove(toParent: self)
+        primaryTabsContent.isHidden = true
+        primaryTabsContent.alpha = 0
     }
 
     private func configureTabBar() {
@@ -255,67 +301,71 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
 
     private func updatePrimaryTabs(labels: String, selectedIndex: Int, visible: Bool) {
         guard #available(iOS 26.0, *), contentHostController != nil else { return }
-        guard visible else {
-            guard primaryTabsVisible else { return }
-            primaryTabsVisible = false
-            contentNavigationController.navigationBar.layoutIfNeeded()
-            if let primaryTabsPalette {
-                NavigationBarPaletteBridge.setHeight(0, forPalette: primaryTabsPalette)
-                contentNavigationController.navigationBar.setNeedsLayout()
-            }
-            updateComposeInsets()
-            UIView.animate(
-                withDuration: 0.3,
-                delay: 0,
-                options: [.curveEaseInOut, .beginFromCurrentState, .allowUserInteraction]
-            ) {
-                self.primaryTabsContent.transform = CGAffineTransform(translationX: 0, y: -14)
-                self.primaryTabsContent.alpha = 0
-                self.contentNavigationController.navigationBar.layoutIfNeeded()
-            } completion: { [weak self] _ in
-                guard let self, !self.primaryTabsVisible else { return }
-                if let primaryTabsPalette = self.primaryTabsPalette {
-                    NavigationBarPaletteBridge.setBottomPalette(nil, on: self.contentHostController.navigationItem)
-                    NavigationBarPaletteBridge.setHeight(56, forPalette: primaryTabsPalette)
-                } else {
-                    self.contentHostController.navigationItem.subtitleView = nil
-                }
-                self.contentNavigationController.navigationBar.setNeedsLayout()
-                self.contentNavigationController.navigationBar.layoutIfNeeded()
-                self.updateComposeInsets()
-            }
-            return
+        if visible {
+            let titles = labels.split(separator: "\u{001F}", omittingEmptySubsequences: false).map(String.init)
+            primaryTabsContent.update(titles: titles, selectedIndex: selectedIndex)
         }
-
-        let titles = labels.split(separator: "\u{001F}", omittingEmptySubsequences: false).map(String.init)
-        let wasVisible = primaryTabsVisible
-        primaryTabsVisible = true
-        primaryTabsContent.update(titles: titles, selectedIndex: selectedIndex)
-
-        guard !wasVisible else { return }
-        primaryTabsContent.transform = CGAffineTransform(translationX: 0, y: -14)
-        primaryTabsContent.alpha = 0
-        if let primaryTabsPalette {
-            NavigationBarPaletteBridge.setHeight(56, forPalette: primaryTabsPalette)
-            NavigationBarPaletteBridge.setBottomPalette(
-                primaryTabsPalette,
-                on: contentHostController.navigationItem
-            )
-        } else {
-            contentHostController.navigationItem.subtitleView = primaryTabsContent
+        guard visible != primaryTabsVisible else { return }
+        primaryTabsVisible = visible
+        if let animator = primaryTabsAnimator {
+            animator.stopAnimation(false)
+            animator.finishAnimation(at: .current)
         }
-        contentNavigationController.navigationBar.setNeedsLayout()
-        UIView.animate(
-            withDuration: 0.46,
-            delay: 0,
-            usingSpringWithDamping: 0.9,
-            initialSpringVelocity: 0.1,
-            options: [.beginFromCurrentState, .allowUserInteraction]
+        primaryTabsContent.isHidden = false
+        primaryTabsContent.isUserInteractionEnabled = visible
+        if primaryTabsContent.superview == nil {
+            view.addSubview(primaryTabsContent)
+        }
+        if visible && primaryTabsContent.interactions.isEmpty {
+            let interaction = UIScrollEdgeElementContainerInteraction()
+            interaction.scrollView = contentHostController.scrollView
+            interaction.edge = .top
+            primaryTabsContent.addInteraction(interaction)
+        }
+        layoutPrimaryTabs()
+        let animator = UIViewPropertyAnimator(
+            duration: UIAccessibility.isReduceMotionEnabled ? 0 : 0.3,
+            curve: .easeInOut
         ) {
-            self.primaryTabsContent.transform = .identity
-            self.primaryTabsContent.alpha = 1
-            self.contentNavigationController.navigationBar.layoutIfNeeded()
+            self.primaryTabsContent.alpha = visible ? 1 : 0
         }
+        animator.addCompletion { [weak self] _ in
+            guard let self, self.primaryTabsVisible == visible else { return }
+            self.primaryTabsContent.isHidden = !visible
+            if !visible {
+                for interaction in self.primaryTabsContent.interactions {
+                    (interaction as? UIScrollEdgeElementContainerInteraction)?.scrollView = nil
+                    self.primaryTabsContent.removeInteraction(interaction)
+                }
+                self.primaryTabsContent.removeFromSuperview()
+            }
+            self.primaryTabsInsetLink?.invalidate()
+            self.primaryTabsInsetLink = nil
+            self.primaryTabsAnimator = nil
+            self.updateComposeInsets()
+        }
+        primaryTabsAnimator = animator
+        primaryTabsInsetLink?.invalidate()
+        let link = CADisplayLink(target: self, selector: #selector(primaryTabsAnimationTick))
+        link.add(to: .main, forMode: .common)
+        primaryTabsInsetLink = link
+        animator.startAnimation()
+    }
+
+    private func layoutPrimaryTabs() {
+        guard contentHostController != nil else { return }
+        let hostView = view!
+        let navigationBottom = contentNavigationController.navigationBar.convert(
+            contentNavigationController.navigationBar.bounds, to: hostView
+        ).maxY
+        primaryTabsContent.frame = CGRect(x: 0, y: navigationBottom, width: hostView.bounds.width, height: 56)
+        if primaryTabsContent.superview === hostView {
+            hostView.bringSubviewToFront(primaryTabsContent)
+        }
+    }
+
+    @objc private func primaryTabsAnimationTick() {
+        updateComposeInsets()
     }
 
     private func registerComposeTitleFont() -> UIFont {
@@ -377,16 +427,23 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
 
         contentNavigationController.setNavigationBarHidden(!visible, animated: animated)
 
-        splitController.setViewController(sidebarVisible ? sidebarController : nil, for: .primary)
-        splitController.preferredDisplayMode = sidebarVisible ? .oneBesideSecondary : .secondaryOnly
+        splitController.preferredDisplayMode = sidebarVisible && !isSidebarCollapsed
+            ? .oneBesideSecondary
+            : .secondaryOnly
+        let primaryController = sidebarVisible ? sidebarController : nil
+        if splitController.viewController(for: .primary) !== primaryController {
+            splitController.setViewController(primaryController, for: .primary)
+        }
         contentHostController.navigationItem.leftBarButtonItem = sidebarVisible
             ? sidebarToggleItem
             : (compactChromeVisible && canNavigateBack ? composeBackItem : nil)
         composeBackGesture.isEnabled = compactChromeVisible && canNavigateBack
-        splitController.presentsWithGesture = sidebarVisible
+        splitController.presentsWithGesture = false
+        sidebarRevealGesture.isEnabled = sidebarVisible && !canNavigateBack
         splitController.displayModeButtonVisibility = .never
         splitController.view.setNeedsLayout()
         updateBottomTabs(visible: shouldShowBottomTabs, animated: animated)
+        refreshSidebarPresentationIfNeeded()
     }
 
     private func updateComposeInsets() {
@@ -398,10 +455,9 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
                 contentNavigationController.navigationBar.bounds,
                 to: contentHostController.view
             ).maxY
-            let paletteBottom = primaryTabsVisible && primaryTabsContent.window != nil
-                ? primaryTabsContent.convert(primaryTabsContent.bounds, to: contentHostController.view).maxY
-                : 0
-            chromeBottom = max(navigationBarBottom, paletteBottom)
+            let tabsProgress = primaryTabsContent.isHidden
+                ? 0 : CGFloat(primaryTabsContent.layer.presentation()?.opacity ?? Float(primaryTabsContent.alpha))
+            chromeBottom = navigationBarBottom + 56 * tabsProgress
         } else {
             chromeBottom = baseTop
         }
@@ -484,8 +540,12 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
 
     @objc private func toggleAppSidebar() {
         if splitController.displayMode == .secondaryOnly {
+            isSidebarCollapsed = false
+            splitController.preferredDisplayMode = .oneBesideSecondary
             splitController.show(.primary)
         } else {
+            isSidebarCollapsed = true
+            splitController.preferredDisplayMode = .secondaryOnly
             splitController.hide(.primary)
         }
     }
@@ -493,6 +553,19 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
     @objc private func handleComposeBackGesture(_ gesture: UIScreenEdgePanGestureRecognizer) {
         guard gesture.state == .ended, gesture.translation(in: gesture.view).x > 44 else { return }
         navigateComposeBack()
+    }
+
+    @objc private func handleSidebarRevealGesture(_ gesture: UIScreenEdgePanGestureRecognizer) {
+        guard gesture.state == .ended, gesture.translation(in: gesture.view).x > 44 else { return }
+        isSidebarCollapsed = false
+        splitController.preferredDisplayMode = .oneBesideSecondary
+        splitController.show(.primary)
+    }
+
+    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        guard gestureRecognizer === sidebarRevealGesture else { return true }
+        return displaysMainContent && usesSidebar && !canNavigateBack &&
+            splitController.displayMode == .secondaryOnly
     }
 
     func splitViewController(

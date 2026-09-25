@@ -299,7 +299,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
-				DEVELOPMENT_TEAM = 9PP2W3K536;
+				DEVELOPMENT_TEAM = WS8R846J7Q;
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -319,9 +319,9 @@
 					"-weak_framework",
 					UIKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = dev.hansholz.bestenotenapp;
 				PRODUCT_NAME = "Beste-Noten-App";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "iosApp/iosApp-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -336,7 +336,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
-				DEVELOPMENT_TEAM = 9PP2W3K536;
+				DEVELOPMENT_TEAM = WS8R846J7Q;
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -356,9 +356,9 @@
 					"-weak_framework",
 					UIKit,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = dev.hansholz.bestenotenapp;
 				PRODUCT_NAME = "Beste-Noten-App";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "iosApp/iosApp-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

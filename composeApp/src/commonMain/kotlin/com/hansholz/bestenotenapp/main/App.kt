@@ -6,6 +6,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -53,6 +54,7 @@ fun App(
     onRootDestinationChanged: (String) -> Unit = {},
     onFragmentDestinationChanged: (String) -> Unit = {},
     onCanNavigateBackChanged: (Boolean) -> Unit = {},
+    onOfflineStatusChanged: (Boolean) -> Unit = {},
 ) {
     KSafeBiometrics.defaultTitle = "Authentifizieren"
 
@@ -64,6 +66,9 @@ fun App(
                 SettingsProvider {
                     val toasterState = rememberToasterState()
                     val viewModel = viewModel { ViewModel(toasterState) }
+                    LaunchedEffect(viewModel.isUsingOfflineCache.value) {
+                        onOfflineStatusChanged(viewModel.isUsingOfflineCache.value)
+                    }
 
                     val blurEnabled = LocalBlurEnabled.current.value
                     val targetBackgroundAlpha = if (LocalBackgroundEnabled.current.value) (if (blurEnabled) 0.5f else 0.15f) else 0f

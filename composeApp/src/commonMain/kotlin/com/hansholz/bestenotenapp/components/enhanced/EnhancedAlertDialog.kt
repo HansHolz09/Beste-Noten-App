@@ -54,7 +54,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.addOutline
-import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -273,16 +272,8 @@ fun BasicEnhancedAlertDialog(
                             .padding(horizontal = 12.dp, vertical = 12.dp)
                             .then(
                                 if (nativeComponentsEnabled) {
-                                    Modifier.pointerInput(Unit) {
-                                        awaitPointerEventScope {
-                                            while (true) {
-                                                awaitPointerEvent(PointerEventPass.Final)
-                                                    .changes
-                                                    .filterNot { it.isConsumed }
-                                                    .forEach { it.consume() }
-                                            }
-                                        }
-                                    }
+                                    // Block hits to the scrim without consuming the content's pointer events.
+                                    Modifier.pointerInput(Unit) {}
                                 } else {
                                     Modifier
                                 },

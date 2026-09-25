@@ -24,7 +24,26 @@ final class PrimaryTabsPaletteContentView: UIView {
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
         setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         setContentHuggingPriority(.defaultLow, for: .horizontal)
-        addSubview(segmentedControl)
+        if #available(iOS 26.0, *) {
+            let glassView = UIVisualEffectView(effect: UIGlassEffect(style: .regular))
+            glassView.translatesAutoresizingMaskIntoConstraints = false
+            glassView.layer.cornerRadius = 20
+            glassView.clipsToBounds = true
+            addSubview(glassView)
+            glassView.contentView.addSubview(segmentedControl)
+            NSLayoutConstraint.activate([
+                glassView.leadingAnchor.constraint(equalTo: segmentedControl.leadingAnchor),
+                glassView.trailingAnchor.constraint(equalTo: segmentedControl.trailingAnchor),
+                glassView.topAnchor.constraint(equalTo: segmentedControl.topAnchor),
+                glassView.bottomAnchor.constraint(equalTo: segmentedControl.bottomAnchor),
+            ])
+            segmentedControl.backgroundColor = .clear
+            segmentedControl.selectedSegmentTintColor = UIColor { traits in
+                UIColor.black.withAlphaComponent(traits.userInterfaceStyle == .dark ? 0.35 : 0.08)
+            }
+        } else {
+            addSubview(segmentedControl)
+        }
         let preferredWidth = segmentedControl.widthAnchor.constraint(equalToConstant: 370)
         preferredWidth.priority = .defaultHigh
         horizontalCenterConstraint = segmentedControl.centerXAnchor.constraint(equalTo: centerXAnchor)
@@ -87,5 +106,9 @@ final class PrimaryTabsPaletteContentView: UIView {
 
     @objc private func selectTab() {
         selectionChanged(segmentedControl.selectedSegmentIndex)
+    }
+
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        segmentedControl.point(inside: segmentedControl.convert(point, from: self), with: event)
     }
 }

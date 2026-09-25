@@ -33,7 +33,6 @@ import com.hansholz.bestenotenapp.main.LocalNativeTimePicker
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.notifications.ensureIosNotificationsInitialized
 import com.hansholz.bestenotenapp.theme.LocalNativeSystemIsDark
-import com.hansholz.bestenotenapp.utils.installLegacyInsetsPatch
 import com.hansholz.bestenotenapp.utils.isInWindowMode
 import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
 import kotlinx.coroutines.runBlocking
@@ -87,6 +86,7 @@ fun mainViewController(nativeBridge: NativeComponentBridge? = null): UIViewContr
                     onRootDestinationChanged = { route -> nativeBridge?.rootDestinationChanged(route) },
                     onFragmentDestinationChanged = { route -> nativeBridge?.fragmentDestinationChanged(route) },
                     onCanNavigateBackChanged = { canNavigateBack -> nativeBridge?.canNavigateBackChanged(canNavigateBack) },
+                    onOfflineStatusChanged = { offline -> nativeBridge?.offlineStatusChanged(offline) },
                 )
             }
         }
@@ -94,6 +94,5 @@ fun mainViewController(nativeBridge: NativeComponentBridge? = null): UIViewContr
         controller.view.backgroundColor = UIColor.clearColor
         controller.view.opaque = false
     }
-    installLegacyInsetsPatch(controller.view)
     return controller
 }

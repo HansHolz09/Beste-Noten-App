@@ -2,9 +2,9 @@ package com.hansholz.bestenotenapp.components.enhanced
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -18,7 +18,6 @@ import dev.chrisbanes.haze.blur.HazeBlurStyle
 import dev.chrisbanes.haze.blur.HazeBlurStyleScope
 import dev.chrisbanes.haze.blur.HazeColorEffect
 import dev.chrisbanes.haze.blur.hazeBlur
-import dev.chrisbanes.haze.glass.GlassOptics
 import dev.chrisbanes.haze.glass.GlassStyle
 import dev.chrisbanes.haze.glass.hazeGlass
 
@@ -31,6 +30,7 @@ fun Modifier.enhancedHazeEffect(
     fallbackAlpha: Float = 1f,
     block: (HazeBlurStyleScope.() -> Unit)? = null,
 ): Modifier {
+    val backgroundColor = colorScheme.background
     val blurEnabled = LocalBlurEnabled.current.value
     val useLiquidGlass = LocalNativeComponentsEnabled.current.value
     return when {
@@ -39,13 +39,13 @@ fun Modifier.enhancedHazeEffect(
                 this.hazeGlass(
                     input = HazeInput.Sources(hazeState),
                     style =
-                        GlassStyle {
+                        GlassStyle.clear.then {
                             color?.let {
-                                backgroundColor(it)
+                                backgroundColor(backgroundColor)
                             }
-                            optics(GlassOptics.Adaptive)
                             specularIntensity(0f)
-                            shape(RoundedCornerShape(28.dp))
+                            whitePoint(0.1f)
+                            shape(RoundedCornerShape(32.dp))
                         },
                     performanceMode = HazePerformanceMode.Balanced,
                 )
@@ -76,7 +76,15 @@ fun Modifier.enhancedHazeEffect(
         }
 
         blurEnabled && (blurRadius ?: 10.dp) > 0.dp -> {
-            this.blur((blurRadius ?: 10.dp) * 2)
+            this.hazeBlur(
+                input = HazeInput.Content,
+                style =
+                    HazeBlurStyle {
+                        blurRadius((blurRadius ?: 10.dp) * 2)
+                        noiseFactor(0f)
+                    },
+                performanceMode = HazePerformanceMode.Performance,
+            )
         }
 
         else -> {

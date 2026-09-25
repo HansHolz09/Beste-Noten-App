@@ -2,7 +2,7 @@ import UIKit
 
 final class ComposeScrollHostViewController: UIViewController {
     let contentController: UIViewController
-    private let scrollView = UIScrollView()
+    let scrollView = UIScrollView()
     private let scrollExtentView = UIView()
 
     init(contentController: UIViewController) {
@@ -28,10 +28,6 @@ final class ComposeScrollHostViewController: UIViewController {
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.panGestureRecognizer.isEnabled = false
         scrollView.scrollsToTop = false
-        if #available(iOS 26.0, *) {
-            scrollView.topEdgeEffect.style = .automatic
-        }
-
         scrollExtentView.isUserInteractionEnabled = false
         scrollExtentView.backgroundColor = .clear
         scrollExtentView.translatesAutoresizingMaskIntoConstraints = false

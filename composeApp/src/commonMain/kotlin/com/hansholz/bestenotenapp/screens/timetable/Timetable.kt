@@ -123,6 +123,7 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.main.LocalHideNativeDateTimePickers
+import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalShowAbsences
 import com.hansholz.bestenotenapp.main.LocalShowOnlyRelevantData
 import com.hansholz.bestenotenapp.main.Platform
@@ -175,6 +176,7 @@ fun Timetable(
         val density = LocalDensity.current
         val layoutDirection = LocalLayoutDirection.current
         val hideNativeDateTimePickers = LocalHideNativeDateTimePickers.current
+        val nativeComponentsEnabled by LocalNativeComponentsEnabled.current
 
         var showAbsences by LocalShowAbsences.current
         val showOnlyRelevantData by LocalShowOnlyRelevantData.current
@@ -649,8 +651,15 @@ fun Timetable(
                                                 .padding(horizontal = 12.dp)
                                                 .sizeIn(maxWidth = 500.dp)
                                                 .clip(RoundedCornerShape(28.dp))
-                                                .verticalScroll(rememberScrollState()),
-                                        colors = CardDefaults.cardColors(colorScheme.primaryContainer),
+                                                .verticalScroll(rememberScrollState())
+                                                .then(
+                                                    if (nativeComponentsEnabled) {
+                                                        Modifier.enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer)
+                                                    } else {
+                                                        Modifier
+                                                    },
+                                                ),
+                                        colors = CardDefaults.cardColors(if (nativeComponentsEnabled) Color.Transparent else colorScheme.primaryContainer),
                                     ) {
                                         Text(
                                             text = "Datum wählen",

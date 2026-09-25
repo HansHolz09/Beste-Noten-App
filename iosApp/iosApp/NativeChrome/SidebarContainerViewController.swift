@@ -2,18 +2,12 @@ import UIKit
 
 final class SidebarContainerViewController: UIViewController {
     private let contentController: UIViewController
-    private let effectView: UIVisualEffectView
     private let topInsetChanged: (CGFloat) -> Void
     private var lastReportedTopInset: CGFloat?
 
     init(contentController: UIViewController, topInsetChanged: @escaping (CGFloat) -> Void) {
         self.contentController = contentController
         self.topInsetChanged = topInsetChanged
-        if #available(iOS 26.0, *) {
-            effectView = UIVisualEffectView(effect: UIGlassEffect())
-        } else {
-            effectView = UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
-        }
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -25,15 +19,6 @@ final class SidebarContainerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .clear
-        effectView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(effectView)
-        NSLayoutConstraint.activate([
-            effectView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            effectView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            effectView.topAnchor.constraint(equalTo: view.topAnchor),
-            effectView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-        ])
-
         addChild(contentController)
         view.addSubview(contentController.view)
         contentController.view.translatesAutoresizingMaskIntoConstraints = false
