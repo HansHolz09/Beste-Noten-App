@@ -120,7 +120,7 @@ fun App(
                         )
                     }
 
-                    UpdateDialogHost()
+                    if (getPlatform() != Platform.IOS) UpdateDialogHost()
 
                     Toaster(
                         state = toasterState,

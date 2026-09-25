@@ -322,9 +322,9 @@ fun Settings(
                 },
                 text = "Hintergrundbild",
                 icon = MaterialSymbols.Rounded.Texture,
-                position = if (vibrator.isVibrationSupported) PreferencePosition.Middle else PreferencePosition.Bottom,
+                position = if (vibrator.isVibrationSupported && getPlatform() != Platform.IOS) PreferencePosition.Middle else PreferencePosition.Bottom,
             )
-            if (vibrator.isVibrationSupported) {
+            if (vibrator.isVibrationSupported && getPlatform() != Platform.IOS) {
                 settingsToggleItem(
                     checked = hapticsEnabled,
                     onCheckedChange = {
@@ -349,7 +349,7 @@ fun Settings(
                             if (it) {
                                 val granted = GradeNotifications.requestPermission()
                                 notificationsEnabled = granted
-                                put("gradeNotificationsEnabled", it)
+                                put("gradeNotificationsEnabled", granted)
                             } else {
                                 notificationsEnabled = false
                                 put("gradeNotificationsEnabled", it)

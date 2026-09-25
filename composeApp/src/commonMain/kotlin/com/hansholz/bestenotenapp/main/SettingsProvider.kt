@@ -43,7 +43,7 @@ val LocalBiometricAuthenticationAvailable = compositionLocalOf { false }
 fun SettingsProvider(content: @Composable () -> Unit) =
     kSafeProviderCompose {
         val backgroundEnabledState = remember { mutableStateOf(get("backgroundEnabled", true)) }
-        val hapticsEnabledState = remember { mutableStateOf(get("hapticsEnabled", listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform()))) }
+        val hapticsEnabledState = remember { mutableStateOf(get("hapticsEnabled", getPlatform() == Platform.ANDROID)) }
         val showGreetingsState = remember { mutableStateOf(get("showGreetings", true)) }
         val showNewestGradesState = remember { mutableStateOf(get("showNewestGrades", true)) }
         val showCurrentLessonState = remember { mutableStateOf(get("showCurrentLesson", true)) }

@@ -32,7 +32,7 @@ fun Vibrator.enhancedVibrate(
     vibration: EnhancedVibrations,
     forceVibration: Boolean = false,
 ) {
-    if (kSafeProvider.get("hapticsEnabled", listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())) || forceVibration) {
+    if (kSafeProvider.get("hapticsEnabled", getPlatform() == Platform.ANDROID) || forceVibration) {
         executeVibration(vibration)
     }
 }
@@ -41,7 +41,7 @@ fun Vibrator.enhancedVibrateN(
     vibration: EnhancedVibrations,
     forceVibration: Boolean = false,
 ) {
-    if (kSafeProvider(kSafe()) { get("hapticsEnabled", listOf(Platform.ANDROID, Platform.IOS).contains(getPlatform())) } || forceVibration) {
+    if (kSafeProvider(kSafe()) { get("hapticsEnabled", getPlatform() == Platform.ANDROID) } || forceVibration) {
         executeVibration(vibration)
     }
 }
