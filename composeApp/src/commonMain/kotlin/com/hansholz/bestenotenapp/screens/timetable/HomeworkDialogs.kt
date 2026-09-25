@@ -260,7 +260,11 @@ fun HomeworkEditorDialog(
                         )
                     }
                     EnhancedIconButton(
-                        onClick = { typeEditorVisible = true },
+                        onClick = {
+                            focusRequester.requestFocus()
+                            keyboardController?.hide()
+                            typeEditorVisible = true
+                        },
                         enabled = !busy,
                     ) {
                         Icon(MaterialSymbols.Rounded.Edit_note, null)
