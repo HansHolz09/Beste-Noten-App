@@ -13,6 +13,7 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -48,6 +49,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
@@ -138,12 +140,14 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.components.icons.MathAvg
+import com.hansholz.bestenotenapp.components.nativeTextInputTint
 import com.hansholz.bestenotenapp.components.rememberLazyListScrollSpeedState
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.LocalGradeAverageEnabled
 import com.hansholz.bestenotenapp.main.LocalGradeAverageUseWeighting
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNativePrimaryTabRow
+import com.hansholz.bestenotenapp.main.LocalNativeTextInputOptions
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
 import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
@@ -817,11 +821,14 @@ fun Grades(
                         }
                     }
 
-                    AnimatedContent(
-                        targetState = gradesViewModel.toolbarState,
+                    val toolbarTransition = updateTransition(gradesViewModel.toolbarState, label = "grades toolbar")
+                    toolbarTransition.AnimatedContent(
                         modifier =
                             Modifier.padding(top = gradesViewModel.topPadding + 24.dp + innerPadding.calculateBottomPadding()).onGloballyPositioned {
-                                gradesViewModel.toolbarPadding = with(density) { ime.getBottom(density).toDp() + it.size.height.toDp() + 12.dp }
+                                gradesViewModel.toolbarPadding =
+                                    with(density) {
+                                        (if (getPlatform() == Platform.IOS) 0.dp else ime.getBottom(density).toDp()) + it.size.height.toDp() + 12.dp
+                                    }
                             },
                         contentAlignment = Alignment.BottomCenter,
                         transitionSpec = {
@@ -997,9 +1004,17 @@ fun Grades(
                                             verticalAlignment = Alignment.CenterVertically,
                                         ) {
                                             val focusRequester = remember { FocusRequester() }
-                                            LaunchedEffect(Unit) {
-                                                delay(500.milliseconds)
-                                                focusRequester.requestFocus()
+                                            if (getPlatform() == Platform.IOS) {
+                                                LaunchedEffect(toolbarTransition.currentState, toolbarTransition.isRunning) {
+                                                    if (toolbarTransition.currentState == 1 && !toolbarTransition.isRunning) {
+                                                        focusRequester.requestFocus()
+                                                    }
+                                                }
+                                            } else {
+                                                LaunchedEffect(Unit) {
+                                                    delay(500.milliseconds)
+                                                    focusRequester.requestFocus()
+                                                }
                                             }
                                             EnhancedIconButton(
                                                 onClick = {},
@@ -1014,7 +1029,13 @@ fun Grades(
                                             BasicTextField(
                                                 value = gradesViewModel.searchQuery,
                                                 onValueChange = { gradesViewModel.searchQuery = it },
-                                                modifier = Modifier.weight(1f).padding(vertical = 15.dp).focusRequester(focusRequester),
+                                                modifier =
+                                                    Modifier
+                                                        .weight(1f)
+                                                        .padding(vertical = 15.dp)
+                                                        .focusRequester(focusRequester)
+                                                        .nativeTextInputTint(colorScheme.primary),
+                                                keyboardOptions = KeyboardOptions(platformImeOptions = LocalNativeTextInputOptions.current),
                                                 singleLine = true,
                                                 textStyle = TextStyle.Default.copy(colorScheme.onPrimaryContainer, 20.sp),
                                                 cursorBrush = SolidColor(colorScheme.onPrimaryContainer),

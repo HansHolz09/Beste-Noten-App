@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -269,6 +270,7 @@ fun BasicEnhancedAlertDialog(
                     val dialogContentModifier =
                         modifier
                             .safeDrawingPadding()
+                            .then(if (getPlatform() == Platform.IOS) Modifier.imePadding() else Modifier)
                             .padding(horizontal = 12.dp, vertical = 12.dp)
                             .then(
                                 if (nativeComponentsEnabled) {

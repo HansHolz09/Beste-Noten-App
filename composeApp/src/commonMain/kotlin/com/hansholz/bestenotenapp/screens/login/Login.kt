@@ -29,6 +29,7 @@ import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
@@ -60,9 +61,11 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.components.nativeTextInputTint
 import com.hansholz.bestenotenapp.components.rotateForever
 import com.hansholz.bestenotenapp.main.ExactPlatform
 import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
+import com.hansholz.bestenotenapp.main.LocalNativeTextInputOptions
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.LocalTimetableBlockViewEnabled
 import com.hansholz.bestenotenapp.main.ViewModel
@@ -154,7 +157,7 @@ fun Login(
                             val textFieldState = rememberTextFieldState()
                             OutlinedTextField(
                                 state = textFieldState,
-                                modifier = modifier.widthIn(max = 500.dp),
+                                modifier = modifier.widthIn(max = 500.dp).nativeTextInputTint(colorScheme.primary),
                                 leadingIcon = {
                                     EnhancedIconButton(
                                         onClick = {
@@ -193,7 +196,7 @@ fun Login(
                                     }
                                 },
                                 placeholder = { Text("Private-Access-Token") },
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, platformImeOptions = LocalNativeTextInputOptions.current),
                                 onKeyboardAction =
                                     KeyboardActionHandler {
                                         scope.launch {

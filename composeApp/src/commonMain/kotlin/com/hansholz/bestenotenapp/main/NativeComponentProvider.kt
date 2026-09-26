@@ -5,6 +5,8 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.PlatformImeOptions
 import androidx.compose.ui.unit.Dp
 
 internal val LocalNativeComponentsEnabled = compositionLocalOf { mutableStateOf(false) }
@@ -25,3 +27,6 @@ internal val LocalGlobalEasterEgg = compositionLocalOf<((String) -> Unit)?> { nu
 internal val LocalHideNativeInterop = compositionLocalOf { {} }
 internal val LocalNavigationDrawerTopPadding = compositionLocalOf<Dp?> { null }
 internal val LocalNativeContentTopPadding = compositionLocalOf<Dp?> { null }
+internal val LocalNativeTextInputTint = compositionLocalOf<((Color) -> Unit)?> { null }
+internal val LocalNativeKeyboardHandoff = compositionLocalOf<((() -> Unit) -> Unit)?> { null }
+internal val LocalNativeTextInputOptions = compositionLocalOf<PlatformImeOptions?> { null }

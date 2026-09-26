@@ -347,7 +347,16 @@ fun Timetable(
                                                         EmptyStateMessage(
                                                             title = "Keine Stunden für diese Woche gefunden",
                                                             icon = MaterialSymbols.Rounded.Event_busy,
-                                                            modifier = Modifier.padding(contentPadding).consumeWindowInsets(contentPadding).imePadding(),
+                                                            modifier =
+                                                                Modifier.padding(contentPadding).consumeWindowInsets(contentPadding).then(
+                                                                    if (getPlatform() ==
+                                                                        Platform.IOS
+                                                                    ) {
+                                                                        Modifier
+                                                                    } else {
+                                                                        Modifier.imePadding()
+                                                                    },
+                                                                ),
                                                         )
                                                     }
                                                 }
@@ -392,7 +401,7 @@ fun Timetable(
                             .offset(y = -(toolbarContentPadding.calculateBottomPadding() + 12.dp))
                             .padding(verticalPadding)
                             .consumeWindowInsets(toolbarContentPadding)
-                            .imePadding(),
+                            .then(if (getPlatform() == Platform.IOS) Modifier else Modifier.imePadding()),
                 ) {
                     val sharedContentState = rememberSharedContentState(key = "toolbar-card")
 
