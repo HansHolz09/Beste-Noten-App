@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -39,6 +40,32 @@ enum class PreferencePosition {
 }
 
 @Composable
+fun PreferencePosition.preferenceShape(): CornerBasedShape =
+    when (this) {
+        PreferencePosition.Single -> {
+            MaterialTheme.shapes.large
+        }
+
+        PreferencePosition.Top -> {
+            MaterialTheme.shapes.large.copy(
+                bottomStart = MaterialTheme.shapes.extraSmall.bottomStart,
+                bottomEnd = MaterialTheme.shapes.extraSmall.bottomEnd,
+            )
+        }
+
+        PreferencePosition.Bottom -> {
+            MaterialTheme.shapes.large.copy(
+                topStart = MaterialTheme.shapes.extraSmall.topStart,
+                topEnd = MaterialTheme.shapes.extraSmall.topEnd,
+            )
+        }
+
+        PreferencePosition.Middle -> {
+            MaterialTheme.shapes.extraSmall
+        }
+    }
+
+@Composable
 fun PreferenceItem(
     title: String,
     subtitle: String? = null,
@@ -55,30 +82,7 @@ fun PreferenceItem(
     bottomContent: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null,
 ) {
-    val targetShape =
-        when (position) {
-            PreferencePosition.Single -> {
-                MaterialTheme.shapes.large
-            }
-
-            PreferencePosition.Top -> {
-                MaterialTheme.shapes.large.copy(
-                    bottomStart = MaterialTheme.shapes.extraSmall.bottomStart,
-                    bottomEnd = MaterialTheme.shapes.extraSmall.bottomEnd,
-                )
-            }
-
-            PreferencePosition.Bottom -> {
-                MaterialTheme.shapes.large.copy(
-                    topStart = MaterialTheme.shapes.extraSmall.topStart,
-                    topEnd = MaterialTheme.shapes.extraSmall.topEnd,
-                )
-            }
-
-            PreferencePosition.Middle -> {
-                MaterialTheme.shapes.extraSmall
-            }
-        }
+    val targetShape = position.preferenceShape()
     val density = LocalDensity.current
     val referenceSize = Size(100f, 100f)
     val topStart by animateFloatAsState(targetShape.topStart.toPx(referenceSize, density))

@@ -1,14 +1,9 @@
 package com.hansholz.bestenotenapp.screens.login
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,11 +11,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.hansholz.bestenotenapp.components.PreferenceItem
+import com.hansholz.bestenotenapp.components.PreferencePosition
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
@@ -59,30 +54,28 @@ fun ChooseStudentDialog(loginViewModel: LoginViewModel) {
             LazyColumn(
                 state = listState,
                 modifier = Modifier.scrollableEdgeFade(listState),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                loginViewModel.chooseStudentDialog.second?.forEach { student ->
+                val students = loginViewModel.chooseStudentDialog.second.orEmpty()
+                students.forEachIndexed { index, student ->
                     item {
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .height(56.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable {
-                                    selectedStudent = student.id.toString()
-                                    vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
-                                }.padding(horizontal = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            RadioButton(
-                                selected = student.id.toString() == selectedStudent,
-                                onClick = null,
-                            )
-                            Text(
-                                text = "${student.forename} ${student.name}",
-                                style = typography.bodyLarge,
-                                modifier = Modifier.padding(start = 16.dp),
-                            )
-                        }
+                        PreferenceItem(
+                            title = "${student.forename} ${student.name}",
+                            position =
+                                when {
+                                    students.size == 1 -> PreferencePosition.Single
+                                    index == 0 -> PreferencePosition.Top
+                                    index == students.lastIndex -> PreferencePosition.Bottom
+                                    else -> PreferencePosition.Middle
+                                },
+                            onClick = {
+                                selectedStudent = student.id.toString()
+                                vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                            },
+                            trailingContent = {
+                                RadioButton(selected = student.id.toString() == selectedStudent, onClick = null)
+                            },
+                        )
                     }
                 }
             }

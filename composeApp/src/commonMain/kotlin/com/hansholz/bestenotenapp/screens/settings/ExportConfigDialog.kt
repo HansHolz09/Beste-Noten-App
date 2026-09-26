@@ -4,16 +4,14 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -29,12 +27,13 @@ import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Archive
 import com.hansholz.bestenotenapp.api.models.Year
+import com.hansholz.bestenotenapp.components.PreferenceItem
+import com.hansholz.bestenotenapp.components.PreferencePosition
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
@@ -119,52 +118,33 @@ fun ExportConfigDialog(
                         state = listState,
                         modifier = Modifier.scrollableEdgeFade(listState),
                         horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
                         item {
-                            Row(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(56.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .clickable {
-                                        appSettings = !appSettings
-                                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
-                                    }.padding(horizontal = 16.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                EnhancedCheckbox(
-                                    checked = appSettings,
-                                    onCheckedChange = { appSettings = it },
-                                )
-                                Text(
-                                    text = "App-Einstellungen",
-                                    style = typography.bodyLarge,
-                                    modifier = Modifier.padding(start = 16.dp),
-                                )
-                            }
+                            PreferenceItem(
+                                title = "App-Einstellungen",
+                                position = PreferencePosition.Top,
+                                onClick = {
+                                    appSettings = !appSettings
+                                    vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                                },
+                                trailingContent = {
+                                    EnhancedCheckbox(checked = appSettings, onCheckedChange = { appSettings = it }, modifier = Modifier.size(24.dp))
+                                },
+                            )
                         }
                         item {
-                            Row(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(56.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .clickable {
-                                        gradeWeights = !gradeWeights
-                                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
-                                    }.padding(horizontal = 16.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                EnhancedCheckbox(
-                                    checked = gradeWeights,
-                                    onCheckedChange = { gradeWeights = it },
-                                )
-                                Text(
-                                    text = "Gewichtungen der Noten pro Fach",
-                                    style = typography.bodyLarge,
-                                    modifier = Modifier.padding(start = 16.dp),
-                                )
-                            }
+                            PreferenceItem(
+                                title = "Gewichtungen der Noten pro Fach",
+                                position = PreferencePosition.Bottom,
+                                onClick = {
+                                    gradeWeights = !gradeWeights
+                                    vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                                },
+                                trailingContent = {
+                                    EnhancedCheckbox(checked = gradeWeights, onCheckedChange = { gradeWeights = it }, modifier = Modifier.size(24.dp))
+                                },
+                            )
                         }
                         item {
                             Text(
@@ -190,39 +170,29 @@ fun ExportConfigDialog(
                                 enter = fadeIn() + expandVertically(),
                                 exit = fadeOut() + shrinkVertically(),
                             ) {
-                                Column {
-                                    viewModel.years.forEach { year ->
-                                        Row(
-                                            Modifier
-                                                .fillMaxWidth()
-                                                .height(56.dp)
-                                                .clip(RoundedCornerShape(12.dp))
-                                                .clickable {
-                                                    if (gradeYears.contains(year)) {
-                                                        gradeYears.remove(year)
-                                                    } else {
-                                                        gradeYears.add(year)
-                                                    }
-                                                    vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
-                                                }.padding(horizontal = 16.dp),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                        ) {
-                                            EnhancedCheckbox(
-                                                checked = gradeYears.contains(year),
-                                                onCheckedChange = {
-                                                    if (it) {
-                                                        gradeYears.add(year)
-                                                    } else {
-                                                        gradeYears.remove(year)
-                                                    }
+                                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    viewModel.years.forEachIndexed { index, year ->
+                                        PreferenceItem(
+                                            title = "${year.name} (${formateDate(year.from)} - ${formateDate(year.to)})",
+                                            position =
+                                                when {
+                                                    viewModel.years.size == 1 -> PreferencePosition.Single
+                                                    index == 0 -> PreferencePosition.Top
+                                                    index == viewModel.years.lastIndex -> PreferencePosition.Bottom
+                                                    else -> PreferencePosition.Middle
                                                 },
-                                            )
-                                            Text(
-                                                text = "${year.name} (${formateDate(year.from)} - ${formateDate(year.to)})",
-                                                style = typography.bodyLarge,
-                                                modifier = Modifier.padding(start = 16.dp),
-                                            )
-                                        }
+                                            onClick = {
+                                                if (gradeYears.contains(year)) gradeYears.remove(year) else gradeYears.add(year)
+                                                vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                                            },
+                                            trailingContent = {
+                                                EnhancedCheckbox(
+                                                    checked = gradeYears.contains(year),
+                                                    onCheckedChange = { if (it) gradeYears.add(year) else gradeYears.remove(year) },
+                                                    modifier = Modifier.size(24.dp),
+                                                )
+                                            },
+                                        )
                                     }
                                 }
                             }
