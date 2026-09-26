@@ -110,6 +110,7 @@ kotlin {
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ksoup)
             implementation(libs.oidc.appsupport)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)

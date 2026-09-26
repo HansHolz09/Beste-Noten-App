@@ -20,6 +20,7 @@ import com.hansholz.bestenotenapp.components.NativeSwitch
 import com.hansholz.bestenotenapp.components.NativeTimePicker
 import com.hansholz.bestenotenapp.components.hideNativeSwitches
 import com.hansholz.bestenotenapp.components.hideVisibleNativeDateTimePickers
+import com.hansholz.bestenotenapp.components.rememberNativeKeyboardHandoff
 import com.hansholz.bestenotenapp.main.App
 import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
 import com.hansholz.bestenotenapp.main.LocalGlobalEasterEgg
@@ -30,6 +31,7 @@ import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNativeContentTopPadding
 import com.hansholz.bestenotenapp.main.LocalNativeDatePicker
 import com.hansholz.bestenotenapp.main.LocalNativeDialogBackdrop
+import com.hansholz.bestenotenapp.main.LocalNativeKeyboardHandoff
 import com.hansholz.bestenotenapp.main.LocalNativePrimaryTabRow
 import com.hansholz.bestenotenapp.main.LocalNativeSwitch
 import com.hansholz.bestenotenapp.main.LocalNativeTextInputOptions
@@ -59,6 +61,7 @@ fun mainViewController(nativeBridge: NativeComponentBridge? = null): UIViewContr
                 LocalNativeComponentsEnabled provides nativeComponentsEnabled,
                 LocalNativeTextInputOptions provides nativeTextInputOptions,
                 LocalNativeTextInputTint provides { color -> nativeTextInputContext.updateNativeTextInputTintColor(color) },
+                LocalNativeKeyboardHandoff provides rememberNativeKeyboardHandoff(),
                 LocalNativeSystemIsDark provides nativeBridge?.systemIsDarkState?.value,
                 LocalNativeContentTopPadding provides nativeBridge?.contentTopInsetState?.value?.dp,
                 LocalNativeDialogBackdrop provides { modifier, glassFrames ->

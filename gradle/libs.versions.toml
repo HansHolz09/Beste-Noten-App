@@ -21,6 +21,7 @@ haze = "2.0.0"
 koalaplotCore = "0.9.1"
 kotlin = "2.4.20"
 ksafe = "3.2.0"
+ksoup = "0.2.6"
 ktlint = "14.2.0"
 alarmee = "2.7.1"
 kotlinxDatetime = "0.8.0"
@@ -77,6 +78,7 @@ koalaplot-core = { module = "io.github.koalaplot:koalaplot-core", version.ref = 
 alarmee = { module = "io.github.tweener:alarmee", version.ref = "alarmee" }
 ksafe-compose = { module = "eu.anifantakis:ksafe-compose", version.ref = "ksafe" }
 ksafe-biometrics = { module = "eu.anifantakis:ksafe-biometrics", version.ref = "ksafe" }
+ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
 lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }

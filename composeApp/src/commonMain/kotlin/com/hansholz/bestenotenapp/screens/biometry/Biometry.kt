@@ -12,7 +12,9 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.composables.icons.materialsymbols.MaterialSymbols
@@ -23,6 +25,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.navigation.Screen
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -31,6 +34,8 @@ fun Biometry(
     onNavigateToScreen: (Screen) -> Unit,
 ) {
     val biometryViewModel = viewModel { BiometryViewModel() }
+    val scope = rememberCoroutineScope()
+    val uriHandler = LocalUriHandler.current
 
     LaunchedEffect(Unit) {
         biometryViewModel.tryBiometricAuthentication(onNavigateToScreen)
@@ -59,8 +64,10 @@ fun Biometry(
                         }
                         EnhancedButton(
                             onClick = {
-                                viewModel.logout()
-                                onNavigateToScreen(Screen.Login)
+                                scope.launch {
+                                    viewModel.logout { uriHandler.openUri("https://beste.schule/me/passport") }
+                                    onNavigateToScreen(Screen.Login)
+                                }
                             },
                             modifier = Modifier.sizeIn(maxWidth = 300.dp).fillMaxWidth().padding(10.dp),
                         ) {

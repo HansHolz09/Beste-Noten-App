@@ -830,8 +830,10 @@ fun Settings(
                     icon = MaterialSymbols.Rounded.Logout,
                     onClick = {
                         hideNativeInterop()
-                        viewModel.logout()
-                        onNavigateToLogin()
+                        scope.launch {
+                            viewModel.logout { uriHandler.openUri("https://beste.schule/me/passport") }
+                            onNavigateToLogin()
+                        }
                         vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                     },
                     position = PreferencePosition.Bottom,

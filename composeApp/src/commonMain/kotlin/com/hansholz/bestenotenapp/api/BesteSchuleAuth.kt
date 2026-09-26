@@ -18,6 +18,7 @@ class BesteSchuleAuth(
     private var accessToken: String? = null
     private var refreshToken: String? = null
     private var accessTokenExpiresAt = 0L
+    private var managedPat: ManagedPatSession? = null
     private var isPersisted = false
     private var retryRefreshAt = 0L
 
@@ -26,14 +27,30 @@ class BesteSchuleAuth(
             accessToken = get<String?>(ACCESS_TOKEN_KEY, null)
             refreshToken = get<String?>(REFRESH_TOKEN_KEY, null)
             accessTokenExpiresAt = get(ACCESS_TOKEN_EXPIRES_AT_KEY, 0L)
+            managedPat =
+                get<String?>(MANAGED_PAT_ID_KEY, null)?.let { id ->
+                    get<String?>(MANAGED_PAT_SESSION_KEY, null)?.let { cookies -> ManagedPatSession(id, cookies) }
+                }
             isPersisted = !accessToken.isNullOrBlank()
             authTokenState.value = accessToken
         }
 
     fun setTokenResponse(response: AccessTokenResponse) {
+        managedPat = null
         isPersisted = false
         updateFromResponse(response, response.refresh_token)
     }
+
+    fun setManagedPat(credential: ManagedPersonalAccessToken) {
+        accessToken = credential.token
+        refreshToken = null
+        accessTokenExpiresAt = 0L
+        managedPat = ManagedPatSession(credential.id, credential.sessionCookies)
+        isPersisted = false
+        authTokenState.value = credential.token
+    }
+
+    fun managedPatSession(): ManagedPatSession? = managedPat
 
     fun persist() {
         val token = accessToken ?: return
@@ -41,6 +58,13 @@ class BesteSchuleAuth(
             putSecure(ACCESS_TOKEN_KEY, token)
             refreshToken?.let { putSecure(REFRESH_TOKEN_KEY, it) } ?: kSafe.deleteDirect(REFRESH_TOKEN_KEY)
             put(ACCESS_TOKEN_EXPIRES_AT_KEY, accessTokenExpiresAt)
+            managedPat?.let {
+                putSecure(MANAGED_PAT_ID_KEY, it.id)
+                putSecure(MANAGED_PAT_SESSION_KEY, it.cookies)
+            } ?: run {
+                kSafe.deleteDirect(MANAGED_PAT_ID_KEY)
+                kSafe.deleteDirect(MANAGED_PAT_SESSION_KEY)
+            }
         }
         isPersisted = true
     }
@@ -49,10 +73,11 @@ class BesteSchuleAuth(
         accessToken = null
         refreshToken = null
         accessTokenExpiresAt = 0L
+        managedPat = null
         isPersisted = false
         retryRefreshAt = 0L
         authTokenState.value = null
-        listOf(ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, ACCESS_TOKEN_EXPIRES_AT_KEY).forEach(kSafe::deleteDirect)
+        listOf(ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, ACCESS_TOKEN_EXPIRES_AT_KEY, MANAGED_PAT_ID_KEY, MANAGED_PAT_SESSION_KEY).forEach(kSafe::deleteDirect)
     }
 
     suspend fun getValidAccessToken(): String? {
@@ -107,6 +132,7 @@ class BesteSchuleAuth(
         accessToken = authTokenState.value?.takeIf { it.isNotBlank() }
         refreshToken = null
         accessTokenExpiresAt = 0L
+        managedPat = null
         isPersisted = false
         retryRefreshAt = 0L
     }
@@ -118,6 +144,10 @@ class BesteSchuleAuth(
             if (!storedAccessToken.isNullOrBlank() && storedExpiresAt > accessTokenExpiresAt) {
                 accessToken = storedAccessToken
                 refreshToken = get<String?>(REFRESH_TOKEN_KEY, null)
+                managedPat =
+                    get<String?>(MANAGED_PAT_ID_KEY, null)?.let { id ->
+                        get<String?>(MANAGED_PAT_SESSION_KEY, null)?.let { cookies -> ManagedPatSession(id, cookies) }
+                    }
                 accessTokenExpiresAt = storedExpiresAt
                 authTokenState.value = storedAccessToken
                 retryRefreshAt = 0L
@@ -128,9 +158,16 @@ class BesteSchuleAuth(
         const val ACCESS_TOKEN_KEY = "authToken"
         const val REFRESH_TOKEN_KEY = "authRefreshToken"
         const val ACCESS_TOKEN_EXPIRES_AT_KEY = "authTokenExpiresAt"
+        private const val MANAGED_PAT_ID_KEY = "authManagedPatId"
+        private const val MANAGED_PAT_SESSION_KEY = "authManagedPatSession"
 
         private const val REFRESH_EARLY_SECONDS = 60L
         private const val REFRESH_RETRY_DELAY_SECONDS = 30L
         private val refreshMutex = Mutex()
     }
 }
+
+data class ManagedPatSession(
+    val id: String,
+    val cookies: String,
+)

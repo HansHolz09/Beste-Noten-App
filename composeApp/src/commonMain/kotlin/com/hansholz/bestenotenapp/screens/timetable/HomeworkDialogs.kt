@@ -4,8 +4,6 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.horizontalScroll
@@ -56,7 +54,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
@@ -85,6 +82,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.keepKeyboardOnPress
 import com.hansholz.bestenotenapp.components.nativeTextInputTint
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.homework.HomeworkEntry
@@ -220,18 +218,6 @@ fun HomeworkEditorDialog(
         title = { Text(if (initialEntry == null) "Eintrag hinzufügen" else "Eintrag bearbeiten") },
         text = {
             val nativeKeyboardHandoff = LocalNativeKeyboardHandoff.current
-
-            fun Modifier.keepKeyboardOnPress(otherFocused: Boolean) =
-                if (nativeKeyboardHandoff != null) {
-                    pointerInput(otherFocused, nativeKeyboardHandoff) {
-                        awaitEachGesture {
-                            awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                            if (otherFocused) nativeKeyboardHandoff {}
-                        }
-                    }
-                } else {
-                    this
-                }
 
             val editorScrollState = rememberScrollState()
             Column(

@@ -12,6 +12,7 @@ import androidx.compose.material3.ButtonShapes
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -81,6 +82,46 @@ fun EnhancedOutlinedButton(
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     OutlinedButton(
+        onClick = {
+            onClick()
+            vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+        },
+        shapes =
+            ButtonShapes(
+                shape = shape,
+                pressedShape = if (getPlatform() == Platform.ANDROID) shapes.small else shape,
+            ),
+        modifier = modifier.cupertinoHighlight(resolvedInteractionSource, shape, verticalInset = 4.dp, capsule = true),
+        enabled = enabled,
+        colors = colors,
+        elevation = elevation,
+        border = border,
+        contentPadding = contentPadding,
+        interactionSource = resolvedInteractionSource,
+        content = content,
+    )
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun EnhancedTextButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    colors: ButtonColors = ButtonDefaults.textButtonColors(),
+    elevation: ButtonElevation? = null,
+    border: BorderStroke? = null,
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    contentPadding: PaddingValues = ButtonDefaults.contentPaddingFor(ButtonDefaults.MinHeight),
+    interactionSource: MutableInteractionSource? = null,
+    content: @Composable RowScope.() -> Unit,
+) {
+    val vibrator = rememberVibrator()
+    val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
+    val shape = shapes.extraExtraLarge
+
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    TextButton(
         onClick = {
             onClick()
             vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
