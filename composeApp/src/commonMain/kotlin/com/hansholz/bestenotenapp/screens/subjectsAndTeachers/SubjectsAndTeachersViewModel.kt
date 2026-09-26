@@ -7,9 +7,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import com.hansholz.bestenotenapp.main.ViewModel as AppViewModel
 
 class SubjectsAndTeachersViewModel(
-    viewModel: com.hansholz.bestenotenapp.main.ViewModel,
+    viewModel: AppViewModel,
 ) : ViewModel() {
     var isLoading by mutableStateOf(false)
 

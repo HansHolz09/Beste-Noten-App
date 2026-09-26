@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathMeasure
@@ -70,7 +71,7 @@ fun CurvedText(
                     Path().apply {
                         addArc(
                             oval =
-                                androidx.compose.ui.geometry.Rect(
+                                Rect(
                                     center = center,
                                     radius = radius.toPx(),
                                 ),

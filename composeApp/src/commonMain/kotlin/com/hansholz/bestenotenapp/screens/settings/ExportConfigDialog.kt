@@ -35,6 +35,7 @@ import androidx.lifecycle.viewModelScope
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Archive
 import com.hansholz.bestenotenapp.api.models.Year
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
@@ -45,7 +46,6 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.utils.formateDate
-import components.dialogs.EnhancedAlertDialog
 import kotlinx.coroutines.launch
 import top.ltfan.multihaptic.compose.rememberVibrator
 

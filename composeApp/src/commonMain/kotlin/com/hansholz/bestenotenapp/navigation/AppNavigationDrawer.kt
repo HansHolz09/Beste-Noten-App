@@ -1,26 +1,6 @@
 package com.hansholz.bestenotenapp.navigation
 
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.MaterialTheme.shapes
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.NavigationDrawerItemDefaults
-import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,38 +9,30 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.window.core.layout.WindowSizeClass
 import com.hansholz.bestenotenapp.components.ConfettiPresets
 import com.hansholz.bestenotenapp.components.NavigationDrawer
-import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
-import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.main.ViewModel
-import com.hansholz.bestenotenapp.theme.FontFamilies
-import com.nomanr.animate.compose.animated.rememberAnimatedState
-import com.nomanr.animate.compose.presets.attentionseekers.Jello
-import com.nomanr.animate.compose.presets.attentionseekers.RubberBand
 import io.github.vinceglb.confettikit.compose.ConfettiKit
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import top.ltfan.multihaptic.compose.rememberVibrator
-import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun AppNavigationDrawer(
     viewModel: ViewModel,
     onNavHostReady: suspend (NavController) -> Unit = {},
     onNavigateToLogin: () -> Unit,
+    onDestinationChanged: (String) -> Unit = {},
+    onCanNavigateBackChanged: (Boolean) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     val vibrator = rememberVibrator()
@@ -73,136 +45,48 @@ fun AppNavigationDrawer(
 
     val navController = rememberNavController()
     val currentRoute by navController.currentBackStackEntryAsState()
-    NavigationDrawer(
-        compactDrawerState = viewModel.compactDrawerState.value,
-        mediumExpandedDrawerState = viewModel.mediumExpandedDrawerState.value,
-        hazeState = viewModel.hazeBackgroundState,
-        drawerContent = {
-            Column {
-                Spacer(Modifier.fillMaxWidth().height(LocalNavigationDrawerTopPadding.current ?: 15.dp))
-                val animateState = rememberAnimatedState()
-                LaunchedEffect(viewModel.compactDrawerState.value.currentValue) {
-                    while (viewModel.compactDrawerState.value.isOpen) {
-                        animateState.animate()
-                        delay(5.seconds)
-                    }
-                }
-                EnhancedAnimated(
-                    preset = RubberBand(0.05f),
-                    durationMillis = 1000,
-                    state = animateState,
-                ) {
-                    Text(
-                        text = "Beste-Noten-App",
-                        modifier =
-                            Modifier
-                                .align(Alignment.CenterHorizontally)
-                                .padding(horizontal = 40.dp)
-                                .clickable(null, null) {
-                                    if (!showConfetti) {
-                                        showConfetti = true
-                                        vibrator.enhancedVibrateN(EnhancedVibrations.LOGO_RAIN)
-                                    }
-                                },
-                        color = colorScheme.onSurface,
-                        autoSize = TextAutoSize.StepBased(10.sp),
-                        fontFamily = FontFamilies.KeaniaOne,
-                        maxLines = 1,
-                    )
-                }
-                EnhancedAnimated(
-                    preset = Jello(),
-                    durationMillis = 1000,
-                    state = animateState,
-                ) {
-                    Text(
-                        text = "für beste.schule",
-                        modifier =
-                            Modifier
-                                .align(Alignment.CenterHorizontally)
-                                .padding(horizontal = 80.dp)
-                                .clickable(null, null) {
-                                    if (!showConfetti) {
-                                        showConfetti = true
-                                        vibrator.enhancedVibrateN(EnhancedVibrations.LOGO_RAIN)
-                                    }
-                                },
-                        color = colorScheme.onSurface,
-                        autoSize = TextAutoSize.StepBased(5.sp),
-                        fontFamily = FontFamilies.Schoolbell,
-                        maxLines = 1,
-                    )
-                }
-                Spacer(Modifier.height(15.dp))
-                Fragment.entries.forEach { screen ->
-                    EnhancedAnimatedContent(
-                        targetState = currentRoute?.destination?.route == screen.route,
-                        transitionSpec = {
-                            fadeIn(animationSpec = tween(500))
-                                .togetherWith(fadeOut(animationSpec = tween(500)))
-                        },
-                    ) { isCurrentScreen ->
-                        NavigationDrawerItem(
-                            label = { Text(screen.label) },
-                            selected = isCurrentScreen,
-                            onClick = {
-                                scope.launch {
-                                    navController.navigate(screen.route)
-                                    if (isCompactWindow) viewModel.closeOrOpenDrawer(isCompactWindow)
-                                }
-                                vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
-                            },
-                            modifier =
-                                Modifier.padding(10.dp).then(
-                                    if (isCurrentScreen) Modifier.border(2.dp, colorScheme.onSurface, shapes.extraExtraLarge) else Modifier,
-                                ),
-                            icon = { Icon(screen.icon, null) },
-                            colors =
-                                NavigationDrawerItemDefaults.colors(
-                                    selectedContainerColor = colorScheme.secondaryContainer.copy(0.7f),
-                                    unselectedTextColor = colorScheme.onSurface,
-                                ),
-                        )
-                    }
-                }
-                HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
-                EnhancedAnimatedContent(
-                    targetState = currentRoute?.destination?.route == Fragment.Settings.route,
-                    transitionSpec = {
-                        fadeIn(animationSpec = tween(500))
-                            .togetherWith(fadeOut(animationSpec = tween(500)))
-                    },
-                ) { isCurrentScreen ->
-                    NavigationDrawerItem(
-                        label = { Text("Einstellungen") },
-                        selected = isCurrentScreen,
-                        onClick = {
-                            scope.launch {
-                                navController.navigate(Fragment.Settings.route)
-                                if (isCompactWindow) viewModel.closeOrOpenDrawer(isCompactWindow)
-                            }
-                            vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
-                        },
-                        modifier =
-                            Modifier.padding(10.dp).then(
-                                if (isCurrentScreen) Modifier.border(2.dp, colorScheme.onSurface, shapes.extraExtraLarge) else Modifier,
-                            ),
-                        icon = { Icon(Fragment.Settings.icon, null) },
-                        colors =
-                            NavigationDrawerItemDefaults.colors(
-                                selectedContainerColor = colorScheme.secondaryContainer.copy(0.7f),
-                                unselectedTextColor = colorScheme.onSurface,
-                            ),
-                    )
-                }
-            }
-        },
-    ) {
+    LaunchedEffect(currentRoute?.destination?.route) {
+        currentRoute?.destination?.route?.let(onDestinationChanged)
+        onCanNavigateBackChanged(navController.previousBackStackEntry != null)
+    }
+    val nativeComponentsEnabled = LocalNativeComponentsEnabled.current.value
+    val navigationDrawerTopPadding = LocalNavigationDrawerTopPadding.current ?: 15.dp
+    val screenContent: @Composable () -> Unit = {
         FragmentNavigation(
             viewModel = viewModel,
             navController = navController,
             onNavigateToLogin = onNavigateToLogin,
         )
+    }
+    if (!nativeComponentsEnabled) {
+        NavigationDrawer(
+            compactDrawerState = viewModel.compactDrawerState.value,
+            mediumExpandedDrawerState = viewModel.mediumExpandedDrawerState.value,
+            hazeState = viewModel.hazeBackgroundState,
+            drawerContent = {
+                AppDrawerContent(
+                    selectedRoute = currentRoute?.destination?.route,
+                    topPadding = navigationDrawerTopPadding,
+                    animateLogo = viewModel.compactDrawerState.value.isOpen,
+                    onDestinationSelected = { screen ->
+                        scope.launch {
+                            navController.navigate(screen.route)
+                            if (isCompactWindow) viewModel.closeOrOpenDrawer(isCompactWindow)
+                        }
+                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                    },
+                    onLogoClick = {
+                        if (!showConfetti) {
+                            showConfetti = true
+                            vibrator.enhancedVibrateN(EnhancedVibrations.LOGO_RAIN)
+                        }
+                    },
+                )
+            },
+            content = screenContent,
+        )
+    } else {
+        screenContent()
     }
     LaunchedEffect(navController) {
         onNavHostReady(navController)

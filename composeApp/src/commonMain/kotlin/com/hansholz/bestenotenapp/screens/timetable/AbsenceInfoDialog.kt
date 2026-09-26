@@ -15,10 +15,10 @@ import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.How_to_reg
 import com.hansholz.bestenotenapp.api.models.Absence
 import com.hansholz.bestenotenapp.api.models.Conductor
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.utils.formateDate
-import components.dialogs.EnhancedAlertDialog
 
 @Composable
 fun AbsenceInfoDialog(

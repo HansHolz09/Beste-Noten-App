@@ -52,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -69,8 +70,11 @@ import com.composables.icons.materialsymbols.rounded.Edit_note
 import com.composables.icons.materialsymbols.rounded.News
 import com.composables.icons.materialsymbols.rounded.Task_alt
 import com.hansholz.bestenotenapp.api.models.JournalLesson
+import com.hansholz.bestenotenapp.components.AdaptiveDatePicker
+import com.hansholz.bestenotenapp.components.AdaptiveTimePicker
 import com.hansholz.bestenotenapp.components.PreferenceItem
 import com.hansholz.bestenotenapp.components.PreferencePosition
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
@@ -78,6 +82,8 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.keepKeyboardOnPress
+import com.hansholz.bestenotenapp.components.nativeTextInputTint
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.homework.HomeworkEntry
 import com.hansholz.bestenotenapp.homework.HomeworkPlacement
@@ -87,8 +93,9 @@ import com.hansholz.bestenotenapp.homework.HomeworkType
 import com.hansholz.bestenotenapp.homework.newHomeworkId
 import com.hansholz.bestenotenapp.main.LocalHomeworkGoogleSyncEnabled
 import com.hansholz.bestenotenapp.main.LocalHomeworkTypes
+import com.hansholz.bestenotenapp.main.LocalNativeKeyboardHandoff
+import com.hansholz.bestenotenapp.main.LocalNativeTextInputOptions
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
-import components.dialogs.EnhancedAlertDialog
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -171,6 +178,9 @@ fun HomeworkEditorDialog(
     val vibrator = rememberVibrator()
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
+    val descriptionFocusRequester = remember { FocusRequester() }
+    var titleFocused by remember { mutableStateOf(false) }
+    var descriptionFocused by remember { mutableStateOf(false) }
 
     var title by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.title.orEmpty()) }
     var description by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.description.orEmpty()) }
@@ -207,6 +217,8 @@ fun HomeworkEditorDialog(
         icon = { Icon(if (initialEntry == null) MaterialSymbols.Rounded.Add_task else MaterialSymbols.Rounded.Task_alt, null) },
         title = { Text(if (initialEntry == null) "Eintrag hinzufügen" else "Eintrag bearbeiten") },
         text = {
+            val nativeKeyboardHandoff = LocalNativeKeyboardHandoff.current
+
             val editorScrollState = rememberScrollState()
             Column(
                 modifier =
@@ -221,17 +233,41 @@ fun HomeworkEditorDialog(
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .onFocusChanged { titleFocused = it.isFocused }
+                            .keepKeyboardOnPress(descriptionFocused)
+                            .nativeTextInputTint(colorScheme.primary),
                     label = { Text("Titel") },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next, platformImeOptions = LocalNativeTextInputOptions.current),
+                    keyboardActions =
+                        if (LocalNativeTextInputOptions.current != null) {
+                            KeyboardActions(onNext = {
+                                if (nativeKeyboardHandoff != null) {
+                                    nativeKeyboardHandoff { descriptionFocusRequester.requestFocus() }
+                                } else {
+                                    descriptionFocusRequester.requestFocus()
+                                }
+                            })
+                        } else {
+                            KeyboardActions.Default
+                        },
                     singleLine = true,
                     enabled = !busy,
                 )
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .focusRequester(descriptionFocusRequester)
+                            .onFocusChanged { descriptionFocused = it.isFocused }
+                            .keepKeyboardOnPress(titleFocused)
+                            .nativeTextInputTint(colorScheme.primary),
                     label = { Text("Beschreibung") },
+                    keyboardOptions = KeyboardOptions(platformImeOptions = LocalNativeTextInputOptions.current),
                     minLines = 2,
                     enabled = !busy,
                 )
@@ -258,7 +294,11 @@ fun HomeworkEditorDialog(
                         )
                     }
                     EnhancedIconButton(
-                        onClick = { typeEditorVisible = true },
+                        onClick = {
+                            focusRequester.requestFocus()
+                            keyboardController?.hide()
+                            typeEditorVisible = true
+                        },
                         enabled = !busy,
                     ) {
                         Icon(MaterialSymbols.Rounded.Edit_note, null)
@@ -376,7 +416,7 @@ fun HomeworkEditorDialog(
     val initialDate = reminderAt?.date ?: dueDate.minus(DatePeriod(days = 1))
     val datePickerState =
         rememberDatePickerState(
-            initialSelectedDateMillis = initialDate.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds(),
+            initialSelectedDateMillis = initialDate.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
         )
     EnhancedAlertDialog(
         visible = datePickerVisible,
@@ -388,7 +428,7 @@ fun HomeworkEditorDialog(
                 onClick = {
                     selectedReminderDate =
                         datePickerState.selectedDateMillis?.let {
-                            Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date
+                            Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()).date
                         }
                     datePickerVisible = false
                     if (selectedReminderDate != null) timePickerVisible = true
@@ -404,10 +444,16 @@ fun HomeworkEditorDialog(
             }
         },
         text = {
-            DatePicker(
-                state = datePickerState,
-                title = {},
-            )
+            AdaptiveDatePicker(
+                selectedDateMillis = datePickerState.selectedDateMillis,
+                onSelectedDateChanged = { datePickerState.selectedDateMillis = it },
+                modifier = Modifier.fillMaxWidth().size(height = 350.dp, width = 400.dp),
+            ) {
+                DatePicker(
+                    state = datePickerState,
+                    title = {},
+                )
+            }
         },
     )
 
@@ -440,7 +486,19 @@ fun HomeworkEditorDialog(
                 Text("Abbrechen")
             }
         },
-        text = { TimePicker(state = timePickerState) },
+        text = {
+            AdaptiveTimePicker(
+                hour = timePickerState.hour,
+                minute = timePickerState.minute,
+                onTimeChanged = { hour, minute ->
+                    timePickerState.hour = hour
+                    timePickerState.minute = minute
+                },
+                modifier = Modifier.fillMaxWidth().size(height = 216.dp, width = 320.dp),
+            ) {
+                TimePicker(state = timePickerState)
+            }
+        },
     )
 
     HomeworkTypeEditorDialog(
@@ -588,10 +646,10 @@ private fun HomeworkTypeEditorDialog(
                 OutlinedTextField(
                     value = newType,
                     onValueChange = { newType = it },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().nativeTextInputTint(colorScheme.primary),
                     label = { Text("Neuer Eintragstyp") },
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, platformImeOptions = LocalNativeTextInputOptions.current),
                     keyboardActions = KeyboardActions(onDone = { addType() }),
                     trailingIcon = {
                         IconButton(

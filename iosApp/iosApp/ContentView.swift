@@ -1,14 +1,17 @@
-import UIKit
-import SwiftUI
 import ComposeApp
+import SwiftUI
+import UIKit
 
-struct ComposeView: UIViewControllerRepresentable {
+private struct ComposeView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIViewController {
-        MainViewControllerKt.mainViewController()
+        if #available(iOS 26.0, *) {
+            NativeChromeViewController()
+        } else {
+            MainViewControllerKt.mainViewController(nativeBridge: nil)
+        }
     }
 
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-    }
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
 }
 
 struct ContentView: View {
@@ -16,6 +19,3 @@ struct ContentView: View {
         ComposeView().ignoresSafeArea()
     }
 }
-
-
-

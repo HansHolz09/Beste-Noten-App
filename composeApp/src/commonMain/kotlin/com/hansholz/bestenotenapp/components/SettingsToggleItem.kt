@@ -1,5 +1,6 @@
 package com.hansholz.bestenotenapp.components
 
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
@@ -14,6 +15,8 @@ import com.composables.icons.materialsymbols.rounded.Close
 import com.composables.icons.materialsymbols.rounded.Done
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
+import com.hansholz.bestenotenapp.main.LocalNativeSwitch
 import top.ltfan.multihaptic.compose.rememberVibrator
 
 fun LazyListScope.settingsToggleItem(
@@ -29,9 +32,13 @@ fun LazyListScope.settingsToggleItem(
     checkedIcon: ImageVector = MaterialSymbols.Rounded.Done,
     uncheckedIcon: ImageVector = MaterialSymbols.Rounded.Close,
     hapticsEnabled: Boolean = true,
+    controlVisible: Boolean = true,
+    nativeControlFadeIn: Boolean = false,
 ) {
     item {
         val vibrator = rememberVibrator()
+        val nativeComponentsEnabled = LocalNativeComponentsEnabled.current.value
+        val nativeSwitch = LocalNativeSwitch.current
         PreferenceItem(
             modifier = modifier.padding(horizontal = 16.dp),
             textModifier = textModifier,
@@ -49,40 +56,43 @@ fun LazyListScope.settingsToggleItem(
             enabled = enabled,
             position = position,
         ) {
-            Switch(
-                checked = checked,
-                onCheckedChange = {
-                    onCheckedChange(it)
-                    if (hapticsEnabled) {
-                        vibrator.enhancedVibrateN(
-                            if (it) {
-                                EnhancedVibrations.TOGGLE_ON
-                            } else {
-                                EnhancedVibrations.TOGGLE_OFF
-                            },
-                        )
-                    }
-                },
-                thumbContent =
-                    if (checked) {
-                        {
-                            Icon(
-                                imageVector = checkedIcon,
-                                contentDescription = null,
-                                modifier = Modifier.size(SwitchDefaults.IconSize),
-                            )
-                        }
-                    } else {
-                        {
-                            Icon(
-                                imageVector = uncheckedIcon,
-                                contentDescription = null,
-                                modifier = Modifier.size(SwitchDefaults.IconSize),
-                            )
-                        }
-                    },
-                enabled = enabled,
-            )
+            val change: (Boolean) -> Unit = {
+                onCheckedChange(it)
+                if (hapticsEnabled) {
+                    vibrator.enhancedVibrateN(
+                        if (it) EnhancedVibrations.TOGGLE_ON else EnhancedVibrations.TOGGLE_OFF,
+                    )
+                }
+            }
+            if (!controlVisible) {
+                Spacer(Modifier.size(width = 64.dp, height = 44.dp))
+            } else if (nativeComponentsEnabled && nativeSwitch != null) {
+                nativeSwitch(checked, change, enabled, Modifier, nativeControlFadeIn)
+            } else {
+                Switch(
+                    checked = checked,
+                    onCheckedChange = change,
+                    thumbContent =
+                        if (checked) {
+                            {
+                                Icon(
+                                    imageVector = checkedIcon,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                                )
+                            }
+                        } else {
+                            {
+                                Icon(
+                                    imageVector = uncheckedIcon,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                                )
+                            }
+                        },
+                    enabled = enabled,
+                )
+            }
         }
     }
 }

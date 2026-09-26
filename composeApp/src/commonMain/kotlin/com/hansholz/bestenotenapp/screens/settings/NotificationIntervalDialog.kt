@@ -23,6 +23,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.History
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
@@ -31,7 +32,6 @@ import com.hansholz.bestenotenapp.main.LocalGradeNotificationIntervalMinutes
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.hansholz.bestenotenapp.utils.formateInterval
-import components.dialogs.EnhancedAlertDialog
 import top.ltfan.multihaptic.compose.rememberVibrator
 
 @Composable

@@ -47,9 +47,9 @@ fun main() {
                 cacheReady = true
             }
             if (cacheReady) {
-                App {
-                    it.bindToBrowserNavigation()
-                }
+                App(
+                    onNavHostReady = { it.bindToBrowserNavigation() },
+                )
             }
         }
     }

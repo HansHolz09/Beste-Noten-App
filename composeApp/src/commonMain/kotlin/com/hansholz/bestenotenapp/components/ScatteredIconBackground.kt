@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Canvas
 import androidx.compose.ui.graphics.Color
@@ -221,7 +222,7 @@ fun Modifier.scatteredIconBackground(
                         val item = items[slot.itemIndex]
 
                         translate(left = centerX, top = centerY) {
-                            rotate(degrees = slot.rotation, pivot = androidx.compose.ui.geometry.Offset.Zero) {
+                            rotate(degrees = slot.rotation, pivot = Offset.Zero) {
                                 when (item) {
                                     is ScatterItem.IconItem -> {
                                         val painter = painters[slot.itemIndex] ?: return@rotate

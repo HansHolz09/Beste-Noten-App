@@ -6,6 +6,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ContainedLoadingIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
@@ -19,12 +20,13 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Calendar_clock
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.main.ViewModel
-import components.dialogs.EnhancedAlertDialog
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TimesDialog(
     viewModel: ViewModel,

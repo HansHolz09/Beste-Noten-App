@@ -73,6 +73,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            binaryOption("bundleId", "com.hansholz.bestenotenapp.composeapp")
         }
     }
 
@@ -109,6 +110,7 @@ kotlin {
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ksoup)
             implementation(libs.oidc.appsupport)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
@@ -120,6 +122,7 @@ kotlin {
             implementation(libs.koalaplot.core)
             implementation(libs.jetlime)
             implementation(libs.haze.blur)
+            implementation(libs.haze.glass)
             implementation(libs.material.kolor)
             implementation(libs.markdown.renderer.m3)
             implementation(libs.platformtools.darkmodedetector)

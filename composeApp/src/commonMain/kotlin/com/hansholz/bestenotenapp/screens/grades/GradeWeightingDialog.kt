@@ -39,13 +39,15 @@ import com.composables.icons.materialsymbols.rounded.Balance
 import com.composables.icons.materialsymbols.rounded.Remove
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.api.models.Level
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedFilterChip
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
+import com.hansholz.bestenotenapp.components.nativeTextInputTint
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
-import components.dialogs.EnhancedAlertDialog
+import com.hansholz.bestenotenapp.main.LocalNativeTextInputOptions
 
 @Composable
 internal fun GradeWeightingDialog(
@@ -198,7 +200,7 @@ private fun WeightControlRow(
                         }
                     }
                 },
-                modifier = Modifier.width(60.dp),
+                modifier = Modifier.width(60.dp).nativeTextInputTint(colorScheme.primary),
                 textStyle =
                     typography.bodyLarge.copy(
                         textAlign = TextAlign.Center,
@@ -208,6 +210,7 @@ private fun WeightControlRow(
                     KeyboardOptions(
                         keyboardType = KeyboardType.Number,
                         imeAction = ImeAction.Done,
+                        platformImeOptions = LocalNativeTextInputOptions.current,
                     ),
                 singleLine = true,
                 cursorBrush = SolidColor(colorScheme.primary),

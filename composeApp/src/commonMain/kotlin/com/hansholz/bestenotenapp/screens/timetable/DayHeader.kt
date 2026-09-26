@@ -32,6 +32,7 @@ import com.hansholz.bestenotenapp.homework.HomeworkStatus
 import com.hansholz.bestenotenapp.main.LocalHomeworkEnabled
 import com.hansholz.bestenotenapp.main.LocalShowNotes
 import com.hansholz.bestenotenapp.main.ViewModel
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
@@ -74,13 +75,13 @@ fun DayHeader(
 
     val dayAbbreviation =
         when (date.dayOfWeek) {
-            kotlinx.datetime.DayOfWeek.MONDAY -> "Mo"
-            kotlinx.datetime.DayOfWeek.TUESDAY -> "Di"
-            kotlinx.datetime.DayOfWeek.WEDNESDAY -> "Mi"
-            kotlinx.datetime.DayOfWeek.THURSDAY -> "Do"
-            kotlinx.datetime.DayOfWeek.FRIDAY -> "Fr"
-            kotlinx.datetime.DayOfWeek.SATURDAY -> "Sa"
-            kotlinx.datetime.DayOfWeek.SUNDAY -> "So"
+            DayOfWeek.MONDAY -> "Mo"
+            DayOfWeek.TUESDAY -> "Di"
+            DayOfWeek.WEDNESDAY -> "Mi"
+            DayOfWeek.THURSDAY -> "Do"
+            DayOfWeek.FRIDAY -> "Fr"
+            DayOfWeek.SATURDAY -> "Sa"
+            DayOfWeek.SUNDAY -> "So"
         }
     val formattedDate = "${date.day.toString().padStart(2, '0')}.${date.month.number.toString().padStart(2, '0')}."
 

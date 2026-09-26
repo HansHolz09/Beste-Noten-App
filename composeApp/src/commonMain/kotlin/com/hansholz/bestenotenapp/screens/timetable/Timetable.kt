@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -108,6 +109,7 @@ import com.composables.icons.materialsymbols.rounded.Share
 import com.dokar.sonner.Toast
 import com.dokar.sonner.ToastType
 import com.hansholz.bestenotenapp.api.models.JournalWeek
+import com.hansholz.bestenotenapp.components.AdaptiveDatePicker
 import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
@@ -120,6 +122,8 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
+import com.hansholz.bestenotenapp.main.LocalHideNativeDateTimePickers
+import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalShowAbsences
 import com.hansholz.bestenotenapp.main.LocalShowOnlyRelevantData
 import com.hansholz.bestenotenapp.main.Platform
@@ -171,6 +175,8 @@ fun Timetable(
         val vibrator = rememberVibrator()
         val density = LocalDensity.current
         val layoutDirection = LocalLayoutDirection.current
+        val hideNativeDateTimePickers = LocalHideNativeDateTimePickers.current
+        val nativeComponentsEnabled by LocalNativeComponentsEnabled.current
 
         var showAbsences by LocalShowAbsences.current
         val showOnlyRelevantData by LocalShowOnlyRelevantData.current
@@ -296,11 +302,22 @@ fun Timetable(
                         state = pullToRefreshState,
                         indicator = {
                             if (timetableViewModel.userScrollEnabled && !lessonPopupShown.value) {
-                                PullToRefreshDefaults.LoadingIndicator(
-                                    modifier = Modifier.align(Alignment.TopCenter).padding(topPadding),
-                                    isRefreshing = isRefreshLoading,
-                                    state = pullToRefreshState,
-                                )
+                                Box(
+                                    modifier =
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(verticalPadding),
+                                ) {
+                                    PullToRefreshDefaults.LoadingIndicator(
+                                        modifier =
+                                            Modifier
+                                                .align(Alignment.TopCenter)
+                                                .padding(top = topPadding)
+                                                .consumeWindowInsets(PaddingValues(top = topPadding)),
+                                        isRefreshing = isRefreshLoading,
+                                        state = pullToRefreshState,
+                                    )
+                                }
                             }
                         },
                     ) {
@@ -309,7 +326,10 @@ fun Timetable(
                         ) {
                             item {
                                 Box(
-                                    modifier = Modifier.fillParentMaxSize().padding(verticalPadding),
+                                    modifier =
+                                        Modifier
+                                            .fillParentMaxSize()
+                                            .padding(if (captureOnly) PaddingValues() else verticalPadding),
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     EnhancedAnimatedContent(isLoading || week?.days?.all { it.lessons.isNullOrEmpty() } ?: true, animationEnabled = !captureOnly) { targetState ->
@@ -327,7 +347,16 @@ fun Timetable(
                                                         EmptyStateMessage(
                                                             title = "Keine Stunden für diese Woche gefunden",
                                                             icon = MaterialSymbols.Rounded.Event_busy,
-                                                            modifier = Modifier.padding(contentPadding).consumeWindowInsets(contentPadding).imePadding(),
+                                                            modifier =
+                                                                Modifier.padding(contentPadding).consumeWindowInsets(contentPadding).then(
+                                                                    if (getPlatform() ==
+                                                                        Platform.IOS
+                                                                    ) {
+                                                                        Modifier
+                                                                    } else {
+                                                                        Modifier.imePadding()
+                                                                    },
+                                                                ),
                                                         )
                                                     }
                                                 }
@@ -372,7 +401,7 @@ fun Timetable(
                             .offset(y = -(toolbarContentPadding.calculateBottomPadding() + 12.dp))
                             .padding(verticalPadding)
                             .consumeWindowInsets(toolbarContentPadding)
-                            .imePadding(),
+                            .then(if (getPlatform() == Platform.IOS) Modifier else Modifier.imePadding()),
                 ) {
                     val sharedContentState = rememberSharedContentState(key = "toolbar-card")
 
@@ -388,6 +417,7 @@ fun Timetable(
                             }
 
                             scope.launch {
+                                hideNativeDateTimePickers()
                                 timetableViewModel.toolbarState = 0
                                 timetableViewModel.contentBlurred = false
                                 delay(250.milliseconds)
@@ -412,6 +442,7 @@ fun Timetable(
                     }
                     LaunchedEffect(isScreenExiting) {
                         if (isScreenExiting && timetableViewModel.toolbarState != 0) {
+                            hideNativeDateTimePickers()
                             timetableViewModel.toolbarState = 0
                             timetableViewModel.contentBlurred = false
                             timetableViewModel.userScrollEnabled = true
@@ -629,8 +660,15 @@ fun Timetable(
                                                 .padding(horizontal = 12.dp)
                                                 .sizeIn(maxWidth = 500.dp)
                                                 .clip(RoundedCornerShape(28.dp))
-                                                .verticalScroll(rememberScrollState()),
-                                        colors = CardDefaults.cardColors(colorScheme.primaryContainer),
+                                                .verticalScroll(rememberScrollState())
+                                                .then(
+                                                    if (nativeComponentsEnabled) {
+                                                        Modifier.enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer)
+                                                    } else {
+                                                        Modifier
+                                                    },
+                                                ),
+                                        colors = CardDefaults.cardColors(if (nativeComponentsEnabled) Color.Transparent else colorScheme.primaryContainer),
                                     ) {
                                         Text(
                                             text = "Datum wählen",
@@ -647,37 +685,44 @@ fun Timetable(
                                                         .atStartOfDayIn(TimeZone.currentSystemDefault())
                                                         .toEpochMilliseconds(),
                                             )
-                                        DatePicker(
-                                            state = datePickerState,
-                                            modifier = Modifier.requiredHeight(420.dp).requiredWidth(400.dp).skipToLookaheadSize(),
-                                            colors =
-                                                DatePickerDefaults.colors(
-                                                    containerColor = colorScheme.primaryContainer,
-                                                    headlineContentColor = colorScheme.onSurface,
-                                                    weekdayContentColor = colorScheme.onPrimaryContainer,
-                                                    navigationContentColor = colorScheme.onSurface,
-                                                    yearContentColor = colorScheme.onSurface,
-                                                    dividerColor = colorScheme.onSurface,
-                                                ),
-                                            title = null,
-                                            headline = {
-                                                EnhancedAnimatedContent(datePickerState.selectedDateMillis) { selectedDateMillis ->
-                                                    ProvideTextStyle(LocalTextStyle.current.copy(fontSize = 22.sp)) {
-                                                        DatePickerDefaults.DatePickerHeadline(
-                                                            selectedDateMillis = selectedDateMillis,
-                                                            displayMode = datePickerState.displayMode,
-                                                            dateFormatter = remember { DatePickerDefaults.dateFormatter() },
-                                                            modifier = Modifier.padding(PaddingValues(start = 24.dp, end = 12.dp, bottom = 12.dp)),
-                                                            contentColor = colorScheme.onSurface,
-                                                        )
+                                        AdaptiveDatePicker(
+                                            selectedDateMillis = datePickerState.selectedDateMillis,
+                                            onSelectedDateChanged = { datePickerState.selectedDateMillis = it },
+                                            modifier = Modifier.requiredHeight(370.dp).requiredWidth(400.dp),
+                                        ) {
+                                            DatePicker(
+                                                state = datePickerState,
+                                                modifier = Modifier.requiredHeight(420.dp).requiredWidth(400.dp).skipToLookaheadSize(),
+                                                colors =
+                                                    DatePickerDefaults.colors(
+                                                        containerColor = colorScheme.primaryContainer,
+                                                        headlineContentColor = colorScheme.onSurface,
+                                                        weekdayContentColor = colorScheme.onPrimaryContainer,
+                                                        navigationContentColor = colorScheme.onSurface,
+                                                        yearContentColor = colorScheme.onSurface,
+                                                        dividerColor = colorScheme.onSurface,
+                                                    ),
+                                                title = null,
+                                                headline = {
+                                                    EnhancedAnimatedContent(datePickerState.selectedDateMillis) { selectedDateMillis ->
+                                                        ProvideTextStyle(LocalTextStyle.current.copy(fontSize = 22.sp)) {
+                                                            DatePickerDefaults.DatePickerHeadline(
+                                                                selectedDateMillis = selectedDateMillis,
+                                                                displayMode = datePickerState.displayMode,
+                                                                dateFormatter = remember { DatePickerDefaults.dateFormatter() },
+                                                                modifier = Modifier.padding(PaddingValues(start = 24.dp, end = 12.dp, bottom = 12.dp)),
+                                                                contentColor = colorScheme.onSurface,
+                                                            )
+                                                        }
                                                     }
-                                                }
-                                            },
-                                        )
+                                                },
+                                            )
+                                        }
                                         Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp).align(Alignment.End)) {
                                             EnhancedOutlinedButton(
                                                 onClick = {
                                                     scope.launch {
+                                                        hideNativeDateTimePickers()
                                                         timetableViewModel.toolbarState = 0
                                                         timetableViewModel.contentBlurred = false
                                                         delay(250.milliseconds)
@@ -692,6 +737,7 @@ fun Timetable(
                                             EnhancedButton(
                                                 onClick = {
                                                     scope.launch {
+                                                        hideNativeDateTimePickers()
                                                         timetableViewModel.toolbarState = 0
                                                         timetableViewModel.contentBlurred = false
                                                         val selectedDate =

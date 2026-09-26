@@ -8,12 +8,15 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dokar.sonner.TextToastAction
 import com.dokar.sonner.Toast
 import com.dokar.sonner.ToastType
 import com.dokar.sonner.ToasterDefaults
 import com.dokar.sonner.ToasterState
 import com.hansholz.bestenotenapp.api.BesteSchuleApi
 import com.hansholz.bestenotenapp.api.BesteSchuleAuth
+import com.hansholz.bestenotenapp.api.BesteSchulePasswordLogin
+import com.hansholz.bestenotenapp.api.ManagedPersonalAccessToken
 import com.hansholz.bestenotenapp.api.codeAuthFlowFactory
 import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.models.Absence
@@ -393,6 +396,13 @@ class ViewModel(
         }
     }
 
+    fun acceptManagedPat(credential: ManagedPersonalAccessToken) = besteSchuleAuth.setManagedPat(credential)
+
+    suspend fun discardManagedPat(credential: ManagedPersonalAccessToken) {
+        runCatching { BesteSchulePasswordLogin.revoke(credential.id, credential.sessionCookies) }
+        besteSchuleAuth.clear()
+    }
+
     suspend fun login(
         stayLoggedIn: Boolean,
         isLoading: (Boolean) -> Unit,
@@ -400,73 +410,79 @@ class ViewModel(
         onNavigateHome: () -> Unit,
         chooseStudent: suspend (List<Student>, (String) -> Unit) -> Unit,
         handleToken: suspend () -> Unit,
-    ) = kSafeProvider(kSafe) {
-        isLoading(true)
-        try {
-            handleToken()
-            val user = init()
-            if (user?.role !in listOf("student", "guardian")) {
+    ): Boolean =
+        kSafeProvider(kSafe) {
+            isLoading(true)
+            try {
+                handleToken()
+                val user = init()
+                if (user?.role !in listOf("student", "guardian")) {
+                    toaster.show(
+                        Toast(
+                            message = "Es sind ausschließlich Schüler/Eltern-Accounts zulässig",
+                            type = ToastType.Error,
+                        ),
+                    )
+                    isLoading(false)
+                    false
+                } else {
+                    user!!.students!!.size.let {
+                        if (it > 1) {
+                            chooseStudent(user.students) {
+                                put("studentId", it)
+                                studentId.value = it
+                                GradeNotifications.onLogin()
+                            }
+                        } else {
+                            put(
+                                "studentId",
+                                user.students
+                                    .first()
+                                    .id
+                                    .toString(),
+                            )
+                            studentId.value =
+                                user.students
+                                    .first()
+                                    .id
+                                    .toString()
+                            GradeNotifications.onLogin()
+                        }
+                    }
+                    this@ViewModel.user.value = loadBesteSchuleData("user") { api.usersShow(studentId.value).data }
+                    loadCurrentLevel()
+                    if (level.value?.secondaryStage() == SecondaryStage.TWO && kSafe.getKeyInfo("timetableBlockViewEnabled") == null) {
+                        put("timetableBlockViewEnabled", true)
+                        applySettings(true)
+                    }
+                    writeBesteSchuleCache("user", user)
+                    setCurrentYear()
+                    if (stayLoggedIn) {
+                        besteSchuleAuth.persist()
+                    }
+                    onNavigateHome()
+                    toaster.show(
+                        Toast(
+                            message = "Angemeldet als ${user.username}",
+                            type = ToastType.Success,
+                        ),
+                    )
+                    true
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                e.printStackTrace()
                 toaster.show(
                     Toast(
-                        message = "Es sind ausschließlich Schüler/Eltern-Accounts zulässig",
+                        message = "Anmeldung fehlgeschlagen",
                         type = ToastType.Error,
                     ),
                 )
                 isLoading(false)
-            } else {
-                user!!.students!!.size.let {
-                    if (it > 1) {
-                        chooseStudent(user.students) {
-                            put("studentId", it)
-                            studentId.value = it
-                            GradeNotifications.onLogin()
-                        }
-                    } else {
-                        put(
-                            "studentId",
-                            user.students
-                                .first()
-                                .id
-                                .toString(),
-                        )
-                        studentId.value =
-                            user.students
-                                .first()
-                                .id
-                                .toString()
-                        GradeNotifications.onLogin()
-                    }
-                }
-                this@ViewModel.user.value = loadBesteSchuleData("user") { api.usersShow(studentId.value).data }
-                loadCurrentLevel()
-                if (level.value?.secondaryStage() == SecondaryStage.TWO && kSafe.getKeyInfo("timetableBlockViewEnabled") == null) {
-                    put("timetableBlockViewEnabled", true)
-                    applySettings(true)
-                }
-                writeBesteSchuleCache("user", user)
-                setCurrentYear()
-                if (stayLoggedIn) {
-                    besteSchuleAuth.persist()
-                }
-                onNavigateHome()
-                toaster.show(
-                    Toast(
-                        message = "Angemeldet als ${user.username}",
-                        type = ToastType.Success,
-                    ),
-                )
+                false
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            toaster.show(
-                Toast(
-                    message = "Anmeldung fehlgeschlagen",
-                    type = ToastType.Error,
-                ),
-            )
-            isLoading(false)
         }
-    }
 
     fun loginDemo(
         isLoading: (Boolean) -> Unit,
@@ -562,13 +578,32 @@ class ViewModel(
         allGradeCollectionsLoaded.value = false
     }
 
-    fun logout() {
+    suspend fun logout(openTokenManagement: () -> Unit) {
+        val managedPat = besteSchuleAuth.managedPatSession()
+        val revoked =
+            managedPat?.let {
+                try {
+                    withTimeout(15.seconds) { BesteSchulePasswordLogin.revoke(it.id, it.cookies) }
+                } catch (_: Exception) {
+                    false
+                }
+            }
         studentId.value = null
         kSafe.deleteDirect("studentId")
         besteSchuleAuth.clear()
         isDemoAccount.value = false
         GradeNotifications.onLogout()
         onCleared()
+        if (revoked == false) {
+            toaster.show(
+                Toast(
+                    message = "Abgemeldet. Der Zugriffstoken konnte online nicht entfernt werden, ist aber in der Tokenverwaltung löschbar.",
+                    action = TextToastAction("Tokenverwaltung") { openTokenManagement() },
+                    type = ToastType.Warning,
+                    duration = 15.seconds,
+                ),
+            )
+        }
     }
 
     suspend fun closeOrOpenDrawer(isCompactWindow: Boolean) {

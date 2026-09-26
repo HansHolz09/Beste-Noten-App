@@ -12,10 +12,17 @@ import androidx.compose.material3.ButtonShapes
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.hansholz.bestenotenapp.components.cupertinoHighlight
+import com.hansholz.bestenotenapp.main.Platform
+import com.hansholz.bestenotenapp.main.getPlatform
 import top.ltfan.multihaptic.compose.rememberVibrator
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun EnhancedButton(
     onClick: () -> Unit,
@@ -30,6 +37,8 @@ fun EnhancedButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     val vibrator = rememberVibrator()
+    val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
+    val shape = shapes.extraExtraLarge
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     Button(
@@ -39,20 +48,21 @@ fun EnhancedButton(
         },
         shapes =
             ButtonShapes(
-                shape = shapes.extraExtraLarge,
-                pressedShape = shapes.small,
+                shape = shape,
+                pressedShape = if (getPlatform() == Platform.ANDROID) shapes.small else shape,
             ),
-        modifier = modifier,
+        modifier = modifier.cupertinoHighlight(resolvedInteractionSource, shape, verticalInset = 4.dp, capsule = true),
         enabled = enabled,
         colors = colors,
         elevation = elevation,
         border = border,
         contentPadding = contentPadding,
-        interactionSource = interactionSource,
+        interactionSource = resolvedInteractionSource,
         content = content,
     )
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun EnhancedOutlinedButton(
     onClick: () -> Unit,
@@ -67,6 +77,8 @@ fun EnhancedOutlinedButton(
     content: @Composable RowScope.() -> Unit,
 ) {
     val vibrator = rememberVibrator()
+    val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
+    val shape = shapes.extraExtraLarge
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     OutlinedButton(
@@ -76,16 +88,56 @@ fun EnhancedOutlinedButton(
         },
         shapes =
             ButtonShapes(
-                shape = shapes.extraExtraLarge,
-                pressedShape = shapes.small,
+                shape = shape,
+                pressedShape = if (getPlatform() == Platform.ANDROID) shapes.small else shape,
             ),
-        modifier = modifier,
+        modifier = modifier.cupertinoHighlight(resolvedInteractionSource, shape, verticalInset = 4.dp, capsule = true),
         enabled = enabled,
         colors = colors,
         elevation = elevation,
         border = border,
         contentPadding = contentPadding,
-        interactionSource = interactionSource,
+        interactionSource = resolvedInteractionSource,
+        content = content,
+    )
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun EnhancedTextButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    colors: ButtonColors = ButtonDefaults.textButtonColors(),
+    elevation: ButtonElevation? = null,
+    border: BorderStroke? = null,
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    contentPadding: PaddingValues = ButtonDefaults.contentPaddingFor(ButtonDefaults.MinHeight),
+    interactionSource: MutableInteractionSource? = null,
+    content: @Composable RowScope.() -> Unit,
+) {
+    val vibrator = rememberVibrator()
+    val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
+    val shape = shapes.extraExtraLarge
+
+    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
+    TextButton(
+        onClick = {
+            onClick()
+            vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+        },
+        shapes =
+            ButtonShapes(
+                shape = shape,
+                pressedShape = if (getPlatform() == Platform.ANDROID) shapes.small else shape,
+            ),
+        modifier = modifier.cupertinoHighlight(resolvedInteractionSource, shape, verticalInset = 4.dp, capsule = true),
+        enabled = enabled,
+        colors = colors,
+        elevation = elevation,
+        border = border,
+        contentPadding = contentPadding,
+        interactionSource = resolvedInteractionSource,
         content = content,
     )
 }

@@ -13,9 +13,11 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.indication
@@ -44,8 +46,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
@@ -118,6 +122,7 @@ import com.composables.icons.materialsymbols.rounded.Search_off
 import com.composables.icons.materialsymbols.rounded.Settings
 import com.composables.icons.materialsymbols.rounded.Title
 import com.hansholz.bestenotenapp.api.models.GradeCollection
+import com.hansholz.bestenotenapp.components.AdaptivePrimaryTabRow
 import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.GradeValueBox
 import com.hansholz.bestenotenapp.components.PreferencePosition
@@ -135,14 +140,20 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.components.icons.MathAvg
+import com.hansholz.bestenotenapp.components.nativeTextInputTint
 import com.hansholz.bestenotenapp.components.rememberLazyListScrollSpeedState
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.LocalGradeAverageEnabled
 import com.hansholz.bestenotenapp.main.LocalGradeAverageUseWeighting
+import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
+import com.hansholz.bestenotenapp.main.LocalNativePrimaryTabRow
+import com.hansholz.bestenotenapp.main.LocalNativeTextInputOptions
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
 import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
+import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.main.isApplePlatform
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.hansholz.bestenotenapp.theme.FontFamilies
@@ -191,6 +202,9 @@ fun Grades(
                 .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
         val animationsEnabled by LocalAnimationsEnabled.current
+        val nativeComponentsEnabled by LocalNativeComponentsEnabled.current
+        val nativePrimaryTabRow = LocalNativePrimaryTabRow.current
+        val usesNativePrimaryTabs = nativeComponentsEnabled && nativePrimaryTabRow != null
         var gradeAverageEnabled by LocalGradeAverageEnabled.current
         var gradeAverageUseWeighting by LocalGradeAverageUseWeighting.current
         var showGradeHistory by LocalShowGradeHistory.current
@@ -248,9 +262,18 @@ fun Grades(
             hazeState = viewModel.hazeBackgroundState,
         ) { innerPadding, topAppBarBackground ->
             Box(Modifier.fillMaxSize()) {
-                val toolbarContentPadding = PaddingValues(top = gradesViewModel.topPadding, bottom = innerPadding.calculateBottomPadding())
-                val contentPadding = PaddingValues(top = gradesViewModel.topPadding, bottom = innerPadding.calculateBottomPadding() + gradesViewModel.toolbarPadding)
+                val effectiveTopPadding =
+                    if (usesNativePrimaryTabs) innerPadding.calculateTopPadding() else gradesViewModel.topPadding
+                val toolbarContentPadding = PaddingValues(top = effectiveTopPadding, bottom = innerPadding.calculateBottomPadding())
+                val contentPadding = PaddingValues(top = effectiveTopPadding, bottom = innerPadding.calculateBottomPadding() + gradesViewModel.toolbarPadding)
                 val verticalPadding = PaddingValues(start = innerPadding.calculateStartPadding(layoutDirection), end = innerPadding.calculateEndPadding(layoutDirection))
+                val overlayPadding =
+                    PaddingValues(
+                        start = innerPadding.calculateStartPadding(layoutDirection),
+                        top = effectiveTopPadding,
+                        end = innerPadding.calculateEndPadding(layoutDirection),
+                        bottom = innerPadding.calculateBottomPadding() + gradesViewModel.toolbarPadding,
+                    )
 
                 val pagerState = rememberEnhancedPagerState(2)
                 val contentBlurRadius = animateDpAsState(if (gradesViewModel.contentBlurred) 10.dp else 0.dp)
@@ -306,7 +329,7 @@ fun Grades(
                                 EnhancedAnimatedContent(gradesViewModel.isLoading) { isLoading ->
                                     if (isLoading) {
                                         Box(
-                                            modifier = Modifier.padding(contentPadding).fillMaxSize(),
+                                            modifier = Modifier.padding(overlayPadding).fillMaxSize(),
                                             contentAlignment = Alignment.Center,
                                         ) {
                                             ContainedLoadingIndicator()
@@ -315,7 +338,7 @@ fun Grades(
                                         EmptyStateMessage(
                                             title = if (gradesViewModel.searchQuery.isEmpty()) "Keine Noten vorhanden" else "Keine Noten gefunden",
                                             icon = if (gradesViewModel.searchQuery.isEmpty()) MaterialSymbols.Rounded.Playlist_remove else MaterialSymbols.Rounded.Search_off,
-                                            modifier = Modifier.padding(contentPadding).consumeWindowInsets(contentPadding).imePadding(),
+                                            modifier = Modifier.padding(overlayPadding).consumeWindowInsets(overlayPadding).imePadding(),
                                         )
                                     }
                                 }
@@ -401,9 +424,64 @@ fun Grades(
 
                                     1 -> {
                                         val speedState = rememberLazyListScrollSpeedState(secondLazyListState)
+                                        val stickyHeaderStartInset =
+                                            with(density) {
+                                                (verticalPadding.calculateStartPadding(layoutDirection) + 10.dp).toPx()
+                                            }
+                                        val stickyHeaderEndInset =
+                                            with(density) {
+                                                (verticalPadding.calculateEndPadding(layoutDirection) + 10.dp).toPx()
+                                            }
+                                        val stickyHeaderCornerRadius = with(density) { 28.5.dp.toPx() }
+                                        val stickyHeaderClipTopInset = with(density) { 1.5.dp.toPx() }
+                                        val nativeStickyHeaderClipShape =
+                                            remember(stickyHeaderStartInset, stickyHeaderEndInset, stickyHeaderCornerRadius, stickyHeaderClipTopInset) {
+                                                GenericShape { size, _ ->
+                                                    val left = stickyHeaderStartInset
+                                                    val right = size.width - stickyHeaderEndInset
+                                                    val radius = stickyHeaderCornerRadius
+                                                    val top = stickyHeaderClipTopInset
+                                                    val cornerBottom = top + radius
+                                                    val control = radius * 0.5522848f
+                                                    moveTo(left + radius, top)
+                                                    lineTo(right - radius, top)
+                                                    cubicTo(
+                                                        right - radius + control,
+                                                        top,
+                                                        right,
+                                                        cornerBottom - control,
+                                                        right,
+                                                        cornerBottom,
+                                                    )
+                                                    lineTo(size.width, cornerBottom)
+                                                    lineTo(size.width, size.height)
+                                                    lineTo(0f, size.height)
+                                                    lineTo(0f, cornerBottom)
+                                                    lineTo(left, cornerBottom)
+                                                    cubicTo(
+                                                        left,
+                                                        cornerBottom - control,
+                                                        left + radius - control,
+                                                        top,
+                                                        left + radius,
+                                                        top,
+                                                    )
+                                                    close()
+                                                }
+                                            }
                                         LazyColumn(
                                             state = secondLazyListState,
-                                            modifier = Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding()),
+                                            modifier =
+                                                Modifier
+                                                    .fillMaxSize()
+                                                    .padding(top = contentPadding.calculateTopPadding())
+                                                    .then(
+                                                        if (nativeComponentsEnabled) {
+                                                            Modifier.clip(nativeStickyHeaderClipShape)
+                                                        } else {
+                                                            Modifier
+                                                        },
+                                                    ),
                                             contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
                                             userScrollEnabled = gradesViewModel.userScrollEnabled,
                                         ) {
@@ -455,11 +533,22 @@ fun Grades(
                                                                 .fillMaxWidth()
                                                                 .height(56.dp)
                                                                 .then(
+                                                                    if (nativeComponentsEnabled) {
+                                                                        Modifier
+                                                                            .padding(verticalPadding)
+                                                                            .padding(horizontal = 10.dp)
+                                                                            .clip(RoundedCornerShape(28.dp))
+                                                                    } else {
+                                                                        Modifier
+                                                                    },
+                                                                ).then(
                                                                     if (gradeAverageEnabled && !isOpened) {
                                                                         Modifier
                                                                             .hoverable(interactionSource)
-                                                                            .indication(interactionSource, ripple())
-                                                                            .pointerInput(Unit) {
+                                                                            .indication(
+                                                                                interactionSource,
+                                                                                if (getPlatform() == Platform.ANDROID) ripple() else LocalIndication.current,
+                                                                            ).pointerInput(Unit) {
                                                                                 detectTapGestures(
                                                                                     onPress = { offset ->
                                                                                         val press = PressInteraction.Press(offset)
@@ -484,18 +573,35 @@ fun Grades(
                                                                     },
                                                                 ),
                                                         ) {
-                                                            HorizontalDivider(thickness = 1.dp)
+                                                            if (!nativeComponentsEnabled) HorizontalDivider(thickness = 1.dp)
                                                             Box(Modifier.weight(1f)) {
                                                                 Box(
                                                                     Modifier
                                                                         .fillMaxSize()
-                                                                        .enhancedHazeEffect(viewModel.hazeBackgroundState3, colorScheme.secondaryContainer)
-                                                                        .enhancedHazeEffect(viewModel.hazeBackgroundState2, colorScheme.secondaryContainer) {
-                                                                            mask(Brush.verticalGradient(colors = listOf(Color.Transparent, Color.Red)))
-                                                                        },
+                                                                        .enhancedHazeEffect(
+                                                                            hazeState =
+                                                                                if (nativeComponentsEnabled) {
+                                                                                    viewModel.hazeBackgroundState2
+                                                                                } else {
+                                                                                    viewModel.hazeBackgroundState3
+                                                                                },
+                                                                            color = colorScheme.secondaryContainer,
+                                                                        ).then(
+                                                                            if (nativeComponentsEnabled) {
+                                                                                Modifier
+                                                                            } else {
+                                                                                Modifier.enhancedHazeEffect(viewModel.hazeBackgroundState2, colorScheme.secondaryContainer) {
+                                                                                    mask(Brush.verticalGradient(colors = listOf(Color.Transparent, Color.Red)))
+                                                                                }
+                                                                            },
+                                                                        ),
                                                                 )
                                                                 Row(
-                                                                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp).padding(verticalPadding),
+                                                                    modifier =
+                                                                        Modifier
+                                                                            .fillMaxSize()
+                                                                            .padding(horizontal = 16.dp)
+                                                                            .then(if (nativeComponentsEnabled) Modifier else Modifier.padding(verticalPadding)),
                                                                     verticalAlignment = Alignment.CenterVertically,
                                                                 ) {
                                                                     Text(
@@ -516,7 +622,7 @@ fun Grades(
                                                                     }
                                                                 }
                                                             }
-                                                            HorizontalDivider(thickness = 1.dp)
+                                                            if (!nativeComponentsEnabled) HorizontalDivider(thickness = 1.dp)
                                                         }
                                                     }
                                                 }
@@ -597,16 +703,24 @@ fun Grades(
                         }
                     }
                 }
-                topAppBarBackground(gradesViewModel.topPadding)
-                PrimaryTabRow(
+                topAppBarBackground(effectiveTopPadding)
+                AdaptivePrimaryTabRow(
+                    labels = listOf("Nach Datum", "Nach Fächern"),
                     selectedTabIndex = pagerState.currentPage,
+                    onTabSelected = { page -> scope.launch { pagerState.animateScrollToPage(page) } },
                     modifier =
-                        Modifier
-                            .padding(verticalPadding)
-                            .padding(top = innerPadding.calculateTopPadding())
-                            .onGloballyPositioned {
-                                gradesViewModel.topPadding = with(density) { it.size.height.toDp() } + innerPadding.calculateTopPadding()
-                            },
+                        if (usesNativePrimaryTabs) {
+                            Modifier.onGloballyPositioned {
+                                gradesViewModel.topPadding = innerPadding.calculateTopPadding()
+                            }
+                        } else {
+                            Modifier
+                                .padding(verticalPadding)
+                                .padding(top = innerPadding.calculateTopPadding())
+                                .onGloballyPositioned {
+                                    gradesViewModel.topPadding = with(density) { it.size.height.toDp() } + innerPadding.calculateTopPadding()
+                                }
+                        },
                     containerColor = Color.Transparent,
                     divider = {
                         HorizontalDivider(thickness = if (pagerState.currentPage == 0) 2.dp else 1.dp)
@@ -707,11 +821,14 @@ fun Grades(
                         }
                     }
 
-                    AnimatedContent(
-                        targetState = gradesViewModel.toolbarState,
+                    val toolbarTransition = updateTransition(gradesViewModel.toolbarState, label = "grades toolbar")
+                    toolbarTransition.AnimatedContent(
                         modifier =
                             Modifier.padding(top = gradesViewModel.topPadding + 24.dp + innerPadding.calculateBottomPadding()).onGloballyPositioned {
-                                gradesViewModel.toolbarPadding = with(density) { ime.getBottom(density).toDp() + it.size.height.toDp() + 12.dp }
+                                gradesViewModel.toolbarPadding =
+                                    with(density) {
+                                        (if (getPlatform() == Platform.IOS) 0.dp else ime.getBottom(density).toDp()) + it.size.height.toDp() + 12.dp
+                                    }
                             },
                         contentAlignment = Alignment.BottomCenter,
                         transitionSpec = {
@@ -887,9 +1004,17 @@ fun Grades(
                                             verticalAlignment = Alignment.CenterVertically,
                                         ) {
                                             val focusRequester = remember { FocusRequester() }
-                                            LaunchedEffect(Unit) {
-                                                delay(500.milliseconds)
-                                                focusRequester.requestFocus()
+                                            if (getPlatform() == Platform.IOS) {
+                                                LaunchedEffect(toolbarTransition.currentState, toolbarTransition.isRunning) {
+                                                    if (toolbarTransition.currentState == 1 && !toolbarTransition.isRunning) {
+                                                        focusRequester.requestFocus()
+                                                    }
+                                                }
+                                            } else {
+                                                LaunchedEffect(Unit) {
+                                                    delay(500.milliseconds)
+                                                    focusRequester.requestFocus()
+                                                }
                                             }
                                             EnhancedIconButton(
                                                 onClick = {},
@@ -904,7 +1029,13 @@ fun Grades(
                                             BasicTextField(
                                                 value = gradesViewModel.searchQuery,
                                                 onValueChange = { gradesViewModel.searchQuery = it },
-                                                modifier = Modifier.weight(1f).padding(vertical = 15.dp).focusRequester(focusRequester),
+                                                modifier =
+                                                    Modifier
+                                                        .weight(1f)
+                                                        .padding(vertical = 15.dp)
+                                                        .focusRequester(focusRequester)
+                                                        .nativeTextInputTint(colorScheme.primary),
+                                                keyboardOptions = KeyboardOptions(platformImeOptions = LocalNativeTextInputOptions.current),
                                                 singleLine = true,
                                                 textStyle = TextStyle.Default.copy(colorScheme.onPrimaryContainer, 20.sp),
                                                 cursorBrush = SolidColor(colorScheme.onPrimaryContainer),
@@ -1100,6 +1231,8 @@ fun Grades(
                                                         icon = MathAvg,
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Top,
+                                                        controlVisible = targetState == gradesViewModel.toolbarState,
+                                                        nativeControlFadeIn = true,
                                                     )
                                                     settingsToggleItem(
                                                         checked = gradeAverageUseWeighting,
@@ -1118,6 +1251,8 @@ fun Grades(
                                                         icon = MaterialSymbols.Rounded.Balance,
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Middle,
+                                                        controlVisible = targetState == gradesViewModel.toolbarState,
+                                                        nativeControlFadeIn = true,
                                                     )
                                                 }
                                                 settingsToggleItem(
@@ -1137,6 +1272,8 @@ fun Grades(
                                                         } else {
                                                             PreferencePosition.Middle
                                                         },
+                                                    controlVisible = targetState == gradesViewModel.toolbarState,
+                                                    nativeControlFadeIn = true,
                                                 )
                                                 if (!viewModel.isDemoAccount.value && !isOpened) {
                                                     settingsToggleItem(
@@ -1149,6 +1286,8 @@ fun Grades(
                                                         icon = MaterialSymbols.Rounded.Disabled_visible,
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Middle,
+                                                        controlVisible = targetState == gradesViewModel.toolbarState,
+                                                        nativeControlFadeIn = true,
                                                     )
                                                     settingsToggleItem(
                                                         checked = showTeachersWithFirstname,
@@ -1160,6 +1299,8 @@ fun Grades(
                                                         icon = MaterialSymbols.Rounded.Title,
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Bottom,
+                                                        controlVisible = targetState == gradesViewModel.toolbarState,
+                                                        nativeControlFadeIn = true,
                                                     )
                                                 }
                                             }

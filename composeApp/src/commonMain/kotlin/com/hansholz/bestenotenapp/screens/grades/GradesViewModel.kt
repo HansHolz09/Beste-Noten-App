@@ -14,9 +14,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import com.hansholz.bestenotenapp.main.ViewModel as AppViewModel
 
 class GradesViewModel(
-    viewModel: com.hansholz.bestenotenapp.main.ViewModel,
+    viewModel: AppViewModel,
 ) : ViewModel() {
     var isLoading by mutableStateOf(false)
     var searchQuery by mutableStateOf("")
@@ -38,7 +39,7 @@ class GradesViewModel(
     var titleHeight by mutableStateOf(0.dp)
     var closeBarHeight by mutableStateOf(0.dp)
 
-    fun refreshGrades(viewModel: com.hansholz.bestenotenapp.main.ViewModel) {
+    fun refreshGrades(viewModel: AppViewModel) {
         viewModelScope.launch {
             isLoading = true
             try {
