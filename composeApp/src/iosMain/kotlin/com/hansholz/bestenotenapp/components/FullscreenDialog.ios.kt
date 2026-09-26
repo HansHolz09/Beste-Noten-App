@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.uikit.LocalNativeTextInputContext
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.hansholz.bestenotenapp.main.LocalNativeAlignmentHaptic
 import com.hansholz.bestenotenapp.main.LocalNativeKeyboardHandoff
 import com.hansholz.bestenotenapp.main.LocalNativeTextInputTint
 
@@ -34,6 +35,7 @@ actual fun FullscreenDialog(
         CompositionLocalProvider(
             LocalNativeTextInputTint provides { color -> nativeTextInputContext.updateNativeTextInputTintColor(color) },
             LocalNativeKeyboardHandoff provides rememberNativeKeyboardHandoff(),
+            LocalNativeAlignmentHaptic provides rememberNativeAlignmentHaptic(),
             content = content,
         )
     }

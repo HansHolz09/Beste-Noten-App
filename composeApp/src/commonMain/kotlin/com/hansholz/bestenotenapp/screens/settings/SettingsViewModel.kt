@@ -38,7 +38,6 @@ class SettingsViewModel : ViewModel() {
         }
     private val gradeAverageCalculator = GradeAverageCalculator()
 
-    var showIntervalDialog by mutableStateOf(false)
     var showExportConfigDialog by mutableStateOf(false)
     var showLicenseDialog by mutableStateOf(false)
     var showConfetti by mutableStateOf(false)

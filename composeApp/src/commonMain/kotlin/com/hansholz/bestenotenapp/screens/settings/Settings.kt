@@ -3,6 +3,7 @@ package com.hansholz.bestenotenapp.screens.settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -12,6 +13,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.Slider
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -92,6 +94,7 @@ import com.hansholz.bestenotenapp.main.LocalHomeworkEnabled
 import com.hansholz.bestenotenapp.main.LocalHomeworkGoogleSyncEnabled
 import com.hansholz.bestenotenapp.main.LocalNativeAppearanceSelector
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
+import com.hansholz.bestenotenapp.main.LocalNativeSlider
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.LocalShowAbsences
 import com.hansholz.bestenotenapp.main.LocalShowAllSubjects
@@ -129,6 +132,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import top.ltfan.multihaptic.compose.rememberVibrator
+import kotlin.math.roundToInt
 import kotlin.time.Clock
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -145,6 +149,7 @@ fun Settings(
     val globalEasterEgg = LocalGlobalEasterEgg.current
     val hideNativeInterop = LocalHideNativeInterop.current
     val nativeAppearanceSelector = LocalNativeAppearanceSelector.current
+    val nativeSlider = LocalNativeSlider.current
     val isCompactWindow =
         !currentWindowAdaptiveInfoV2()
             .windowSizeClass
@@ -377,22 +382,39 @@ fun Settings(
                     position = PreferencePosition.Middle,
                 )
                 item {
+                    val intervalOptions = listOf(15L, 30L, 60L, 120L, 360L, 720L, 1440L)
+                    val selectedIndex = intervalOptions.indexOf(notificationIntervalMinutes).coerceAtLeast(0)
+                    val onIntervalSelected: (Int) -> Unit = { index ->
+                        val interval = intervalOptions[index]
+                        if (interval != notificationIntervalMinutes) {
+                            notificationIntervalMinutes = interval
+                            vibrator.enhancedVibrate(EnhancedVibrations.TICK)
+                            put("gradeNotificationsIntervalMinutes", interval)
+                            GradeNotifications.onSettingsUpdated()
+                        }
+                    }
                     PreferenceItem(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         title = "Überprüfungsintervall",
                         subtitle = "Aktuell: ${formateInterval(notificationIntervalMinutes)}",
                         icon = MaterialSymbols.Rounded.History,
                         enabled = notificationsEnabled,
-                        onClick =
-                            if (notificationsEnabled) {
-                                {
-                                    vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
-                                    settingsViewModel.showIntervalDialog = true
-                                }
-                            } else {
-                                null
-                            },
                         position = PreferencePosition.Bottom,
+                        bottomContent = {
+                            val sliderModifier = Modifier.fillMaxWidth().padding(start = 56.dp, end = 16.dp, bottom = 12.dp)
+                            if (nativeComponentsEnabled && nativeSlider != null) {
+                                nativeSlider(selectedIndex, onIntervalSelected, notificationsEnabled, sliderModifier)
+                            } else {
+                                Slider(
+                                    value = selectedIndex.toFloat(),
+                                    onValueChange = { onIntervalSelected(it.roundToInt()) },
+                                    modifier = sliderModifier,
+                                    enabled = notificationsEnabled,
+                                    valueRange = 0f..intervalOptions.lastIndex.toFloat(),
+                                    steps = intervalOptions.size - 2,
+                                )
+                            }
+                        },
                     )
                 }
             }
@@ -894,7 +916,6 @@ fun Settings(
         topAppBarBackground(innerPadding.calculateTopPadding())
     }
 
-    NotificationIntervalDialog(settingsViewModel)
     ExportConfigDialog(settingsViewModel, viewModel)
     LibrariesDialog(settingsViewModel)
     if (globalEasterEgg == null) ConfettiEasterEgg(settingsViewModel)

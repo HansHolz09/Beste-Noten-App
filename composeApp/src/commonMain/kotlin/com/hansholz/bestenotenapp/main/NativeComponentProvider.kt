@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PlatformImeOptions
@@ -14,6 +15,9 @@ internal val LocalNativeSwitch =
     compositionLocalOf<(@Composable (Boolean, (Boolean) -> Unit, Boolean, Modifier, Boolean) -> Unit)?> { null }
 internal val LocalNativeAppearanceSelector =
     compositionLocalOf<(@Composable (Int, (Int) -> Unit, Modifier) -> Unit)?> { null }
+internal val LocalNativeSlider =
+    compositionLocalOf<(@Composable (Int, (Int) -> Unit, Boolean, Modifier) -> Unit)?> { null }
+internal val LocalNativeAlignmentHaptic = compositionLocalOf<((Offset) -> Unit)?> { null }
 internal val LocalNativeDialogBackdrop =
     compositionLocalOf<(@Composable (Modifier, List<Rect>) -> Unit)?> { null }
 internal val LocalNativePrimaryTabRow =

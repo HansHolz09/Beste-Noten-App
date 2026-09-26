@@ -16,16 +16,19 @@ import com.hansholz.bestenotenapp.components.NativeAppearanceSelector
 import com.hansholz.bestenotenapp.components.NativeDatePicker
 import com.hansholz.bestenotenapp.components.NativeDialogBackdrop
 import com.hansholz.bestenotenapp.components.NativePrimaryTabRow
+import com.hansholz.bestenotenapp.components.NativeSlider
 import com.hansholz.bestenotenapp.components.NativeSwitch
 import com.hansholz.bestenotenapp.components.NativeTimePicker
 import com.hansholz.bestenotenapp.components.hideNativeSwitches
 import com.hansholz.bestenotenapp.components.hideVisibleNativeDateTimePickers
+import com.hansholz.bestenotenapp.components.rememberNativeAlignmentHaptic
 import com.hansholz.bestenotenapp.components.rememberNativeKeyboardHandoff
 import com.hansholz.bestenotenapp.main.App
 import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
 import com.hansholz.bestenotenapp.main.LocalGlobalEasterEgg
 import com.hansholz.bestenotenapp.main.LocalHideNativeDateTimePickers
 import com.hansholz.bestenotenapp.main.LocalHideNativeInterop
+import com.hansholz.bestenotenapp.main.LocalNativeAlignmentHaptic
 import com.hansholz.bestenotenapp.main.LocalNativeAppearanceSelector
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNativeContentTopPadding
@@ -33,6 +36,7 @@ import com.hansholz.bestenotenapp.main.LocalNativeDatePicker
 import com.hansholz.bestenotenapp.main.LocalNativeDialogBackdrop
 import com.hansholz.bestenotenapp.main.LocalNativeKeyboardHandoff
 import com.hansholz.bestenotenapp.main.LocalNativePrimaryTabRow
+import com.hansholz.bestenotenapp.main.LocalNativeSlider
 import com.hansholz.bestenotenapp.main.LocalNativeSwitch
 import com.hansholz.bestenotenapp.main.LocalNativeTextInputOptions
 import com.hansholz.bestenotenapp.main.LocalNativeTextInputTint
@@ -62,6 +66,7 @@ fun mainViewController(nativeBridge: NativeComponentBridge? = null): UIViewContr
                 LocalNativeTextInputOptions provides nativeTextInputOptions,
                 LocalNativeTextInputTint provides { color -> nativeTextInputContext.updateNativeTextInputTintColor(color) },
                 LocalNativeKeyboardHandoff provides rememberNativeKeyboardHandoff(),
+                LocalNativeAlignmentHaptic provides rememberNativeAlignmentHaptic(),
                 LocalNativeSystemIsDark provides nativeBridge?.systemIsDarkState?.value,
                 LocalNativeContentTopPadding provides nativeBridge?.contentTopInsetState?.value?.dp,
                 LocalNativeDialogBackdrop provides { modifier, glassFrames ->
@@ -87,6 +92,9 @@ fun mainViewController(nativeBridge: NativeComponentBridge? = null): UIViewContr
                 },
                 LocalNativeAppearanceSelector provides { selected, onSelected, modifier ->
                     NativeAppearanceSelector(selected, onSelected, modifier)
+                },
+                LocalNativeSlider provides { selected, onSelected, enabled, modifier ->
+                    NativeSlider(selected, onSelected, enabled, modifier)
                 },
             ) {
                 App(

@@ -55,6 +55,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -93,6 +95,7 @@ import com.hansholz.bestenotenapp.homework.HomeworkType
 import com.hansholz.bestenotenapp.homework.newHomeworkId
 import com.hansholz.bestenotenapp.main.LocalHomeworkGoogleSyncEnabled
 import com.hansholz.bestenotenapp.main.LocalHomeworkTypes
+import com.hansholz.bestenotenapp.main.LocalNativeAlignmentHaptic
 import com.hansholz.bestenotenapp.main.LocalNativeKeyboardHandoff
 import com.hansholz.bestenotenapp.main.LocalNativeTextInputOptions
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
@@ -547,6 +550,7 @@ private fun HomeworkTypeEditorDialog(
         icon = { Icon(MaterialSymbols.Rounded.Edit_note, null) },
         title = { Text("Eintragstypen bearbeiten") },
         text = {
+            val nativeAlignmentHaptic = LocalNativeAlignmentHaptic.current
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 LazyColumn(
                     state = listState,
@@ -560,6 +564,7 @@ private fun HomeworkTypeEditorDialog(
                 ) {
                     items(draft, key = HomeworkType::value) { option ->
                         val index = draft.indexOf(option)
+                        var itemCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
                         PreferenceItem(
                             title = option.label,
                             icon = MaterialSymbols.Rounded.Drag_indicator,
@@ -576,7 +581,8 @@ private fun HomeworkTypeEditorDialog(
                                     .zIndex(if (draggedType == option) 1f else 0f)
                                     .graphicsLayer {
                                         translationY = if (draggedType == option) draggedOffset else 0f
-                                    }.pointerInput(option) {
+                                    }.onGloballyPositioned { itemCoordinates = it }
+                                    .pointerInput(option) {
                                         detectDragGesturesAfterLongPress(
                                             onDragStart = {
                                                 draggedType = option
@@ -592,7 +598,7 @@ private fun HomeworkTypeEditorDialog(
                                                 draggedType = null
                                                 draggedOffset = 0f
                                             },
-                                        ) { _, dragAmount ->
+                                        ) { change, dragAmount ->
                                             draggedOffset += dragAmount.y
                                             val currentInfo =
                                                 listState.layoutInfo.visibleItemsInfo.firstOrNull {
@@ -618,6 +624,7 @@ private fun HomeworkTypeEditorDialog(
                                                 val from = draft.indexOf(option)
                                                 val target = draft.indexOfFirst { it.value == targetInfo.key }
                                                 if (from >= 0 && target >= 0) {
+                                                    val hapticPosition = itemCoordinates?.localToRoot(change.position)
                                                     val wasAtAbsoluteTop =
                                                         listState.firstVisibleItemIndex == 0 &&
                                                             listState.firstVisibleItemScrollOffset == 0
@@ -626,8 +633,9 @@ private fun HomeworkTypeEditorDialog(
                                                     if (wasAtAbsoluteTop) {
                                                         listState.requestScrollToItem(0)
                                                     }
+                                                    vibrator.enhancedVibrateN(EnhancedVibrations.LOW_TICK)
+                                                    hapticPosition?.let { nativeAlignmentHaptic?.invoke(it) }
                                                 }
-                                                vibrator.enhancedVibrateN(EnhancedVibrations.LOW_TICK)
                                             }
                                         }
                                     },

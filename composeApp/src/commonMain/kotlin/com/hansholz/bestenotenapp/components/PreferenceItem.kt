@@ -52,6 +52,7 @@ fun PreferenceItem(
     iconTint: Color = LocalContentColor.current,
     titleMaxLines: Int = 2,
     position: PreferencePosition = PreferencePosition.Single,
+    bottomContent: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null,
 ) {
     val targetShape =
@@ -109,74 +110,77 @@ fun PreferenceItem(
         color = backgroundColor.copy(0.7f),
         shape = shape,
     ) {
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            when (icon) {
-                is ImageVector -> {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = iconTint,
-                        modifier =
-                            Modifier
-                                .size(24.dp)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                ) {
-                                    onIconClick?.invoke()
-                                },
-                    )
-                }
-
-                is Painter -> {
-                    Icon(
-                        painter = icon,
-                        contentDescription = null,
-                        tint = iconTint,
-                        modifier =
-                            Modifier
-                                .size(24.dp)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                ) {
-                                    onIconClick?.invoke()
-                                },
-                    )
-                }
-
-                else -> {}
-            }
-
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+        Column {
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Text(
-                    text = title,
-                    modifier = textModifier,
-                    style = MaterialTheme.typography.bodyLarge,
-                    maxLines = titleMaxLines,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                when (icon) {
+                    is ImageVector -> {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = iconTint,
+                            modifier =
+                                Modifier
+                                    .size(24.dp)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null,
+                                    ) {
+                                        onIconClick?.invoke()
+                                    },
+                        )
+                    }
 
-                if (subtitle != null) {
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    is Painter -> {
+                        Icon(
+                            painter = icon,
+                            contentDescription = null,
+                            tint = iconTint,
+                            modifier =
+                                Modifier
+                                    .size(24.dp)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null,
+                                    ) {
+                                        onIconClick?.invoke()
+                                    },
+                        )
+                    }
+
+                    else -> {}
                 }
-            }
 
-            trailingContent?.invoke()
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        text = title,
+                        modifier = textModifier,
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = titleMaxLines,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+
+                    if (subtitle != null) {
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                trailingContent?.invoke()
+            }
+            bottomContent?.invoke()
         }
     }
 }
