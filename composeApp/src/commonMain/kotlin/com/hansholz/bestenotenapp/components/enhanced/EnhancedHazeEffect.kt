@@ -5,6 +5,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -82,6 +83,7 @@ fun Modifier.enhancedHazeEffect(
                     HazeBlurStyle {
                         blurRadius((blurRadius ?: 10.dp) * 2)
                         noiseFactor(0f)
+                        blurredEdgeTreatment(BlurredEdgeTreatment.Unbounded)
                     },
                 performanceMode = HazePerformanceMode.Performance,
             )
