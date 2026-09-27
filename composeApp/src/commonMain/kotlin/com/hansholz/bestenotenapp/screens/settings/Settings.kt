@@ -58,6 +58,7 @@ import com.composables.icons.materialsymbols.rounded.Logout
 import com.composables.icons.materialsymbols.rounded.Menu
 import com.composables.icons.materialsymbols.rounded.Notifications
 import com.composables.icons.materialsymbols.rounded.Percent
+import com.composables.icons.materialsymbols.rounded.Privacy_tip
 import com.composables.icons.materialsymbols.rounded.Settings_backup_restore
 import com.composables.icons.materialsymbols.rounded.Subject
 import com.composables.icons.materialsymbols.rounded.Sync
@@ -884,6 +885,18 @@ fun Settings(
                     icon = MaterialSymbols.Rounded.Local_library,
                     onClick = {
                         settingsViewModel.showLicenseDialog = true
+                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                    },
+                    position = PreferencePosition.Middle,
+                )
+            }
+            item {
+                PreferenceItem(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    title = "Datenschutzerklärung",
+                    icon = MaterialSymbols.Rounded.Privacy_tip,
+                    onClick = {
+                        uriHandler.openUri("https://github.com/HansHolz09/Beste-Noten-App/blob/main/PRIVACY.md")
                         vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                     },
                     position = PreferencePosition.Middle,

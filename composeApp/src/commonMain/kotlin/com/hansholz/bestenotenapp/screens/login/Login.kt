@@ -60,6 +60,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -86,6 +87,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedTextButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
@@ -130,6 +132,7 @@ fun Login(
 
     @Suppress("DEPRECATION")
     val clipboard = LocalClipboardManager.current
+    val uriHandler = LocalUriHandler.current
     val animationsEnabled by LocalAnimationsEnabled.current
     var timetableBlockViewEnabled by LocalTimetableBlockViewEnabled.current
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
@@ -598,18 +601,26 @@ fun Login(
                                 }
                             }
                             if (getPlatform() != Platform.WEB) {
-                                EnhancedAnimatedContent(otherOptions) {
-                                    EnhancedTextButton(
-                                        onClick = {
-                                            otherOptions = !it
-                                            loginViewModel.resetPasswordLogin()
-                                            password = ""
-                                            code = TextFieldValue()
-                                        },
-                                        modifier = modifier,
-                                    ) {
+                                EnhancedOutlinedButton(
+                                    onClick = {
+                                        otherOptions = !otherOptions
+                                        loginViewModel.resetPasswordLogin()
+                                        password = ""
+                                        code = TextFieldValue()
+                                    },
+                                    modifier = modifier,
+                                ) {
+                                    EnhancedAnimatedContent(otherOptions) {
                                         Text(if (it) "Direkte Anmeldung" else "Weitere Optionen")
                                     }
+                                }
+                            }
+                            if (getPlatform() == Platform.IOS) {
+                                EnhancedTextButton(
+                                    onClick = { uriHandler.openUri("https://github.com/HansHolz09/Beste-Noten-App/blob/main/PRIVACY.md") },
+                                    modifier = modifier,
+                                ) {
+                                    Text("Datenschutzerklärung")
                                 }
                             }
                         }
