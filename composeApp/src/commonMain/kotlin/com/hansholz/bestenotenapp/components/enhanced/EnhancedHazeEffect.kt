@@ -32,6 +32,7 @@ fun Modifier.enhancedHazeEffect(
     block: (HazeBlurStyleScope.() -> Unit)? = null,
 ): Modifier {
     val backgroundColor = colorScheme.background
+    val surface = colorScheme.surfaceContainerHighest
     val blurEnabled = LocalBlurEnabled.current.value
     val useLiquidGlass = LocalNativeComponentsEnabled.current.value
     return when {
@@ -40,12 +41,13 @@ fun Modifier.enhancedHazeEffect(
                 this.hazeGlass(
                     input = HazeInput.Sources(hazeState),
                     style =
-                        GlassStyle.clear.then {
+                        GlassStyle.regular.then {
                             color?.let {
                                 backgroundColor(backgroundColor)
                             }
+                            tint(surface.copy(0.5f))
                             specularIntensity(0f)
-                            whitePoint(0.1f)
+                            whitePoint(0.15f)
                             shape(RoundedCornerShape(32.dp))
                         },
                     performanceMode = HazePerformanceMode.Balanced,

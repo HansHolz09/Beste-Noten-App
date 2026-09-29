@@ -25,7 +25,12 @@ final class PrimaryTabsPaletteContentView: UIView {
         setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         setContentHuggingPriority(.defaultLow, for: .horizontal)
         if #available(iOS 26.0, *) {
-            let glassView = UIVisualEffectView(effect: UIGlassEffect(style: .regular))
+            let effect = UIGlassEffect(style: .clear)
+            let ciColor = CIColor(color: UIColor.systemYellow)
+            let darkYellow = UIColor(red: ciColor.red * 0.15, green: ciColor.green * 0.15, blue: ciColor.blue * 0.15, alpha: 0.75)
+            let lightYellow = UIColor(red: 1 - (1 - ciColor.red) * 0.175, green: 1 - (1 - ciColor.green) * 0.175, blue: 1 - (1 - ciColor.blue) * 0.175, alpha: 0.75)
+            effect.tintColor = UIColor { $0.userInterfaceStyle == .dark ? darkYellow : lightYellow }
+            let glassView = UIVisualEffectView(effect: effect)
             glassView.translatesAutoresizingMaskIntoConstraints = false
             glassView.layer.cornerRadius = 20
             glassView.clipsToBounds = true
