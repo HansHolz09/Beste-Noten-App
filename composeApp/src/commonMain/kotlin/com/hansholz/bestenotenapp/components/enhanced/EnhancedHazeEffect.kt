@@ -42,9 +42,7 @@ fun Modifier.enhancedHazeEffect(
                     input = HazeInput.Sources(hazeState),
                     style =
                         GlassStyle.regular.then {
-                            color?.let {
-                                backgroundColor(backgroundColor)
-                            }
+                            backgroundColor(backgroundColor)
                             tint(surface.copy(0.5f))
                             specularIntensity(0f)
                             whitePoint(0.15f)

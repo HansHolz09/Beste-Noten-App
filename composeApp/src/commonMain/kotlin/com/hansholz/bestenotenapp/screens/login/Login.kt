@@ -188,7 +188,7 @@ fun Login(
 
     suspend fun completeNativeLogin(credential: ManagedPersonalAccessToken) {
         val success = runLogin { viewModel.acceptManagedPat(credential) }
-        if (!success) viewModel.discardManagedPat(credential)
+        if (!success) viewModel.discardManagedPat(credential) { uriHandler.openUri("https://beste.schule/me/passport") }
         loginViewModel.resetPasswordLogin()
     }
 

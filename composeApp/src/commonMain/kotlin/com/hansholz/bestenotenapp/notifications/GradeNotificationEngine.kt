@@ -17,9 +17,13 @@ import com.hansholz.bestenotenapp.utils.SecondaryStage
 import com.hansholz.bestenotenapp.utils.secondaryStage
 import io.ktor.client.plugins.ClientRequestException
 import kotlinx.coroutines.CancellationException
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.publicvalue.multiplatform.oidc.DefaultOpenIdConnectClient
+import kotlin.time.Clock
 
 internal enum class GradeNotificationOutcome {
     Success,
@@ -107,19 +111,27 @@ internal object GradeNotificationEngine {
         }
 
     private suspend fun fetchAllCollections(api: BesteSchuleApi): List<GradeCollection> {
+        val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
         val includes = listOf("grades", "interval")
         val collections = mutableStateListOf<GradeCollection>()
 
         val collection = api.collectionsIndex(include = includes)
-        collections.addAll(collection.data)
+        collections.addAll(collection.data.filter { it.isCurrent(today) })
         if ((collection.meta?.lastPage ?: 0) > 1) {
             for (i in 2..(collection.meta?.lastPage ?: 0)) {
-                collections.addAll(api.collectionsIndex(include = includes, page = i).data)
+                collections.addAll(api.collectionsIndex(include = includes, page = i).data.filter { it.isCurrent(today) })
             }
         }
 
         return collections
     }
+
+    private fun GradeCollection.isCurrent(today: LocalDate): Boolean =
+        try {
+            interval?.let { today in LocalDate.parse(it.from)..LocalDate.parse(it.to) } ?: true
+        } catch (_: IllegalArgumentException) {
+            true
+        }
 
     private suspend fun loadLevelsFor(
         api: BesteSchuleApi,

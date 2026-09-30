@@ -398,8 +398,29 @@ class ViewModel(
 
     fun acceptManagedPat(credential: ManagedPersonalAccessToken) = besteSchuleAuth.setManagedPat(credential)
 
-    suspend fun discardManagedPat(credential: ManagedPersonalAccessToken) {
-        runCatching { BesteSchulePasswordLogin.revoke(credential.id, credential.sessionCookies) }
+    suspend fun discardManagedPat(
+        credential: ManagedPersonalAccessToken,
+        openTokenManagement: () -> Unit,
+    ) {
+        val revoked =
+            try {
+                withTimeout(15.seconds) { BesteSchulePasswordLogin.revoke(credential.id, credential.sessionCookies) }
+            } catch (e: CancellationException) {
+                if (e !is TimeoutCancellationException) throw e
+                false
+            } catch (_: Exception) {
+                false
+            }
+        if (!revoked) {
+            toaster.show(
+                Toast(
+                    message = "Die Anmeldung wurde nicht abgeschlossen. Der erstellte Zugriffstoken ist noch in der Tokenverwaltung löschbar.",
+                    action = TextToastAction("Tokenverwaltung") { openTokenManagement() },
+                    type = ToastType.Warning,
+                    duration = 15.seconds,
+                ),
+            )
+        }
         besteSchuleAuth.clear()
     }
 
@@ -789,7 +810,6 @@ class ViewModel(
             delay(250.milliseconds)
             return year?.let { demoLessonStudentCountsByYear[it.id] } ?: demoTotalLessonStudentCount
         }
-        println(years.joinToString(",") { it.id.toString() })
         return loadBesteSchuleData("lessonStudentCount_${year?.id ?: "all"}") {
             year
                 ?.let {
