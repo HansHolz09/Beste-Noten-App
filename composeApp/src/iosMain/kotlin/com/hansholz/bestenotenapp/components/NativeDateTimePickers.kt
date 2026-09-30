@@ -19,6 +19,8 @@ import platform.Foundation.NSLocale
 import platform.Foundation.NSRunLoop
 import platform.Foundation.NSRunLoopCommonModes
 import platform.Foundation.NSSelectorFromString
+import platform.Foundation.NSTimeZone
+import platform.Foundation.timeZoneForSecondsFromGMT
 import platform.QuartzCore.CADisplayLink
 import platform.UIKit.UIColor
 import platform.UIKit.UIControlEventValueChanged
@@ -122,6 +124,8 @@ internal fun NativeDatePicker(
             AppDatePicker(applyCalendarTypography = true)
                 .apply {
                     datePickerMode = UIDatePickerMode.UIDatePickerModeDate
+                    // Material date selections represent calendar days at UTC midnight.
+                    timeZone = NSTimeZone.timeZoneForSecondsFromGMT(0)
                     preferredDatePickerStyle = UIDatePickerStyle.UIDatePickerStyleInline
                     addTarget(target, NSSelectorFromString("valueChanged:"), UIControlEventValueChanged)
                 }.registerAsVisiblePicker()
@@ -199,7 +203,8 @@ private class DatePickerTarget(
     @ObjCAction
     fun valueChanged(sender: UIDatePicker) {
         val unixSeconds = sender.date.timeIntervalSinceReferenceDate + REFERENCE_DATE_UNIX_OFFSET_SECONDS
-        onSelectedDateChanged((unixSeconds * 1000.0).toLong())
+        val unixMillis = (unixSeconds * 1000.0).toLong()
+        onSelectedDateChanged(unixMillis.floorDiv(86_400_000L) * 86_400_000L)
     }
 }
 

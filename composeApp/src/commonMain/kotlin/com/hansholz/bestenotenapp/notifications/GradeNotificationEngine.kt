@@ -82,7 +82,16 @@ internal object GradeNotificationEngine {
                                     .filter { it.id in newIds }
                                     .map { it to collection }
                             }.sortedBy { it.second.givenAt }
-                    notifyNewGrades(newGrades, loadLevelsFor(api, newGrades))
+                    val levelsByYear =
+                        try {
+                            loadLevelsFor(api, newGrades)
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            emptyMap()
+                        }
+                    notifyNewGrades(newGrades, levelsByYear)
                 }
 
                 storeKnownGradeIds(currentIds)
