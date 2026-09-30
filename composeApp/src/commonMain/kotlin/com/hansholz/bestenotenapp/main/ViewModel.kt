@@ -450,16 +450,25 @@ class ViewModel(
                         }
                     }
                     this@ViewModel.user.value = loadBesteSchuleData("user") { api.usersShow(studentId.value).data }
+
                     loadCurrentLevel()
-                    if (level.value?.secondaryStage() == SecondaryStage.TWO && kSafe.getKeyInfo("timetableBlockViewEnabled") == null) {
-                        put("timetableBlockViewEnabled", true)
-                        applySettings(true)
-                    }
+                    val isSecondaryStage =
+                        if (kSafe.getKeyInfo("timetableBlockViewEnabled") == null) {
+                            level.value?.secondaryStage() == SecondaryStage.TWO
+                        } else {
+                            get("timetableBlockViewEnabled", false)
+                        }
+                    put("timetableBlockViewEnabled", isSecondaryStage)
+                    applySettings(isSecondaryStage)
+
                     writeBesteSchuleCache("user", user)
+
                     setCurrentYear()
+
                     if (stayLoggedIn) {
                         besteSchuleAuth.persist()
                     }
+
                     onNavigateHome()
                     toaster.show(
                         Toast(
@@ -514,9 +523,6 @@ class ViewModel(
             studentId.value = data.student.id.toString()
             isDemoAccount.value = true
             val timetableBlockViewEnabled = data.level.secondaryStage() == SecondaryStage.TWO
-            kSafeProvider(kSafe) {
-                put("timetableBlockViewEnabled", timetableBlockViewEnabled)
-            }
             applySettings(timetableBlockViewEnabled)
             onNavigateHome()
             toaster.show(
