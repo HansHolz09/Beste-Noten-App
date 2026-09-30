@@ -81,6 +81,9 @@ fun StatsDialog(
             if (viewModel.intervals.isEmpty()) {
                 viewModel.getIntervals()?.let { viewModel.intervals.addAll(it) }
             }
+            if (viewModel.years.isEmpty()) {
+                viewModel.getYears()?.let { viewModel.years.addAll(it) }
+            }
             if (viewModel.dayStudentCount.value == null) {
                 viewModel.getDayStudentCount()?.let { viewModel.dayStudentCount.value = it }
             }
@@ -89,9 +92,6 @@ fun StatsDialog(
             }
             if (viewModel.lessonStudentBySlot.isEmpty()) {
                 viewModel.getLessonStudentBySlot()?.let { viewModel.lessonStudentBySlot.addAll(it) }
-            }
-            if (viewModel.years.isEmpty()) {
-                viewModel.getYears()?.let { viewModel.years.addAll(it) }
             }
             if (viewModel.currentDayStudentCount.value == null) {
                 viewModel.getDayStudentCount(viewModel.user.value?.year)?.let { viewModel.currentDayStudentCount.value = it }
@@ -128,15 +128,15 @@ fun StatsDialog(
                                 viewModel.intervals.clear()
                                 viewModel.intervals.addAll(it)
                             }
+                            viewModel.getYears()?.let {
+                                viewModel.years.clear()
+                                viewModel.years.addAll(it)
+                            }
                             viewModel.getDayStudentCount()?.let { viewModel.dayStudentCount.value = it }
                             viewModel.getLessonStudentCount()?.let { viewModel.lessonStudentCount.value = it }
                             viewModel.getLessonStudentBySlot()?.let {
                                 viewModel.lessonStudentBySlot.clear()
                                 viewModel.lessonStudentBySlot.addAll(it)
-                            }
-                            viewModel.getYears()?.let {
-                                viewModel.years.clear()
-                                viewModel.years.addAll(it)
                             }
                             viewModel.getDayStudentCount(viewModel.user.value?.year)?.let { viewModel.currentDayStudentCount.value = it }
                             viewModel.getLessonStudentCount(viewModel.user.value?.year)?.let { viewModel.currentLessonStudentCount.value = it }

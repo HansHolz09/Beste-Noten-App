@@ -783,12 +783,13 @@ class ViewModel(
             delay(250.milliseconds)
             return year?.let { demoLessonStudentCountsByYear[it.id] } ?: demoTotalLessonStudentCount
         }
+        println(years.joinToString(",") { it.id.toString() })
         return loadBesteSchuleData("lessonStudentCount_${year?.id ?: "all"}") {
             year
                 ?.let {
-                    api.journalLessonStudentStatisticsCount(filterRange = "${it.from},${it.to}").data.firstOrNull()
+                    api.journalLessonStudentStatisticsCount(filterYear = it.id.toString()).data.firstOrNull()
                 }
-                ?: api.journalLessonStudentStatisticsCount().data.firstOrNull()
+                ?: api.journalLessonStudentStatisticsCount(filterYear = years.joinToString(",") { it.id.toString() }).data.firstOrNull()
                 ?: return@loadBesteSchuleData null
         }
     }
@@ -801,9 +802,9 @@ class ViewModel(
         return loadBesteSchuleData("lessonStudentBySlot_${year?.id ?: "all"}") {
             year
                 ?.let {
-                    api.journalLessonStudentStatisticsBySlot(filterRange = "${it.from},${it.to}").data
+                    api.journalLessonStudentStatisticsBySlot(filterYear = it.id.toString()).data
                 }
-                ?: api.journalLessonStudentStatisticsBySlot().data
+                ?: api.journalLessonStudentStatisticsBySlot(filterYear = years.joinToString(",") { it.id.toString() }).data
         }
     }
 

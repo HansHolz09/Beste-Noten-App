@@ -2684,11 +2684,13 @@ class BesteSchuleApi(
     /** Access: Any role */
     suspend fun journalLessonStudentStatisticsBySlot(
         filterStudent: String? = null,
+        filterYear: String? = null,
         filterRange: String? = null,
     ): ListDataWrapper<JournalLessonStudentBySlot> =
         client
             .get("$baseUrl/journal/lesson-student/by-slot") {
                 parameter("filter[student]", filterStudent)
+                parameter("filter[year]", filterYear)
                 parameter("filter[range]", filterRange)
             }.body()
 
