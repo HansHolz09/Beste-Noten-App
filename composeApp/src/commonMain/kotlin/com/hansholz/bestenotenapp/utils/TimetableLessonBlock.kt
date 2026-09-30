@@ -54,7 +54,7 @@ private fun JournalLesson.canJoinBlockWith(next: JournalLesson): Boolean {
                     .map { it.id?.let { id -> "id:$id" } ?: it.localId?.let { localId -> "local:$localId" } ?: "name:${it.forename}:${it.name}" },
             ) &&
         rooms.orEmpty().map { it.id }.sameElementsAs(next.rooms.orEmpty().map { it.id }) &&
-        notes.sameElementsAs(next.notes)
+        notes?.map { it.description }.sameElementsAs(next.notes?.map { it.description })
 }
 
 private fun List<JournalLesson>.toBlockLesson(): JournalLesson {
