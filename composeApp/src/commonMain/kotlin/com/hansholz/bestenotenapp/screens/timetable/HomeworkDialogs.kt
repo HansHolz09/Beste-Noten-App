@@ -33,7 +33,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
@@ -52,7 +51,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -82,10 +80,9 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedTextField
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
-import com.hansholz.bestenotenapp.components.keepKeyboardOnPress
-import com.hansholz.bestenotenapp.components.nativeTextInputTint
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.homework.HomeworkEntry
 import com.hansholz.bestenotenapp.homework.HomeworkPlacement
@@ -96,8 +93,6 @@ import com.hansholz.bestenotenapp.homework.newHomeworkId
 import com.hansholz.bestenotenapp.main.LocalHomeworkGoogleSyncEnabled
 import com.hansholz.bestenotenapp.main.LocalHomeworkTypes
 import com.hansholz.bestenotenapp.main.LocalNativeAlignmentHaptic
-import com.hansholz.bestenotenapp.main.LocalNativeKeyboardHandoff
-import com.hansholz.bestenotenapp.main.LocalNativeTextInputOptions
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DatePeriod
@@ -182,8 +177,6 @@ fun HomeworkEditorDialog(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
     val descriptionFocusRequester = remember { FocusRequester() }
-    var titleFocused by remember { mutableStateOf(false) }
-    var descriptionFocused by remember { mutableStateOf(false) }
 
     var title by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.title.orEmpty()) }
     var description by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.description.orEmpty()) }
@@ -220,8 +213,6 @@ fun HomeworkEditorDialog(
         icon = { Icon(if (initialEntry == null) MaterialSymbols.Rounded.Add_task else MaterialSymbols.Rounded.Task_alt, null) },
         title = { Text(if (initialEntry == null) "Eintrag hinzufügen" else "Eintrag bearbeiten") },
         text = {
-            val nativeKeyboardHandoff = LocalNativeKeyboardHandoff.current
-
             val editorScrollState = rememberScrollState()
             Column(
                 modifier =
@@ -233,44 +224,26 @@ fun HomeworkEditorDialog(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                OutlinedTextField(
+                EnhancedTextField(
                     value = title,
                     onValueChange = { title = it },
                     modifier =
                         Modifier
-                            .fillMaxWidth()
-                            .onFocusChanged { titleFocused = it.isFocused }
-                            .keepKeyboardOnPress(descriptionFocused)
-                            .nativeTextInputTint(colorScheme.primary),
+                            .fillMaxWidth(),
                     label = { Text("Titel") },
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next, platformImeOptions = LocalNativeTextInputOptions.current),
-                    keyboardActions =
-                        if (LocalNativeTextInputOptions.current != null) {
-                            KeyboardActions(onNext = {
-                                if (nativeKeyboardHandoff != null) {
-                                    nativeKeyboardHandoff { descriptionFocusRequester.requestFocus() }
-                                } else {
-                                    descriptionFocusRequester.requestFocus()
-                                }
-                            })
-                        } else {
-                            KeyboardActions.Default
-                        },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { descriptionFocusRequester.requestFocus() }),
                     singleLine = true,
                     enabled = !busy,
                 )
-                OutlinedTextField(
+                EnhancedTextField(
                     value = description,
                     onValueChange = { description = it },
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .focusRequester(descriptionFocusRequester)
-                            .onFocusChanged { descriptionFocused = it.isFocused }
-                            .keepKeyboardOnPress(titleFocused)
-                            .nativeTextInputTint(colorScheme.primary),
+                            .focusRequester(descriptionFocusRequester),
                     label = { Text("Beschreibung") },
-                    keyboardOptions = KeyboardOptions(platformImeOptions = LocalNativeTextInputOptions.current),
                     minLines = 2,
                     enabled = !busy,
                 )
@@ -651,13 +624,13 @@ private fun HomeworkTypeEditorDialog(
                         }
                     }
                 }
-                OutlinedTextField(
+                EnhancedTextField(
                     value = newType,
                     onValueChange = { newType = it },
-                    modifier = Modifier.fillMaxWidth().nativeTextInputTint(colorScheme.primary),
+                    modifier = Modifier.fillMaxWidth(),
                     label = { Text("Neuer Eintragstyp") },
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, platformImeOptions = LocalNativeTextInputOptions.current),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(onDone = { addType() }),
                     trailingIcon = {
                         IconButton(

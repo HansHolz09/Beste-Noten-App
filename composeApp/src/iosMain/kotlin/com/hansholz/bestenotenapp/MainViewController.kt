@@ -7,8 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.InternalComposeUiApi
-import androidx.compose.ui.text.input.PlatformImeOptions
-import androidx.compose.ui.uikit.LocalNativeTextInputContext
 import androidx.compose.ui.uikit.OnFocusBehavior
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeUIViewController
@@ -19,10 +17,10 @@ import com.hansholz.bestenotenapp.components.NativePrimaryTabRow
 import com.hansholz.bestenotenapp.components.NativeSlider
 import com.hansholz.bestenotenapp.components.NativeSwitch
 import com.hansholz.bestenotenapp.components.NativeTimePicker
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedNativeTextInputProvider
 import com.hansholz.bestenotenapp.components.hideNativeSwitches
 import com.hansholz.bestenotenapp.components.hideVisibleNativeDateTimePickers
 import com.hansholz.bestenotenapp.components.rememberNativeAlignmentHaptic
-import com.hansholz.bestenotenapp.components.rememberNativeKeyboardHandoff
 import com.hansholz.bestenotenapp.main.App
 import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
 import com.hansholz.bestenotenapp.main.LocalGlobalEasterEgg
@@ -34,12 +32,9 @@ import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNativeContentTopPadding
 import com.hansholz.bestenotenapp.main.LocalNativeDatePicker
 import com.hansholz.bestenotenapp.main.LocalNativeDialogBackdrop
-import com.hansholz.bestenotenapp.main.LocalNativeKeyboardHandoff
 import com.hansholz.bestenotenapp.main.LocalNativePrimaryTabRow
 import com.hansholz.bestenotenapp.main.LocalNativeSlider
 import com.hansholz.bestenotenapp.main.LocalNativeSwitch
-import com.hansholz.bestenotenapp.main.LocalNativeTextInputOptions
-import com.hansholz.bestenotenapp.main.LocalNativeTextInputTint
 import com.hansholz.bestenotenapp.main.LocalNativeTimePicker
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.theme.LocalNativeSystemIsDark
@@ -55,17 +50,12 @@ fun mainViewController(nativeBridge: NativeComponentBridge? = null): UIViewContr
             opaque = nativeBridge == null
             onFocusBehavior = OnFocusBehavior.DoNothing
         }) {
-            val nativeTextInputOptions = remember { PlatformImeOptions { usingNativeTextInput(true) } }
-            val nativeTextInputContext = LocalNativeTextInputContext.current
             val nativeComponentsEnabled = nativeBridge?.enabledState ?: remember { mutableStateOf(false) }
             val biometricAuthenticationAvailable = remember { runBlocking { KSafeBiometrics.biometricsAvailable() } }
             CompositionLocalProvider(
                 LocalNavigationDrawerTopPadding provides if (isInWindowMode()) 50.dp else null,
                 LocalBiometricAuthenticationAvailable provides biometricAuthenticationAvailable,
                 LocalNativeComponentsEnabled provides nativeComponentsEnabled,
-                LocalNativeTextInputOptions provides nativeTextInputOptions,
-                LocalNativeTextInputTint provides { color -> nativeTextInputContext.updateNativeTextInputTintColor(color) },
-                LocalNativeKeyboardHandoff provides rememberNativeKeyboardHandoff(),
                 LocalNativeAlignmentHaptic provides rememberNativeAlignmentHaptic(),
                 LocalNativeSystemIsDark provides nativeBridge?.systemIsDarkState?.value,
                 LocalNativeContentTopPadding provides nativeBridge?.contentTopInsetState?.value?.dp,
@@ -97,17 +87,19 @@ fun mainViewController(nativeBridge: NativeComponentBridge? = null): UIViewContr
                     NativeSlider(selected, onSelected, enabled, modifier)
                 },
             ) {
-                App(
-                    theme = { isDark, usesSystemAppearance ->
-                        nativeBridge?.updateTheme(isDark, usesSystemAppearance)
-                    },
-                    colors = { colors -> nativeBridge?.updateColorScheme(colors) },
-                    onNavHostReady = { controller -> nativeBridge?.attach(controller) },
-                    onRootDestinationChanged = { route -> nativeBridge?.rootDestinationChanged(route) },
-                    onFragmentDestinationChanged = { route -> nativeBridge?.fragmentDestinationChanged(route) },
-                    onCanNavigateBackChanged = { canNavigateBack -> nativeBridge?.canNavigateBackChanged(canNavigateBack) },
-                    onOfflineStatusChanged = { offline -> nativeBridge?.offlineStatusChanged(offline) },
-                )
+                EnhancedNativeTextInputProvider {
+                    App(
+                        theme = { isDark, usesSystemAppearance ->
+                            nativeBridge?.updateTheme(isDark, usesSystemAppearance)
+                        },
+                        colors = { colors -> nativeBridge?.updateColorScheme(colors) },
+                        onNavHostReady = { controller -> nativeBridge?.attach(controller) },
+                        onRootDestinationChanged = { route -> nativeBridge?.rootDestinationChanged(route) },
+                        onFragmentDestinationChanged = { route -> nativeBridge?.fragmentDestinationChanged(route) },
+                        onCanNavigateBackChanged = { canNavigateBack -> nativeBridge?.canNavigateBackChanged(canNavigateBack) },
+                        onOfflineStatusChanged = { offline -> nativeBridge?.offlineStatusChanged(offline) },
+                    )
+                }
             }
         }
     if (nativeBridge != null) {

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
@@ -44,14 +43,13 @@ import com.hansholz.bestenotenapp.api.models.Level
 import com.hansholz.bestenotenapp.components.PreferencePosition
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedBasicTextField
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedFilterChip
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
-import com.hansholz.bestenotenapp.components.nativeTextInputTint
 import com.hansholz.bestenotenapp.components.preferenceShape
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
-import com.hansholz.bestenotenapp.main.LocalNativeTextInputOptions
 
 @Composable
 internal fun GradeWeightingDialog(
@@ -218,7 +216,7 @@ private fun WeightControlRow(
             ) {
                 Icon(MaterialSymbols.Rounded.Remove, null)
             }
-            BasicTextField(
+            EnhancedBasicTextField(
                 value = if (useWeightingInsteadOfPercent) textFieldValue else "$textFieldValue%",
                 onValueChange = { newValue ->
                     val cleanNumber = newValue.replace("%", "").filter { it.isDigit() }
@@ -233,7 +231,7 @@ private fun WeightControlRow(
                         }
                     }
                 },
-                modifier = Modifier.width(60.dp).nativeTextInputTint(colorScheme.primary),
+                modifier = Modifier.width(60.dp),
                 textStyle =
                     typography.bodyLarge.copy(
                         textAlign = TextAlign.Center,
@@ -243,7 +241,6 @@ private fun WeightControlRow(
                     KeyboardOptions(
                         keyboardType = KeyboardType.Number,
                         imeAction = ImeAction.Done,
-                        platformImeOptions = LocalNativeTextInputOptions.current,
                     ),
                 singleLine = true,
                 cursorBrush = SolidColor(colorScheme.primary),

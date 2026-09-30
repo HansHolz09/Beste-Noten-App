@@ -9,18 +9,19 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.KeyboardActionHandler
@@ -35,14 +36,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.shapes
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
@@ -54,12 +53,11 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
@@ -84,20 +82,18 @@ import com.hansholz.bestenotenapp.components.CurvedText
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedBasicTextField
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedTextButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedTextField
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
-import com.hansholz.bestenotenapp.components.keepKeyboardOnPress
-import com.hansholz.bestenotenapp.components.nativeTextInputTint
 import com.hansholz.bestenotenapp.components.rotateForever
 import com.hansholz.bestenotenapp.main.ExactPlatform
 import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
-import com.hansholz.bestenotenapp.main.LocalNativeKeyboardHandoff
-import com.hansholz.bestenotenapp.main.LocalNativeTextInputOptions
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.LocalTimetableBlockViewEnabled
 import com.hansholz.bestenotenapp.main.Platform
@@ -114,6 +110,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import top.ltfan.multihaptic.compose.rememberVibrator
+import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -126,7 +123,6 @@ fun Login(
     val loginViewModel = viewModel { LoginViewModel() }
 
     val scope = viewModel.viewModelScope
-    val focusScope = rememberCoroutineScope()
 
     val vibrator = rememberVibrator()
 
@@ -136,9 +132,8 @@ fun Login(
     val animationsEnabled by LocalAnimationsEnabled.current
     var timetableBlockViewEnabled by LocalTimetableBlockViewEnabled.current
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
-    val nativeKeyboardHandoff = LocalNativeKeyboardHandoff.current
 
-    var stayLoggedIn by rememberSaveable { mutableStateOf(false) }
+    var stayLoggedIn by rememberSaveable { mutableStateOf(true) }
     var otherOptions by rememberSaveable { mutableStateOf(getPlatform() == Platform.WEB) }
     var identifier by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -148,14 +143,24 @@ fun Login(
     val codeFocus = remember { FocusRequester() }
     var identifierFocused by remember { mutableStateOf(false) }
     var passwordFocused by remember { mutableStateOf(false) }
+    var tokenFocused by remember { mutableStateOf(false) }
+    var codeFocused by remember { mutableStateOf(false) }
+    val loginScrollState = rememberScrollState()
+    var loginViewportBottom by remember { mutableStateOf(0f) }
+    var loginOptionsBottom by remember { mutableStateOf(0f) }
+    val loginOptionsModifier =
+        Modifier.onGloballyPositioned {
+            loginOptionsBottom = it.positionInRoot().y + it.size.height + loginScrollState.value
+        }
+    val imeBottom = WindowInsets.ime.getBottom(LocalDensity.current)
+    val loginInputFocused = identifierFocused || passwordFocused || tokenFocused || codeFocused
 
-    fun moveToPassword() {
-        if (nativeKeyboardHandoff != null) {
-            nativeKeyboardHandoff { passwordFocus.requestFocus() }
-        } else {
-            focusScope.launch {
-                withFrameNanos {}
-                passwordFocus.requestFocus()
+    LaunchedEffect(imeBottom, identifierFocused, passwordFocused, tokenFocused, codeFocused) {
+        if (imeBottom > 0 && loginInputFocused) {
+            withFrameNanos {}
+            if (loginOptionsBottom > 0 && loginViewportBottom > 0) {
+                val target = (loginOptionsBottom - loginViewportBottom + imeBottom).roundToInt().coerceIn(0, loginScrollState.maxValue)
+                loginScrollState.animateScrollTo(target)
             }
         }
     }
@@ -227,7 +232,11 @@ fun Login(
         hazeState = viewModel.hazeBackgroundState3,
     ) { innerPadding, topAppBarBackground ->
         BoxWithConstraints(
-            modifier = Modifier.fillMaxSize().hazeSource(viewModel.hazeBackgroundState3),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .hazeSource(viewModel.hazeBackgroundState3)
+                    .onGloballyPositioned { loginViewportBottom = it.boundsInRoot().bottom },
             contentAlignment = Alignment.Center,
         ) {
             val width = this.maxWidth
@@ -240,7 +249,7 @@ fun Login(
                 if (targetState) {
                     ContainedLoadingIndicator(Modifier.padding(innerPadding))
                 } else {
-                    Box(Modifier.verticalScroll(rememberScrollState())) {
+                    Box(Modifier.verticalScroll(loginScrollState)) {
                         Column(
                             modifier =
                                 Modifier
@@ -282,9 +291,9 @@ fun Login(
                                 if (showOtherOptions) {
                                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                         val textFieldState = rememberTextFieldState()
-                                        OutlinedTextField(
+                                        EnhancedTextField(
                                             state = textFieldState,
-                                            modifier = Modifier.fillMaxWidth().nativeTextInputTint(colorScheme.primary),
+                                            modifier = Modifier.fillMaxWidth().onFocusChanged { tokenFocused = it.isFocused },
                                             leadingIcon = {
                                                 EnhancedIconButton(onClick = {
                                                     scope.launch { textFieldState.setTextAndPlaceCursorAtEnd(clipboard.getText()?.text ?: "") }
@@ -301,7 +310,7 @@ fun Login(
                                                 }
                                             },
                                             placeholder = { Text("Private-Access-Token") },
-                                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, platformImeOptions = LocalNativeTextInputOptions.current),
+                                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                                             onKeyboardAction =
                                                 KeyboardActionHandler {
                                                     scope.launch { runLogin { viewModel.authToken.value = textFieldState.text.toString() } }
@@ -348,40 +357,27 @@ fun Login(
                                         verticalArrangement = Arrangement.spacedBy(12.dp),
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                     ) {
-                                        OutlinedTextField(
+                                        EnhancedTextField(
                                             value = identifier,
                                             onValueChange = { identifier = it },
                                             modifier =
                                                 Modifier
                                                     .fillMaxWidth()
-                                                    .onFocusChanged { identifierFocused = it.isFocused }
-                                                    .keepKeyboardOnPress(passwordFocused)
-                                                    .onPreviewKeyEvent {
-                                                        if (getPlatform() == Platform.IOS && it.key == Key.Tab) {
-                                                            if (it.type == KeyEventType.KeyDown) {
-                                                                moveToPassword()
-                                                            }
-                                                            true
-                                                        } else {
-                                                            false
-                                                        }
-                                                    }.nativeTextInputTint(colorScheme.primary),
+                                                    .onFocusChanged { identifierFocused = it.isFocused },
                                             label = { Text("E-Mail oder Nutzername") },
                                             singleLine = true,
                                             enabled = !loginViewModel.isSubmitting && !loginViewModel.twoFactorRequired,
-                                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next, platformImeOptions = LocalNativeTextInputOptions.current),
-                                            keyboardActions = KeyboardActions(onNext = { moveToPassword() }),
+                                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                                            keyboardActions = KeyboardActions(onNext = { passwordFocus.requestFocus() }),
                                         )
-                                        OutlinedTextField(
+                                        EnhancedTextField(
                                             value = password,
                                             onValueChange = { password = it },
                                             modifier =
                                                 Modifier
                                                     .fillMaxWidth()
                                                     .focusRequester(passwordFocus)
-                                                    .onFocusChanged { passwordFocused = it.isFocused }
-                                                    .keepKeyboardOnPress(identifierFocused)
-                                                    .nativeTextInputTint(colorScheme.primary),
+                                                    .onFocusChanged { passwordFocused = it.isFocused },
                                             label = { Text("Passwort") },
                                             trailingIcon = {
                                                 EnhancedIconButton(
@@ -396,12 +392,7 @@ fun Login(
                                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                                             singleLine = true,
                                             enabled = !loginViewModel.isSubmitting && !loginViewModel.twoFactorRequired,
-                                            keyboardOptions =
-                                                KeyboardOptions(
-                                                    keyboardType = KeyboardType.Password,
-                                                    imeAction = ImeAction.Done,
-                                                    platformImeOptions = LocalNativeTextInputOptions.current,
-                                                ),
+                                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                                             keyboardActions = KeyboardActions(onDone = { submitNativeLogin() }),
                                         )
                                         EnhancedAnimatedVisibility(loginViewModel.twoFactorRequired) {
@@ -411,7 +402,7 @@ fun Login(
                                                     modifier = Modifier.fillMaxWidth(),
                                                     textAlign = TextAlign.Center,
                                                 )
-                                                BasicTextField(
+                                                EnhancedBasicTextField(
                                                     value = code,
                                                     onValueChange = { value ->
                                                         val digits = value.text.filter(Char::isDigit).take(6)
@@ -422,7 +413,7 @@ fun Login(
                                                             .fillMaxWidth()
                                                             .height(56.dp)
                                                             .focusRequester(codeFocus)
-                                                            .nativeTextInputTint(Color.Transparent),
+                                                            .onFocusChanged { codeFocused = it.isFocused },
                                                     enabled = !loginViewModel.isSubmitting,
                                                     singleLine = true,
                                                     textStyle = typography.titleLarge.copy(color = Color.Transparent),
@@ -431,7 +422,6 @@ fun Login(
                                                         KeyboardOptions(
                                                             keyboardType = KeyboardType.NumberPassword,
                                                             imeAction = ImeAction.Done,
-                                                            platformImeOptions = LocalNativeTextInputOptions.current,
                                                         ),
                                                     keyboardActions = KeyboardActions(onDone = { submitNativeLogin() }),
                                                     decorationBox = { innerTextField ->
@@ -520,6 +510,7 @@ fun Login(
                             Row(
                                 modifier =
                                     modifier
+                                        .then(if (LocalBiometricAuthenticationAvailable.current) Modifier else loginOptionsModifier)
                                         .clip(shapes.medium)
                                         .clickable {
                                             val newValue = !stayLoggedIn
@@ -549,6 +540,7 @@ fun Login(
                                 Row(
                                     modifier =
                                         modifier
+                                            .then(loginOptionsModifier)
                                             .clip(shapes.medium)
                                             .clickable {
                                                 val newValue = !requireBiometricAuthentification

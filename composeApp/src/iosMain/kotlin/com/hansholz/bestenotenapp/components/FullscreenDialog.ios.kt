@@ -5,12 +5,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.uikit.LocalNativeTextInputContext
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedNativeTextInputProvider
 import com.hansholz.bestenotenapp.main.LocalNativeAlignmentHaptic
-import com.hansholz.bestenotenapp.main.LocalNativeKeyboardHandoff
-import com.hansholz.bestenotenapp.main.LocalNativeTextInputTint
 
 @OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)
 @Suppress("UNUSED_PARAMETER")
@@ -31,12 +29,10 @@ actual fun FullscreenDialog(
                 animateTransition = false,
             ),
     ) {
-        val nativeTextInputContext = LocalNativeTextInputContext.current
         CompositionLocalProvider(
-            LocalNativeTextInputTint provides { color -> nativeTextInputContext.updateNativeTextInputTintColor(color) },
-            LocalNativeKeyboardHandoff provides rememberNativeKeyboardHandoff(),
             LocalNativeAlignmentHaptic provides rememberNativeAlignmentHaptic(),
-            content = content,
-        )
+        ) {
+            EnhancedNativeTextInputProvider(content)
+        }
     }
 }

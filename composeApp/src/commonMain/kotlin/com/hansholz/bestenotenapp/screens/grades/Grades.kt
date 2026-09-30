@@ -48,8 +48,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
@@ -129,6 +127,7 @@ import com.hansholz.bestenotenapp.components.PreferencePosition
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedBasicTextField
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
@@ -140,14 +139,12 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.components.icons.MathAvg
-import com.hansholz.bestenotenapp.components.nativeTextInputTint
 import com.hansholz.bestenotenapp.components.rememberLazyListScrollSpeedState
 import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.LocalGradeAverageEnabled
 import com.hansholz.bestenotenapp.main.LocalGradeAverageUseWeighting
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNativePrimaryTabRow
-import com.hansholz.bestenotenapp.main.LocalNativeTextInputOptions
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
 import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
@@ -1026,16 +1023,14 @@ fun Grades(
                                                     tint = colorScheme.onPrimaryContainer,
                                                 )
                                             }
-                                            BasicTextField(
+                                            EnhancedBasicTextField(
                                                 value = gradesViewModel.searchQuery,
                                                 onValueChange = { gradesViewModel.searchQuery = it },
                                                 modifier =
                                                     Modifier
                                                         .weight(1f)
                                                         .padding(vertical = 15.dp)
-                                                        .focusRequester(focusRequester)
-                                                        .nativeTextInputTint(colorScheme.primary),
-                                                keyboardOptions = KeyboardOptions(platformImeOptions = LocalNativeTextInputOptions.current),
+                                                        .focusRequester(focusRequester),
                                                 singleLine = true,
                                                 textStyle = TextStyle.Default.copy(colorScheme.onPrimaryContainer, 20.sp),
                                                 cursorBrush = SolidColor(colorScheme.onPrimaryContainer),
