@@ -184,9 +184,6 @@ nucleus.application {
         vendor = "Franz Scholz"
         homepage = "https://hansholz.dev/"
 
-        appResourcesRootDir = layout.projectDirectory.dir("src/desktopMain/assets")
-        splashImage = "splash.png"
-
         jvmArgs += "--enable-native-access=ALL-UNNAMED"
         if (System.getProperty("os.name").startsWith("Mac")) {
             jvmArgs += "-XstartOnFirstThread"
@@ -235,7 +232,7 @@ nucleus.application {
 
         macOS {
             iconFile.set(project.file("src/desktopMain/icons/icon.icns"))
-            layeredIconDir.set(layout.projectDirectory.dir("src/desktopMain/icons/icon.icon"))
+            layeredIconDir.set(layout.projectDirectory.dir("../iosApp/iosApp/Beste-Noten-App.icon"))
             dockName = appName
             packageBuildVersion = libs.versions.appVersionCode.get()
             minimumSystemVersion =
