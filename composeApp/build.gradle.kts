@@ -150,6 +150,7 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.nucleus.core.runtime)
+            implementation(libs.nucleus.system.color)
             implementation(libs.nucleus.aot.runtime)
             implementation(libs.nucleus.graalvm.runtime)
             implementation(libs.nucleus.decorated.window.tao)
@@ -158,7 +159,6 @@ kotlin {
             implementation(libs.navigation.event.compose)
             implementation(libs.ktor.client.apache5)
             implementation(libs.ktor.server.core)
-            implementation(libs.materialyou)
             compileOnly(libs.graalvm.svm)
         }
         wasmJsMain.dependencies {

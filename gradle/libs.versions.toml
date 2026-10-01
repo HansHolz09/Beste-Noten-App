@@ -93,10 +93,10 @@ ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
-materialyou = { module = "dev.zwander:materialyou", version.ref = "materialyou" }
 markdown-renderer-m3 = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdownRenderer" }
 multihaptic-compose = { module = "top.ltfan.multihaptic:multihaptic-compose", version.ref = "multihapticCompose" }
 nucleus-core-runtime = { module = "dev.nucleusframework:nucleus.core-runtime", version.ref = "nucleus" }
+nucleus-system-color = { module = "dev.nucleusframework:nucleus.system-color", version.ref = "nucleus" }
 nucleus-aot-runtime = { module = "dev.nucleusframework:nucleus.aot-runtime", version.ref = "nucleus" }
 nucleus-graalvm-runtime = { module = "dev.nucleusframework:nucleus.graalvm-runtime", version.ref = "nucleus" }
 nucleus-decorated-window-tao = { module = "dev.nucleusframework:nucleus.decorated-window-tao", version.ref = "nucleus" }
