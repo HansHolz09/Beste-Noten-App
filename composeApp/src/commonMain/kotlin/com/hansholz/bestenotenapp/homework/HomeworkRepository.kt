@@ -2,6 +2,7 @@ package com.hansholz.bestenotenapp.homework
 
 import com.hansholz.bestenotenapp.security.kSafeProvider
 import eu.anifantakis.lib.ksafe.KSafe
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.LocalDate
@@ -215,7 +216,11 @@ private class HomeworkSyncManager(
     private val google: GoogleCalendarHomeworkSyncDataSource,
     private val settings: HomeworkSyncSettings,
 ) {
-    suspend fun syncNow() {
+    private val mutex = Mutex()
+
+    suspend fun syncNow() = mutex.withLock { sync() }
+
+    private suspend fun sync() {
         if (!settings.homeworkEnabled || !settings.googleSyncEnabled) return
         try {
             val calendarId =
@@ -238,11 +243,13 @@ private class HomeworkSyncManager(
         } catch (e: InvalidGoogleCalendarSyncTokenException) {
             if (settings.nextSyncToken != null) {
                 settings.nextSyncToken = null
-                syncNow()
+                sync()
             } else {
                 settings.lastSyncError = e.message
                 e.printStackTrace()
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             settings.lastSyncError = e.message ?: "Google-Kalender konnte nicht synchronisiert werden"
             e.printStackTrace()

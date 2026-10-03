@@ -213,16 +213,36 @@ class ViewModel(
         homeworkRevision.intValue++
     }
 
-    suspend fun syncHomeworkNow(showSuccessToast: Boolean = true) {
+    private var foregroundHomeworkSyncJob: Job? = null
+
+    fun onForeground() {
+        if (isDemoAccount.value || studentId.value == null ||
+            !homeworkSyncSettings.homeworkEnabled || !homeworkSyncSettings.googleSyncEnabled ||
+            foregroundHomeworkSyncJob?.isActive == true
+        ) {
+            return
+        }
+        foregroundHomeworkSyncJob =
+            viewModelScope.launch {
+                syncHomeworkNow(showSuccessToast = false, showErrorToast = false)
+            }
+    }
+
+    suspend fun syncHomeworkNow(
+        showSuccessToast: Boolean = true,
+        showErrorToast: Boolean = true,
+    ) {
         homeworkRepository.syncNow()
         homeworkSyncSettings.lastSyncError?.let {
-            toaster.show(
-                Toast(
-                    message = it,
-                    type = ToastType.Error,
-                    duration = ToasterDefaults.DurationLong,
-                ),
-            )
+            if (showErrorToast) {
+                toaster.show(
+                    Toast(
+                        message = it,
+                        type = ToastType.Error,
+                        duration = ToasterDefaults.DurationLong,
+                    ),
+                )
+            }
         } ?: run {
             homeworkRevision.intValue++
             if (showSuccessToast) {
@@ -1080,6 +1100,8 @@ class ViewModel(
 
     override fun onCleared() {
         super.onCleared()
+        foregroundHomeworkSyncJob?.cancel()
+        foregroundHomeworkSyncJob = null
         user.value = null
         subjects.clear()
         startGradeCollections.clear()

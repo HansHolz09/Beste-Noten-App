@@ -5,11 +5,15 @@ import androidx.compose.animation.core.tween
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.composables.icons.materialsymbols.MaterialSymbols
@@ -64,6 +68,21 @@ fun App(
                 SettingsProvider {
                     val toasterState = rememberToasterState()
                     val viewModel = viewModel { ViewModel(toasterState) }
+                    val lifecycle = LocalLifecycleOwner.current.lifecycle
+                    DisposableEffect(lifecycle, viewModel) {
+                        var wasBackgrounded = false
+                        val observer =
+                            LifecycleEventObserver { _, event ->
+                                if (event == Lifecycle.Event.ON_STOP) {
+                                    wasBackgrounded = true
+                                } else if (event == Lifecycle.Event.ON_START && wasBackgrounded) {
+                                    wasBackgrounded = false
+                                    viewModel.onForeground()
+                                }
+                            }
+                        lifecycle.addObserver(observer)
+                        onDispose { lifecycle.removeObserver(observer) }
+                    }
                     LaunchedEffect(viewModel.isUsingOfflineCache.value) {
                         onOfflineStatusChanged(viewModel.isUsingOfflineCache.value)
                     }
