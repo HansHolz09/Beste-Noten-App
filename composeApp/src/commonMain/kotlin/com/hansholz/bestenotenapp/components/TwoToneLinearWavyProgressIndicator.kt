@@ -1,7 +1,6 @@
 package com.hansholz.bestenotenapp.components
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.WavyProgressIndicatorDefaults
 import androidx.compose.runtime.Composable
@@ -14,14 +13,13 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun TwoToneLinearWavyProgressIndicator(
     progress: Float,
+    modifier: Modifier = Modifier,
     split: Float = 0.5f,
     firstColor: Color = WavyProgressIndicatorDefaults.indicatorColor,
     secondColor: Color = WavyProgressIndicatorDefaults.indicatorColor,
-    modifier: Modifier = Modifier,
 ) {
     val animationsEnabled by LocalAnimationsEnabled.current
     val waveSpeed = if (animationsEnabled) WavyProgressIndicatorDefaults.LinearDeterminateWavelength else 0.dp

@@ -8,38 +8,31 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hansholz.bestenotenapp.security.kSafeProvider
 import kotlinx.coroutines.launch
-import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
+import com.hansholz.bestenotenapp.main.ViewModel as AppViewModel
 
 class TimetableViewModel(
-    viewModel: com.hansholz.bestenotenapp.main.ViewModel,
+    viewModel: AppViewModel,
 ) : ViewModel() {
     var toolbarPadding by mutableStateOf(0.dp)
 
-    private val currentDate =
+    var startPageDate by mutableStateOf(
         Clock.System
             .now()
             .toLocalDateTime(TimeZone.currentSystemDefault())
             .date
-
-    var startPageDate by mutableStateOf(
-        when (currentDate.dayOfWeek) {
-            DayOfWeek.SATURDAY -> {
-                currentDate.plus(DatePeriod(days = 2))
-            }
-
-            DayOfWeek.SUNDAY -> {
-                currentDate.plus(DatePeriod(days = 1))
-            }
-
-            else -> {
-                currentDate
-            }
-        },
+            .let {
+                when (it.dayOfWeek) {
+                    DayOfWeek.SATURDAY -> it.plus(2, DateTimeUnit.DAY)
+                    DayOfWeek.SUNDAY -> it.plus(1, DateTimeUnit.DAY)
+                    else -> it
+                }
+            },
     )
     var userScrollEnabled by mutableStateOf(true)
     var contentBlurred by mutableStateOf(false)

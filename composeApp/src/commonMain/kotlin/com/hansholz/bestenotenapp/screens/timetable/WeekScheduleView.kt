@@ -1,9 +1,9 @@
 package com.hansholz.bestenotenapp.screens.timetable
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.SeekableTransitionState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
@@ -31,7 +31,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -94,11 +93,7 @@ import kotlinx.datetime.toLocalDateTime
 import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.time.Clock
 
-@OptIn(
-    ExperimentalSharedTransitionApi::class,
-    ExperimentalComposeUiApi::class,
-    ExperimentalMaterial3ExpressiveApi::class,
-)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun WeekScheduleView(
     viewModel: ViewModel,
@@ -363,6 +358,7 @@ fun WeekScheduleView(
                     OutlinedCard(
                         modifier =
                             Modifier
+                                .animateContentSize()
                                 .verticalScroll(rememberScrollState())
                                 .widthIn(max = 350.dp)
                                 .align(Alignment.Center)

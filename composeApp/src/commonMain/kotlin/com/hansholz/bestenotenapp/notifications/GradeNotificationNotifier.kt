@@ -9,5 +9,5 @@ internal data class GradeNotificationPayload(
 internal expect object GradeNotificationNotifier {
     fun ensureInitialized(platformContext: Any?)
 
-    fun notifyNewGrades(notifications: List<GradeNotificationPayload>)
+    suspend fun notifyNewGrades(notifications: List<GradeNotificationPayload>): Boolean
 }

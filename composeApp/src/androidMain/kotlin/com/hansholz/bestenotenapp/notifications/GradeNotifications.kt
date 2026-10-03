@@ -14,6 +14,7 @@ import androidx.core.net.toUri
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import tech.kotlinlang.permission.HelperHolder
 import tech.kotlinlang.permission.Permission
@@ -64,6 +65,7 @@ actual object GradeNotifications {
     }
 
     actual fun onLogout() {
+        scope.coroutineContext.cancelChildren()
         cancelScheduledAlarms()
         GradeNotificationEngine.clearKnownGrades()
     }
@@ -103,6 +105,7 @@ actual object GradeNotifications {
             try {
                 runCheckIfPermitted(appContext)
             } finally {
+                if (GradeNotificationEngine.shouldSchedule()) scheduleNextAlarm(appContext)
                 pendingResult.finish()
             }
         }
@@ -122,7 +125,7 @@ actual object GradeNotifications {
     }
 
     private fun scheduleNextAlarm(context: Context) {
-        val triggerAtMillis = System.currentTimeMillis() + GradeNotificationEngine.getIntervalMinutes() * 60_000
+        val triggerAtMillis = System.currentTimeMillis() + GradeNotificationEngine.getNextCheckDelayMillis()
         val manager =
             alarmManager ?: (context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager)?.also {
                 alarmManager = it

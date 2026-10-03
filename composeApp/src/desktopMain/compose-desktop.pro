@@ -23,10 +23,6 @@
 -keep class dev.whyoleg.cryptography.providers.jdk.*
 -keep class androidx.datastore.** { *; }
 
-# For MaterialYou
--keep class dev.zwander.jfa.** { *; } #  for macOS
--keep class dev.zwander.compose.util.** { *; } # for Linux
-
 # For Advanced MenuBar on macOS
 -keep class dev.hansholz.advancedmenubar.NativeMenuBridge { *; }
 -keep class dev.hansholz.advancedmenubar.NativeTextContextMenuBridge { *; }

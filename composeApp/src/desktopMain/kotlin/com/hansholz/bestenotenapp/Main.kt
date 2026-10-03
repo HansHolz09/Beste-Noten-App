@@ -6,7 +6,6 @@ import androidx.compose.foundation.LocalContextMenuRepresentation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.ExperimentalMaterial3ComponentOverrideApi
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -65,7 +64,6 @@ import org.jetbrains.skiko.hostOs
 import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalMaterial3ComponentOverrideApi::class)
 fun main() {
     GraalVmInitializer.initialize()
     System.setProperty("ksafe.jvm.keyVault", "software") // because no signed macOS app
@@ -166,7 +164,7 @@ fun main() {
                             },
                         )
                         App(
-                            isDark = { isDark = it },
+                            theme = { dark, _ -> isDark = dark },
                             onNavHostReady = {
                                 navController = it
                             },

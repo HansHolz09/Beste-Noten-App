@@ -5,7 +5,6 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SizeTransform
@@ -15,6 +14,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -108,8 +109,10 @@ import com.composables.icons.materialsymbols.rounded.Share
 import com.dokar.sonner.Toast
 import com.dokar.sonner.ToastType
 import com.hansholz.bestenotenapp.api.models.JournalWeek
+import com.hansholz.bestenotenapp.components.AdaptiveDatePicker
 import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
+import com.hansholz.bestenotenapp.components.capturable
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
@@ -120,6 +123,9 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
+import com.hansholz.bestenotenapp.components.rememberCaptureController
+import com.hansholz.bestenotenapp.main.LocalHideNativeDateTimePickers
+import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalShowAbsences
 import com.hansholz.bestenotenapp.main.LocalShowOnlyRelevantData
 import com.hansholz.bestenotenapp.main.Platform
@@ -130,8 +136,6 @@ import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.utils.captureAsyncAndSaveOrShare
 import com.hansholz.bestenotenapp.utils.withRelevantLessons
 import dev.chrisbanes.haze.hazeSource
-import dev.wonddak.capturable.capturable
-import dev.wonddak.capturable.controller.rememberCaptureController
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -152,12 +156,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
-@OptIn(
-    ExperimentalSharedTransitionApi::class,
-    ExperimentalMaterial3ExpressiveApi::class,
-    ExperimentalComposeUiApi::class,
-    FormatStringsInDatetimeFormats::class,
-)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalComposeUiApi::class, FormatStringsInDatetimeFormats::class)
 @Composable
 fun Timetable(
     viewModel: ViewModel,
@@ -171,6 +170,8 @@ fun Timetable(
         val vibrator = rememberVibrator()
         val density = LocalDensity.current
         val layoutDirection = LocalLayoutDirection.current
+        val hideNativeDateTimePickers = LocalHideNativeDateTimePickers.current
+        val nativeComponentsEnabled by LocalNativeComponentsEnabled.current
 
         var showAbsences by LocalShowAbsences.current
         val showOnlyRelevantData by LocalShowOnlyRelevantData.current
@@ -219,6 +220,9 @@ fun Timetable(
                 val pagerState = rememberEnhancedPagerState(Int.MAX_VALUE, Int.MAX_VALUE / 2)
                 val contentBlurRadius = animateDpAsState(if (timetableViewModel.contentBlurred) 10.dp else 0.dp)
                 var refreshTick by retain { mutableStateOf(0) }
+                val allAbsences by remember(viewModel, showAbsences) {
+                    derivedStateOf { if (showAbsences) viewModel.absences.flatMap { it.second } else emptyList() }
+                }
 
                 @Composable
                 fun pageContent(
@@ -226,12 +230,15 @@ fun Timetable(
                     captureOnly: Boolean = false,
                     isLoaded: (Boolean) -> Unit = {},
                 ) {
+                    val isCurrentPage by remember(pagerState, currentPage) {
+                        derivedStateOf { currentPage == pagerState.currentPage }
+                    }
                     var isLoading by retain { mutableStateOf(false) }
                     val weekDate =
                         retain(timetableViewModel.startPageDate, currentPage) {
                             timetableViewModel.startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK)
                         }
-                    var week by retain { mutableStateOf<JournalWeek?>(null) }
+                    var week by retain(weekDate) { mutableStateOf<JournalWeek?>(null) }
 
                     suspend fun loadWeek(
                         useCached: Boolean = true,
@@ -296,11 +303,22 @@ fun Timetable(
                         state = pullToRefreshState,
                         indicator = {
                             if (timetableViewModel.userScrollEnabled && !lessonPopupShown.value) {
-                                PullToRefreshDefaults.LoadingIndicator(
-                                    modifier = Modifier.align(Alignment.TopCenter).padding(topPadding),
-                                    isRefreshing = isRefreshLoading,
-                                    state = pullToRefreshState,
-                                )
+                                Box(
+                                    modifier =
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(verticalPadding),
+                                ) {
+                                    PullToRefreshDefaults.LoadingIndicator(
+                                        modifier =
+                                            Modifier
+                                                .align(Alignment.TopCenter)
+                                                .padding(top = topPadding)
+                                                .consumeWindowInsets(PaddingValues(top = topPadding)),
+                                        isRefreshing = isRefreshLoading,
+                                        state = pullToRefreshState,
+                                    )
+                                }
                             }
                         },
                     ) {
@@ -309,13 +327,38 @@ fun Timetable(
                         ) {
                             item {
                                 Box(
-                                    modifier = Modifier.fillParentMaxSize().padding(verticalPadding),
+                                    modifier =
+                                        Modifier
+                                            .fillParentMaxSize()
+                                            .padding(if (captureOnly) PaddingValues() else verticalPadding),
                                     contentAlignment = Alignment.Center,
                                 ) {
-                                    EnhancedAnimatedContent(isLoading || week?.days?.all { it.lessons.isNullOrEmpty() } ?: true, animationEnabled = !captureOnly) { targetState ->
+                                    EnhancedAnimatedContent(
+                                        targetState = isLoading || week?.days?.all { it.lessons.isNullOrEmpty() } ?: true,
+                                        animationEnabled = !captureOnly,
+                                        transitionSpec = {
+                                            if (isCurrentPage) {
+                                                (fadeIn(tween(220, delayMillis = 90)) + scaleIn(tween(220, delayMillis = 90), initialScale = 0.92f))
+                                                    .togetherWith(fadeOut(tween(90)))
+                                            } else {
+                                                EnterTransition.None.togetherWith(ExitTransition.None).using(null)
+                                            }
+                                        },
+                                    ) { targetState ->
                                         Box(Modifier.fillMaxSize()) {
                                             if (targetState) {
-                                                EnhancedAnimatedContent(isLoading, animationEnabled = !captureOnly) { isLoading ->
+                                                EnhancedAnimatedContent(
+                                                    targetState = isLoading,
+                                                    animationEnabled = !captureOnly,
+                                                    transitionSpec = {
+                                                        if (isCurrentPage) {
+                                                            (fadeIn(tween(220, delayMillis = 90)) + scaleIn(tween(220, delayMillis = 90), initialScale = 0.92f))
+                                                                .togetherWith(fadeOut(tween(90)))
+                                                        } else {
+                                                            EnterTransition.None.togetherWith(ExitTransition.None).using(null)
+                                                        }
+                                                    },
+                                                ) { isLoading ->
                                                     if (isLoading) {
                                                         Box(
                                                             modifier = Modifier.padding(contentPadding).fillMaxSize(),
@@ -327,7 +370,16 @@ fun Timetable(
                                                         EmptyStateMessage(
                                                             title = "Keine Stunden für diese Woche gefunden",
                                                             icon = MaterialSymbols.Rounded.Event_busy,
-                                                            modifier = Modifier.padding(contentPadding).consumeWindowInsets(contentPadding).imePadding(),
+                                                            modifier =
+                                                                Modifier.padding(contentPadding).consumeWindowInsets(contentPadding).then(
+                                                                    if (getPlatform() ==
+                                                                        Platform.IOS
+                                                                    ) {
+                                                                        Modifier
+                                                                    } else {
+                                                                        Modifier.imePadding()
+                                                                    },
+                                                                ),
                                                         )
                                                     }
                                                 }
@@ -340,9 +392,9 @@ fun Timetable(
                                                 WeekScheduleView(
                                                     viewModel = viewModel,
                                                     week = week,
-                                                    absences = if (showAbsences) viewModel.absences.flatMap { it.second } else emptyList(),
+                                                    absences = allAbsences,
                                                     lessonPopupShown = lessonPopupShown,
-                                                    isCurrentPage = currentPage == pagerState.currentPage,
+                                                    isCurrentPage = isCurrentPage,
                                                     contentPadding = if (captureOnly) PaddingValues() else contentPadding,
                                                     modifier = Modifier.padding(bottom = 10.dp).padding(horizontal = 6.dp),
                                                     enabled = timetableViewModel.userScrollEnabled,
@@ -372,7 +424,7 @@ fun Timetable(
                             .offset(y = -(toolbarContentPadding.calculateBottomPadding() + 12.dp))
                             .padding(verticalPadding)
                             .consumeWindowInsets(toolbarContentPadding)
-                            .imePadding(),
+                            .then(if (getPlatform() == Platform.IOS) Modifier else Modifier.imePadding()),
                 ) {
                     val sharedContentState = rememberSharedContentState(key = "toolbar-card")
 
@@ -388,6 +440,7 @@ fun Timetable(
                             }
 
                             scope.launch {
+                                hideNativeDateTimePickers()
                                 timetableViewModel.toolbarState = 0
                                 timetableViewModel.contentBlurred = false
                                 delay(250.milliseconds)
@@ -412,6 +465,7 @@ fun Timetable(
                     }
                     LaunchedEffect(isScreenExiting) {
                         if (isScreenExiting && timetableViewModel.toolbarState != 0) {
+                            hideNativeDateTimePickers()
                             timetableViewModel.toolbarState = 0
                             timetableViewModel.contentBlurred = false
                             timetableViewModel.userScrollEnabled = true
@@ -483,8 +537,8 @@ fun Timetable(
                                                 )
                                             }
                                             var showCaptureArea by remember { mutableStateOf(false) }
-                                            val captureController = rememberCaptureController()
                                             if (showCaptureArea) {
+                                                val captureController = rememberCaptureController()
                                                 Box(Modifier.size(0.dp).graphicsLayer(alpha = 0f)) {
                                                     key(pagerState.currentPage) {
                                                         CompositionLocalProvider(LocalDensity provides Density(4f, 2f)) {
@@ -503,25 +557,29 @@ fun Timetable(
                                                                     )
                                                                 }
                                                                 pageContent(pagerState.currentPage, true) { containsDays ->
-                                                                    if (containsDays) {
-                                                                        scope.launch {
-                                                                            val formattedDate =
-                                                                                Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).format(
-                                                                                    LocalDateTime.Format {
-                                                                                        byUnicodePattern("dd.MM.yyyy")
-                                                                                    },
-                                                                                )
-                                                                            captureController.captureAsyncAndSaveOrShare("Stundenplan vom $formattedDate")
+                                                                    try {
+                                                                        if (containsDays) {
+                                                                            scope.launch {
+                                                                                val formattedDate =
+                                                                                    Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).format(
+                                                                                        LocalDateTime.Format {
+                                                                                            byUnicodePattern("dd.MM.yyyy")
+                                                                                        },
+                                                                                    )
+                                                                                captureController.captureAsyncAndSaveOrShare("Stundenplan vom $formattedDate")
+                                                                                showCaptureArea = false
+                                                                            }
+                                                                        } else {
+                                                                            viewModel.toaster.show(
+                                                                                Toast(
+                                                                                    message = "Keine Stunden für diese Woche gefunden",
+                                                                                    type = ToastType.Warning,
+                                                                                ),
+                                                                            )
                                                                             showCaptureArea = false
                                                                         }
-                                                                    } else {
-                                                                        viewModel.toaster.show(
-                                                                            Toast(
-                                                                                message = "Keine Stunden für diese Woche gefunden",
-                                                                                type = ToastType.Warning,
-                                                                            ),
-                                                                        )
-                                                                        showCaptureArea = false
+                                                                    } catch (e: Exception) {
+                                                                        e.printStackTrace()
                                                                     }
                                                                 }
                                                             }
@@ -629,8 +687,15 @@ fun Timetable(
                                                 .padding(horizontal = 12.dp)
                                                 .sizeIn(maxWidth = 500.dp)
                                                 .clip(RoundedCornerShape(28.dp))
-                                                .verticalScroll(rememberScrollState()),
-                                        colors = CardDefaults.cardColors(colorScheme.primaryContainer),
+                                                .verticalScroll(rememberScrollState())
+                                                .then(
+                                                    if (nativeComponentsEnabled) {
+                                                        Modifier.enhancedHazeEffect(viewModel.hazeBackgroundState, colorScheme.primaryContainer)
+                                                    } else {
+                                                        Modifier
+                                                    },
+                                                ),
+                                        colors = CardDefaults.cardColors(if (nativeComponentsEnabled) Color.Transparent else colorScheme.primaryContainer),
                                     ) {
                                         Text(
                                             text = "Datum wählen",
@@ -647,37 +712,44 @@ fun Timetable(
                                                         .atStartOfDayIn(TimeZone.currentSystemDefault())
                                                         .toEpochMilliseconds(),
                                             )
-                                        DatePicker(
-                                            state = datePickerState,
-                                            modifier = Modifier.requiredHeight(420.dp).requiredWidth(400.dp).skipToLookaheadSize(),
-                                            colors =
-                                                DatePickerDefaults.colors(
-                                                    containerColor = colorScheme.primaryContainer,
-                                                    headlineContentColor = colorScheme.onSurface,
-                                                    weekdayContentColor = colorScheme.onPrimaryContainer,
-                                                    navigationContentColor = colorScheme.onSurface,
-                                                    yearContentColor = colorScheme.onSurface,
-                                                    dividerColor = colorScheme.onSurface,
-                                                ),
-                                            title = null,
-                                            headline = {
-                                                EnhancedAnimatedContent(datePickerState.selectedDateMillis) { selectedDateMillis ->
-                                                    ProvideTextStyle(LocalTextStyle.current.copy(fontSize = 22.sp)) {
-                                                        DatePickerDefaults.DatePickerHeadline(
-                                                            selectedDateMillis = selectedDateMillis,
-                                                            displayMode = datePickerState.displayMode,
-                                                            dateFormatter = remember { DatePickerDefaults.dateFormatter() },
-                                                            modifier = Modifier.padding(PaddingValues(start = 24.dp, end = 12.dp, bottom = 12.dp)),
-                                                            contentColor = colorScheme.onSurface,
-                                                        )
+                                        AdaptiveDatePicker(
+                                            selectedDateMillis = datePickerState.selectedDateMillis,
+                                            onSelectedDateChanged = { datePickerState.selectedDateMillis = it },
+                                            modifier = Modifier.requiredHeight(370.dp).requiredWidth(400.dp),
+                                        ) {
+                                            DatePicker(
+                                                state = datePickerState,
+                                                modifier = Modifier.requiredHeight(420.dp).requiredWidth(400.dp).skipToLookaheadSize(),
+                                                colors =
+                                                    DatePickerDefaults.colors(
+                                                        containerColor = colorScheme.primaryContainer,
+                                                        headlineContentColor = colorScheme.onSurface,
+                                                        weekdayContentColor = colorScheme.onPrimaryContainer,
+                                                        navigationContentColor = colorScheme.onSurface,
+                                                        yearContentColor = colorScheme.onSurface,
+                                                        dividerColor = colorScheme.onSurface,
+                                                    ),
+                                                title = null,
+                                                headline = {
+                                                    EnhancedAnimatedContent(datePickerState.selectedDateMillis) { selectedDateMillis ->
+                                                        ProvideTextStyle(LocalTextStyle.current.copy(fontSize = 22.sp)) {
+                                                            DatePickerDefaults.DatePickerHeadline(
+                                                                selectedDateMillis = selectedDateMillis,
+                                                                displayMode = datePickerState.displayMode,
+                                                                dateFormatter = remember { DatePickerDefaults.dateFormatter() },
+                                                                modifier = Modifier.padding(PaddingValues(start = 24.dp, end = 12.dp, bottom = 12.dp)),
+                                                                contentColor = colorScheme.onSurface,
+                                                            )
+                                                        }
                                                     }
-                                                }
-                                            },
-                                        )
+                                                },
+                                            )
+                                        }
                                         Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp).align(Alignment.End)) {
                                             EnhancedOutlinedButton(
                                                 onClick = {
                                                     scope.launch {
+                                                        hideNativeDateTimePickers()
                                                         timetableViewModel.toolbarState = 0
                                                         timetableViewModel.contentBlurred = false
                                                         delay(250.milliseconds)
@@ -692,6 +764,7 @@ fun Timetable(
                                             EnhancedButton(
                                                 onClick = {
                                                     scope.launch {
+                                                        hideNativeDateTimePickers()
                                                         timetableViewModel.toolbarState = 0
                                                         timetableViewModel.contentBlurred = false
                                                         val selectedDate =

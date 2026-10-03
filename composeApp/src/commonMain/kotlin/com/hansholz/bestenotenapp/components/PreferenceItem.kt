@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -39,6 +40,32 @@ enum class PreferencePosition {
 }
 
 @Composable
+fun PreferencePosition.preferenceShape(): CornerBasedShape =
+    when (this) {
+        PreferencePosition.Single -> {
+            MaterialTheme.shapes.large
+        }
+
+        PreferencePosition.Top -> {
+            MaterialTheme.shapes.large.copy(
+                bottomStart = MaterialTheme.shapes.extraSmall.bottomStart,
+                bottomEnd = MaterialTheme.shapes.extraSmall.bottomEnd,
+            )
+        }
+
+        PreferencePosition.Bottom -> {
+            MaterialTheme.shapes.large.copy(
+                topStart = MaterialTheme.shapes.extraSmall.topStart,
+                topEnd = MaterialTheme.shapes.extraSmall.topEnd,
+            )
+        }
+
+        PreferencePosition.Middle -> {
+            MaterialTheme.shapes.extraSmall
+        }
+    }
+
+@Composable
 fun PreferenceItem(
     title: String,
     subtitle: String? = null,
@@ -52,32 +79,10 @@ fun PreferenceItem(
     iconTint: Color = LocalContentColor.current,
     titleMaxLines: Int = 2,
     position: PreferencePosition = PreferencePosition.Single,
+    bottomContent: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null,
 ) {
-    val targetShape =
-        when (position) {
-            PreferencePosition.Single -> {
-                MaterialTheme.shapes.large
-            }
-
-            PreferencePosition.Top -> {
-                MaterialTheme.shapes.large.copy(
-                    bottomStart = MaterialTheme.shapes.extraSmall.bottomStart,
-                    bottomEnd = MaterialTheme.shapes.extraSmall.bottomEnd,
-                )
-            }
-
-            PreferencePosition.Bottom -> {
-                MaterialTheme.shapes.large.copy(
-                    topStart = MaterialTheme.shapes.extraSmall.topStart,
-                    topEnd = MaterialTheme.shapes.extraSmall.topEnd,
-                )
-            }
-
-            PreferencePosition.Middle -> {
-                MaterialTheme.shapes.extraSmall
-            }
-        }
+    val targetShape = position.preferenceShape()
     val density = LocalDensity.current
     val referenceSize = Size(100f, 100f)
     val topStart by animateFloatAsState(targetShape.topStart.toPx(referenceSize, density))
@@ -109,74 +114,77 @@ fun PreferenceItem(
         color = backgroundColor.copy(0.7f),
         shape = shape,
     ) {
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            when (icon) {
-                is ImageVector -> {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = iconTint,
-                        modifier =
-                            Modifier
-                                .size(24.dp)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                ) {
-                                    onIconClick?.invoke()
-                                },
-                    )
-                }
-
-                is Painter -> {
-                    Icon(
-                        painter = icon,
-                        contentDescription = null,
-                        tint = iconTint,
-                        modifier =
-                            Modifier
-                                .size(24.dp)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null,
-                                ) {
-                                    onIconClick?.invoke()
-                                },
-                    )
-                }
-
-                else -> {}
-            }
-
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+        Column {
+            Row(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Text(
-                    text = title,
-                    modifier = textModifier,
-                    style = MaterialTheme.typography.bodyLarge,
-                    maxLines = titleMaxLines,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                when (icon) {
+                    is ImageVector -> {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = iconTint,
+                            modifier =
+                                Modifier
+                                    .size(24.dp)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null,
+                                    ) {
+                                        onIconClick?.invoke()
+                                    },
+                        )
+                    }
 
-                if (subtitle != null) {
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    is Painter -> {
+                        Icon(
+                            painter = icon,
+                            contentDescription = null,
+                            tint = iconTint,
+                            modifier =
+                                Modifier
+                                    .size(24.dp)
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null,
+                                    ) {
+                                        onIconClick?.invoke()
+                                    },
+                        )
+                    }
+
+                    else -> {}
                 }
-            }
 
-            trailingContent?.invoke()
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        text = title,
+                        modifier = textModifier,
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = titleMaxLines,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+
+                    if (subtitle != null) {
+                        Text(
+                            text = subtitle,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                trailingContent?.invoke()
+            }
+            bottomContent?.invoke()
         }
     }
 }

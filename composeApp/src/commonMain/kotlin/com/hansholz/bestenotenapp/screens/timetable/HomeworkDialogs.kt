@@ -26,14 +26,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DatePicker
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
@@ -54,6 +51,8 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -69,13 +68,17 @@ import com.composables.icons.materialsymbols.rounded.Edit_note
 import com.composables.icons.materialsymbols.rounded.News
 import com.composables.icons.materialsymbols.rounded.Task_alt
 import com.hansholz.bestenotenapp.api.models.JournalLesson
+import com.hansholz.bestenotenapp.components.AdaptiveDatePicker
+import com.hansholz.bestenotenapp.components.AdaptiveTimePicker
 import com.hansholz.bestenotenapp.components.PreferenceItem
 import com.hansholz.bestenotenapp.components.PreferencePosition
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedTextField
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
@@ -87,8 +90,8 @@ import com.hansholz.bestenotenapp.homework.HomeworkType
 import com.hansholz.bestenotenapp.homework.newHomeworkId
 import com.hansholz.bestenotenapp.main.LocalHomeworkGoogleSyncEnabled
 import com.hansholz.bestenotenapp.main.LocalHomeworkTypes
+import com.hansholz.bestenotenapp.main.LocalNativeAlignmentHaptic
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
-import components.dialogs.EnhancedAlertDialog
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -104,7 +107,6 @@ import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.time.Clock
 import kotlin.time.Instant
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun LazyListScope.homeworkItems(
     homework: List<HomeworkEntry>,
     onEdit: (HomeworkEntry) -> Unit,
@@ -157,7 +159,6 @@ fun LazyListScope.homeworkItems(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomeworkEditorDialog(
     visible: MutableState<Boolean>,
@@ -171,6 +172,7 @@ fun HomeworkEditorDialog(
     val vibrator = rememberVibrator()
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
+    val descriptionFocusRequester = remember { FocusRequester() }
 
     var title by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.title.orEmpty()) }
     var description by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.description.orEmpty()) }
@@ -218,19 +220,25 @@ fun HomeworkEditorDialog(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                OutlinedTextField(
+                EnhancedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth(),
                     label = { Text("Titel") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { descriptionFocusRequester.requestFocus() }),
                     singleLine = true,
                     enabled = !busy,
                 )
-                OutlinedTextField(
+                EnhancedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .focusRequester(descriptionFocusRequester),
                     label = { Text("Beschreibung") },
                     minLines = 2,
                     enabled = !busy,
@@ -258,7 +266,11 @@ fun HomeworkEditorDialog(
                         )
                     }
                     EnhancedIconButton(
-                        onClick = { typeEditorVisible = true },
+                        onClick = {
+                            focusRequester.requestFocus()
+                            keyboardController?.hide()
+                            typeEditorVisible = true
+                        },
                         enabled = !busy,
                     ) {
                         Icon(MaterialSymbols.Rounded.Edit_note, null)
@@ -376,7 +388,7 @@ fun HomeworkEditorDialog(
     val initialDate = reminderAt?.date ?: dueDate.minus(DatePeriod(days = 1))
     val datePickerState =
         rememberDatePickerState(
-            initialSelectedDateMillis = initialDate.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds(),
+            initialSelectedDateMillis = initialDate.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
         )
     EnhancedAlertDialog(
         visible = datePickerVisible,
@@ -388,7 +400,7 @@ fun HomeworkEditorDialog(
                 onClick = {
                     selectedReminderDate =
                         datePickerState.selectedDateMillis?.let {
-                            Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date
+                            Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()).date
                         }
                     datePickerVisible = false
                     if (selectedReminderDate != null) timePickerVisible = true
@@ -404,10 +416,16 @@ fun HomeworkEditorDialog(
             }
         },
         text = {
-            DatePicker(
-                state = datePickerState,
-                title = {},
-            )
+            AdaptiveDatePicker(
+                selectedDateMillis = datePickerState.selectedDateMillis,
+                onSelectedDateChanged = { datePickerState.selectedDateMillis = it },
+                modifier = Modifier.fillMaxWidth().size(height = 350.dp, width = 400.dp),
+            ) {
+                DatePicker(
+                    state = datePickerState,
+                    title = {},
+                )
+            }
         },
     )
 
@@ -440,7 +458,19 @@ fun HomeworkEditorDialog(
                 Text("Abbrechen")
             }
         },
-        text = { TimePicker(state = timePickerState) },
+        text = {
+            AdaptiveTimePicker(
+                hour = timePickerState.hour,
+                minute = timePickerState.minute,
+                onTimeChanged = { hour, minute ->
+                    timePickerState.hour = hour
+                    timePickerState.minute = minute
+                },
+                modifier = Modifier.fillMaxWidth().size(height = 216.dp, width = 320.dp),
+            ) {
+                TimePicker(state = timePickerState)
+            }
+        },
     )
 
     HomeworkTypeEditorDialog(
@@ -455,7 +485,6 @@ fun HomeworkEditorDialog(
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun HomeworkTypeEditorDialog(
     visible: Boolean,
@@ -489,6 +518,7 @@ private fun HomeworkTypeEditorDialog(
         icon = { Icon(MaterialSymbols.Rounded.Edit_note, null) },
         title = { Text("Eintragstypen bearbeiten") },
         text = {
+            val nativeAlignmentHaptic = LocalNativeAlignmentHaptic.current
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 LazyColumn(
                     state = listState,
@@ -502,6 +532,7 @@ private fun HomeworkTypeEditorDialog(
                 ) {
                     items(draft, key = HomeworkType::value) { option ->
                         val index = draft.indexOf(option)
+                        var itemCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
                         PreferenceItem(
                             title = option.label,
                             icon = MaterialSymbols.Rounded.Drag_indicator,
@@ -518,7 +549,8 @@ private fun HomeworkTypeEditorDialog(
                                     .zIndex(if (draggedType == option) 1f else 0f)
                                     .graphicsLayer {
                                         translationY = if (draggedType == option) draggedOffset else 0f
-                                    }.pointerInput(option) {
+                                    }.onGloballyPositioned { itemCoordinates = it }
+                                    .pointerInput(option) {
                                         detectDragGesturesAfterLongPress(
                                             onDragStart = {
                                                 draggedType = option
@@ -534,7 +566,7 @@ private fun HomeworkTypeEditorDialog(
                                                 draggedType = null
                                                 draggedOffset = 0f
                                             },
-                                        ) { _, dragAmount ->
+                                        ) { change, dragAmount ->
                                             draggedOffset += dragAmount.y
                                             val currentInfo =
                                                 listState.layoutInfo.visibleItemsInfo.firstOrNull {
@@ -560,6 +592,7 @@ private fun HomeworkTypeEditorDialog(
                                                 val from = draft.indexOf(option)
                                                 val target = draft.indexOfFirst { it.value == targetInfo.key }
                                                 if (from >= 0 && target >= 0) {
+                                                    val hapticPosition = itemCoordinates?.localToRoot(change.position)
                                                     val wasAtAbsoluteTop =
                                                         listState.firstVisibleItemIndex == 0 &&
                                                             listState.firstVisibleItemScrollOffset == 0
@@ -568,8 +601,9 @@ private fun HomeworkTypeEditorDialog(
                                                     if (wasAtAbsoluteTop) {
                                                         listState.requestScrollToItem(0)
                                                     }
+                                                    vibrator.enhancedVibrateN(EnhancedVibrations.LOW_TICK)
+                                                    hapticPosition?.let { nativeAlignmentHaptic?.invoke(it) }
                                                 }
-                                                vibrator.enhancedVibrateN(EnhancedVibrations.LOW_TICK)
                                             }
                                         }
                                     },
@@ -585,7 +619,7 @@ private fun HomeworkTypeEditorDialog(
                         }
                     }
                 }
-                OutlinedTextField(
+                EnhancedTextField(
                     value = newType,
                     onValueChange = { newType = it },
                     modifier = Modifier.fillMaxWidth(),

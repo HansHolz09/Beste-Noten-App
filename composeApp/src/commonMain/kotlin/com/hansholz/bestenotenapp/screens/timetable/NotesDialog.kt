@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,6 +22,7 @@ import com.hansholz.bestenotenapp.api.models.JournalNote
 import com.hansholz.bestenotenapp.components.PreferenceCategory
 import com.hansholz.bestenotenapp.components.PreferenceItem
 import com.hansholz.bestenotenapp.components.PreferencePosition
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
@@ -30,12 +30,10 @@ import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.homework.HomeworkEntry
 import com.hansholz.bestenotenapp.homework.HomeworkStatus
 import com.hansholz.bestenotenapp.main.ViewModel
-import components.dialogs.EnhancedAlertDialog
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import top.ltfan.multihaptic.compose.rememberVibrator
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NotesDialog(
     visible: MutableState<Boolean>,
