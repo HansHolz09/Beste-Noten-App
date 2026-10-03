@@ -131,8 +131,6 @@ kotlin {
             implementation(libs.confettikit)
             implementation(libs.emoji.compose.m3)
             implementation(libs.sonner)
-            implementation(libs.capturable)
-            implementation(libs.capturable.extension)
             implementation(libs.filekit.dialogs)
         }
         androidMain.dependencies {

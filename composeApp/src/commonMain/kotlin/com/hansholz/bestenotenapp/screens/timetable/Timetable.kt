@@ -111,6 +111,7 @@ import com.hansholz.bestenotenapp.api.models.JournalWeek
 import com.hansholz.bestenotenapp.components.AdaptiveDatePicker
 import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
+import com.hansholz.bestenotenapp.components.capturable
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
@@ -121,6 +122,7 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
+import com.hansholz.bestenotenapp.components.rememberCaptureController
 import com.hansholz.bestenotenapp.main.LocalHideNativeDateTimePickers
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalShowAbsences
@@ -133,8 +135,6 @@ import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.utils.captureAsyncAndSaveOrShare
 import com.hansholz.bestenotenapp.utils.withRelevantLessons
 import dev.chrisbanes.haze.hazeSource
-import dev.wonddak.capturable.capturable
-import dev.wonddak.capturable.controller.rememberCaptureController
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -508,8 +508,8 @@ fun Timetable(
                                                 )
                                             }
                                             var showCaptureArea by remember { mutableStateOf(false) }
-                                            val captureController = rememberCaptureController()
                                             if (showCaptureArea) {
+                                                val captureController = rememberCaptureController()
                                                 Box(Modifier.size(0.dp).graphicsLayer(alpha = 0f)) {
                                                     key(pagerState.currentPage) {
                                                         CompositionLocalProvider(LocalDensity provides Density(4f, 2f)) {
@@ -528,25 +528,29 @@ fun Timetable(
                                                                     )
                                                                 }
                                                                 pageContent(pagerState.currentPage, true) { containsDays ->
-                                                                    if (containsDays) {
-                                                                        scope.launch {
-                                                                            val formattedDate =
-                                                                                Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).format(
-                                                                                    LocalDateTime.Format {
-                                                                                        byUnicodePattern("dd.MM.yyyy")
-                                                                                    },
-                                                                                )
-                                                                            captureController.captureAsyncAndSaveOrShare("Stundenplan vom $formattedDate")
+                                                                    try {
+                                                                        if (containsDays) {
+                                                                            scope.launch {
+                                                                                val formattedDate =
+                                                                                    Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).format(
+                                                                                        LocalDateTime.Format {
+                                                                                            byUnicodePattern("dd.MM.yyyy")
+                                                                                        },
+                                                                                    )
+                                                                                captureController.captureAsyncAndSaveOrShare("Stundenplan vom $formattedDate")
+                                                                                showCaptureArea = false
+                                                                            }
+                                                                        } else {
+                                                                            viewModel.toaster.show(
+                                                                                Toast(
+                                                                                    message = "Keine Stunden für diese Woche gefunden",
+                                                                                    type = ToastType.Warning,
+                                                                                ),
+                                                                            )
                                                                             showCaptureArea = false
                                                                         }
-                                                                    } else {
-                                                                        viewModel.toaster.show(
-                                                                            Toast(
-                                                                                message = "Keine Stunden für diese Woche gefunden",
-                                                                                type = ToastType.Warning,
-                                                                            ),
-                                                                        )
-                                                                        showCaptureArea = false
+                                                                    } catch (e: Exception) {
+                                                                        e.printStackTrace()
                                                                     }
                                                                 }
                                                             }

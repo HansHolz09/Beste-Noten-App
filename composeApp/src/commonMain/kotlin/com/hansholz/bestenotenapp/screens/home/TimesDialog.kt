@@ -59,7 +59,7 @@ fun TimesDialog(
         text = {
             EnhancedAnimatedContent(homeViewModel.isTimesDialogLoading) { isLoading ->
                 if (isLoading) {
-                    ContainedLoadingIndicator(Modifier.padding(90.dp))
+                    ContainedLoadingIndicator(Modifier.padding(60.dp))
                 } else if (viewModel.times.isEmpty()) {
                     Text("Es sind keine Unterrichtszeiten verfügbar.")
                 } else {

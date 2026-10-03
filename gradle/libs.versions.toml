@@ -7,7 +7,6 @@ activityCompose = "1.13.0"
 androidx-lifecycle = "2.11.0"
 animateCompose = "0.0.1"
 buildconfig = "6.1.2"
-capturable = "2.1.0"
 confettikit = "0.9.0"
 coreSplashscreen = "1.2.0"
 composeIcons = "2.2.1"
@@ -63,8 +62,6 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
 animate-compose = { module = "com.nomanr:animate-compose", version.ref = "animateCompose" }
-capturable = { module = "io.github.jmseb3:capturable", version.ref = "capturable" }
-capturable-extension = { module = "io.github.jmseb3:capturableExtension", version.ref = "capturable" }
 components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
 confettikit = { module = "io.github.vinceglb:confettikit", version.ref = "confettikit" }
 emoji-compose-m3 = { module = "org.kodein.emoji:emoji-compose-m3", version.ref = "emoji" }
