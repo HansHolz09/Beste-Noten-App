@@ -7,10 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hansholz.bestenotenapp.security.kSafeProvider
 import kotlinx.coroutines.launch
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.number
-import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Clock
 import com.hansholz.bestenotenapp.main.ViewModel as AppViewModel
 
 class HomeViewModel(
@@ -42,16 +38,7 @@ class HomeViewModel(
     fun refreshTimetable(viewModel: AppViewModel) {
         viewModelScope.launch {
             isTimetableLoading = true
-            val currentDate =
-                Clock.System
-                    .now()
-                    .toLocalDateTime(TimeZone.currentSystemDefault())
-                    .date
-                    .let {
-                        "${it.year}-${it.month.number.toString().padStart(2, '0')}" +
-                            "-${it.day.toString().padStart(2, '0')}"
-                    }
-            viewModel.currentJournalDay.value = viewModel.getJournalWeek(useCached = false)?.days?.find { it.date == currentDate }
+            viewModel.getJournalWeek(useCached = false)
             isTimetableLoading = false
         }
     }
@@ -82,16 +69,7 @@ class HomeViewModel(
                 if (get("showCurrentLesson", true)) {
                     isTimetableLoading = true
                     if (viewModel.currentJournalDay.value == null) {
-                        val currentDate =
-                            Clock.System
-                                .now()
-                                .toLocalDateTime(TimeZone.currentSystemDefault())
-                                .date
-                                .let {
-                                    "${it.year}-${it.month.number.toString().padStart(2, '0')}" +
-                                        "-${it.day.toString().padStart(2, '0')}"
-                                }
-                        viewModel.currentJournalDay.value = viewModel.getJournalWeek()?.days?.find { it.date == currentDate }
+                        viewModel.getJournalWeek()
                     }
                     isTimetableLoading = false
                 }

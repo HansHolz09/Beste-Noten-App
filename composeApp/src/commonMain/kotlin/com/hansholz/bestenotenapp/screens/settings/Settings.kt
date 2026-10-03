@@ -460,16 +460,7 @@ fun Settings(
 
                     scope.launch {
                         if (it && viewModel.currentJournalDay.value == null) {
-                            val currentDate =
-                                Clock.System
-                                    .now()
-                                    .toLocalDateTime(TimeZone.currentSystemDefault())
-                                    .date
-                                    .let {
-                                        "${it.year}-${it.month.number.toString().padStart(2, '0')}" +
-                                            "-${it.day.toString().padStart(2, '0')}"
-                                    }
-                            viewModel.currentJournalDay.value = viewModel.getJournalWeek()?.days?.find { it.date == currentDate }
+                            viewModel.getJournalWeek()
                         }
                     }
                 },

@@ -81,8 +81,11 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.io.IOException
 import kotlinx.serialization.json.Json
@@ -937,29 +940,31 @@ class ViewModel(
         useCached: Boolean = true,
         getAbsences: Boolean = false,
     ): JournalWeek? {
-        if (isDemoAccount.value) {
-            val targetDate =
-                date ?: Clock.System
-                    .now()
-                    .toLocalDateTime(TimeZone.currentSystemDefault())
-                    .date
-            val nr = "${targetDate.year}-${targetDate.weekOfYear}"
-            val cachedWeek = if (useCached) journalWeeks.firstOrNull { it.first == nr }?.second else null
-            val week = cachedWeek ?: DemoDataGenerator.generateJournalWeek(targetDate, demoWeekPlan)
-            if (cachedWeek == null) {
-                delay(1.seconds)
-                if (!useCached) journalWeeks.removeAll { it.first == nr }
-                journalWeeks.add(nr to week)
-            }
-            return week
-        }
-        val currentNr =
+        val today =
             Clock.System
                 .now()
                 .toLocalDateTime(TimeZone.currentSystemDefault())
                 .date
-                .let { "${it.year}-${it.weekOfYear}" }
-        val nr = date?.let { "${it.year}-${it.weekOfYear}" } ?: currentNr
+        val targetDate =
+            date
+                ?: when (today.dayOfWeek) {
+                    DayOfWeek.SATURDAY -> today.plus(2, DateTimeUnit.DAY)
+                    DayOfWeek.SUNDAY -> today.plus(1, DateTimeUnit.DAY)
+                    else -> today
+                }
+        val currentNr = "${today.year}-${today.weekOfYear}"
+        val nr = "${targetDate.year}-${targetDate.weekOfYear}"
+        if (isDemoAccount.value) {
+            val cachedWeek = if (useCached) journalWeeks.firstOrNull { it.first == nr }?.second else null
+            val week = cachedWeek ?: DemoDataGenerator.generateJournalWeek(targetDate, demoWeekPlan)
+            if (cachedWeek == null) {
+                delay(1.seconds)
+                journalWeeks.removeAll { it.first == nr }
+                journalWeeks.add(nr to week)
+            }
+            if (date == null || nr == currentNr) updateCurrentJournalDay(week)
+            return week
+        }
         val year =
             date?.let {
                 years
@@ -979,10 +984,20 @@ class ViewModel(
                 api.journalWeekShow(nr, year, true, "days.lessons").data
             } ?: return null
         if (cachedWeek == null) {
-            if (!useCached) journalWeeks.removeAll { it.first == nr }
+            journalWeeks.removeAll { it.first == nr }
             journalWeeks.add(nr to week)
         }
+        if (date == null || nr == currentNr) updateCurrentJournalDay(week)
         return week
+    }
+
+    private fun updateCurrentJournalDay(week: JournalWeek) {
+        val today =
+            Clock.System
+                .now()
+                .toLocalDateTime(TimeZone.currentSystemDefault())
+                .date
+        currentJournalDay.value = week.days?.find { it.date == today.toString() }
     }
 
     suspend fun getSubjectsAndTeachers(): List<Pair<Subject?, List<Teacher>?>>? {
