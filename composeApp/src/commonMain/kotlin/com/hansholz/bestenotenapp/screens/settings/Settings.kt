@@ -612,8 +612,10 @@ fun Settings(
                         try {
                             if (enabled) {
                                 homeworkGoogleSyncEnabled = viewModel.connectGoogleCalendarForHomework()
-                                showReminderInfoDialog.value = true
-                                viewModel.syncHomeworkNow()
+                                if (homeworkGoogleSyncEnabled) {
+                                    showReminderInfoDialog.value = true
+                                    viewModel.syncHomeworkNow()
+                                }
                             } else {
                                 viewModel.disconnectGoogleCalendarForHomework()
                                 homeworkGoogleSyncEnabled = false

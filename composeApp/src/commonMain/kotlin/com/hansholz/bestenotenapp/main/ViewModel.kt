@@ -71,6 +71,7 @@ import io.ktor.http.isSuccess
 import io.ktor.utils.io.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -235,6 +236,11 @@ class ViewModel(
         showSuccessToast: Boolean = true,
         showErrorToast: Boolean = true,
     ) {
+        if (!homeworkSyncSettings.googleSyncEnabled) {
+            homeworkSyncSettings.lastSyncError = null
+            return
+        }
+        if (!homeworkSyncSettings.homeworkEnabled) return
         homeworkRepository.syncNow()
         homeworkSyncSettings.lastSyncError?.let {
             if (showErrorToast) {
@@ -262,14 +268,17 @@ class ViewModel(
     suspend fun connectGoogleCalendarForHomework(): Boolean {
         try {
             googleAuthProvider.signIn()
+            homeworkSyncSettings.lastSyncError = null
             homeworkSyncSettings.googleSyncEnabled = true
             return true
         } catch (e: Exception) {
-            homeworkSyncSettings.lastSyncError = e.message ?: "Google Kalender konnte nicht verbunden werden"
-            homeworkSyncSettings.googleSyncEnabled = false
+            withContext(NonCancellable) {
+                disconnectGoogleCalendarForHomework()
+            }
+            if (e is CancellationException) throw e
             toaster.show(
                 Toast(
-                    message = homeworkSyncSettings.lastSyncError!!,
+                    message = e.message ?: "Google Kalender konnte nicht verbunden werden",
                     type = ToastType.Error,
                     duration = ToasterDefaults.DurationLong,
                 ),
@@ -284,6 +293,7 @@ class ViewModel(
         homeworkSyncSettings.googleCalendarId = null
         homeworkSyncSettings.googleCalendarResolved = false
         homeworkSyncSettings.nextSyncToken = null
+        homeworkSyncSettings.lastSyncError = null
     }
 
     private fun couldReachBesteSchule() {
