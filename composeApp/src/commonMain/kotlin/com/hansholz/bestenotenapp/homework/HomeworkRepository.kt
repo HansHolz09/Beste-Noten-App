@@ -3,8 +3,10 @@ package com.hansholz.bestenotenapp.homework
 import com.hansholz.bestenotenapp.security.kSafeProvider
 import eu.anifantakis.lib.ksafe.KSafe
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -52,7 +54,7 @@ interface HomeworkSyncSettings {
     var lastSyncError: String?
 }
 
-private interface LocalHomeworkDataSource {
+internal interface LocalHomeworkDataSource {
     suspend fun getById(localId: String): HomeworkEntry?
 
     suspend fun getHomeworkForDate(date: LocalDate): List<HomeworkEntry>
@@ -350,11 +352,19 @@ private class HomeworkSyncManager(
     }
 }
 
-private class KSafeHomeworkDataSource(
-    private val kSafe: KSafe,
+internal class KSafeHomeworkDataSource(
+    private val readRaw: () -> String,
+    private val writeRaw: (String) -> Unit,
 ) : LocalHomeworkDataSource {
+    constructor(kSafe: KSafe) : this(
+        readRaw = { kSafeProvider(kSafe) { get(STORAGE_KEY, "") } },
+        writeRaw = { raw -> kSafeProvider(kSafe) { put(STORAGE_KEY, raw) } },
+    )
+
     private val mutex = Mutex()
     private val json = Json { ignoreUnknownKeys = true }
+
+    private var cachedStore: HomeworkStore? = null
 
     override suspend fun getById(localId: String) = read().entries.firstOrNull { it.localId == localId }
 
@@ -468,15 +478,22 @@ private class KSafeHomeworkDataSource(
 
     private suspend fun read(): HomeworkStore =
         mutex.withLock {
-            val raw = kSafeProvider(kSafe) { get(STORAGE_KEY, "") }
-            if (raw.isBlank()) HomeworkStore() else runCatching { json.decodeFromString<HomeworkStore>(raw) }.getOrElse { HomeworkStore() }
+            cachedStore ?: withContext(Dispatchers.Default) { readStoredData() }.also { cachedStore = it }
         }
+
+    private fun readStoredData(): HomeworkStore {
+        val raw = readRaw()
+        return if (raw.isBlank()) HomeworkStore() else runCatching { json.decodeFromString<HomeworkStore>(raw) }.getOrElse { HomeworkStore() }
+    }
 
     private suspend fun change(block: HomeworkStore.() -> HomeworkStore) {
         mutex.withLock {
-            val raw = kSafeProvider(kSafe) { get(STORAGE_KEY, "") }
-            val current = if (raw.isBlank()) HomeworkStore() else runCatching { json.decodeFromString<HomeworkStore>(raw) }.getOrElse { HomeworkStore() }
-            kSafeProvider(kSafe) { put(STORAGE_KEY, json.encodeToString(current.block())) }
+            withContext(Dispatchers.Default) {
+                val current = cachedStore ?: readStoredData()
+                val updated = current.block()
+                writeRaw(json.encodeToString(updated))
+                cachedStore = updated
+            }
         }
     }
 

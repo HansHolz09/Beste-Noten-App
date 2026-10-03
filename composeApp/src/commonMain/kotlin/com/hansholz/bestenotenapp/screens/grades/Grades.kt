@@ -1202,7 +1202,7 @@ fun Grades(
                                             }
                                             EnhancedAnimatedContent(
                                                 targetState = selectedStage,
-                                                modifier = Modifier.weight(1f),
+                                                modifier = Modifier.weight(1f, false),
                                             ) { stage ->
                                                 LazyColumn(
                                                     verticalArrangement = Arrangement.spacedBy(8.dp),

@@ -336,8 +336,10 @@ class ViewModel(
     private suspend inline fun <reified T> readBesteSchuleCache(key: String): T? {
         if (!offlineCacheAvailable) return null
         val student = studentId.value ?: return null
-        return readStoredBesteSchuleCache(student, key)?.let {
-            runCatching { cacheJson.decodeFromString<T>(it) }.getOrNull()
+        return withContext(Dispatchers.Default) {
+            readStoredBesteSchuleCache(student, key)?.let {
+                runCatching { cacheJson.decodeFromString<T>(it) }.getOrNull()
+            }
         }
     }
 
@@ -347,7 +349,9 @@ class ViewModel(
     ) {
         if (!offlineCacheAvailable) return
         val student = studentId.value ?: return
-        writeStoredBesteSchuleCache(student, key, cacheJson.encodeToString(value))
+        withContext(Dispatchers.Default) {
+            writeStoredBesteSchuleCache(student, key, cacheJson.encodeToString(value))
+        }
     }
 
     private suspend inline fun <reified T> loadBesteSchuleData(

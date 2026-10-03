@@ -103,13 +103,13 @@ fun DayHeader(
             Text(text = dayAbbreviation, color = color ?: Color.Unspecified, fontWeight = FontWeight.Bold)
             if (showNotes && !captureOnly && (!notes.isNullOrEmpty() || homework.isNotEmpty())) {
                 Icon(
-                    MaterialSymbols.Rounded.Article,
-                    null,
-                    Modifier
-                        .padding(vertical = 4.dp)
-                        .padding(start = 5.dp)
-                        .size(20.dp)
-                        .alpha(if (allHomeworkDone) 0.45f else 1f),
+                    imageVector = MaterialSymbols.Rounded.Article,
+                    contentDescription = null,
+                    modifier =
+                        Modifier
+                            .padding(start = 5.dp)
+                            .size(20.dp)
+                            .alpha(if (allHomeworkDone) 0.45f else 1f),
                     tint =
                         when {
                             allHomeworkDone -> colorScheme.onSurfaceVariant

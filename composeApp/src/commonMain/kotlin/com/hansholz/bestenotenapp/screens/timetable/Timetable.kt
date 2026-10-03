@@ -14,6 +14,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -219,6 +220,9 @@ fun Timetable(
                 val pagerState = rememberEnhancedPagerState(Int.MAX_VALUE, Int.MAX_VALUE / 2)
                 val contentBlurRadius = animateDpAsState(if (timetableViewModel.contentBlurred) 10.dp else 0.dp)
                 var refreshTick by retain { mutableStateOf(0) }
+                val allAbsences by remember(viewModel, showAbsences) {
+                    derivedStateOf { if (showAbsences) viewModel.absences.flatMap { it.second } else emptyList() }
+                }
 
                 @Composable
                 fun pageContent(
@@ -226,12 +230,15 @@ fun Timetable(
                     captureOnly: Boolean = false,
                     isLoaded: (Boolean) -> Unit = {},
                 ) {
+                    val isCurrentPage by remember(pagerState, currentPage) {
+                        derivedStateOf { currentPage == pagerState.currentPage }
+                    }
                     var isLoading by retain { mutableStateOf(false) }
                     val weekDate =
                         retain(timetableViewModel.startPageDate, currentPage) {
                             timetableViewModel.startPageDate.plus(currentPage - (Int.MAX_VALUE / 2), DateTimeUnit.WEEK)
                         }
-                    var week by retain { mutableStateOf<JournalWeek?>(null) }
+                    var week by retain(weekDate) { mutableStateOf<JournalWeek?>(null) }
 
                     suspend fun loadWeek(
                         useCached: Boolean = true,
@@ -326,10 +333,32 @@ fun Timetable(
                                             .padding(if (captureOnly) PaddingValues() else verticalPadding),
                                     contentAlignment = Alignment.Center,
                                 ) {
-                                    EnhancedAnimatedContent(isLoading || week?.days?.all { it.lessons.isNullOrEmpty() } ?: true, animationEnabled = !captureOnly) { targetState ->
+                                    EnhancedAnimatedContent(
+                                        targetState = isLoading || week?.days?.all { it.lessons.isNullOrEmpty() } ?: true,
+                                        animationEnabled = !captureOnly,
+                                        transitionSpec = {
+                                            if (isCurrentPage) {
+                                                (fadeIn(tween(220, delayMillis = 90)) + scaleIn(tween(220, delayMillis = 90), initialScale = 0.92f))
+                                                    .togetherWith(fadeOut(tween(90)))
+                                            } else {
+                                                EnterTransition.None.togetherWith(ExitTransition.None).using(null)
+                                            }
+                                        },
+                                    ) { targetState ->
                                         Box(Modifier.fillMaxSize()) {
                                             if (targetState) {
-                                                EnhancedAnimatedContent(isLoading, animationEnabled = !captureOnly) { isLoading ->
+                                                EnhancedAnimatedContent(
+                                                    targetState = isLoading,
+                                                    animationEnabled = !captureOnly,
+                                                    transitionSpec = {
+                                                        if (isCurrentPage) {
+                                                            (fadeIn(tween(220, delayMillis = 90)) + scaleIn(tween(220, delayMillis = 90), initialScale = 0.92f))
+                                                                .togetherWith(fadeOut(tween(90)))
+                                                        } else {
+                                                            EnterTransition.None.togetherWith(ExitTransition.None).using(null)
+                                                        }
+                                                    },
+                                                ) { isLoading ->
                                                     if (isLoading) {
                                                         Box(
                                                             modifier = Modifier.padding(contentPadding).fillMaxSize(),
@@ -363,9 +392,9 @@ fun Timetable(
                                                 WeekScheduleView(
                                                     viewModel = viewModel,
                                                     week = week,
-                                                    absences = if (showAbsences) viewModel.absences.flatMap { it.second } else emptyList(),
+                                                    absences = allAbsences,
                                                     lessonPopupShown = lessonPopupShown,
-                                                    isCurrentPage = currentPage == pagerState.currentPage,
+                                                    isCurrentPage = isCurrentPage,
                                                     contentPadding = if (captureOnly) PaddingValues() else contentPadding,
                                                     modifier = Modifier.padding(bottom = 10.dp).padding(horizontal = 6.dp),
                                                     enabled = timetableViewModel.userScrollEnabled,
