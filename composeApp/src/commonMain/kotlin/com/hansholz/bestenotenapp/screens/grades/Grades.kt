@@ -5,7 +5,6 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SizeTransform
@@ -40,6 +39,7 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -48,6 +48,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
@@ -101,6 +103,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.window.core.layout.WindowSizeClass
 import com.composables.icons.materialsymbols.MaterialSymbols
@@ -109,6 +112,7 @@ import com.composables.icons.materialsymbols.rounded.Arrow_back_ios_new
 import com.composables.icons.materialsymbols.rounded.Balance
 import com.composables.icons.materialsymbols.rounded.Bar_chart
 import com.composables.icons.materialsymbols.rounded.Calendar_month
+import com.composables.icons.materialsymbols.rounded.Check
 import com.composables.icons.materialsymbols.rounded.Close
 import com.composables.icons.materialsymbols.rounded.Disabled_visible
 import com.composables.icons.materialsymbols.rounded.History
@@ -127,6 +131,7 @@ import com.hansholz.bestenotenapp.components.PreferencePosition
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedBasicTextField
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
@@ -162,7 +167,6 @@ import com.hansholz.bestenotenapp.utils.secondaryStage
 import com.hansholz.bestenotenapp.utils.translateHistoryBody
 import com.nomanr.animate.compose.presets.zoomingextrances.ZoomIn
 import dev.chrisbanes.haze.hazeSource
-import io.github.koalaplot.core.util.ExperimentalKoalaPlotApi
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -170,12 +174,7 @@ import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.math.abs
 import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(
-    ExperimentalMaterial3ExpressiveApi::class,
-    ExperimentalSharedTransitionApi::class,
-    ExperimentalComposeUiApi::class,
-    ExperimentalKoalaPlotApi::class,
-)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun Grades(
     viewModel: ViewModel,
@@ -359,61 +358,99 @@ fun Grades(
                                                             vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
                                                         }
                                                     }
-                                                    ListItem(
-                                                        headlineContent = {
-                                                            Text("${it.subject?.name}: ${it.name}")
-                                                        },
-                                                        supportingContent = {
-                                                            Column {
-                                                                Text("${it.type} vom ${formateDate(it.givenAt)}")
+                                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                                        val grade = it.grades?.getOrNull(0)
+                                                        val notRead = grade?.read == false && viewModel.user.value?.role == "guardian"
+                                                        ListItem(
+                                                            modifier = Modifier.weight(1f),
+                                                            headlineContent = {
+                                                                Text("${it.subject?.name}: ${it.name}")
+                                                            },
+                                                            supportingContent = {
+                                                                Column {
+                                                                    Text("${it.type} vom ${formateDate(it.givenAt)}")
 
-                                                                val collectionHistories = it.histories ?: emptyList()
-                                                                val gradeHistories = it.grades?.getOrNull(0)?.histories ?: emptyList()
+                                                                    val collectionHistories = it.histories ?: emptyList()
+                                                                    val gradeHistories = grade?.histories ?: emptyList()
 
-                                                                val teachers =
-                                                                    (collectionHistories + gradeHistories)
-                                                                        .map { (it.conductor?.id ?: 0) to (it.conductor?.name ?: "") }
-                                                                        .distinct()
+                                                                    val teachers =
+                                                                        (collectionHistories + gradeHistories)
+                                                                            .map { (it.conductor?.id ?: 0) to (it.conductor?.name ?: "") }
+                                                                            .distinct()
 
-                                                                if ((collectionHistories.isNotEmpty() || gradeHistories.isNotEmpty()) && showGradeHistory) {
-                                                                    Spacer(Modifier.height(10.dp))
-                                                                    Text("Historie:", textDecoration = TextDecoration.Underline)
-                                                                    collectionHistories.filterHistory().forEach {
-                                                                        Row {
-                                                                            Text(
-                                                                                "${if (showTeachersWithFirstname) {
-                                                                                    it.conductor?.forename
-                                                                                } else {
-                                                                                    it.conductor?.forename?.take(
-                                                                                        1,
-                                                                                    ) + "."
-                                                                                }} ${it.conductor?.name}: ",
-                                                                            )
-                                                                            Text(translateHistoryBody("Leistung", it.body, teachers))
+                                                                    if ((collectionHistories.isNotEmpty() || gradeHistories.isNotEmpty()) && showGradeHistory) {
+                                                                        Spacer(Modifier.height(10.dp))
+                                                                        Text("Historie:", textDecoration = TextDecoration.Underline)
+                                                                        collectionHistories.filterHistory().forEach {
+                                                                            Row {
+                                                                                Text(
+                                                                                    "${if (showTeachersWithFirstname) {
+                                                                                        it.conductor?.forename
+                                                                                    } else {
+                                                                                        it.conductor?.forename?.take(
+                                                                                            1,
+                                                                                        ) + "."
+                                                                                    }} ${it.conductor?.name}: ",
+                                                                                )
+                                                                                Text(translateHistoryBody("Leistung", it.body, teachers))
+                                                                            }
                                                                         }
-                                                                    }
-                                                                    gradeHistories.filterHistory().forEach {
-                                                                        Row {
-                                                                            Text(
-                                                                                "${if (showTeachersWithFirstname) {
-                                                                                    it.conductor?.forename
-                                                                                } else {
-                                                                                    it.conductor?.forename?.take(
-                                                                                        1,
-                                                                                    ) + "."
-                                                                                }} ${it.conductor?.name}: ",
-                                                                            )
-                                                                            Text(translateHistoryBody("Note", it.body, teachers))
+                                                                        gradeHistories.filterHistory().forEach {
+                                                                            Row {
+                                                                                Text(
+                                                                                    "${if (showTeachersWithFirstname) {
+                                                                                        it.conductor?.forename
+                                                                                    } else {
+                                                                                        it.conductor?.forename?.take(
+                                                                                            1,
+                                                                                        ) + "."
+                                                                                    }} ${it.conductor?.name}: ",
+                                                                                )
+                                                                                Text(translateHistoryBody("Note", it.body, teachers))
+                                                                            }
                                                                         }
                                                                     }
                                                                 }
+                                                            },
+                                                            leadingContent = {
+                                                                BadgedBox(
+                                                                    badge = {
+                                                                        if (notRead) {
+                                                                            Badge {
+                                                                                Text("N")
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                ) {
+                                                                    GradeValueBox(grade?.value, viewModel.levelFor(it))
+                                                                }
+                                                            },
+                                                            colors = ListItemDefaults.colors(Color.Transparent),
+                                                        )
+                                                        EnhancedAnimatedVisibility(notRead) {
+                                                            val isLoading = grade?.id in viewModel.gradesBeingMarkedAsRead
+                                                            Box(
+                                                                modifier = Modifier.padding(10.dp),
+                                                                contentAlignment = Alignment.Center,
+                                                            ) {
+                                                                EnhancedIconButton(
+                                                                    enabled = !isLoading,
+                                                                    onClick = {
+                                                                        grade?.let {
+                                                                            viewModel.viewModelScope.launch {
+                                                                                viewModel.markGradeAsRead(it)
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                ) {
+                                                                    Icon(imageVector = MaterialSymbols.Rounded.Check, null)
+                                                                }
+                                                                this@Row.EnhancedAnimatedVisibility(isLoading) {
+                                                                    CircularWavyProgressIndicator(Modifier.size(32.dp))
+                                                                }
                                                             }
-                                                        },
-                                                        leadingContent = {
-                                                            GradeValueBox(it.grades?.getOrNull(0)?.value, viewModel.levelFor(it))
-                                                        },
-                                                        colors = ListItemDefaults.colors(Color.Transparent),
-                                                    )
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
@@ -634,62 +671,99 @@ fun Grades(
                                                                 vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
                                                             }
                                                         }
-                                                        ListItem(
-                                                            headlineContent = {
-                                                                Text("${it.name} - ${it.type}")
-                                                            },
-                                                            supportingContent = {
-                                                                Column {
-                                                                    Text("Gegeben am ${formateDate(it.givenAt)}")
+                                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                                            val grade = it.grades?.getOrNull(0)
+                                                            val notRead = grade?.read == false && viewModel.user.value?.role == "guardian"
+                                                            ListItem(
+                                                                headlineContent = {
+                                                                    Text("${it.name} - ${it.type}")
+                                                                },
+                                                                supportingContent = {
+                                                                    Column {
+                                                                        Text("Gegeben am ${formateDate(it.givenAt)}")
 
-                                                                    val collectionHistories = it.histories ?: emptyList()
-                                                                    val gradeHistories = it.grades?.getOrNull(0)?.histories ?: emptyList()
+                                                                        val collectionHistories = it.histories ?: emptyList()
+                                                                        val gradeHistories = grade?.histories ?: emptyList()
 
-                                                                    val teachers =
-                                                                        (collectionHistories + gradeHistories)
-                                                                            .map { (it.conductor?.id ?: 0) to (it.conductor?.name ?: "") }
-                                                                            .distinct()
+                                                                        val teachers =
+                                                                            (collectionHistories + gradeHistories)
+                                                                                .map { (it.conductor?.id ?: 0) to (it.conductor?.name ?: "") }
+                                                                                .distinct()
 
-                                                                    if ((collectionHistories.isNotEmpty() || gradeHistories.isNotEmpty()) && showGradeHistory) {
-                                                                        Spacer(Modifier.height(10.dp))
-                                                                        Text("Historie:", textDecoration = TextDecoration.Underline)
-                                                                        collectionHistories.filterHistory().forEach {
-                                                                            Row {
-                                                                                Text(
-                                                                                    "${if (showTeachersWithFirstname) {
-                                                                                        it.conductor?.forename
-                                                                                    } else {
-                                                                                        it.conductor?.forename?.take(
-                                                                                            1,
-                                                                                        ) + "."
-                                                                                    }} ${it.conductor?.name}: ",
-                                                                                )
-                                                                                Text(translateHistoryBody("Leistung", it.body, teachers))
+                                                                        if ((collectionHistories.isNotEmpty() || gradeHistories.isNotEmpty()) && showGradeHistory) {
+                                                                            Spacer(Modifier.height(10.dp))
+                                                                            Text("Historie:", textDecoration = TextDecoration.Underline)
+                                                                            collectionHistories.filterHistory().forEach {
+                                                                                Row {
+                                                                                    Text(
+                                                                                        "${if (showTeachersWithFirstname) {
+                                                                                            it.conductor?.forename
+                                                                                        } else {
+                                                                                            it.conductor?.forename?.take(
+                                                                                                1,
+                                                                                            ) + "."
+                                                                                        }} ${it.conductor?.name}: ",
+                                                                                    )
+                                                                                    Text(translateHistoryBody("Leistung", it.body, teachers))
+                                                                                }
                                                                             }
-                                                                        }
-                                                                        gradeHistories.filterHistory().forEach {
-                                                                            Row {
-                                                                                Text(
-                                                                                    "${if (showTeachersWithFirstname) {
-                                                                                        it.conductor?.forename
-                                                                                    } else {
-                                                                                        it.conductor?.forename?.take(
-                                                                                            1,
-                                                                                        ) + "."
-                                                                                    }} ${it.conductor?.name}: ",
-                                                                                )
-                                                                                Text(translateHistoryBody("Note", it.body, teachers))
+                                                                            gradeHistories.filterHistory().forEach {
+                                                                                Row {
+                                                                                    Text(
+                                                                                        "${if (showTeachersWithFirstname) {
+                                                                                            it.conductor?.forename
+                                                                                        } else {
+                                                                                            it.conductor?.forename?.take(
+                                                                                                1,
+                                                                                            ) + "."
+                                                                                        }} ${it.conductor?.name}: ",
+                                                                                    )
+                                                                                    Text(translateHistoryBody("Note", it.body, teachers))
+                                                                                }
                                                                             }
                                                                         }
                                                                     }
+                                                                },
+                                                                leadingContent = {
+                                                                    BadgedBox(
+                                                                        badge = {
+                                                                            if (notRead) {
+                                                                                Badge {
+                                                                                    Text("N")
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                    ) {
+                                                                        GradeValueBox(grade?.value, viewModel.levelFor(it))
+                                                                    }
+                                                                },
+                                                                colors = ListItemDefaults.colors(Color.Transparent),
+                                                                modifier = Modifier.weight(1f).hazeSource(viewModel.hazeBackgroundState2),
+                                                            )
+                                                            EnhancedAnimatedVisibility(notRead) {
+                                                                val isLoading = grade?.id in viewModel.gradesBeingMarkedAsRead
+                                                                Box(
+                                                                    modifier = Modifier.padding(10.dp),
+                                                                    contentAlignment = Alignment.Center,
+                                                                ) {
+                                                                    EnhancedIconButton(
+                                                                        enabled = !isLoading,
+                                                                        onClick = {
+                                                                            grade?.let {
+                                                                                viewModel.viewModelScope.launch {
+                                                                                    viewModel.markGradeAsRead(it)
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                    ) {
+                                                                        Icon(imageVector = MaterialSymbols.Rounded.Check, null)
+                                                                    }
+                                                                    this@Row.EnhancedAnimatedVisibility(isLoading) {
+                                                                        CircularWavyProgressIndicator(Modifier.size(32.dp))
+                                                                    }
                                                                 }
-                                                            },
-                                                            leadingContent = {
-                                                                GradeValueBox(it.grades?.getOrNull(0)?.value, viewModel.levelFor(it))
-                                                            },
-                                                            colors = ListItemDefaults.colors(Color.Transparent),
-                                                            modifier = Modifier.hazeSource(viewModel.hazeBackgroundState2),
-                                                        )
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }

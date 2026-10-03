@@ -20,6 +20,7 @@ import com.hansholz.bestenotenapp.api.ManagedPersonalAccessToken
 import com.hansholz.bestenotenapp.api.codeAuthFlowFactory
 import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.models.Absence
+import com.hansholz.bestenotenapp.api.models.Grade
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.api.models.Group
 import com.hansholz.bestenotenapp.api.models.Interval
@@ -65,6 +66,7 @@ import io.github.vinceglb.filekit.readString
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.http.isSuccess
 import io.ktor.utils.io.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -155,6 +157,7 @@ class ViewModel(
 
     val startGradeCollections = mutableStateListOf<GradeCollection>()
     val gradeCollections = mutableStateListOf<GradeCollection>()
+    val gradesBeingMarkedAsRead = mutableStateListOf<Int>()
     val allGradeCollectionsLoaded = mutableStateOf(false)
     val years = mutableStateListOf<Year>()
     val intervals = mutableStateListOf<Interval>()
@@ -865,6 +868,41 @@ class ViewModel(
                         .flatten()
                 }
             }
+        }
+    }
+
+    suspend fun markGradeAsRead(grade: Grade) {
+        if (grade.id in gradesBeingMarkedAsRead) return
+        val currentStudentId = studentId.value
+        gradesBeingMarkedAsRead.add(grade.id)
+        try {
+            val response = api.gradeMarkRead(grade.id.toString())
+            if (response.status.isSuccess()) {
+                if (studentId.value != currentStudentId) return
+                listOf(gradeCollections, startGradeCollections).forEach { collections ->
+                    collections.indices.forEach { index ->
+                        val collection = collections[index]
+                        if (collection.grades?.any { it.id == grade.id } == true) {
+                            collections[index] =
+                                collection.copy(
+                                    grades =
+                                        collection.grades.map {
+                                            if (it.id == grade.id) it.copy(read = true) else it
+                                        },
+                                )
+                        }
+                    }
+                }
+            } else {
+                toaster.show(Toast(message = "Note konnte nicht als gelesen markiert werden", type = ToastType.Error))
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            e.printStackTrace()
+            toaster.show(Toast(message = "Note konnte nicht als gelesen markiert werden", type = ToastType.Error))
+        } finally {
+            gradesBeingMarkedAsRead.remove(grade.id)
         }
     }
 
