@@ -1,7 +1,6 @@
 package com.hansholz.bestenotenapp.screens.home
 
 import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -163,11 +162,7 @@ import org.kodein.emoji.compose.m3.TextWithNotoAnimatedEmoji
 import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.math.roundToInt
 
-@OptIn(
-    ExperimentalMaterial3ExpressiveApi::class,
-    ExperimentalSharedTransitionApi::class,
-    ExperimentalFoundationApi::class,
-)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun Home(
     viewModel: ViewModel,

@@ -3,7 +3,6 @@ package com.hansholz.bestenotenapp.main
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -45,7 +44,6 @@ import com.hansholz.bestenotenapp.updates.UpdateDialogHost
 import dev.chrisbanes.haze.hazeSource
 import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun App(
     theme: (Boolean, Boolean) -> Unit = { _, _ -> },

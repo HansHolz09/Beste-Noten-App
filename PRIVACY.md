@@ -4,12 +4,6 @@
 
 Diese Erklärung gilt für die iOS- und iPadOS-Version der Beste-Noten-App. Die App ist ein unabhängiger Client für beste.schule und keine offizielle Anwendung dieses Dienstes. Die Datenverarbeitung durch beste.schule und die angebundene Schule richtet sich nach deren eigenen Datenschutzhinweisen.
 
-## Verantwortliche Stelle für die App
-
-Thomas Otto-Scholz  
-Querstraße 4, 04741 Roßwein  
-otto_scholz@t-online.de
-
 ## Datenverarbeitung und Zwecke
 
 Die App verarbeitet die für Anmeldung und Nutzung erforderlichen Kontodaten sowie die über beste.schule verfügbaren Schulangaben, insbesondere Noten, Fächer, Stundenplan und gegebenenfalls Fehlzeiten und Notizen. Bei der Anmeldung werden Benutzername beziehungsweise E-Mail-Adresse, Passwort und gegebenenfalls ein Zwei-Faktor-Code verschlüsselt an beste.schule übertragen. Passwort und Zwei-Faktor-Code werden nicht dauerhaft von der App gespeichert. Zugriffs- und gegebenenfalls Refresh-Token, Einstellungen und Teile der abgerufenen Daten werden lokal gespeichert; ein Offline-Cache ermöglicht die Nutzung ohne Verbindung. Die App betreibt keinen eigenen Server für Schul- oder Nutzungsdaten.
@@ -34,6 +28,12 @@ Benachrichtigungen und Google-Synchronisierung sind optional und können deaktiv
 
 ## Datenschutzrechte und Änderungen
 
-Anfragen zu Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit oder Widerspruch gegen eine Verarbeitung durch die oben genannte verantwortliche Stelle können an die oben angegebene Kontaktadresse gerichtet werden. Eine Einwilligung kann jederzeit für die Zukunft widerrufen werden. Für Daten im beste.schule- oder Google-Konto sind der jeweilige Dienst beziehungsweise die zuständige Schule anzusprechen. Eine Beschwerde bei einer zuständigen Datenschutzaufsichtsbehörde ist möglich.
+Anfragen zu Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit oder Widerspruch gegen eine Verarbeitung durch die unten genannte verantwortliche Stelle können an die unten angegebene Kontaktadresse gerichtet werden. Eine Einwilligung kann jederzeit für die Zukunft widerrufen werden. Für Daten im beste.schule- oder Google-Konto sind der jeweilige Dienst beziehungsweise die zuständige Schule anzusprechen. Eine Beschwerde bei einer zuständigen Datenschutzaufsichtsbehörde ist möglich.
 
 Bei Änderungen der Datenverarbeitung wird diese Erklärung aktualisiert. Das oben angegebene Datum zeigt den Stand der Fassung.
+
+## Verantwortliche Stelle für die App
+
+Thomas Otto-Scholz  
+Querstraße 4, 04741 Roßwein  
+otto_scholz@t-online.de

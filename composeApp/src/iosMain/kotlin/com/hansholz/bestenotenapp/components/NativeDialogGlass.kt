@@ -6,7 +6,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
-import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGRectMake
@@ -20,7 +19,7 @@ import platform.UIKit.UIVisualEffectView
 
 private const val DIALOG_CORNER_RADIUS = 28.0
 
-@OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
+@OptIn(ExperimentalForeignApi::class)
 private class NativeDialogBackdropView : UIView(frame = CGRectMake(0.0, 0.0, 0.0, 0.0)) {
     private val glassViews = mutableListOf<UIVisualEffectView>()
 
@@ -69,7 +68,7 @@ private class NativeDialogBackdropView : UIView(frame = CGRectMake(0.0, 0.0, 0.0
     }
 }
 
-@OptIn(ExperimentalForeignApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun NativeDialogBackdrop(
     modifier: Modifier,

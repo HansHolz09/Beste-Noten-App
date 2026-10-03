@@ -1200,7 +1200,10 @@ fun Grades(
                                                     }
                                                 }
                                             }
-                                            EnhancedAnimatedContent(selectedStage) { stage ->
+                                            EnhancedAnimatedContent(
+                                                targetState = selectedStage,
+                                                modifier = Modifier.weight(1f),
+                                            ) { stage ->
                                                 LazyColumn(
                                                     verticalArrangement = Arrangement.spacedBy(8.dp),
                                                 ) {

@@ -74,7 +74,7 @@ private class AppDatePicker : UIDatePicker {
     }
 }
 
-@OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
+@OptIn(BetaInteropApi::class)
 private class DisplayLinkTarget(
     private val onTick: () -> Unit,
 ) : NSObject() {
@@ -110,7 +110,7 @@ private fun UIDatePicker.updateNativeAppearance() {
     tintColor = window?.tintColor ?: superview?.tintColor ?: UIColor.yellowColor
 }
 
-@OptIn(BetaInteropApi::class, ExperimentalForeignApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalForeignApi::class, ExperimentalComposeUiApi::class)
 @Composable
 internal fun NativeDatePicker(
     selectedDateMillis: Long?,
@@ -154,7 +154,7 @@ internal fun NativeDatePicker(
     )
 }
 
-@OptIn(BetaInteropApi::class, ExperimentalForeignApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalForeignApi::class, ExperimentalComposeUiApi::class)
 @Composable
 internal fun NativeTimePicker(
     hour: Int,
@@ -196,7 +196,7 @@ internal fun NativeTimePicker(
     )
 }
 
-@OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
+@OptIn(BetaInteropApi::class)
 private class DatePickerTarget(
     var onSelectedDateChanged: (Long) -> Unit,
 ) : NSObject() {
@@ -208,7 +208,7 @@ private class DatePickerTarget(
     }
 }
 
-@OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
+@OptIn(BetaInteropApi::class)
 private class TimePickerTarget(
     var onTimeChanged: (Int, Int) -> Unit,
 ) : NSObject() {

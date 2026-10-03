@@ -31,7 +31,6 @@ fun EnhancedButton(
     colors: ButtonColors = ButtonDefaults.buttonColors(),
     elevation: ButtonElevation? = ButtonDefaults.buttonElevation(),
     border: BorderStroke? = null,
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     contentPadding: PaddingValues = ButtonDefaults.contentPaddingFor(ButtonDefaults.MinHeight),
     interactionSource: MutableInteractionSource? = null,
     content: @Composable RowScope.() -> Unit,
@@ -40,7 +39,6 @@ fun EnhancedButton(
     val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
     val shape = shapes.extraExtraLarge
 
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     Button(
         onClick = {
             onClick()
@@ -71,7 +69,6 @@ fun EnhancedOutlinedButton(
     colors: ButtonColors = ButtonDefaults.outlinedButtonColors(),
     elevation: ButtonElevation? = null,
     border: BorderStroke? = ButtonDefaults.outlinedButtonBorder(enabled),
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     contentPadding: PaddingValues = ButtonDefaults.contentPaddingFor(ButtonDefaults.MinHeight),
     interactionSource: MutableInteractionSource? = null,
     content: @Composable RowScope.() -> Unit,
@@ -80,7 +77,6 @@ fun EnhancedOutlinedButton(
     val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
     val shape = shapes.extraExtraLarge
 
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     OutlinedButton(
         onClick = {
             onClick()
@@ -111,7 +107,6 @@ fun EnhancedTextButton(
     colors: ButtonColors = ButtonDefaults.textButtonColors(),
     elevation: ButtonElevation? = null,
     border: BorderStroke? = null,
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     contentPadding: PaddingValues = ButtonDefaults.contentPaddingFor(ButtonDefaults.MinHeight),
     interactionSource: MutableInteractionSource? = null,
     content: @Composable RowScope.() -> Unit,
@@ -120,7 +115,6 @@ fun EnhancedTextButton(
     val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
     val shape = shapes.extraExtraLarge
 
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     TextButton(
         onClick = {
             onClick()

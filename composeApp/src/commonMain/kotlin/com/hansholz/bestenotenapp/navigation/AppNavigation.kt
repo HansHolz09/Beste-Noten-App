@@ -1,6 +1,5 @@
 package com.hansholz.bestenotenapp.navigation
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -23,7 +22,6 @@ import com.hansholz.bestenotenapp.screens.login.Login
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun AppNavigation(
     viewModel: ViewModel,

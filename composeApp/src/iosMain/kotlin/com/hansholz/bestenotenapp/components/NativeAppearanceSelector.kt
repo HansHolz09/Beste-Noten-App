@@ -53,7 +53,7 @@ internal fun showNativeAppearanceButtons() {
     appearanceSelectors.forEach { it.hidden = false }
 }
 
-@OptIn(BetaInteropApi::class, ExperimentalForeignApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun NativeAppearanceSelector(
     selectedIndex: Int,
@@ -189,7 +189,7 @@ private class AppearanceSelectorView(
         }
 }
 
-@OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
+@OptIn(BetaInteropApi::class)
 private class AppearanceSelectorTarget(
     var onSelected: (Int) -> Unit,
 ) : NSObject() {

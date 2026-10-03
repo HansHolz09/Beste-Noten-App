@@ -1,7 +1,6 @@
 package com.hansholz.bestenotenapp.screens.subjectsAndTeachers
 
 import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -75,7 +74,7 @@ import kotlinx.coroutines.launch
 import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.math.abs
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SubjectsAndTeachers(
     viewModel: ViewModel,

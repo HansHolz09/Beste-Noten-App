@@ -14,7 +14,6 @@ import androidx.compose.foundation.selection.triStateToggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CheckboxColors
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme.motionScheme
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.ripple
@@ -93,7 +92,6 @@ fun EnhancedCheckbox(
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun CheckboxImpl(
     enabled: Boolean,
@@ -246,7 +244,6 @@ private fun CheckboxColors.borderColor(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun colorAnimationSpecForState(state: ToggleableState): AnimationSpec<Color> =
     if (state == ToggleableState.Off) {

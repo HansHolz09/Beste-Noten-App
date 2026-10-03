@@ -1,6 +1,5 @@
 package com.hansholz.bestenotenapp.components
 
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -8,7 +7,6 @@ import androidx.compose.ui.graphics.Color
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNativePrimaryTabRow
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdaptivePrimaryTabRow(
     labels: List<String>,

@@ -17,8 +17,9 @@ internal actual object GradeNotificationNotifier {
         initialized = true
     }
 
-    actual fun notifyNewGrades(notifications: List<GradeNotificationPayload>) {
-        if (!initialized || notifications.isEmpty()) return
+    actual suspend fun notifyNewGrades(notifications: List<GradeNotificationPayload>): Boolean {
+        if (notifications.isEmpty()) return true
+        if (!initialized) return false
 
         notifications.forEach { payload ->
             service.local.immediate(
@@ -31,5 +32,6 @@ internal actual object GradeNotificationNotifier {
                 ),
             )
         }
+        return true
     }
 }

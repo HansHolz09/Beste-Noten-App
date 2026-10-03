@@ -49,6 +49,7 @@ import com.hansholz.bestenotenapp.homework.HomeworkEntry
 import com.hansholz.bestenotenapp.homework.KSafeGoogleAuthProvider
 import com.hansholz.bestenotenapp.homework.KSafeHomeworkRepository
 import com.hansholz.bestenotenapp.homework.KSafeHomeworkSyncSettings
+import com.hansholz.bestenotenapp.notifications.GradeNotificationEngine
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.security.kSafeProvider
@@ -848,6 +849,7 @@ class ViewModel(
             }
         }
         filterYears?.let { loadLevels(it) }
+        val currentStudentId = studentId.value
         return loadBesteSchuleData(
             "collections_${filterYears.orEmpty().map { it.id }.sorted().joinToString("-").ifBlank { "all" }}",
         ) {
@@ -867,6 +869,10 @@ class ViewModel(
                         }.awaitAll()
                         .flatten()
                 }
+            }
+        }?.also { collections ->
+            currentStudentId?.let {
+                GradeNotificationEngine.markGradesAsSeen(collections.flatMap { it.grades.orEmpty() }.mapTo(mutableSetOf()) { it.id }, it)
             }
         }
     }

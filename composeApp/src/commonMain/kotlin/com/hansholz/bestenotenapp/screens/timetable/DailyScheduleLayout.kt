@@ -3,7 +3,6 @@ package com.hansholz.bestenotenapp.screens.timetable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.Transition
@@ -51,7 +50,6 @@ import com.hansholz.bestenotenapp.utils.TimetableLessonBlock
 import kotlinx.datetime.LocalDate
 import kotlin.math.min
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 internal fun DailyScheduleLayout(
     lessonBlocks: List<TimetableLessonBlock>,

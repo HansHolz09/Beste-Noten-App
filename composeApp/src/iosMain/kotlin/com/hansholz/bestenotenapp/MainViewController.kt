@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)
+@file:OptIn(ExperimentalComposeUiApi::class)
 
 package com.hansholz.bestenotenapp
 
@@ -6,7 +6,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.uikit.OnFocusBehavior
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeUIViewController

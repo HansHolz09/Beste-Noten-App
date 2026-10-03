@@ -2,7 +2,6 @@ package com.hansholz.bestenotenapp.theme
 
 import androidx.compose.animation.core.tween
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -35,7 +34,6 @@ internal val LocalAnimationsEnabled = compositionLocalOf { mutableStateOf(false)
 internal val LocalBlurEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalNativeSystemIsDark = compositionLocalOf<Boolean?> { null }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun AppTheme(
     finalTheme: (ColorScheme) -> Unit = {},

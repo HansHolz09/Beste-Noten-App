@@ -1,6 +1,5 @@
 package com.hansholz.bestenotenapp.navigation
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -18,7 +17,6 @@ import com.hansholz.bestenotenapp.screens.settings.Settings
 import com.hansholz.bestenotenapp.screens.subjectsAndTeachers.SubjectsAndTeachers
 import com.hansholz.bestenotenapp.screens.timetable.Timetable
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun FragmentNavigation(
     viewModel: ViewModel,

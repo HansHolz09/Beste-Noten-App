@@ -2,7 +2,6 @@ package com.hansholz.bestenotenapp.components.enhanced
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
@@ -30,7 +29,6 @@ fun EnhancedIconButton(
     val vibrator = rememberVibrator()
     val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
 
-    @OptIn(ExperimentalMaterial3ExpressiveApi::class)
     IconButton(
         onClick = {
             onClick()

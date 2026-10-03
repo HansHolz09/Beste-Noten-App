@@ -26,8 +26,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.DatePicker
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -109,7 +107,6 @@ import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.time.Clock
 import kotlin.time.Instant
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun LazyListScope.homeworkItems(
     homework: List<HomeworkEntry>,
     onEdit: (HomeworkEntry) -> Unit,
@@ -162,7 +159,6 @@ fun LazyListScope.homeworkItems(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HomeworkEditorDialog(
     visible: MutableState<Boolean>,
@@ -489,7 +485,6 @@ fun HomeworkEditorDialog(
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun HomeworkTypeEditorDialog(
     visible: Boolean,

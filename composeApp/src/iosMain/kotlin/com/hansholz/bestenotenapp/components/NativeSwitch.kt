@@ -43,7 +43,7 @@ internal fun showNativeSwitches() {
     showNativeAppearanceButtons()
 }
 
-@OptIn(BetaInteropApi::class, ExperimentalForeignApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalForeignApi::class, ExperimentalComposeUiApi::class)
 @Composable
 internal fun NativeSwitch(
     checked: Boolean,
@@ -146,7 +146,7 @@ private class NativeSwitchContainerView(
     }
 }
 
-@OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
+@OptIn(BetaInteropApi::class)
 private class SwitchTarget(
     private val scope: CoroutineScope,
     var onCheckedChange: (Boolean) -> Unit,

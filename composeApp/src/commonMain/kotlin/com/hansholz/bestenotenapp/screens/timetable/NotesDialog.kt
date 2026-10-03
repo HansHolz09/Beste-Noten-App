@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -35,7 +34,6 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import top.ltfan.multihaptic.compose.rememberVibrator
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun NotesDialog(
     visible: MutableState<Boolean>,

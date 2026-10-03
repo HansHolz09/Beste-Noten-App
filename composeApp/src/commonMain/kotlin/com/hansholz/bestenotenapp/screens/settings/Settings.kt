@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularWavyProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -136,7 +135,6 @@ import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.math.roundToInt
 import kotlin.time.Clock
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun Settings(
     viewModel: ViewModel,
@@ -326,7 +324,7 @@ fun Settings(
                     backgroundEnabled = it
                     put("backgroundEnabled", it)
                 },
-                text = "Hintergrundbild",
+                text = "Hintergrundgrafiken",
                 icon = MaterialSymbols.Rounded.Texture,
                 position = if (vibrator.isVibrationSupported && getPlatform() != Platform.IOS) PreferencePosition.Middle else PreferencePosition.Bottom,
             )
@@ -397,7 +395,13 @@ fun Settings(
                     PreferenceItem(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         title = "Überprüfungsintervall",
-                        subtitle = "Aktuell: ${formateInterval(notificationIntervalMinutes)}",
+                        subtitle =
+                            "Aktuell: ${formateInterval(notificationIntervalMinutes)}" +
+                                if (getPlatform() == Platform.IOS) {
+                                    " (${if (getExactPlatform() == ExactPlatform.IPADOS) "iPadOS" else "iOS"} bestimmt den exakten Zeitpunkt, daher sind Verzögerungen möglich)"
+                                } else {
+                                    ""
+                                },
                         icon = MaterialSymbols.Rounded.History,
                         enabled = notificationsEnabled,
                         position = PreferencePosition.Bottom,

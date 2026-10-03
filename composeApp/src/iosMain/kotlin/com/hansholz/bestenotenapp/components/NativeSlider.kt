@@ -26,7 +26,7 @@ import platform.UIKit.UITouchTypePencil
 import platform.darwin.NSObject
 import kotlin.math.roundToInt
 
-@OptIn(BetaInteropApi::class, ExperimentalForeignApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalForeignApi::class, ExperimentalComposeUiApi::class)
 @Composable
 internal fun NativeSlider(
     selectedIndex: Int,
@@ -113,7 +113,7 @@ private class PencilAwareSlider : UISlider(frame = CGRectMake(0.0, 0.0, 0.0, 0.0
     }
 }
 
-@OptIn(BetaInteropApi::class, ExperimentalForeignApi::class)
+@OptIn(BetaInteropApi::class)
 private class SliderTarget(
     var onSelected: (Int) -> Unit,
 ) : NSObject() {
