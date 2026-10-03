@@ -51,7 +51,6 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.main.ViewModel
-import com.hansholz.bestenotenapp.utils.appendWithSymbols
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.roundToDecimals
 import com.hansholz.bestenotenapp.utils.tryRemember
@@ -205,7 +204,7 @@ fun StatsDialog(
                                         withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
                                             append("Zeiträume:\n")
                                         }
-                                        appendWithSymbols(
+                                        append(
                                             viewModel.intervals.joinToString("\n") { interval ->
                                                 val daysRemaining = Clock.System.todayIn(TimeZone.currentSystemDefault()).daysUntil(LocalDate.parse(interval.to))
                                                 interval.name.let { if (it.regionMatches(2, "HJ", 0, 2)) "${it.take(2)} ${it.substringAfter('.')}" else it } +
@@ -217,7 +216,7 @@ fun StatsDialog(
                                         withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
                                             append("\n\nDaten zum Schuljahr (${viewModel.user.value?.year?.name}):\n")
                                         }
-                                        appendWithSymbols(
+                                        append(
                                             "• Schultage: ${currentDayData?.count}\n" +
                                                 "• Abwesende Tage: ${currentDayData?.notPresentCount} (davon ${currentDayData?.notPresentWithAbsenceCount} entschuldigt," +
                                                 " $currentDaysNotPresentWithoutAbsenceCount nicht)\n" +
@@ -229,7 +228,7 @@ fun StatsDialog(
                                         withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
                                             append("\n\nGesamtübersicht:\n")
                                         }
-                                        appendWithSymbols(
+                                        append(
                                             "• Schultage: ${dayData?.count}\n" +
                                                 "• Abwesende Tage: ${dayData?.notPresentCount} (davon ${dayData?.notPresentWithAbsenceCount} entschuldigt," +
                                                 " $daysNotPresentWithoutAbsenceCount nicht)\n" +
