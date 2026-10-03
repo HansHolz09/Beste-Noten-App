@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -264,22 +265,27 @@ internal fun DrawerPredictiveBackHandler(
         maxScaleYDistance = PredictiveBackDrawerMaxScaleYDistance.toPx()
     }
 
-    @Suppress("DEPRECATION")
-    PredictiveBackHandler(enabled = drawerState.isOpen) { progress ->
-        try {
-            progress.collect { backEvent ->
-                drawerPredictiveBackState.update(
-                    PredictiveBack.transform(backEvent.progress),
-                    backEvent.swipeEdge == BackEventCompat.EDGE_LEFT,
-                    isRtl,
-                    maxScaleXDistanceGrow,
-                    maxScaleXDistanceShrink,
-                    maxScaleYDistance,
-                )
+    content(drawerPredictiveBackState)
+
+    // Give the drawer priority over screen handlers registered since the last navigation.
+    key(drawerState.isOpen) {
+        @Suppress("DEPRECATION")
+        PredictiveBackHandler(enabled = drawerState.isOpen) { progress ->
+            try {
+                progress.collect { backEvent ->
+                    drawerPredictiveBackState.update(
+                        PredictiveBack.transform(backEvent.progress),
+                        backEvent.swipeEdge == BackEventCompat.EDGE_LEFT,
+                        isRtl,
+                        maxScaleXDistanceGrow,
+                        maxScaleXDistanceShrink,
+                        maxScaleYDistance,
+                    )
+                }
+            } catch (_: kotlin.coroutines.cancellation.CancellationException) {
+                drawerPredictiveBackState.clear()
+                return@PredictiveBackHandler
             }
-        } catch (_: kotlin.coroutines.cancellation.CancellationException) {
-            drawerPredictiveBackState.clear()
-        } finally {
             if (drawerPredictiveBackState.swipeEdgeMatchesDrawer) {
                 // If swipe edge matches drawer gravity and we've stretched the drawer horizontally,
                 // un-stretch it smoothly so that it hides completely during the drawer close.
@@ -302,8 +308,6 @@ internal fun DrawerPredictiveBackHandler(
             drawerPredictiveBackState.clear()
         }
     }
-
-    content(drawerPredictiveBackState)
 }
 
 @Stable
