@@ -105,7 +105,7 @@ class NativeComponentBridge {
     }
 
     internal fun rootDestinationChanged(route: String) {
-        if (route != "main") {
+        if (route != "main" && route != "grades") {
             hideNativeSwitches()
         } else {
             showNativeSwitches()

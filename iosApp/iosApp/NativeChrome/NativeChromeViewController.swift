@@ -44,6 +44,7 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
     private var bridge: NativeComponentBridge!
     private var selectedSection: AppSection = .home
     private var displaysMainContent = false
+    private var displaysOpenedGrades = false
     private var usesSidebar = false
     private var hasRefreshedSidebarPresentation = false
     private var isSidebarCollapsed = false
@@ -267,6 +268,7 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
 
     private func setRootDestination(_ route: String) {
         displaysMainContent = route == "main"
+        displaysOpenedGrades = route == "grades"
         updateChrome(animated: true)
     }
 
@@ -419,11 +421,11 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
 
     private func updateChrome(animated: Bool) {
         guard isViewLoaded else { return }
-        let visible = displaysMainContent
-        let sidebarVisible = visible && usesSidebar
-        let compactChromeVisible = visible && !usesSidebar
+        let visible = displaysMainContent || displaysOpenedGrades
+        let sidebarVisible = displaysMainContent && usesSidebar
+        let compactChromeVisible = visible && !sidebarVisible
         let shouldShowBottomTabs =
-            compactChromeVisible && (selectedSection == .home || selectedSection == .settings)
+            displaysMainContent && compactChromeVisible && (selectedSection == .home || selectedSection == .settings)
 
         contentNavigationController.setNavigationBarHidden(!visible, animated: animated)
 
@@ -450,7 +452,7 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
         guard composeController != nil else { return }
         let baseTop = contentHostController.view.safeAreaInsets.top
         let chromeBottom: CGFloat
-        if displaysMainContent && !contentNavigationController.isNavigationBarHidden {
+        if (displaysMainContent || displaysOpenedGrades) && !contentNavigationController.isNavigationBarHidden {
             let navigationBarBottom = contentNavigationController.navigationBar.convert(
                 contentNavigationController.navigationBar.bounds,
                 to: contentHostController.view

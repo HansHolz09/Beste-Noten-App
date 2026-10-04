@@ -46,7 +46,14 @@ fun AppNavigation(
     val navController = rememberNavController()
     val currentDestination by navController.currentBackStackEntryAsState()
     LaunchedEffect(currentDestination?.destination?.route) {
-        currentDestination?.destination?.route?.let(onRootDestinationChanged)
+        currentDestination?.destination?.route?.let { route ->
+            onRootDestinationChanged(route)
+            if (route != Screen.Main.route) {
+                onNavHostReady(navController)
+                onCanNavigateBackChanged(navController.previousBackStackEntry != null)
+                if (route == Screen.Grades.route) onFragmentDestinationChanged(Fragment.Grades.route)
+            }
+        }
     }
     SharedTransitionLayout {
         NavHost(
