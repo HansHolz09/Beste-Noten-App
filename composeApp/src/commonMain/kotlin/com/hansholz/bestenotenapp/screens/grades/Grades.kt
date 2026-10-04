@@ -150,6 +150,7 @@ import com.hansholz.bestenotenapp.main.LocalGradeAverageEnabled
 import com.hansholz.bestenotenapp.main.LocalGradeAverageUseWeighting
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNativePrimaryTabRow
+import com.hansholz.bestenotenapp.main.LocalScrollZoomAnimationEnabled
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
 import com.hansholz.bestenotenapp.main.LocalShowGradeHistory
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
@@ -198,6 +199,7 @@ fun Grades(
                 .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
         val animationsEnabled by LocalAnimationsEnabled.current
+        val scrollZoomAnimationEnabled by LocalScrollZoomAnimationEnabled.current
         val nativeComponentsEnabled by LocalNativeComponentsEnabled.current
         val nativePrimaryTabRow = LocalNativePrimaryTabRow.current
         val usesNativePrimaryTabs = nativeComponentsEnabled && nativePrimaryTabRow != null
@@ -351,6 +353,7 @@ fun Grades(
                                                 EnhancedAnimated(
                                                     modifier = Modifier.padding(verticalPadding),
                                                     preset = ZoomIn(),
+                                                    enabled = scrollZoomAnimationEnabled,
                                                     durationMillis = 200,
                                                 ) { isAnimated ->
                                                     LaunchedEffect(Unit) {
@@ -523,6 +526,7 @@ fun Grades(
                                                 stickyHeader {
                                                     EnhancedAnimated(
                                                         preset = ZoomIn(),
+                                                        enabled = scrollZoomAnimationEnabled,
                                                         durationMillis = 200,
                                                     ) { isAnimated ->
                                                         LaunchedEffect(Unit) {
@@ -664,6 +668,7 @@ fun Grades(
                                                     EnhancedAnimated(
                                                         modifier = Modifier.padding(verticalPadding),
                                                         preset = ZoomIn(),
+                                                        enabled = scrollZoomAnimationEnabled,
                                                         durationMillis = 200,
                                                     ) { isAnimated ->
                                                         LaunchedEffect(Unit) {

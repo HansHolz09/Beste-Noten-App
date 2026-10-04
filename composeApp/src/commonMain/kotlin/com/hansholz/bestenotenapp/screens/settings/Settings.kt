@@ -45,6 +45,7 @@ import com.composables.icons.materialsymbols.rounded.Disabled_visible
 import com.composables.icons.materialsymbols.rounded.Fiber_new
 import com.composables.icons.materialsymbols.rounded.File_export
 import com.composables.icons.materialsymbols.rounded.Filter_alt
+import com.composables.icons.materialsymbols.rounded.Fit_page_height
 import com.composables.icons.materialsymbols.rounded.Format_list_bulleted
 import com.composables.icons.materialsymbols.rounded.History
 import com.composables.icons.materialsymbols.rounded.How_to_reg
@@ -96,6 +97,7 @@ import com.hansholz.bestenotenapp.main.LocalNativeAppearanceSelector
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNativeSlider
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
+import com.hansholz.bestenotenapp.main.LocalScrollZoomAnimationEnabled
 import com.hansholz.bestenotenapp.main.LocalShowAbsences
 import com.hansholz.bestenotenapp.main.LocalShowAllSubjects
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
@@ -128,12 +130,8 @@ import dev.chrisbanes.haze.blur.HazeBlurDefaults
 import dev.chrisbanes.haze.hazeSource
 import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
 import kotlinx.coroutines.launch
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.number
-import kotlinx.datetime.toLocalDateTime
 import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.math.roundToInt
-import kotlin.time.Clock
 
 @Composable
 fun Settings(
@@ -159,6 +157,7 @@ fun Settings(
     var useCustomColorScheme by LocalUseCustomColorScheme.current
     val supportsCustomColorScheme by LocalSupportsCustomColorScheme.current
     var animationsEnabled by LocalAnimationsEnabled.current
+    var scrollZoomAnimationEnabled by LocalScrollZoomAnimationEnabled.current
     var blurEnabled by LocalBlurEnabled.current
     var backgroundEnabled by LocalBackgroundEnabled.current
     var hapticsEnabled by LocalHapticsEnabled.current
@@ -305,6 +304,19 @@ fun Settings(
                     icon = MaterialSymbols.Rounded.Animation,
                     position = PreferencePosition.Middle,
                 )
+            }
+            settingsToggleItem(
+                checked = animationsEnabled && scrollZoomAnimationEnabled,
+                onCheckedChange = {
+                    scrollZoomAnimationEnabled = it
+                    put("scrollZoomAnimationEnabled", it)
+                },
+                text = "Scroll-Zoom-Animation",
+                icon = MaterialSymbols.Rounded.Fit_page_height,
+                enabled = animationsEnabled,
+                position = PreferencePosition.Middle,
+            )
+            if (!nativeComponentsEnabled) {
                 if (HazeBlurDefaults.isBlurEnabledByDefault()) {
                     settingsToggleItem(
                         checked = blurEnabled,
@@ -775,6 +787,7 @@ fun Settings(
                                 isDark = appSettings.isDark
                                 useCustomColorScheme = appSettings.useCustomColorScheme
                                 animationsEnabled = appSettings.animationsEnabled
+                                scrollZoomAnimationEnabled = appSettings.scrollZoomAnimationEnabled
                                 blurEnabled = appSettings.blurEnabled && HazeBlurDefaults.isBlurEnabledByDefault()
                                 backgroundEnabled = appSettings.backgroundEnabled
                                 hapticsEnabled = appSettings.hapticsEnabled
@@ -802,6 +815,7 @@ fun Settings(
                                 put("isDark", appSettings.isDark)
                                 put("useCustomColorScheme", appSettings.useCustomColorScheme)
                                 put("animationsEnabled", appSettings.animationsEnabled)
+                                put("scrollZoomAnimationEnabled", appSettings.scrollZoomAnimationEnabled)
                                 put("blurEnabled", appSettings.blurEnabled && HazeBlurDefaults.isBlurEnabledByDefault())
                                 put("backgroundEnabled", appSettings.backgroundEnabled)
                                 put("hapticsEnabled", appSettings.hapticsEnabled)

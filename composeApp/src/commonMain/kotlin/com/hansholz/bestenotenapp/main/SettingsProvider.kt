@@ -10,6 +10,7 @@ import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import dev.chrisbanes.haze.HazeState
 
 internal val LocalBackgroundEnabled = compositionLocalOf { mutableStateOf(false) }
+internal val LocalScrollZoomAnimationEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalHapticsEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowGreetings = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowNewestGrades = compositionLocalOf { mutableStateOf(false) }
@@ -43,6 +44,7 @@ val LocalBiometricAuthenticationAvailable = compositionLocalOf { false }
 fun SettingsProvider(content: @Composable () -> Unit) =
     kSafeProviderCompose {
         val backgroundEnabledState = remember { mutableStateOf(get("backgroundEnabled", true)) }
+        val scrollZoomAnimationEnabledState = remember { mutableStateOf(get("scrollZoomAnimationEnabled", getPlatform() == Platform.ANDROID)) }
         val hapticsEnabledState = remember { mutableStateOf(get("hapticsEnabled", getPlatform() == Platform.ANDROID)) }
         val showGreetingsState = remember { mutableStateOf(get("showGreetings", true)) }
         val showNewestGradesState = remember { mutableStateOf(get("showNewestGrades", true)) }
@@ -67,6 +69,7 @@ fun SettingsProvider(content: @Composable () -> Unit) =
         val requireBiometricAuthentificationState = remember { mutableStateOf(get("requireBiometricAuthentification", false)) }
         CompositionLocalProvider(
             LocalBackgroundEnabled provides backgroundEnabledState,
+            LocalScrollZoomAnimationEnabled provides scrollZoomAnimationEnabledState,
             LocalHapticsEnabled provides hapticsEnabledState,
             LocalShowGreetings provides showGreetingsState,
             LocalShowNewestGrades provides showNewestGradesState,

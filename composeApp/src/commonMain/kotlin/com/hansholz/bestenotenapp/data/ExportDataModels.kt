@@ -4,6 +4,8 @@ import bestenotenapp.composeApp.BuildConfig
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.api.models.Level
 import com.hansholz.bestenotenapp.api.models.Year
+import com.hansholz.bestenotenapp.main.Platform
+import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.screens.grades.GradeAverageCalculator
 import kotlinx.serialization.Serializable
 
@@ -25,6 +27,7 @@ data class AppSettings(
     val isDark: Boolean = false,
     val useCustomColorScheme: Boolean = false,
     val animationsEnabled: Boolean = true,
+    val scrollZoomAnimationEnabled: Boolean = getPlatform() == Platform.ANDROID,
     val blurEnabled: Boolean = false,
     val backgroundEnabled: Boolean = true,
     val hapticsEnabled: Boolean = false,

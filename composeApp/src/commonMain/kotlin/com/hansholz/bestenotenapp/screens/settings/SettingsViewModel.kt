@@ -9,6 +9,8 @@ import com.dokar.sonner.ToastType
 import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.data.AppSettings
 import com.hansholz.bestenotenapp.data.ExportData
+import com.hansholz.bestenotenapp.main.Platform
+import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.screens.grades.GradeAverageCalculator
 import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.hansholz.bestenotenapp.utils.IO
@@ -61,6 +63,7 @@ class SettingsViewModel : ViewModel() {
                             isDark = get("isDark", false),
                             useCustomColorScheme = get("useCustomColorScheme", false),
                             animationsEnabled = get("animationsEnabled", true),
+                            scrollZoomAnimationEnabled = get("scrollZoomAnimationEnabled", getPlatform() == Platform.ANDROID),
                             blurEnabled = get("blurEnabled", HazeBlurDefaults.isBlurEnabledByDefault()),
                             backgroundEnabled = get("backgroundEnabled", true),
                             hapticsEnabled = get("hapticsEnabled", false),

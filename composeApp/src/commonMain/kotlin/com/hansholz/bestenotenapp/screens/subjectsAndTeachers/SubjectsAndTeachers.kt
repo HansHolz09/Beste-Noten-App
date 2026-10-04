@@ -65,6 +65,7 @@ import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.components.rememberLazyListScrollSpeedState
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNativePrimaryTabRow
+import com.hansholz.bestenotenapp.main.LocalScrollZoomAnimationEnabled
 import com.hansholz.bestenotenapp.main.LocalShowAllSubjects
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
@@ -94,6 +95,7 @@ fun SubjectsAndTeachers(
                 .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
         val showAllSubjects by LocalShowAllSubjects.current
+        val scrollZoomAnimationEnabled by LocalScrollZoomAnimationEnabled.current
         val showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
         val nativeComponentsEnabled by LocalNativeComponentsEnabled.current
         val nativePrimaryTabRow = LocalNativePrimaryTabRow.current
@@ -174,6 +176,7 @@ fun SubjectsAndTeachers(
                                                 EnhancedAnimated(
                                                     modifier = Modifier.padding(verticalPadding),
                                                     preset = ZoomIn(),
+                                                    enabled = scrollZoomAnimationEnabled,
                                                     durationMillis = 200,
                                                 ) { isAnimated ->
                                                     LaunchedEffect(Unit) {
@@ -235,6 +238,7 @@ fun SubjectsAndTeachers(
                                                 EnhancedAnimated(
                                                     modifier = Modifier.padding(verticalPadding),
                                                     preset = ZoomIn(),
+                                                    enabled = scrollZoomAnimationEnabled,
                                                     durationMillis = 200,
                                                 ) { isAnimated ->
                                                     LaunchedEffect(Unit) {
