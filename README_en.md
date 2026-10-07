@@ -7,7 +7,7 @@ ___
   <h1>Beste-Noten-App</h1>
 </div>
 
-This cross-platform school app makes everyday school life more organized and is a simpler, more beautiful, and faster alternative to the official beste.schule app.
+This cross-platform client for beste.schule makes everyday school life more organized and is a simpler, more beautiful, and faster alternative to the official beste.schule app. The app is developed independently of beste.schule.
 
 ### [Web Version](https://hansholz09.github.io/Beste-Noten-App)
 
@@ -19,14 +19,15 @@ This cross-platform school app makes everyday school life more organized and is 
 
 
 ## Features
-- Login via private access token or directly through beste.schule
+- Direct login with username/email and password, including two-factor authentication, with alternative login via private access token or browser
 - Demo account to try out the app
 - Home page with daily overview, current grades, and annual progress
 - Simple grade overview with the option to view grade history and configurable average calculation
+- Mark grades as read when using a guardian account
 - Grade charts for comparing different school years
 - Clear timetable view with substitute teacher schedule changes, absence entries, and current daily notes
 - Alternative block view for the timetable (automatically enabled in upper secondary school) with automatic filtering of unnecessary lessons
-- Digital homework planner including Google Calendar synchronization
+- Digital homework planner with customizable entry types and optional Google Calendar synchronization, including when returning to the app
 - Overview of current subjects and teachers with their abbreviations
 - Annual information on half-year periods and absence statistics, including a heatmap of attendance by lesson
 - Dialogs for viewing lesson times as well as account and school data
@@ -34,9 +35,10 @@ This cross-platform school app makes everyday school life more organized and is 
 - Import/export of app settings and grade weightings as well as grades with the option to view them later without a beste.schule account
 - Full offline mode thanks to caching
 - Adaptive Material 3 Expressive design on all platforms with dynamically generated background images
+- Native controls with Liquid Glass on iOS/iPadOS 26+
 - Beautiful animations and transitions
 - Immersive haptic feedback on supported devices
-- Notifications for new grades with a customizable check interval for Android and iOS
+- Notifications for new grades with a customizable check interval for Android and iOS/iPadOS (on iOS/iPadOS, the system determines when checks actually run)
 - Optional biometric authentication on every app launch for Android, iOS, and supported desktop devices
 - Native desktop apps (including via GraalVM) with platform-specific context menus
 - Some customization options
@@ -86,7 +88,6 @@ This cross-platform school app makes everyday school life more organized and is 
 - [Jetlime](https://github.com/pushpalroy/Jetlime) - MIT - Timeline components for class overview
 - [Haze](https://github.com/chrisbanes/haze) - Apache 2.0 - Background blur effects
 - [MaterialKolor](https://github.com/jordond/MaterialKolor) - MIT - Animated color transitions
-- [Multiplatform Material You](https://github.com/zacharee/MultiplatformMaterialYou) - MIT - Creating Material Design color palettes for JVM
 - [Platform-Tools](https://github.com/kdroidFilter/Platform-Tools) - MIT - Reactive detection of light/dark mode
 - [animate-compose](https://github.com/NomanR/animate-compose) - Apache 2.0 - Animation components
 - [ConfettiKit](https://github.com/vinceglb/confettikit) - MIT - Confetti animations (Easter eggs)
@@ -94,13 +95,13 @@ This cross-platform school app makes everyday school life more organized and is 
 - [Compose Sonner](https://github.com/dokar3/compose-sonner) - Apache 2.0 - Toast component
 - [AboutLibraries](https://github.com/mikepenz/AboutLibraries) - Apache 2.0 - Component for displaying the libraries used
 - [multiplatform-markdown-renderer](https://github.com/mikepenz/multiplatform-markdown-renderer) - Apache 2.0 - Displaying Markdown text for the in-app updater
-- [Capturable](https://github.com/jmseb3/Capturable) - MIT - Share/save Composables as images
+- [Capturable](https://github.com/jmseb3/Capturable) - MIT - Basis for the now locally implemented feature for sharing/saving Composables as images
 - [FileKit](https://github.com/vinceglb/FileKit) - MIT - File dialogs for import/export
-- [Alarmee](https://github.com/Tweener/alarmee) - Apache 2.0 - Notifications for Android and iOS
+- [Alarmee](https://github.com/Tweener/alarmee) - Apache 2.0 - Notifications for Android; iOS notifications are sent directly through UserNotifications
 - [KMM Permission](https://github.com/reyazoct/Kmm-Permissions) - MIT - Requesting notification permissions
 - [multihaptic](https://github.com/xfqwdsj/multihaptic) - MIT - Highly customizable haptic feedback
 - [Advanced MenuBar for Compose Desktop](https://github.com/HansHolz09/Advanced-MenuBar) - Apache 2.0 - German macOS menu bar with more options
-- [Nucleus](https://github.com/kdroidFilter/Nucleus) - MIT - Creating optimized Tao windows and app installers for desktop targets
+- [Nucleus](https://github.com/NucleusFramework/Nucleus) - MIT - Creating optimized Tao windows and app installers, and detecting system colors for desktop targets
 - [Oracle GraalVM](https://www.oracle.com/de/developer/graalvm-developers/) - [GFTC](https://www.oracle.com/downloads/licenses/graal-free-license.html) - Compiling desktop apps to native code
 - [Ktlint Gradle](https://github.com/JLLeitschuh/ktlint-gradle) - MIT - Wrapper plugin for [ktlint](https://github.com/pinterest/ktlint)
 - [gradle-buildconfig-plugin](https://github.com/gmazzo/gradle-buildconfig-plugin) - Apache 2.0 - Automatic generation of BuildConfig class for app version
