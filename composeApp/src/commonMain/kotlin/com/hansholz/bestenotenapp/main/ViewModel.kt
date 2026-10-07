@@ -8,15 +8,19 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dokar.sonner.TextToastAction
 import com.dokar.sonner.Toast
 import com.dokar.sonner.ToastType
 import com.dokar.sonner.ToasterDefaults
 import com.dokar.sonner.ToasterState
 import com.hansholz.bestenotenapp.api.BesteSchuleApi
 import com.hansholz.bestenotenapp.api.BesteSchuleAuth
+import com.hansholz.bestenotenapp.api.BesteSchulePasswordLogin
+import com.hansholz.bestenotenapp.api.ManagedPersonalAccessToken
 import com.hansholz.bestenotenapp.api.codeAuthFlowFactory
 import com.hansholz.bestenotenapp.api.createHttpClient
 import com.hansholz.bestenotenapp.api.models.Absence
+import com.hansholz.bestenotenapp.api.models.Grade
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.api.models.Group
 import com.hansholz.bestenotenapp.api.models.Interval
@@ -45,6 +49,7 @@ import com.hansholz.bestenotenapp.homework.HomeworkEntry
 import com.hansholz.bestenotenapp.homework.KSafeGoogleAuthProvider
 import com.hansholz.bestenotenapp.homework.KSafeHomeworkRepository
 import com.hansholz.bestenotenapp.homework.KSafeHomeworkSyncSettings
+import com.hansholz.bestenotenapp.notifications.GradeNotificationEngine
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.security.kSafeProvider
@@ -62,9 +67,11 @@ import io.github.vinceglb.filekit.readString
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.http.isSuccess
 import io.ktor.utils.io.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -75,8 +82,11 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.io.IOException
 import kotlinx.serialization.json.Json
@@ -152,6 +162,7 @@ class ViewModel(
 
     val startGradeCollections = mutableStateListOf<GradeCollection>()
     val gradeCollections = mutableStateListOf<GradeCollection>()
+    val gradesBeingMarkedAsRead = mutableStateListOf<Int>()
     val allGradeCollectionsLoaded = mutableStateOf(false)
     val years = mutableStateListOf<Year>()
     val intervals = mutableStateListOf<Interval>()
@@ -206,16 +217,41 @@ class ViewModel(
         homeworkRevision.intValue++
     }
 
-    suspend fun syncHomeworkNow(showSuccessToast: Boolean = true) {
+    private var foregroundHomeworkSyncJob: Job? = null
+
+    fun onForeground() {
+        if (isDemoAccount.value || studentId.value == null ||
+            !homeworkSyncSettings.homeworkEnabled || !homeworkSyncSettings.googleSyncEnabled ||
+            foregroundHomeworkSyncJob?.isActive == true
+        ) {
+            return
+        }
+        foregroundHomeworkSyncJob =
+            viewModelScope.launch {
+                syncHomeworkNow(showSuccessToast = false, showErrorToast = false)
+            }
+    }
+
+    suspend fun syncHomeworkNow(
+        showSuccessToast: Boolean = true,
+        showErrorToast: Boolean = true,
+    ) {
+        if (!homeworkSyncSettings.googleSyncEnabled) {
+            homeworkSyncSettings.lastSyncError = null
+            return
+        }
+        if (!homeworkSyncSettings.homeworkEnabled) return
         homeworkRepository.syncNow()
         homeworkSyncSettings.lastSyncError?.let {
-            toaster.show(
-                Toast(
-                    message = it,
-                    type = ToastType.Error,
-                    duration = ToasterDefaults.DurationLong,
-                ),
-            )
+            if (showErrorToast) {
+                toaster.show(
+                    Toast(
+                        message = it,
+                        type = ToastType.Error,
+                        duration = ToasterDefaults.DurationLong,
+                    ),
+                )
+            }
         } ?: run {
             homeworkRevision.intValue++
             if (showSuccessToast) {
@@ -232,14 +268,17 @@ class ViewModel(
     suspend fun connectGoogleCalendarForHomework(): Boolean {
         try {
             googleAuthProvider.signIn()
+            homeworkSyncSettings.lastSyncError = null
             homeworkSyncSettings.googleSyncEnabled = true
             return true
         } catch (e: Exception) {
-            homeworkSyncSettings.lastSyncError = e.message ?: "Google Kalender konnte nicht verbunden werden"
-            homeworkSyncSettings.googleSyncEnabled = false
+            withContext(NonCancellable) {
+                disconnectGoogleCalendarForHomework()
+            }
+            if (e is CancellationException) throw e
             toaster.show(
                 Toast(
-                    message = homeworkSyncSettings.lastSyncError!!,
+                    message = e.message ?: "Google Kalender konnte nicht verbunden werden",
                     type = ToastType.Error,
                     duration = ToasterDefaults.DurationLong,
                 ),
@@ -254,6 +293,7 @@ class ViewModel(
         homeworkSyncSettings.googleCalendarId = null
         homeworkSyncSettings.googleCalendarResolved = false
         homeworkSyncSettings.nextSyncToken = null
+        homeworkSyncSettings.lastSyncError = null
     }
 
     private fun couldReachBesteSchule() {
@@ -306,8 +346,10 @@ class ViewModel(
     private suspend inline fun <reified T> readBesteSchuleCache(key: String): T? {
         if (!offlineCacheAvailable) return null
         val student = studentId.value ?: return null
-        return readStoredBesteSchuleCache(student, key)?.let {
-            runCatching { cacheJson.decodeFromString<T>(it) }.getOrNull()
+        return withContext(Dispatchers.Default) {
+            readStoredBesteSchuleCache(student, key)?.let {
+                runCatching { cacheJson.decodeFromString<T>(it) }.getOrNull()
+            }
         }
     }
 
@@ -317,7 +359,9 @@ class ViewModel(
     ) {
         if (!offlineCacheAvailable) return
         val student = studentId.value ?: return
-        writeStoredBesteSchuleCache(student, key, cacheJson.encodeToString(value))
+        withContext(Dispatchers.Default) {
+            writeStoredBesteSchuleCache(student, key, cacheJson.encodeToString(value))
+        }
     }
 
     private suspend inline fun <reified T> loadBesteSchuleData(
@@ -393,6 +437,34 @@ class ViewModel(
         }
     }
 
+    fun acceptManagedPat(credential: ManagedPersonalAccessToken) = besteSchuleAuth.setManagedPat(credential)
+
+    suspend fun discardManagedPat(
+        credential: ManagedPersonalAccessToken,
+        openTokenManagement: () -> Unit,
+    ) {
+        val revoked =
+            try {
+                withTimeout(15.seconds) { BesteSchulePasswordLogin.revoke(credential.id, credential.sessionCookies) }
+            } catch (e: CancellationException) {
+                if (e !is TimeoutCancellationException) throw e
+                false
+            } catch (_: Exception) {
+                false
+            }
+        if (!revoked) {
+            toaster.show(
+                Toast(
+                    message = "Die Anmeldung wurde nicht abgeschlossen. Der erstellte Zugriffstoken ist noch in der Tokenverwaltung löschbar.",
+                    action = TextToastAction("Tokenverwaltung") { openTokenManagement() },
+                    type = ToastType.Warning,
+                    duration = 15.seconds,
+                ),
+            )
+        }
+        besteSchuleAuth.clear()
+    }
+
     suspend fun login(
         stayLoggedIn: Boolean,
         isLoading: (Boolean) -> Unit,
@@ -400,73 +472,88 @@ class ViewModel(
         onNavigateHome: () -> Unit,
         chooseStudent: suspend (List<Student>, (String) -> Unit) -> Unit,
         handleToken: suspend () -> Unit,
-    ) = kSafeProvider(kSafe) {
-        isLoading(true)
-        try {
-            handleToken()
-            val user = init()
-            if (user?.role !in listOf("student", "guardian")) {
+    ): Boolean =
+        kSafeProvider(kSafe) {
+            isLoading(true)
+            try {
+                handleToken()
+                val user = init()
+                if (user?.role !in listOf("student", "guardian")) {
+                    toaster.show(
+                        Toast(
+                            message = "Es sind ausschließlich Schüler/Eltern-Accounts zulässig",
+                            type = ToastType.Error,
+                        ),
+                    )
+                    isLoading(false)
+                    false
+                } else {
+                    user!!.students!!.size.let {
+                        if (it > 1) {
+                            chooseStudent(user.students) {
+                                put("studentId", it)
+                                studentId.value = it
+                                GradeNotifications.onLogin()
+                            }
+                        } else {
+                            put(
+                                "studentId",
+                                user.students
+                                    .first()
+                                    .id
+                                    .toString(),
+                            )
+                            studentId.value =
+                                user.students
+                                    .first()
+                                    .id
+                                    .toString()
+                            GradeNotifications.onLogin()
+                        }
+                    }
+                    this@ViewModel.user.value = loadBesteSchuleData("user") { api.usersShow(studentId.value).data }
+
+                    loadCurrentLevel()
+                    val isSecondaryStage =
+                        if (kSafe.getKeyInfo("timetableBlockViewEnabled") == null) {
+                            level.value?.secondaryStage() == SecondaryStage.TWO
+                        } else {
+                            get("timetableBlockViewEnabled", false)
+                        }
+                    put("timetableBlockViewEnabled", isSecondaryStage)
+                    applySettings(isSecondaryStage)
+
+                    writeBesteSchuleCache("user", user)
+
+                    setCurrentYear()
+
+                    if (stayLoggedIn) {
+                        besteSchuleAuth.persist()
+                    }
+
+                    onNavigateHome()
+                    toaster.show(
+                        Toast(
+                            message = "Angemeldet als ${user.username}",
+                            type = ToastType.Success,
+                        ),
+                    )
+                    true
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                e.printStackTrace()
                 toaster.show(
                     Toast(
-                        message = "Es sind ausschließlich Schüler/Eltern-Accounts zulässig",
+                        message = "Anmeldung fehlgeschlagen",
                         type = ToastType.Error,
                     ),
                 )
                 isLoading(false)
-            } else {
-                user!!.students!!.size.let {
-                    if (it > 1) {
-                        chooseStudent(user.students) {
-                            put("studentId", it)
-                            studentId.value = it
-                            GradeNotifications.onLogin()
-                        }
-                    } else {
-                        put(
-                            "studentId",
-                            user.students
-                                .first()
-                                .id
-                                .toString(),
-                        )
-                        studentId.value =
-                            user.students
-                                .first()
-                                .id
-                                .toString()
-                        GradeNotifications.onLogin()
-                    }
-                }
-                this@ViewModel.user.value = loadBesteSchuleData("user") { api.usersShow(studentId.value).data }
-                loadCurrentLevel()
-                if (level.value?.secondaryStage() == SecondaryStage.TWO && kSafe.getKeyInfo("timetableBlockViewEnabled") == null) {
-                    put("timetableBlockViewEnabled", true)
-                    applySettings(true)
-                }
-                writeBesteSchuleCache("user", user)
-                setCurrentYear()
-                if (stayLoggedIn) {
-                    besteSchuleAuth.persist()
-                }
-                onNavigateHome()
-                toaster.show(
-                    Toast(
-                        message = "Angemeldet als ${user.username}",
-                        type = ToastType.Success,
-                    ),
-                )
+                false
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            toaster.show(
-                Toast(
-                    message = "Anmeldung fehlgeschlagen",
-                    type = ToastType.Error,
-                ),
-            )
-            isLoading(false)
         }
-    }
 
     fun loginDemo(
         isLoading: (Boolean) -> Unit,
@@ -498,9 +585,6 @@ class ViewModel(
             studentId.value = data.student.id.toString()
             isDemoAccount.value = true
             val timetableBlockViewEnabled = data.level.secondaryStage() == SecondaryStage.TWO
-            kSafeProvider(kSafe) {
-                put("timetableBlockViewEnabled", timetableBlockViewEnabled)
-            }
             applySettings(timetableBlockViewEnabled)
             onNavigateHome()
             toaster.show(
@@ -562,13 +646,32 @@ class ViewModel(
         allGradeCollectionsLoaded.value = false
     }
 
-    fun logout() {
+    suspend fun logout(openTokenManagement: () -> Unit) {
+        val managedPat = besteSchuleAuth.managedPatSession()
+        val revoked =
+            managedPat?.let {
+                try {
+                    withTimeout(15.seconds) { BesteSchulePasswordLogin.revoke(it.id, it.cookies) }
+                } catch (_: Exception) {
+                    false
+                }
+            }
         studentId.value = null
         kSafe.deleteDirect("studentId")
         besteSchuleAuth.clear()
         isDemoAccount.value = false
         GradeNotifications.onLogout()
         onCleared()
+        if (revoked == false) {
+            toaster.show(
+                Toast(
+                    message = "Abgemeldet. Der Zugriffstoken konnte online nicht entfernt werden, ist aber in der Tokenverwaltung löschbar.",
+                    action = TextToastAction("Tokenverwaltung") { openTokenManagement() },
+                    type = ToastType.Warning,
+                    duration = 15.seconds,
+                ),
+            )
+        }
     }
 
     suspend fun closeOrOpenDrawer(isCompactWindow: Boolean) {
@@ -751,9 +854,9 @@ class ViewModel(
         return loadBesteSchuleData("lessonStudentCount_${year?.id ?: "all"}") {
             year
                 ?.let {
-                    api.journalLessonStudentStatisticsCount(filterRange = "${it.from},${it.to}").data.firstOrNull()
+                    api.journalLessonStudentStatisticsCount(filterYear = it.id.toString()).data.firstOrNull()
                 }
-                ?: api.journalLessonStudentStatisticsCount().data.firstOrNull()
+                ?: api.journalLessonStudentStatisticsCount(filterYear = years.joinToString(",") { it.id.toString() }).data.firstOrNull()
                 ?: return@loadBesteSchuleData null
         }
     }
@@ -766,9 +869,9 @@ class ViewModel(
         return loadBesteSchuleData("lessonStudentBySlot_${year?.id ?: "all"}") {
             year
                 ?.let {
-                    api.journalLessonStudentStatisticsBySlot(filterRange = "${it.from},${it.to}").data
+                    api.journalLessonStudentStatisticsBySlot(filterYear = it.id.toString()).data
                 }
-                ?: api.journalLessonStudentStatisticsBySlot().data
+                ?: api.journalLessonStudentStatisticsBySlot(filterYear = years.joinToString(",") { it.id.toString() }).data
         }
     }
 
@@ -783,6 +886,7 @@ class ViewModel(
             }
         }
         filterYears?.let { loadLevels(it) }
+        val currentStudentId = studentId.value
         return loadBesteSchuleData(
             "collections_${filterYears.orEmpty().map { it.id }.sorted().joinToString("-").ifBlank { "all" }}",
         ) {
@@ -803,6 +907,45 @@ class ViewModel(
                         .flatten()
                 }
             }
+        }?.also { collections ->
+            currentStudentId?.let {
+                GradeNotificationEngine.markGradesAsSeen(collections.flatMap { it.grades.orEmpty() }.mapTo(mutableSetOf()) { it.id }, it)
+            }
+        }
+    }
+
+    suspend fun markGradeAsRead(grade: Grade) {
+        if (grade.id in gradesBeingMarkedAsRead) return
+        val currentStudentId = studentId.value
+        gradesBeingMarkedAsRead.add(grade.id)
+        try {
+            val response = api.gradeMarkRead(grade.id.toString())
+            if (response.status.isSuccess()) {
+                if (studentId.value != currentStudentId) return
+                listOf(gradeCollections, startGradeCollections).forEach { collections ->
+                    collections.indices.forEach { index ->
+                        val collection = collections[index]
+                        if (collection.grades?.any { it.id == grade.id } == true) {
+                            collections[index] =
+                                collection.copy(
+                                    grades =
+                                        collection.grades.map {
+                                            if (it.id == grade.id) it.copy(read = true) else it
+                                        },
+                                )
+                        }
+                    }
+                }
+            } else {
+                toaster.show(Toast(message = "Note konnte nicht als gelesen markiert werden", type = ToastType.Error))
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            e.printStackTrace()
+            toaster.show(Toast(message = "Note konnte nicht als gelesen markiert werden", type = ToastType.Error))
+        } finally {
+            gradesBeingMarkedAsRead.remove(grade.id)
         }
     }
 
@@ -811,29 +954,31 @@ class ViewModel(
         useCached: Boolean = true,
         getAbsences: Boolean = false,
     ): JournalWeek? {
-        if (isDemoAccount.value) {
-            val targetDate =
-                date ?: Clock.System
-                    .now()
-                    .toLocalDateTime(TimeZone.currentSystemDefault())
-                    .date
-            val nr = "${targetDate.year}-${targetDate.weekOfYear}"
-            val cachedWeek = if (useCached) journalWeeks.firstOrNull { it.first == nr }?.second else null
-            val week = cachedWeek ?: DemoDataGenerator.generateJournalWeek(targetDate, demoWeekPlan)
-            if (cachedWeek == null) {
-                delay(1.seconds)
-                if (!useCached) journalWeeks.removeAll { it.first == nr }
-                journalWeeks.add(nr to week)
-            }
-            return week
-        }
-        val currentNr =
+        val today =
             Clock.System
                 .now()
                 .toLocalDateTime(TimeZone.currentSystemDefault())
                 .date
-                .let { "${it.year}-${it.weekOfYear}" }
-        val nr = date?.let { "${it.year}-${it.weekOfYear}" } ?: currentNr
+        val targetDate =
+            date
+                ?: when (today.dayOfWeek) {
+                    DayOfWeek.SATURDAY -> today.plus(2, DateTimeUnit.DAY)
+                    DayOfWeek.SUNDAY -> today.plus(1, DateTimeUnit.DAY)
+                    else -> today
+                }
+        val currentNr = "${today.year}-${today.weekOfYear}"
+        val nr = "${targetDate.year}-${targetDate.weekOfYear}"
+        if (isDemoAccount.value) {
+            val cachedWeek = if (useCached) journalWeeks.firstOrNull { it.first == nr }?.second else null
+            val week = cachedWeek ?: DemoDataGenerator.generateJournalWeek(targetDate, demoWeekPlan)
+            if (cachedWeek == null) {
+                delay(1.seconds)
+                journalWeeks.removeAll { it.first == nr }
+                journalWeeks.add(nr to week)
+            }
+            if (date == null || nr == currentNr) updateCurrentJournalDay(week)
+            return week
+        }
         val year =
             date?.let {
                 years
@@ -853,10 +998,20 @@ class ViewModel(
                 api.journalWeekShow(nr, year, true, "days.lessons").data
             } ?: return null
         if (cachedWeek == null) {
-            if (!useCached) journalWeeks.removeAll { it.first == nr }
+            journalWeeks.removeAll { it.first == nr }
             journalWeeks.add(nr to week)
         }
+        if (date == null || nr == currentNr) updateCurrentJournalDay(week)
         return week
+    }
+
+    private fun updateCurrentJournalDay(week: JournalWeek) {
+        val today =
+            Clock.System
+                .now()
+                .toLocalDateTime(TimeZone.currentSystemDefault())
+                .date
+        currentJournalDay.value = week.days?.find { it.date == today.toString() }
     }
 
     suspend fun getSubjectsAndTeachers(): List<Pair<Subject?, List<Teacher>?>>? {
@@ -974,6 +1129,8 @@ class ViewModel(
 
     override fun onCleared() {
         super.onCleared()
+        foregroundHomeworkSyncJob?.cancel()
+        foregroundHomeworkSyncJob = null
         user.value = null
         subjects.clear()
         startGradeCollections.clear()

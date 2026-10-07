@@ -1,14 +1,15 @@
 package com.hansholz.bestenotenapp.screens.subjectsAndTeachers
 
 import androidx.compose.animation.AnimatedVisibilityScope
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,7 +25,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialShapes.Companion.ClamShell
 import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
@@ -51,6 +51,7 @@ import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Menu
 import com.hansholz.bestenotenapp.api.models.Subject
 import com.hansholz.bestenotenapp.api.models.Teacher
+import com.hansholz.bestenotenapp.components.AdaptivePrimaryTabRow
 import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
@@ -62,6 +63,9 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
 import com.hansholz.bestenotenapp.components.rememberLazyListScrollSpeedState
+import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
+import com.hansholz.bestenotenapp.main.LocalNativePrimaryTabRow
+import com.hansholz.bestenotenapp.main.LocalScrollZoomAnimationEnabled
 import com.hansholz.bestenotenapp.main.LocalShowAllSubjects
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
@@ -71,7 +75,7 @@ import kotlinx.coroutines.launch
 import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.math.abs
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SubjectsAndTeachers(
     viewModel: ViewModel,
@@ -91,7 +95,11 @@ fun SubjectsAndTeachers(
                 .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
         val showAllSubjects by LocalShowAllSubjects.current
+        val scrollZoomAnimationEnabled by LocalScrollZoomAnimationEnabled.current
         val showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
+        val nativeComponentsEnabled by LocalNativeComponentsEnabled.current
+        val nativePrimaryTabRow = LocalNativePrimaryTabRow.current
+        val usesNativePrimaryTabs = nativeComponentsEnabled && nativePrimaryTabRow != null
 
         TopAppBarScaffold(
             modifier =
@@ -122,15 +130,24 @@ fun SubjectsAndTeachers(
             sideMenuExpanded = viewModel.mediumExpandedDrawerState.value.isOpen,
             hazeState = viewModel.hazeBackgroundState,
         ) { innerPadding, topAppBarBackground ->
-            val contentPadding = PaddingValues(top = subjectsAndTeachersViewModel.topPadding, bottom = innerPadding.calculateBottomPadding())
+            val effectiveTopPadding =
+                if (usesNativePrimaryTabs) innerPadding.calculateTopPadding() else subjectsAndTeachersViewModel.topPadding
+            val contentPadding = PaddingValues(top = effectiveTopPadding, bottom = innerPadding.calculateBottomPadding())
             val verticalPadding = PaddingValues(start = innerPadding.calculateStartPadding(layoutDirection), end = innerPadding.calculateEndPadding(layoutDirection))
+            val overlayPadding =
+                PaddingValues(
+                    start = innerPadding.calculateStartPadding(layoutDirection),
+                    top = effectiveTopPadding,
+                    end = innerPadding.calculateEndPadding(layoutDirection),
+                    bottom = innerPadding.calculateBottomPadding(),
+                )
 
             val pagerState = rememberEnhancedPagerState(2)
             HorizontalPager(pagerState, Modifier.hazeSource(viewModel.hazeBackgroundState)) {
                 EnhancedAnimatedContent(subjectsAndTeachersViewModel.isLoading) { targetState ->
                     Box(Modifier.fillMaxSize()) {
                         if (targetState) {
-                            ContainedLoadingIndicator(Modifier.padding(contentPadding).align(Alignment.Center))
+                            ContainedLoadingIndicator(Modifier.padding(overlayPadding).align(Alignment.Center))
                         } else {
                             when (it) {
                                 0 -> {
@@ -146,7 +163,7 @@ fun SubjectsAndTeachers(
                                     if (items.isEmpty()) {
                                         EmptyStateMessage(
                                             title = "Keine Fächer vorhanden",
-                                            modifier = Modifier.padding(contentPadding),
+                                            modifier = Modifier.padding(overlayPadding).consumeWindowInsets(overlayPadding).imePadding(),
                                         )
                                     } else {
                                         val lazyListState = rememberLazyListState()
@@ -159,6 +176,7 @@ fun SubjectsAndTeachers(
                                                 EnhancedAnimated(
                                                     modifier = Modifier.padding(verticalPadding),
                                                     preset = ZoomIn(),
+                                                    enabled = scrollZoomAnimationEnabled,
                                                     durationMillis = 200,
                                                 ) { isAnimated ->
                                                     LaunchedEffect(Unit) {
@@ -207,7 +225,7 @@ fun SubjectsAndTeachers(
                                     if (viewModel.teachersAndSubjects.isEmpty()) {
                                         EmptyStateMessage(
                                             title = "Keine Lehrer vorhanden",
-                                            modifier = Modifier.padding(contentPadding),
+                                            modifier = Modifier.padding(overlayPadding).consumeWindowInsets(overlayPadding).imePadding(),
                                         )
                                     } else {
                                         val lazyListState = rememberLazyListState()
@@ -220,6 +238,7 @@ fun SubjectsAndTeachers(
                                                 EnhancedAnimated(
                                                     modifier = Modifier.padding(verticalPadding),
                                                     preset = ZoomIn(),
+                                                    enabled = scrollZoomAnimationEnabled,
                                                     durationMillis = 200,
                                                 ) { isAnimated ->
                                                     LaunchedEffect(Unit) {
@@ -256,16 +275,24 @@ fun SubjectsAndTeachers(
                     }
                 }
             }
-            topAppBarBackground(subjectsAndTeachersViewModel.topPadding)
-            PrimaryTabRow(
+            topAppBarBackground(effectiveTopPadding)
+            AdaptivePrimaryTabRow(
+                labels = listOf("Fächer", "Lehrer"),
                 selectedTabIndex = pagerState.currentPage,
+                onTabSelected = { page -> scope.launch { pagerState.animateScrollToPage(page) } },
                 modifier =
-                    Modifier
-                        .padding(verticalPadding)
-                        .padding(top = innerPadding.calculateTopPadding())
-                        .onGloballyPositioned {
-                            subjectsAndTeachersViewModel.topPadding = with(density) { it.size.height.toDp() } + innerPadding.calculateTopPadding()
-                        },
+                    if (usesNativePrimaryTabs) {
+                        Modifier.onGloballyPositioned {
+                            subjectsAndTeachersViewModel.topPadding = innerPadding.calculateTopPadding()
+                        }
+                    } else {
+                        Modifier
+                            .padding(verticalPadding)
+                            .padding(top = innerPadding.calculateTopPadding())
+                            .onGloballyPositioned {
+                                subjectsAndTeachersViewModel.topPadding = with(density) { it.size.height.toDp() } + innerPadding.calculateTopPadding()
+                            }
+                    },
                 containerColor = Color.Transparent,
                 divider = { HorizontalDivider(thickness = 2.dp) },
             ) {

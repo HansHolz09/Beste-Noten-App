@@ -4,6 +4,7 @@ import com.hansholz.bestenotenapp.api.PlatformOidcConstants
 import com.hansholz.bestenotenapp.api.codeAuthFlowFactory
 import com.hansholz.bestenotenapp.security.kSafeProvider
 import eu.anifantakis.lib.ksafe.KSafe
+import kotlinx.coroutines.CancellationException
 import org.publicvalue.multiplatform.oidc.OpenIdConnectClient
 import org.publicvalue.multiplatform.oidc.appsupport.CodeAuthFlowFactory
 import org.publicvalue.multiplatform.oidc.types.CodeChallengeMethod
@@ -57,11 +58,18 @@ class KSafeGoogleAuthProvider(
                     },
                     configureTokenExchange = null,
                 )
-            if (response.scope != null && scopes.all { response.scope!!.contains(it) }) {
+            val grantedScopes =
+                response.scope
+                    .orEmpty()
+                    .split(' ')
+                    .toSet()
+            if (scopes.split(' ').all { it in grantedScopes }) {
                 save(response)
             } else {
                 error("Nicht alle benötigten Berechtigungen erteilt.")
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             throw MissingGoogleAuthException("Google-Kalender konnte nicht verbunden werden: ${e.message}")
         }

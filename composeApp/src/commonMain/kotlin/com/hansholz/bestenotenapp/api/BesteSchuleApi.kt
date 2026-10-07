@@ -2607,7 +2607,7 @@ class BesteSchuleApi(
             }.body()
 
     /** Access: Any role */
-    suspend fun gradeMarkRead(grade: String): DataWrapper<Grade> = client.post("$baseUrl/grades/$grade/read").body()
+    suspend fun gradeMarkRead(grade: String) = client.post("$baseUrl/grades/$grade/read")
 
     /** Access: Mod+ Required */
     suspend fun guardianSendTokenEmail(id: String): SimpleSuccessResponse = client.post("$baseUrl/guardians/$id/token/send-email").body()
@@ -2684,11 +2684,13 @@ class BesteSchuleApi(
     /** Access: Any role */
     suspend fun journalLessonStudentStatisticsBySlot(
         filterStudent: String? = null,
+        filterYear: String? = null,
         filterRange: String? = null,
     ): ListDataWrapper<JournalLessonStudentBySlot> =
         client
             .get("$baseUrl/journal/lesson-student/by-slot") {
                 parameter("filter[student]", filterStudent)
+                parameter("filter[year]", filterYear)
                 parameter("filter[range]", filterRange)
             }.body()
 

@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -13,12 +14,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,13 +40,16 @@ import com.composables.icons.materialsymbols.rounded.Balance
 import com.composables.icons.materialsymbols.rounded.Remove
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.api.models.Level
+import com.hansholz.bestenotenapp.components.PreferencePosition
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedBasicTextField
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedFilterChip
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
+import com.hansholz.bestenotenapp.components.preferenceShape
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
-import components.dialogs.EnhancedAlertDialog
 
 @Composable
 internal fun GradeWeightingDialog(
@@ -106,19 +110,23 @@ internal fun GradeWeightingDialog(
                     modifier = Modifier.padding(top = 8.dp),
                     style = typography.titleMedium,
                 )
-                Column {
-                    WeightControlRow(
-                        label = "KA/Klausur",
-                        value = weighting.examWeight,
-                        useWeightingInsteadOfPercent = useWeightingInsteadOfPercent,
-                        onValueChange = { onCategoryWeightChanged(GradeAverageCalculator.CATEGORY_EXAM, it) },
-                    )
-                    WeightControlRow(
-                        label = "Sonstige",
-                        value = weighting.otherWeight,
-                        useWeightingInsteadOfPercent = useWeightingInsteadOfPercent,
-                        onValueChange = { onCategoryWeightChanged(GradeAverageCalculator.CATEGORY_OTHER, it) },
-                    )
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    WeightingItem(PreferencePosition.Top) {
+                        WeightControlRow(
+                            label = "KA/Klausur",
+                            value = weighting.examWeight,
+                            useWeightingInsteadOfPercent = useWeightingInsteadOfPercent,
+                            onValueChange = { onCategoryWeightChanged(GradeAverageCalculator.CATEGORY_EXAM, it) },
+                        )
+                    }
+                    WeightingItem(PreferencePosition.Bottom) {
+                        WeightControlRow(
+                            label = "Sonstige",
+                            value = weighting.otherWeight,
+                            useWeightingInsteadOfPercent = useWeightingInsteadOfPercent,
+                            onValueChange = { onCategoryWeightChanged(GradeAverageCalculator.CATEGORY_OTHER, it) },
+                        )
+                    }
                 }
                 if (typeNames.isNotEmpty()) {
                     Text(
@@ -126,12 +134,23 @@ internal fun GradeWeightingDialog(
                         style = typography.titleMedium,
                         modifier = Modifier.padding(top = 8.dp),
                     )
-                    typeNames.forEach { typeName ->
-                        TypeCategoryRow(
-                            typeName = typeName,
-                            selectedCategory = weighting.categoryFor(typeName),
-                            onCategorySelected = { onTypeCategoryChanged(typeName, it) },
-                        )
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        typeNames.forEachIndexed { index, typeName ->
+                            WeightingItem(
+                                when {
+                                    typeNames.size == 1 -> PreferencePosition.Single
+                                    index == 0 -> PreferencePosition.Top
+                                    index == typeNames.lastIndex -> PreferencePosition.Bottom
+                                    else -> PreferencePosition.Middle
+                                },
+                            ) {
+                                TypeCategoryRow(
+                                    typeName = typeName,
+                                    selectedCategory = weighting.categoryFor(typeName),
+                                    onCategorySelected = { onTypeCategoryChanged(typeName, it) },
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -151,6 +170,20 @@ internal fun GradeWeightingDialog(
             }
         },
     )
+}
+
+@Composable
+private fun WeightingItem(
+    position: PreferencePosition,
+    content: @Composable () -> Unit,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = position.preferenceShape(),
+        color = colorScheme.surfaceContainerHighest.copy(alpha = 0.7f),
+    ) {
+        Box(Modifier.padding(horizontal = 8.dp)) { content() }
+    }
 }
 
 @Composable
@@ -183,7 +216,7 @@ private fun WeightControlRow(
             ) {
                 Icon(MaterialSymbols.Rounded.Remove, null)
             }
-            BasicTextField(
+            EnhancedBasicTextField(
                 value = if (useWeightingInsteadOfPercent) textFieldValue else "$textFieldValue%",
                 onValueChange = { newValue ->
                     val cleanNumber = newValue.replace("%", "").filter { it.isDigit() }

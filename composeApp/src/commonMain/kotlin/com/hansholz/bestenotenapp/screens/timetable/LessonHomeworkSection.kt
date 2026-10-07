@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularWavyProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -35,7 +34,6 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import top.ltfan.multihaptic.compose.rememberVibrator
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun LessonHomeworkSection(
     viewModel: ViewModel,

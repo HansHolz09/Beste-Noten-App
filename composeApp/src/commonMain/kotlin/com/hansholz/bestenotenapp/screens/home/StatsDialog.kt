@@ -44,17 +44,16 @@ import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Insights
 import com.composables.icons.materialsymbols.rounded.Refresh
 import com.hansholz.bestenotenapp.api.models.JournalLessonStudentBySlot
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.main.ViewModel
-import com.hansholz.bestenotenapp.utils.appendWithSymbols
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.roundToDecimals
 import com.hansholz.bestenotenapp.utils.tryRemember
-import components.dialogs.EnhancedAlertDialog
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -81,6 +80,9 @@ fun StatsDialog(
             if (viewModel.intervals.isEmpty()) {
                 viewModel.getIntervals()?.let { viewModel.intervals.addAll(it) }
             }
+            if (viewModel.years.isEmpty()) {
+                viewModel.getYears()?.let { viewModel.years.addAll(it) }
+            }
             if (viewModel.dayStudentCount.value == null) {
                 viewModel.getDayStudentCount()?.let { viewModel.dayStudentCount.value = it }
             }
@@ -89,9 +91,6 @@ fun StatsDialog(
             }
             if (viewModel.lessonStudentBySlot.isEmpty()) {
                 viewModel.getLessonStudentBySlot()?.let { viewModel.lessonStudentBySlot.addAll(it) }
-            }
-            if (viewModel.years.isEmpty()) {
-                viewModel.getYears()?.let { viewModel.years.addAll(it) }
             }
             if (viewModel.currentDayStudentCount.value == null) {
                 viewModel.getDayStudentCount(viewModel.user.value?.year)?.let { viewModel.currentDayStudentCount.value = it }
@@ -128,15 +127,15 @@ fun StatsDialog(
                                 viewModel.intervals.clear()
                                 viewModel.intervals.addAll(it)
                             }
+                            viewModel.getYears()?.let {
+                                viewModel.years.clear()
+                                viewModel.years.addAll(it)
+                            }
                             viewModel.getDayStudentCount()?.let { viewModel.dayStudentCount.value = it }
                             viewModel.getLessonStudentCount()?.let { viewModel.lessonStudentCount.value = it }
                             viewModel.getLessonStudentBySlot()?.let {
                                 viewModel.lessonStudentBySlot.clear()
                                 viewModel.lessonStudentBySlot.addAll(it)
-                            }
-                            viewModel.getYears()?.let {
-                                viewModel.years.clear()
-                                viewModel.years.addAll(it)
                             }
                             viewModel.getDayStudentCount(viewModel.user.value?.year)?.let { viewModel.currentDayStudentCount.value = it }
                             viewModel.getLessonStudentCount(viewModel.user.value?.year)?.let { viewModel.currentLessonStudentCount.value = it }
@@ -205,7 +204,7 @@ fun StatsDialog(
                                         withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
                                             append("Zeiträume:\n")
                                         }
-                                        appendWithSymbols(
+                                        append(
                                             viewModel.intervals.joinToString("\n") { interval ->
                                                 val daysRemaining = Clock.System.todayIn(TimeZone.currentSystemDefault()).daysUntil(LocalDate.parse(interval.to))
                                                 interval.name.let { if (it.regionMatches(2, "HJ", 0, 2)) "${it.take(2)} ${it.substringAfter('.')}" else it } +
@@ -217,7 +216,7 @@ fun StatsDialog(
                                         withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
                                             append("\n\nDaten zum Schuljahr (${viewModel.user.value?.year?.name}):\n")
                                         }
-                                        appendWithSymbols(
+                                        append(
                                             "• Schultage: ${currentDayData?.count}\n" +
                                                 "• Abwesende Tage: ${currentDayData?.notPresentCount} (davon ${currentDayData?.notPresentWithAbsenceCount} entschuldigt," +
                                                 " $currentDaysNotPresentWithoutAbsenceCount nicht)\n" +
@@ -229,7 +228,7 @@ fun StatsDialog(
                                         withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
                                             append("\n\nGesamtübersicht:\n")
                                         }
-                                        appendWithSymbols(
+                                        append(
                                             "• Schultage: ${dayData?.count}\n" +
                                                 "• Abwesende Tage: ${dayData?.notPresentCount} (davon ${dayData?.notPresentWithAbsenceCount} entschuldigt," +
                                                 " $daysNotPresentWithoutAbsenceCount nicht)\n" +

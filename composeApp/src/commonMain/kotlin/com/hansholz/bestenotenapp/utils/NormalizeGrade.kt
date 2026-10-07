@@ -1,6 +1,8 @@
 package com.hansholz.bestenotenapp.utils
 
 import com.hansholz.bestenotenapp.api.models.Level
+import kotlin.math.abs
+import kotlin.math.sign
 
 enum class SecondaryStage(
     val value: Int,
@@ -16,9 +18,12 @@ data class GradeScale(
     val min = minOf(best, worst)
     val max = maxOf(best, worst)
 
+    private val step = abs(best - worst) / 5f
+    private val shift = (step - 1f) / 2f * sign((worst - best).toFloat())
+
     fun contains(value: Float): Boolean = value in min.toFloat()..max.toFloat()
 
-    fun quality(value: Float): Float = ((value - worst) / (best - worst).toFloat()).coerceIn(0f, 1f)
+    fun quality(value: Float): Float = ((value - worst - shift) / (best - worst)).coerceIn(0f, 1f)
 }
 
 fun Level.secondaryStage(): SecondaryStage? =

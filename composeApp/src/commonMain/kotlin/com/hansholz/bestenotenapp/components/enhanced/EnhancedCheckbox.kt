@@ -11,9 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.selection.triStateToggleable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CheckboxColors
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme.motionScheme
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.ripple
@@ -35,6 +35,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import com.hansholz.bestenotenapp.components.cupertinoHighlight
+import com.hansholz.bestenotenapp.main.Platform
+import com.hansholz.bestenotenapp.main.getPlatform
 import top.ltfan.multihaptic.compose.rememberVibrator
 
 @Composable
@@ -50,6 +53,8 @@ fun EnhancedCheckbox(
 
     val strokeWidthPx = with(LocalDensity.current) { 2.5.dp.toPx() }
     val toggleableState = ToggleableState(checked)
+    val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
+    val isAndroid = getPlatform() == Platform.ANDROID
 
     CheckboxImpl(
         enabled = enabled,
@@ -57,7 +62,13 @@ fun EnhancedCheckbox(
         modifier =
             modifier
                 .minimumInteractiveComponentSize()
-                .triStateToggleable(
+                .cupertinoHighlight(
+                    resolvedInteractionSource,
+                    CircleShape,
+                    horizontalInset = 4.dp,
+                    verticalInset = 4.dp,
+                    circular = true,
+                ).triStateToggleable(
                     state = toggleableState,
                     onClick = {
                         val newState = !checked
@@ -72,8 +83,8 @@ fun EnhancedCheckbox(
                     },
                     enabled = enabled,
                     role = Role.Checkbox,
-                    interactionSource = interactionSource,
-                    indication = ripple(bounded = false, radius = 20.dp),
+                    interactionSource = resolvedInteractionSource,
+                    indication = if (isAndroid) ripple(bounded = false, radius = 20.dp) else null,
                 ).padding(2.dp),
         colors = colors,
         checkmarkStroke = Stroke(width = strokeWidthPx, cap = StrokeCap.Round),
@@ -81,7 +92,6 @@ fun EnhancedCheckbox(
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun CheckboxImpl(
     enabled: Boolean,
@@ -234,7 +244,6 @@ private fun CheckboxColors.borderColor(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun colorAnimationSpecForState(state: ToggleableState): AnimationSpec<Color> =
     if (state == ToggleableState.Off) {

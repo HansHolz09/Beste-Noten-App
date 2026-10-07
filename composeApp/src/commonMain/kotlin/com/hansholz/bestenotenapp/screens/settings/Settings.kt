@@ -3,15 +3,16 @@ package com.hansholz.bestenotenapp.screens.settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularWavyProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconToggleButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.Slider
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,6 +45,7 @@ import com.composables.icons.materialsymbols.rounded.Disabled_visible
 import com.composables.icons.materialsymbols.rounded.Fiber_new
 import com.composables.icons.materialsymbols.rounded.File_export
 import com.composables.icons.materialsymbols.rounded.Filter_alt
+import com.composables.icons.materialsymbols.rounded.Fit_page_height
 import com.composables.icons.materialsymbols.rounded.Format_list_bulleted
 import com.composables.icons.materialsymbols.rounded.History
 import com.composables.icons.materialsymbols.rounded.How_to_reg
@@ -56,6 +58,7 @@ import com.composables.icons.materialsymbols.rounded.Logout
 import com.composables.icons.materialsymbols.rounded.Menu
 import com.composables.icons.materialsymbols.rounded.Notifications
 import com.composables.icons.materialsymbols.rounded.Percent
+import com.composables.icons.materialsymbols.rounded.Privacy_tip
 import com.composables.icons.materialsymbols.rounded.Settings_backup_restore
 import com.composables.icons.materialsymbols.rounded.Subject
 import com.composables.icons.materialsymbols.rounded.Sync
@@ -80,15 +83,21 @@ import com.hansholz.bestenotenapp.components.settingsToggleItem
 import com.hansholz.bestenotenapp.main.ExactPlatform
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
+import com.hansholz.bestenotenapp.main.LocalGlobalEasterEgg
 import com.hansholz.bestenotenapp.main.LocalGradeAverageEnabled
 import com.hansholz.bestenotenapp.main.LocalGradeAverageUseWeighting
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationIntervalMinutes
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationsEnabled
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationsWifiOnly
 import com.hansholz.bestenotenapp.main.LocalHapticsEnabled
+import com.hansholz.bestenotenapp.main.LocalHideNativeInterop
 import com.hansholz.bestenotenapp.main.LocalHomeworkEnabled
 import com.hansholz.bestenotenapp.main.LocalHomeworkGoogleSyncEnabled
+import com.hansholz.bestenotenapp.main.LocalNativeAppearanceSelector
+import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
+import com.hansholz.bestenotenapp.main.LocalNativeSlider
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
+import com.hansholz.bestenotenapp.main.LocalScrollZoomAnimationEnabled
 import com.hansholz.bestenotenapp.main.LocalShowAbsences
 import com.hansholz.bestenotenapp.main.LocalShowAllSubjects
 import com.hansholz.bestenotenapp.main.LocalShowCollectionsWithoutGrades
@@ -121,13 +130,9 @@ import dev.chrisbanes.haze.blur.HazeBlurDefaults
 import dev.chrisbanes.haze.hazeSource
 import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
 import kotlinx.coroutines.launch
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.number
-import kotlinx.datetime.toLocalDateTime
 import top.ltfan.multihaptic.compose.rememberVibrator
-import kotlin.time.Clock
+import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun Settings(
     viewModel: ViewModel,
@@ -138,6 +143,10 @@ fun Settings(
     val scope = rememberCoroutineScope()
     val vibrator = rememberVibrator()
     val uriHandler = LocalUriHandler.current
+    val globalEasterEgg = LocalGlobalEasterEgg.current
+    val hideNativeInterop = LocalHideNativeInterop.current
+    val nativeAppearanceSelector = LocalNativeAppearanceSelector.current
+    val nativeSlider = LocalNativeSlider.current
     val isCompactWindow =
         !currentWindowAdaptiveInfoV2()
             .windowSizeClass
@@ -148,6 +157,7 @@ fun Settings(
     var useCustomColorScheme by LocalUseCustomColorScheme.current
     val supportsCustomColorScheme by LocalSupportsCustomColorScheme.current
     var animationsEnabled by LocalAnimationsEnabled.current
+    var scrollZoomAnimationEnabled by LocalScrollZoomAnimationEnabled.current
     var blurEnabled by LocalBlurEnabled.current
     var backgroundEnabled by LocalBackgroundEnabled.current
     var hapticsEnabled by LocalHapticsEnabled.current
@@ -171,6 +181,7 @@ fun Settings(
     var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
     var showOnlyRelevantData by LocalShowOnlyRelevantData.current
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
+    val nativeComponentsEnabled = LocalNativeComponentsEnabled.current.value
     val biometricAuthentificationAvailable = LocalBiometricAuthenticationAvailable.current
     val authToken by secureMutableStateOf("", "authToken")
     val showReminderInfoDialog = remember { mutableStateOf(false) }
@@ -211,43 +222,61 @@ fun Settings(
                     icon = MaterialSymbols.Rounded.Brightness_4,
                     position = PreferencePosition.Top,
                 ) {
-                    Row {
-                        FilledIconToggleButton(
-                            checked = useSystemIsDark,
-                            onCheckedChange = {
+                    val appearanceActions =
+                        listOf(
+                            {
                                 useSystemIsDark = true
                                 put("useSystemIsDark", true)
                                 vibrator.enhancedVibrate(EnhancedVibrations.SLOW_RISE)
                             },
-                            shapes = IconButtonDefaults.toggleableShapes(),
-                        ) {
-                            Icon(MaterialSymbols.Rounded.Brightness_auto, null)
-                        }
-                        FilledIconToggleButton(
-                            checked = !useSystemIsDark && !isDark,
-                            onCheckedChange = {
+                            {
                                 useSystemIsDark = false
                                 put("useSystemIsDark", false)
                                 isDark = false
                                 put("isDark", false)
                                 vibrator.enhancedVibrate(EnhancedVibrations.SLOW_RISE)
                             },
-                            shapes = IconButtonDefaults.toggleableShapes(),
-                        ) {
-                            Icon(MaterialSymbols.Rounded.Light_mode, null)
-                        }
-                        FilledIconToggleButton(
-                            checked = !useSystemIsDark && isDark,
-                            onCheckedChange = {
+                            {
                                 useSystemIsDark = false
                                 put("useSystemIsDark", false)
                                 isDark = true
                                 put("isDark", true)
                                 vibrator.enhancedVibrate(EnhancedVibrations.SLOW_RISE)
                             },
-                            shapes = IconButtonDefaults.toggleableShapes(),
-                        ) {
-                            Icon(MaterialSymbols.Rounded.Dark_mode, null)
+                        )
+                    val selectedAppearance =
+                        if (useSystemIsDark) {
+                            0
+                        } else if (isDark) {
+                            2
+                        } else {
+                            1
+                        }
+                    if (nativeComponentsEnabled && nativeAppearanceSelector != null) {
+                        nativeAppearanceSelector(selectedAppearance, { appearanceActions[it]() }, Modifier)
+                    } else {
+                        Row {
+                            FilledIconToggleButton(
+                                checked = selectedAppearance == 0,
+                                onCheckedChange = { appearanceActions[0]() },
+                                shapes = IconButtonDefaults.toggleableShapes(),
+                            ) {
+                                Icon(MaterialSymbols.Rounded.Brightness_auto, null)
+                            }
+                            FilledIconToggleButton(
+                                checked = selectedAppearance == 1,
+                                onCheckedChange = { appearanceActions[1]() },
+                                shapes = IconButtonDefaults.toggleableShapes(),
+                            ) {
+                                Icon(MaterialSymbols.Rounded.Light_mode, null)
+                            }
+                            FilledIconToggleButton(
+                                checked = selectedAppearance == 2,
+                                onCheckedChange = { appearanceActions[2]() },
+                                shapes = IconButtonDefaults.toggleableShapes(),
+                            ) {
+                                Icon(MaterialSymbols.Rounded.Dark_mode, null)
+                            }
                         }
                     }
                 }
@@ -264,27 +293,42 @@ fun Settings(
                     position = PreferencePosition.Middle,
                 )
             }
-            settingsToggleItem(
-                checked = animationsEnabled,
-                onCheckedChange = {
-                    animationsEnabled = it
-                    put("animationsEnabled", it)
-                },
-                text = "Animationen",
-                icon = MaterialSymbols.Rounded.Animation,
-                position = PreferencePosition.Middle,
-            )
-            if (HazeBlurDefaults.blurEnabled()) {
+            if (!nativeComponentsEnabled) {
                 settingsToggleItem(
-                    checked = blurEnabled,
+                    checked = animationsEnabled,
                     onCheckedChange = {
-                        blurEnabled = it
-                        put("blurEnabled", it)
+                        animationsEnabled = it
+                        put("animationsEnabled", it)
                     },
-                    text = "Unschärfe-Effekt",
-                    icon = MaterialSymbols.Rounded.Blur_on,
+                    text = "Animationen",
+                    icon = MaterialSymbols.Rounded.Animation,
                     position = PreferencePosition.Middle,
                 )
+            }
+            settingsToggleItem(
+                checked = animationsEnabled && scrollZoomAnimationEnabled,
+                onCheckedChange = {
+                    scrollZoomAnimationEnabled = it
+                    put("scrollZoomAnimationEnabled", it)
+                },
+                text = "Scroll-Zoom-Animation",
+                icon = MaterialSymbols.Rounded.Fit_page_height,
+                enabled = animationsEnabled,
+                position = PreferencePosition.Middle,
+            )
+            if (!nativeComponentsEnabled) {
+                if (HazeBlurDefaults.isBlurEnabledByDefault()) {
+                    settingsToggleItem(
+                        checked = blurEnabled,
+                        onCheckedChange = {
+                            blurEnabled = it
+                            put("blurEnabled", it)
+                        },
+                        text = "Unschärfe-Effekt",
+                        icon = MaterialSymbols.Rounded.Blur_on,
+                        position = PreferencePosition.Middle,
+                    )
+                }
             }
             settingsToggleItem(
                 checked = backgroundEnabled,
@@ -292,11 +336,11 @@ fun Settings(
                     backgroundEnabled = it
                     put("backgroundEnabled", it)
                 },
-                text = "Hintergrundbild",
+                text = "Hintergrundgrafiken",
                 icon = MaterialSymbols.Rounded.Texture,
-                position = if (vibrator.isVibrationSupported) PreferencePosition.Middle else PreferencePosition.Bottom,
+                position = if (vibrator.isVibrationSupported && getPlatform() != Platform.IOS) PreferencePosition.Middle else PreferencePosition.Bottom,
             )
-            if (vibrator.isVibrationSupported) {
+            if (vibrator.isVibrationSupported && getPlatform() != Platform.IOS) {
                 settingsToggleItem(
                     checked = hapticsEnabled,
                     onCheckedChange = {
@@ -310,23 +354,27 @@ fun Settings(
                     hapticsEnabled = false,
                 )
             }
-            if (GradeNotifications.isSupported && !viewModel.isDemoAccount.value && authToken.isNotEmpty()) {
+            if (GradeNotifications.isSupported) {
                 item {
                     PreferenceCategory("Benachrichtigungen", Modifier.padding(horizontal = 15.dp))
                 }
                 settingsToggleItem(
                     checked = notificationsEnabled,
                     onCheckedChange = {
-                        scope.launch {
-                            if (it) {
-                                val granted = GradeNotifications.requestPermission()
-                                notificationsEnabled = granted
-                                put("gradeNotificationsEnabled", it)
-                            } else {
-                                notificationsEnabled = false
-                                put("gradeNotificationsEnabled", it)
+                        if (viewModel.isDemoAccount.value) {
+                            notificationsEnabled = it
+                        } else {
+                            scope.launch {
+                                if (it) {
+                                    val granted = GradeNotifications.requestPermission()
+                                    notificationsEnabled = granted
+                                    put("gradeNotificationsEnabled", granted)
+                                } else {
+                                    notificationsEnabled = false
+                                    put("gradeNotificationsEnabled", it)
+                                }
+                                GradeNotifications.onSettingsUpdated()
                             }
-                            GradeNotifications.onSettingsUpdated()
                         }
                     },
                     text = "Benachrichtigungen über neue Noten",
@@ -340,8 +388,10 @@ fun Settings(
                             return@settingsToggleItem
                         }
                         notificationsWifiOnly = enabled
-                        put("gradeNotificationsWifiOnly", enabled)
-                        GradeNotifications.onSettingsUpdated()
+                        if (!viewModel.isDemoAccount.value) {
+                            put("gradeNotificationsWifiOnly", enabled)
+                            GradeNotifications.onSettingsUpdated()
+                        }
                     },
                     text = "Nur mit WLAN überprüfen",
                     icon = MaterialSymbols.Rounded.Wifi,
@@ -349,22 +399,47 @@ fun Settings(
                     position = PreferencePosition.Middle,
                 )
                 item {
+                    val intervalOptions = listOf(15L, 30L, 60L, 120L, 360L, 720L, 1440L)
+                    val selectedIndex = intervalOptions.indexOf(notificationIntervalMinutes).coerceAtLeast(0)
+                    val onIntervalSelected: (Int) -> Unit = { index ->
+                        val interval = intervalOptions[index]
+                        if (interval != notificationIntervalMinutes) {
+                            notificationIntervalMinutes = interval
+                            vibrator.enhancedVibrate(EnhancedVibrations.TICK)
+                            if (!viewModel.isDemoAccount.value) {
+                                put("gradeNotificationsIntervalMinutes", interval)
+                                GradeNotifications.onSettingsUpdated()
+                            }
+                        }
+                    }
                     PreferenceItem(
                         modifier = Modifier.padding(horizontal = 16.dp),
                         title = "Überprüfungsintervall",
-                        subtitle = "Aktuell: ${formateInterval(notificationIntervalMinutes)}",
+                        subtitle =
+                            "Aktuell: ${formateInterval(notificationIntervalMinutes)}" +
+                                if (getPlatform() == Platform.IOS) {
+                                    " (${if (getExactPlatform() == ExactPlatform.IPADOS) "iPadOS" else "iOS"} bestimmt den exakten Zeitpunkt, daher sind Verzögerungen möglich)"
+                                } else {
+                                    ""
+                                },
                         icon = MaterialSymbols.Rounded.History,
                         enabled = notificationsEnabled,
-                        onClick =
-                            if (notificationsEnabled) {
-                                {
-                                    vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
-                                    settingsViewModel.showIntervalDialog = true
-                                }
-                            } else {
-                                null
-                            },
                         position = PreferencePosition.Bottom,
+                        bottomContent = {
+                            val sliderModifier = Modifier.fillMaxWidth().padding(start = 56.dp, end = 16.dp, bottom = 12.dp)
+                            if (nativeComponentsEnabled && nativeSlider != null) {
+                                nativeSlider(selectedIndex, onIntervalSelected, notificationsEnabled, sliderModifier)
+                            } else {
+                                Slider(
+                                    value = selectedIndex.toFloat(),
+                                    onValueChange = { onIntervalSelected(it.roundToInt()) },
+                                    modifier = sliderModifier,
+                                    enabled = notificationsEnabled,
+                                    valueRange = 0f..intervalOptions.lastIndex.toFloat(),
+                                    steps = intervalOptions.size - 2,
+                                )
+                            }
+                        },
                     )
                 }
             }
@@ -405,16 +480,7 @@ fun Settings(
 
                     scope.launch {
                         if (it && viewModel.currentJournalDay.value == null) {
-                            val currentDate =
-                                Clock.System
-                                    .now()
-                                    .toLocalDateTime(TimeZone.currentSystemDefault())
-                                    .date
-                                    .let {
-                                        "${it.year}-${it.month.number.toString().padStart(2, '0')}" +
-                                            "-${it.day.toString().padStart(2, '0')}"
-                                    }
-                            viewModel.currentJournalDay.value = viewModel.getJournalWeek()?.days?.find { it.date == currentDate }
+                            viewModel.getJournalWeek()
                         }
                     }
                 },
@@ -566,8 +632,10 @@ fun Settings(
                         try {
                             if (enabled) {
                                 homeworkGoogleSyncEnabled = viewModel.connectGoogleCalendarForHomework()
-                                showReminderInfoDialog.value = true
-                                viewModel.syncHomeworkNow()
+                                if (homeworkGoogleSyncEnabled) {
+                                    showReminderInfoDialog.value = true
+                                    viewModel.syncHomeworkNow()
+                                }
                             } else {
                                 viewModel.disconnectGoogleCalendarForHomework()
                                 homeworkGoogleSyncEnabled = false
@@ -727,7 +795,8 @@ fun Settings(
                                 isDark = appSettings.isDark
                                 useCustomColorScheme = appSettings.useCustomColorScheme
                                 animationsEnabled = appSettings.animationsEnabled
-                                blurEnabled = appSettings.blurEnabled && HazeBlurDefaults.blurEnabled()
+                                scrollZoomAnimationEnabled = appSettings.scrollZoomAnimationEnabled
+                                blurEnabled = appSettings.blurEnabled && HazeBlurDefaults.isBlurEnabledByDefault()
                                 backgroundEnabled = appSettings.backgroundEnabled
                                 hapticsEnabled = appSettings.hapticsEnabled
                                 showGreetings = appSettings.showGreetings
@@ -754,7 +823,8 @@ fun Settings(
                                 put("isDark", appSettings.isDark)
                                 put("useCustomColorScheme", appSettings.useCustomColorScheme)
                                 put("animationsEnabled", appSettings.animationsEnabled)
-                                put("blurEnabled", appSettings.blurEnabled && HazeBlurDefaults.blurEnabled())
+                                put("scrollZoomAnimationEnabled", appSettings.scrollZoomAnimationEnabled)
+                                put("blurEnabled", appSettings.blurEnabled && HazeBlurDefaults.isBlurEnabledByDefault())
                                 put("backgroundEnabled", appSettings.backgroundEnabled)
                                 put("hapticsEnabled", appSettings.hapticsEnabled)
                                 put("showGreetings", appSettings.showGreetings)
@@ -801,8 +871,11 @@ fun Settings(
                     title = "Abmelden",
                     icon = MaterialSymbols.Rounded.Logout,
                     onClick = {
-                        viewModel.logout()
-                        onNavigateToLogin()
+                        hideNativeInterop()
+                        scope.launch {
+                            viewModel.logout { uriHandler.openUri("https://beste.schule/me/passport") }
+                            onNavigateToLogin()
+                        }
                         vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                     },
                     position = PreferencePosition.Bottom,
@@ -837,16 +910,28 @@ fun Settings(
                 )
             }
             item {
+                PreferenceItem(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    title = "Datenschutzerklärung",
+                    icon = MaterialSymbols.Rounded.Privacy_tip,
+                    onClick = {
+                        uriHandler.openUri("https://github.com/HansHolz09/Beste-Noten-App/blob/main/PRIVACY.md")
+                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                    },
+                    position = PreferencePosition.Middle,
+                )
+            }
+            item {
                 var tapCount by remember { mutableStateOf(0) }
                 val func = {
                     tapCount++
                     if (tapCount % 7 == 0) {
-                        settingsViewModel.showConfetti = true
+                        globalEasterEgg?.invoke("fireworks") ?: run { settingsViewModel.showConfetti = true }
                     } else {
                         vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                     }
                 }
-                val onClick: (() -> Unit)? = if (!settingsViewModel.showConfetti) func else null
+                val onClick: (() -> Unit)? = if (globalEasterEgg != null || !settingsViewModel.showConfetti) func else null
                 PreferenceItem(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     title = "Beste-Noten-App",
@@ -863,10 +948,9 @@ fun Settings(
         topAppBarBackground(innerPadding.calculateTopPadding())
     }
 
-    NotificationIntervalDialog(settingsViewModel)
     ExportConfigDialog(settingsViewModel, viewModel)
     LibrariesDialog(settingsViewModel)
-    ConfettiEasterEgg(settingsViewModel)
+    if (globalEasterEgg == null) ConfettiEasterEgg(settingsViewModel)
     InfoDialog(
         visible = showReminderInfoDialog,
         title = "Erinnerungen laufen über Google Kalender",

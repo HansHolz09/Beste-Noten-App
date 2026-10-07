@@ -9,6 +9,8 @@ import com.dokar.sonner.ToastType
 import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.data.AppSettings
 import com.hansholz.bestenotenapp.data.ExportData
+import com.hansholz.bestenotenapp.main.Platform
+import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.screens.grades.GradeAverageCalculator
 import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.hansholz.bestenotenapp.utils.IO
@@ -27,6 +29,7 @@ import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json
 import kotlin.time.Clock
+import com.hansholz.bestenotenapp.main.ViewModel as AppViewModel
 
 class SettingsViewModel : ViewModel() {
     private val json =
@@ -37,7 +40,6 @@ class SettingsViewModel : ViewModel() {
         }
     private val gradeAverageCalculator = GradeAverageCalculator()
 
-    var showIntervalDialog by mutableStateOf(false)
     var showExportConfigDialog by mutableStateOf(false)
     var showLicenseDialog by mutableStateOf(false)
     var showConfetti by mutableStateOf(false)
@@ -47,7 +49,7 @@ class SettingsViewModel : ViewModel() {
     var cacheClearInProgress by mutableStateOf(false)
 
     suspend fun exportAsJson(
-        viewModel: com.hansholz.bestenotenapp.main.ViewModel,
+        viewModel: AppViewModel,
         appSettings: Boolean,
         gradeWeights: Boolean,
         gradeYears: List<Year>?,
@@ -61,7 +63,8 @@ class SettingsViewModel : ViewModel() {
                             isDark = get("isDark", false),
                             useCustomColorScheme = get("useCustomColorScheme", false),
                             animationsEnabled = get("animationsEnabled", true),
-                            blurEnabled = get("blurEnabled", HazeBlurDefaults.blurEnabled()),
+                            scrollZoomAnimationEnabled = get("scrollZoomAnimationEnabled", getPlatform() == Platform.ANDROID),
+                            blurEnabled = get("blurEnabled", HazeBlurDefaults.isBlurEnabledByDefault()),
                             backgroundEnabled = get("backgroundEnabled", true),
                             hapticsEnabled = get("hapticsEnabled", false),
                             showGreetings = get("showGreetings", true),
@@ -144,7 +147,7 @@ class SettingsViewModel : ViewModel() {
     }
 
     suspend fun importJson(
-        viewModel: com.hansholz.bestenotenapp.main.ViewModel,
+        viewModel: AppViewModel,
         applySettings: (AppSettings) -> Unit,
     ) = withContext(Dispatchers.IO) {
         try {

@@ -18,13 +18,13 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Apartment
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.utils.secondaryStage
-import components.dialogs.EnhancedAlertDialog
 import io.ktor.http.encodeURLParameter
 import top.ltfan.multihaptic.compose.rememberVibrator
 

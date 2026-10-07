@@ -7,7 +7,6 @@ import androidx.compose.ui.text.font.FontWeight
 import bestenotenapp.composeapp.generated.resources.KeaniaOne_Regular
 import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.Schoolbell_Regular
-import bestenotenapp.composeapp.generated.resources.Segoe_UI_Symbol
 import bestenotenapp.composeapp.generated.resources.Sniglet_Regular
 import org.jetbrains.compose.resources.Font
 
@@ -18,14 +17,11 @@ object FontFamilies {
 
     val Schoolbell @Composable get() = FontFamily(Font(Res.font.Schoolbell_Regular, weight = FontWeight.Normal))
 
-    val Symbols @Composable get() = FontFamily(Font(Res.font.Segoe_UI_Symbol))
-
     val allFontResources @Composable get() =
         listOf(
             Res.font.Sniglet_Regular,
             Res.font.KeaniaOne_Regular,
             Res.font.Schoolbell_Regular,
-            Res.font.Segoe_UI_Symbol,
         )
 }
 

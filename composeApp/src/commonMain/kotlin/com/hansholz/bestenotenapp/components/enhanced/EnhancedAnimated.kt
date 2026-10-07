@@ -1,5 +1,6 @@
 package com.hansholz.bestenotenapp.components.enhanced
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
@@ -19,7 +20,7 @@ fun EnhancedAnimated(
     state: AnimatedState = rememberAnimatedState(),
     content: @Composable (isAnimated: Boolean) -> Unit,
 ) {
-    if (LocalAnimationsEnabled.current.value) {
+    if (LocalAnimationsEnabled.current.value && enabled) {
         Animated(
             modifier = modifier,
             preset = preset,
@@ -32,6 +33,8 @@ fun EnhancedAnimated(
             content(true)
         }
     } else {
-        content(false)
+        Box(modifier) {
+            content(false)
+        }
     }
 }

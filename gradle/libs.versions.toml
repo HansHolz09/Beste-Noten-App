@@ -1,51 +1,51 @@
 [versions]
-agp = "9.3.2"
-aboutLibraries = "15.1.1"
-adaptive = "1.3.0-beta02"
-advancedMenubar = "0.2.0"
+agp = "9.4.1"
+aboutLibraries = "15.2.0"
+adaptive = "1.3.0-rc01"
+advancedMenubar = "0.3.0"
 activityCompose = "1.13.0"
 androidx-lifecycle = "2.11.0"
 animateCompose = "0.0.1"
-buildconfig = "6.0.10"
-capturable = "2.1.0"
+buildconfig = "6.1.2"
 confettikit = "0.9.0"
 coreSplashscreen = "1.2.0"
 composeIcons = "2.2.1"
-composeMultiplatform = "1.11.1"
+composeMultiplatform = "1.12.1"
 emoji = "2.5.0"
-filekit = "0.15.0"
-fragment = "1.9.0"
-graalvm = "25.0.4.1"
-haze = "2.0.0-alpha05"
+filekit = "0.16.0"
+fragment = "1.9.1"
+graalvm = "25.0.4.1.1"
+haze = "2.0.1"
 #noinspection NewerVersionAvailable
 koalaplotCore = "0.9.1"
 kotlin = "2.4.10"
-ksafe = "3.1.0"
+ksafe = "3.2.0"
+ksoup = "0.2.6"
 ktlint = "14.2.0"
-alarmee = "2.7.0"
+alarmee = "2.7.1"
 kotlinxDatetime = "0.8.0"
 kotlinxSerializationJson = "1.11.0"
-ktor = "3.5.2"
+ktor = "3.6.0"
 jetlime = "4.3.0"
-material3 = "1.11.0-alpha07"
+material3 = "1.12.0-alpha03"
 materialyou = "0.4.0"
-markdownRenderer = "0.44.0"
+markdownRenderer = "0.45.0"
 multihapticCompose = "0.3.2"
-nucleus = "2.4.7"
+nucleus = "2.5.18"
 permission = "0.15.0"
 platformtools = "0.7.5"
 proguard = "7.9.1"
 navigationCompose = "2.9.2"
 navigationEvent = "1.1.2"
-materialKolor = "5.0.0"
+materialKolor = "5.0.1"
 #noinspection NewerVersionAvailable
 oidc = "0.15.3"
 sonner = "0.4.0"
 
 # App configurations
 appName = "Beste-Noten-App"
-appVersion = "3.0.0"
-appVersionCode = "9"
+appVersion = "4.0.0"
+appVersionCode = "10"
 android-compileSdk = "37"
 android-minSdk = "24"
 android-targetSdk = "37"
@@ -62,8 +62,6 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
 animate-compose = { module = "com.nomanr:animate-compose", version.ref = "animateCompose" }
-capturable = { module = "io.github.jmseb3:capturable", version.ref = "capturable" }
-capturable-extension = { module = "io.github.jmseb3:capturableExtension", version.ref = "capturable" }
 components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
 confettikit = { module = "io.github.vinceglb:confettikit", version.ref = "confettikit" }
 emoji-compose-m3 = { module = "org.kodein.emoji:emoji-compose-m3", version.ref = "emoji" }
@@ -71,11 +69,13 @@ filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref =
 foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatform" }
 graalvm-svm = { module = "org.graalvm.nativeimage:svm", version.ref = "graalvm" }
 haze-blur = { module = "dev.chrisbanes.haze:haze-blur", version.ref = "haze" }
+haze-glass = { module = "dev.chrisbanes.haze:haze-glass", version.ref = "haze" }
 material-symbols-rounded = { module = "com.composables:icons-material-symbols-rounded-cmp", version.ref = "composeIcons" }
 koalaplot-core = { module = "io.github.koalaplot:koalaplot-core", version.ref = "koalaplotCore" }
 alarmee = { module = "io.github.tweener:alarmee", version.ref = "alarmee" }
 ksafe-compose = { module = "eu.anifantakis:ksafe-compose", version.ref = "ksafe" }
 ksafe-biometrics = { module = "eu.anifantakis:ksafe-biometrics", version.ref = "ksafe" }
+ksoup = { module = "com.fleeksoft.ksoup:ksoup", version.ref = "ksoup" }
 lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
@@ -90,10 +90,10 @@ ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 material-kolor = { module = "com.materialkolor:material-kolor", version.ref = "materialKolor" }
 material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
-materialyou = { module = "dev.zwander:materialyou", version.ref = "materialyou" }
 markdown-renderer-m3 = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdownRenderer" }
 multihaptic-compose = { module = "top.ltfan.multihaptic:multihaptic-compose", version.ref = "multihapticCompose" }
 nucleus-core-runtime = { module = "dev.nucleusframework:nucleus.core-runtime", version.ref = "nucleus" }
+nucleus-system-color = { module = "dev.nucleusframework:nucleus.system-color", version.ref = "nucleus" }
 nucleus-aot-runtime = { module = "dev.nucleusframework:nucleus.aot-runtime", version.ref = "nucleus" }
 nucleus-graalvm-runtime = { module = "dev.nucleusframework:nucleus.graalvm-runtime", version.ref = "nucleus" }
 nucleus-decorated-window-tao = { module = "dev.nucleusframework:nucleus.decorated-window-tao", version.ref = "nucleus" }

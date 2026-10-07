@@ -3,7 +3,6 @@ package com.hansholz.bestenotenapp.screens.timetable
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.Transition
@@ -11,17 +10,20 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,11 +32,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.Placeable
-import androidx.compose.ui.layout.SubcomposeLayout
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,14 +39,13 @@ import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Text_snippet
 import com.hansholz.bestenotenapp.api.models.Absence
 import com.hansholz.bestenotenapp.api.models.JournalLesson
+import com.hansholz.bestenotenapp.components.cupertinoHighlight
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.utils.SimpleTime
 import com.hansholz.bestenotenapp.utils.TimetableLessonBlock
 import kotlinx.datetime.LocalDate
-import kotlin.math.min
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 internal fun DailyScheduleLayout(
     lessonBlocks: List<TimetableLessonBlock>,
@@ -127,32 +123,147 @@ internal fun DailyScheduleLayout(
             }
         }
 
-    val textMeasurer = rememberTextMeasurer(cacheSize = 64)
-    val referenceTextSizes =
-        remember(preparedLessons, textMeasurer) {
-            preparedLessons.map { prepared ->
-                textMeasurer
-                    .measure(
-                        text = prepared.lesson.subject?.localId ?: "?",
-                        style = TextStyle(fontSize = 100.sp, fontWeight = FontWeight.SemiBold),
-                        maxLines = 1,
-                        softWrap = false,
-                    ).size
-            }
-        }
-
     val isDark = LocalThemeIsDark.current
 
     with(sharedTransitionScope) {
-        SubcomposeLayout(modifier = modifier) { constraints ->
+        Layout(
+            modifier = modifier,
+            content = {
+                preparedLessons.forEachIndexed { index, prepared ->
+                    key(index, prepared.stableKey) {
+                        val lesson = prepared.lesson
+                        val subject = lesson.subject?.localId ?: "?"
+                        val homeworkDone = prepared.block.stableKey in doneHomeworkBlockKeys
+                        val hasHomework = prepared.block.stableKey in homeworkBlockKeys && !captureOnly
+                        val isAbsent = index in absentLessonIndices
+                        Box {
+                            popupTransition.AnimatedVisibility(
+                                visible = { popupShown -> selectedLesson != lesson || !popupShown },
+                                enter = EnterTransition.None,
+                                exit = ExitTransition.None,
+                            ) {
+                                val cardShape = RoundedCornerShape(18.dp)
+                                val interactionSource = remember(lesson) { MutableInteractionSource() }
+                                OutlinedCard(
+                                    onClick = { onLessonPopupOpened(prepared.block.copy(lesson = lesson)) },
+                                    modifier =
+                                        Modifier
+                                            .fillMaxSize()
+                                            .padding(horizontal = 4.dp)
+                                            .cupertinoHighlight(interactionSource, cardShape)
+                                            .enhancedSharedBounds(
+                                                sharedTransitionScope = sharedTransitionScope,
+                                                sharedContentState = rememberSharedContentState(lesson),
+                                                animatedVisibilityScope = this@AnimatedVisibility,
+                                                enter = fadeIn(initialAlpha = if (selectedLesson == lesson) 0f else 1f),
+                                                exit = fadeOut(targetAlpha = if (selectedLesson == lesson) 0f else 1f),
+                                                boundsTransform = { _, _ ->
+                                                    spring(0.8f, Spring.StiffnessMediumLow)
+                                                },
+                                                resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(ContentScale.Fit),
+                                                renderInOverlayDuringTransition = selectedLesson == lesson,
+                                            ),
+                                    shape = cardShape,
+                                    colors =
+                                        CardDefaults.outlinedCardColors(
+                                            containerColor =
+                                                when (lesson.status) {
+                                                    "hold" -> if (isDark) Color(48, 99, 57) else Color(226, 251, 232)
+                                                    "canceled" -> colorScheme.errorContainer
+                                                    "initial" -> if (isDark) Color.DarkGray else Color.LightGray
+                                                    "planned" -> if (isDark) Color(38, 63, 168) else Color(160, 182, 238)
+                                                    else -> colorScheme.surface
+                                                }.copy(0.7f),
+                                        ),
+                                    border =
+                                        BorderStroke(
+                                            width = 2.dp,
+                                            color =
+                                                if (lesson.notes.isNullOrEmpty()) {
+                                                    colorScheme.outline
+                                                } else {
+                                                    lesson.notes
+                                                        .firstOrNull()
+                                                        ?.type
+                                                        ?.color
+                                                        ?.let { Color(it.removePrefix("#").toLong(16) or 0x00000000FF000000) }
+                                                        ?: if (!isDark) Color(38, 63, 168) else Color(222, 233, 252)
+                                                },
+                                        ),
+                                    interactionSource = interactionSource,
+                                ) {
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        if (hasHomework) {
+                                            Icon(
+                                                imageVector = MaterialSymbols.Rounded.Text_snippet,
+                                                contentDescription = null,
+                                                modifier =
+                                                    Modifier
+                                                        .graphicsLayer { scaleX = -1f }
+                                                        .padding(3.dp)
+                                                        .align(Alignment.TopStart)
+                                                        .size(25.dp)
+                                                        .alpha(if (homeworkDone) 0.18f else 0.55f),
+                                                tint = if (homeworkDone) colorScheme.onSurfaceVariant else colorScheme.error,
+                                            )
+                                        }
+
+                                        Layout(
+                                            content = {
+                                                Text(
+                                                    text = subject,
+                                                    autoSize = TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = 38.sp),
+                                                    maxLines = 1,
+                                                    softWrap = false,
+                                                    color = if (isAbsent) colorScheme.error else Color.Unspecified,
+                                                )
+                                            },
+                                            modifier = Modifier.fillMaxSize().padding(3.dp, 6.dp),
+                                        ) { measurables, textConstraints ->
+                                            val rotate =
+                                                textConstraints.maxHeight >= textConstraints.maxWidth * 1.35f &&
+                                                    textConstraints.maxWidth + 14.dp.roundToPx() <= 100 &&
+                                                    lesson.subject?.localId != null
+                                            val childConstraints =
+                                                if (rotate) {
+                                                    Constraints(
+                                                        maxWidth = textConstraints.maxHeight,
+                                                        maxHeight = textConstraints.maxWidth,
+                                                    )
+                                                } else {
+                                                    Constraints(
+                                                        maxWidth = textConstraints.maxWidth,
+                                                        maxHeight = textConstraints.maxHeight,
+                                                    )
+                                                }
+                                            val placeable = measurables.single().measure(childConstraints)
+
+                                            layout(textConstraints.maxWidth, textConstraints.maxHeight) {
+                                                placeable.placeWithLayer(
+                                                    x = (textConstraints.maxWidth - placeable.width) / 2,
+                                                    y = (textConstraints.maxHeight - placeable.height) / 2,
+                                                ) {
+                                                    rotationZ = if (rotate) -90f else 0f
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+        ) { measurables, constraints ->
             val width = constraints.maxWidth.coerceAtLeast(0)
             val height = constraints.maxHeight.coerceAtLeast(0)
             val totalMinutes = minTime.minutesUntil(maxTime)
-
             if (width == 0 || height == 0 || totalMinutes <= 0 || preparedLessons.isEmpty()) {
-                return@SubcomposeLayout layout(width, height) {}
+                return@Layout layout(width, height) {}
             }
-
             val placements =
                 calculateLessonPlacements(
                     lessons = preparedLessons,
@@ -161,152 +272,14 @@ internal fun DailyScheduleLayout(
                     width = width,
                     height = height,
                 )
-
             val items =
-                preparedLessons.mapIndexedNotNull { index, prepared ->
-                    val placement = placements[index] ?: return@mapIndexedNotNull null
-                    if (placement.width <= 0 || placement.height <= 0) return@mapIndexedNotNull null
-
-                    val lesson = prepared.lesson
-                    val subject = lesson.subject?.localId ?: "?"
-                    val contentWidth =
-                        (placement.width - 4.dp.roundToPx() * 2 - 5.dp.roundToPx() * 2)
-                            .coerceAtLeast(1)
-                    val contentHeight = (placement.height - 4.dp.roundToPx() * 2).coerceAtLeast(1)
-                    val rotate = contentHeight >= contentWidth * 1.35f && placement.width <= 100 && lesson.subject?.localId != null
-                    val widthScale = (if (rotate) contentHeight else contentWidth).toFloat() / referenceTextSizes[index].width.coerceAtLeast(1)
-                    val heightScale = (if (rotate) contentWidth else contentHeight).toFloat() / referenceTextSizes[index].height.coerceAtLeast(1)
-                    val fontSize =
-                        (100.sp.toPx() * min(widthScale, heightScale) * 0.9f)
-                            .coerceIn(8.sp.toPx(), 38.sp.toPx())
-                            .toSp()
-                    val homeworkDone = prepared.block.stableKey in doneHomeworkBlockKeys
-                    val hasHomework = prepared.block.stableKey in homeworkBlockKeys && !captureOnly
-                    val isAbsent = index in absentLessonIndices
-
-                    val measurable =
-                        subcompose(LessonSlotKey(index, prepared.stableKey)) {
-                            Box {
-                                popupTransition.AnimatedVisibility(
-                                    visible = { popupShown -> selectedLesson != lesson || !popupShown },
-                                    enter = EnterTransition.None,
-                                    exit = ExitTransition.None,
-                                ) {
-                                    OutlinedCard(
-                                        onClick = { onLessonPopupOpened(prepared.block.copy(lesson = lesson)) },
-                                        modifier =
-                                            Modifier
-                                                .fillMaxSize()
-                                                .padding(horizontal = 4.dp)
-                                                .enhancedSharedBounds(
-                                                    sharedTransitionScope = sharedTransitionScope,
-                                                    sharedContentState = rememberSharedContentState(lesson),
-                                                    animatedVisibilityScope = this@AnimatedVisibility,
-                                                    enter = fadeIn(initialAlpha = if (selectedLesson == lesson) 0f else 1f),
-                                                    exit = fadeOut(targetAlpha = if (selectedLesson == lesson) 0f else 1f),
-                                                    boundsTransform = { _, _ ->
-                                                        spring(0.8f, Spring.StiffnessMediumLow)
-                                                    },
-                                                    resizeMode = SharedTransitionScope.ResizeMode.scaleToBounds(ContentScale.Fit),
-                                                    renderInOverlayDuringTransition = selectedLesson == lesson,
-                                                ),
-                                        shape = RoundedCornerShape(18.dp),
-                                        colors =
-                                            CardDefaults.outlinedCardColors(
-                                                containerColor =
-                                                    when (lesson.status) {
-                                                        "hold" -> if (isDark) Color(48, 99, 57) else Color(226, 251, 232)
-                                                        "canceled" -> colorScheme.errorContainer
-                                                        "initial" -> if (isDark) Color.DarkGray else Color.LightGray
-                                                        "planned" -> if (isDark) Color(38, 63, 168) else Color(160, 182, 238)
-                                                        else -> colorScheme.surface
-                                                    }.copy(0.7f),
-                                            ),
-                                        border =
-                                            BorderStroke(
-                                                width = 2.dp,
-                                                color =
-                                                    if (lesson.notes.isNullOrEmpty()) {
-                                                        colorScheme.outline
-                                                    } else {
-                                                        lesson.notes
-                                                            .firstOrNull()
-                                                            ?.type
-                                                            ?.color
-                                                            ?.let { Color(it.removePrefix("#").toLong(16) or 0x00000000FF000000) }
-                                                            ?: if (!isDark) Color(38, 63, 168) else Color(222, 233, 252)
-                                                    },
-                                            ),
-                                    ) {
-                                        Box(
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentAlignment = Alignment.Center,
-                                        ) {
-                                            if (hasHomework) {
-                                                Icon(
-                                                    imageVector = MaterialSymbols.Rounded.Text_snippet,
-                                                    contentDescription = null,
-                                                    modifier =
-                                                        Modifier
-                                                            .graphicsLayer { scaleX = -1f }
-                                                            .padding(3.dp)
-                                                            .align(Alignment.TopStart)
-                                                            .size(25.dp)
-                                                            .alpha(if (homeworkDone) 0.18f else 0.55f),
-                                                    tint = if (homeworkDone) colorScheme.onSurfaceVariant else colorScheme.error,
-                                                )
-                                            }
-
-                                            Layout(
-                                                content = {
-                                                    Text(
-                                                        text = subject,
-                                                        fontSize = fontSize,
-                                                        maxLines = 1,
-                                                        softWrap = false,
-                                                        color = if (isAbsent) colorScheme.error else Color.Unspecified,
-                                                    )
-                                                },
-                                                modifier = Modifier.fillMaxSize().padding(3.dp, 6.dp),
-                                            ) { measurables, textConstraints ->
-                                                val childConstraints =
-                                                    if (rotate) {
-                                                        Constraints(
-                                                            maxWidth = textConstraints.maxHeight,
-                                                            maxHeight = textConstraints.maxWidth,
-                                                        )
-                                                    } else {
-                                                        Constraints(
-                                                            maxWidth = textConstraints.maxWidth,
-                                                            maxHeight = textConstraints.maxHeight,
-                                                        )
-                                                    }
-                                                val placeable = measurables.single().measure(childConstraints)
-
-                                                layout(textConstraints.maxWidth, textConstraints.maxHeight) {
-                                                    placeable.placeWithLayer(
-                                                        x = (textConstraints.maxWidth - placeable.width) / 2,
-                                                        y = (textConstraints.maxHeight - placeable.height) / 2,
-                                                    ) {
-                                                        rotationZ = if (rotate) -90f else 0f
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }.single()
-
-                    MeasuredLesson(
-                        placement = placement,
-                        placeable = measurable.measure(Constraints.fixed(placement.width, placement.height)),
-                    )
+                measurables.mapIndexed { index, measurable ->
+                    val placement = placements.getValue(index)
+                    placement to measurable.measure(Constraints.fixed(placement.width, placement.height))
                 }
-
             layout(width, height) {
-                items.forEach { item ->
-                    item.placeable.placeRelative(item.placement.x, item.placement.y)
+                items.forEach { (placement, placeable) ->
+                    placeable.placeRelative(placement.x, placement.y)
                 }
             }
         }
@@ -391,21 +364,11 @@ private data class ParsedAbsence(
     val toTime: SimpleTime,
 )
 
-private data class LessonSlotKey(
-    val index: Int,
-    val lessonKey: String,
-)
-
 private data class LessonPlacementInfo(
     val x: Int,
     val y: Int,
     val width: Int,
     val height: Int,
-)
-
-private data class MeasuredLesson(
-    val placement: LessonPlacementInfo,
-    val placeable: Placeable,
 )
 
 fun JournalLesson.homeworkLessonId(): String? = time?.id ?: id ?: ids

@@ -7,7 +7,7 @@ ___
   <h1>Beste-Noten-App</h1>
 </div>
 
-Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher und ist eine einfachere, schönere und schnellere Alternative zur offiziellen beste.schule-App.
+Dieser plattformübergreifende Client für beste.schule macht den Schulalltag übersichtlicher und ist eine einfachere, schönere und schnellere Alternative zur offiziellen beste.schule-App. Die App wird unabhängig von beste.schule entwickelt.
 
 ### [Zur Web-Version](https://hansholz09.github.io/Beste-Noten-App)
 
@@ -19,14 +19,15 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 
 
 ## Funktionen
-- Login über Private-Access-Token oder direkt über beste.schule
+- Direkte Anmeldung mit Benutzername/E-Mail und Passwort inklusive Zwei-Faktor-Authentifizierung sowie alternative Anmeldung über Private-Access-Token oder den Browser
 - Demo-Account zum Ausprobieren der App
 - Startseite mit Tagesübersicht, aktuellen Noten und dem Jahresfortschritt
 - Einfache Notenübersicht mit Möglichkeit zum Ansehen der Noten-Historien und konfigurierbarer Durchschnittsberechnung
+- Noten als gelesen bestätigen bei Elternkonten
 - Noten-Diagramme zum Vergleich der verschiedenen Schuljahre
 - Übersichtliche Stundenplan-Ansicht mit Vertretungsplan-Änderungen, Abwesenheits-Einträgen und aktuellen Tagesnotizen
 - Alternative Blockansicht für den Stundenplan (in Sek. 2 automatisch aktiv) mit automatischer Ausfilterung unnötiger Stunden
-- Digitales Hausaufgabenheft inklusive Google-Kalender-Synchronisierung
+- Digitales Hausaufgabenheft mit anpassbaren Eintragsarten und optionaler Google-Kalender-Synchronisierung, auch beim Zurückkehren in die App
 - Übersicht aktueller Fächer und Lehrer mit ihren Abkürzungen
 - Jahresinformationen zu den Halbjahres-Zeiträumen und Abwesenheits-Statistiken inklusive Heatmap zur Anwesenheit nach Stunden
 - Dialoge zum Einsehen der Unterrichtszeiten sowie Account- und Schuldaten
@@ -34,9 +35,10 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 - Import/Export von App-Einstellungen und Noten-Gewichtungen sowie der Noten mit Möglichkeit zur späteren Ansicht ohne beste.schule-Account
 - Vollständiger Offline-Modus dank Caching
 - Adaptives Material-3-Expressive-Design auf allen Plattformen mit dynamisch generierten Hintergrundbildern
+- Native Bedienelemente mit Liquid Glass auf iOS/iPadOS 26+
 - Schöne Animationen und Übergänge
 - Immersives haptisches Feedback auf unterstützten Geräten
-- Benachrichtigungen über neue Noten mit anpassbarem Überprüfungsintervall für Android und iOS
+- Benachrichtigungen über neue Noten mit anpassbarem Überprüfungsintervall für Android und iOS/iPadOS (auf iOS/iPadOS bestimmt das System den tatsächlichen Prüfzeitpunkt)
 - Optionale biometrische Authentifizierung bei jedem Start der App auf Android, iOS und unterstützten Desktop-Geräten
 - Native Desktop-Apps (u. a. über GraalVM) mit plattformspezifischem Rechtsklickmenü
 - Einige Anpassungsmöglichkeiten
@@ -86,7 +88,6 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 - [Jetlime](https://github.com/pushpalroy/Jetlime) - MIT - Timeline-Komponenten für Schulstunden-Übersicht
 - [Haze](https://github.com/chrisbanes/haze) - Apache 2.0 - Hintergrund Unschärfe-Effekte
 - [MaterialKolor](https://github.com/jordond/MaterialKolor) - MIT - Animierte Farb-Übergänge
-- [Multiplatform Material You](https://github.com/zacharee/MultiplatformMaterialYou) - MIT - Erstellen von Material-Design-Farbpaletten für JVM
 - [Platform-Tools](https://github.com/kdroidFilter/Platform-Tools) - MIT - Reaktives Erkennen von Hell/Dunkel-Modus
 - [animate-compose](https://github.com/NomanR/animate-compose) - Apache 2.0 - Animations-Komponenten
 - [ConfettiKit](https://github.com/vinceglb/confettikit) - MIT - Confetti-Animationen (Easter-Eggs)
@@ -94,13 +95,13 @@ Diese plattformübergreifende Schul-App macht den Schulalltag übersichtlicher u
 - [Compose Sonner](https://github.com/dokar3/compose-sonner) - Apache 2.0 - Toast-Komponente
 - [AboutLibraries](https://github.com/mikepenz/AboutLibraries) - Apache 2.0 - Komponente zum Anzeigen der genutzten Bibliotheken
 - [multiplatform-markdown-renderer](https://github.com/mikepenz/multiplatform-markdown-renderer) - Apache 2.0 - Anzeigen von Markdown-Texten für In-App-Updater
-- [Capturable](https://github.com/jmseb3/Capturable) - MIT - Teilen/Speichern von Composables als Bild
+- [Capturable](https://github.com/jmseb3/Capturable) - MIT - Grundlage für die inzwischen lokal implementierte Funktion zum Teilen/Speichern von Composables als Bild
 - [FileKit](https://github.com/vinceglb/FileKit) - MIT - Datei-Dialoge für Import/Export
-- [Alarmee](https://github.com/Tweener/alarmee) - Apache 2.0 - Benachrichtigungen für Android und iOS
+- [Alarmee](https://github.com/Tweener/alarmee) - Apache 2.0 - Benachrichtigungen für Android; auf iOS werden diese direkt über UserNotifications gesendet
 - [KMM Permission](https://github.com/reyazoct/Kmm-Permissions) - MIT - Anfragen der Benachrichtigungsberechtigung
 - [multihaptic](https://github.com/xfqwdsj/multihaptic) - MIT - Vielseitig anpassbares haptisches Feedback
 - [Advanced MenuBar for Compose Desktop](https://github.com/HansHolz09/Advanced-MenuBar) - Apache 2.0 - Deutsche macOS Menubar mit mehr Optionen
-- [Nucleus](https://github.com/kdroidFilter/Nucleus) - MIT - Erzeugen optimierter Tao-Fenster und App-Installer für die Desktop-Ziele
+- [Nucleus](https://github.com/NucleusFramework/Nucleus) - MIT - Erzeugen optimierter Tao-Fenster und App-Installer sowie Ermitteln der Systemfarben für die Desktop-Ziele
 - [Oracle GraalVM](https://www.oracle.com/de/developer/graalvm-developers/) - [GFTC](https://www.oracle.com/downloads/licenses/graal-free-license.html) - Kompilieren der Desktop Apps in nativen Code
 - [Ktlint Gradle](https://github.com/JLLeitschuh/ktlint-gradle) - MIT - Wrapper-Plugin für [ktlint](https://github.com/pinterest/ktlint)
 - [gradle-buildconfig-plugin](https://github.com/gmazzo/gradle-buildconfig-plugin) - Apache 2.0 - Automatisches Erzeugen von BuildConfig-Klasse für App-Version

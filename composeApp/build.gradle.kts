@@ -73,6 +73,7 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            binaryOption("bundleId", "com.hansholz.bestenotenapp.composeapp")
         }
     }
 
@@ -109,6 +110,7 @@ kotlin {
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ksoup)
             implementation(libs.oidc.appsupport)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
@@ -120,6 +122,7 @@ kotlin {
             implementation(libs.koalaplot.core)
             implementation(libs.jetlime)
             implementation(libs.haze.blur)
+            implementation(libs.haze.glass)
             implementation(libs.material.kolor)
             implementation(libs.markdown.renderer.m3)
             implementation(libs.platformtools.darkmodedetector)
@@ -128,8 +131,6 @@ kotlin {
             implementation(libs.confettikit)
             implementation(libs.emoji.compose.m3)
             implementation(libs.sonner)
-            implementation(libs.capturable)
-            implementation(libs.capturable.extension)
             implementation(libs.filekit.dialogs)
         }
         androidMain.dependencies {
@@ -147,6 +148,7 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.nucleus.core.runtime)
+            implementation(libs.nucleus.system.color)
             implementation(libs.nucleus.aot.runtime)
             implementation(libs.nucleus.graalvm.runtime)
             implementation(libs.nucleus.decorated.window.tao)
@@ -155,7 +157,6 @@ kotlin {
             implementation(libs.navigation.event.compose)
             implementation(libs.ktor.client.apache5)
             implementation(libs.ktor.server.core)
-            implementation(libs.materialyou)
             compileOnly(libs.graalvm.svm)
         }
         wasmJsMain.dependencies {
@@ -180,9 +181,6 @@ nucleus.application {
         copyright = "© ${SimpleDateFormat("yyyy").format(Date())} Franz Scholz. Alle Rechte vorbehalten."
         vendor = "Franz Scholz"
         homepage = "https://hansholz.dev/"
-
-        appResourcesRootDir = layout.projectDirectory.dir("src/desktopMain/assets")
-        splashImage = "splash.png"
 
         jvmArgs += "--enable-native-access=ALL-UNNAMED"
         if (System.getProperty("os.name").startsWith("Mac")) {
@@ -232,7 +230,7 @@ nucleus.application {
 
         macOS {
             iconFile.set(project.file("src/desktopMain/icons/icon.icns"))
-            layeredIconDir.set(layout.projectDirectory.dir("src/desktopMain/icons/icon.icon"))
+            layeredIconDir.set(layout.projectDirectory.dir("../iosApp/iosApp/Beste-Noten-App.icon"))
             dockName = appName
             packageBuildVersion = libs.versions.appVersionCode.get()
             minimumSystemVersion =

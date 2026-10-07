@@ -364,7 +364,7 @@ data class Grade(
     val id: Int,
     val value: String,
     @SerialName("given_at") val givenAt: String,
-    val read: String? = null,
+    val read: Boolean? = null,
     val student: Student? = null,
     val subject: Subject? = null,
     val collection: GradeCollection? = null,

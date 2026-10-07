@@ -1,35 +1,49 @@
 package com.hansholz.bestenotenapp.notifications
 
-import com.tweener.alarmee.configuration.AlarmeeIosPlatformConfiguration
-import com.tweener.alarmee.createAlarmeeService
-import com.tweener.alarmee.model.Alarmee
-import com.tweener.alarmee.model.AndroidNotificationConfiguration
-import com.tweener.alarmee.model.IosNotificationConfiguration
-
-private val service = createAlarmeeService()
+import kotlinx.coroutines.suspendCancellableCoroutine
+import platform.UserNotifications.UNAuthorizationStatusAuthorized
+import platform.UserNotifications.UNAuthorizationStatusEphemeral
+import platform.UserNotifications.UNAuthorizationStatusProvisional
+import platform.UserNotifications.UNMutableNotificationContent
+import platform.UserNotifications.UNNotificationRequest
+import platform.UserNotifications.UNNotificationSound
+import platform.UserNotifications.UNUserNotificationCenter
+import kotlin.coroutines.resume
 
 internal actual object GradeNotificationNotifier {
-    private var initialized = false
+    actual fun ensureInitialized(platformContext: Any?) = Unit
 
-    actual fun ensureInitialized(platformContext: Any?) {
-        if (initialized) return
-        service.initialize(AlarmeeIosPlatformConfiguration)
-        initialized = true
-    }
-
-    actual fun notifyNewGrades(notifications: List<GradeNotificationPayload>) {
-        if (!initialized || notifications.isEmpty()) return
+    actual suspend fun notifyNewGrades(notifications: List<GradeNotificationPayload>): Boolean {
+        if (notifications.isEmpty()) return true
+        val center = UNUserNotificationCenter.currentNotificationCenter()
+        val authorized =
+            suspendCancellableCoroutine { continuation ->
+                center.getNotificationSettingsWithCompletionHandler { settings ->
+                    val granted =
+                        settings?.authorizationStatus in
+                            listOf(UNAuthorizationStatusAuthorized, UNAuthorizationStatusProvisional, UNAuthorizationStatusEphemeral)
+                    if (continuation.isActive) continuation.resume(granted)
+                }
+            }
+        if (!authorized) return false
 
         notifications.forEach { payload ->
-            service.local.immediate(
-                Alarmee(
-                    uuid = payload.id,
-                    notificationTitle = payload.title,
-                    notificationBody = payload.body,
-                    androidNotificationConfiguration = AndroidNotificationConfiguration(),
-                    iosNotificationConfiguration = IosNotificationConfiguration(),
-                ),
-            )
+            val content =
+                UNMutableNotificationContent().apply {
+                    setTitle(payload.title)
+                    setBody(payload.body)
+                    setSound(UNNotificationSound.defaultSound())
+                }
+            val request = UNNotificationRequest.requestWithIdentifier(payload.id, content, trigger = null)
+            val submitted =
+                suspendCancellableCoroutine { continuation ->
+                    center.addNotificationRequest(request) { error ->
+                        if (error != null) logGradeNotificationError("Grade notification submission failed: ${error.domain}/${error.code}")
+                        if (continuation.isActive) continuation.resume(error == null)
+                    }
+                }
+            if (!submitted) return false
         }
+        return true
     }
 }

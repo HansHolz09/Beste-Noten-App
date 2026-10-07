@@ -1,38 +1,63 @@
 {
   "fill" : {
-    "solid" : "extended-gray:1.00000,1.00000"
+    "linear-gradient" : [
+      "srgb:1.00000,0.96384,0.85536,1.00000",
+      "srgb:0.68364,0.74788,1.00000,1.00000"
+    ]
   },
   "groups" : [
     {
-      "blur-material" : null,
       "layers" : [
         {
-          "blend-mode-specializations" : [
+          "blend-mode" : "hard-light",
+          "image-name" : "layer_5_tassel.png",
+          "name" : "Tassel"
+        },
+        {
+          "image-name" : "layer_4_cap_board.png",
+          "name" : "Board"
+        },
+        {
+          "blend-mode" : "hard-light",
+          "image-name" : "layer_3_cap_body.png",
+          "name" : "Body"
+        },
+        {
+          "image-name" : "layer_1_book_cover.png",
+          "name" : "Book Cover",
+          "opacity-specializations" : [
             {
               "appearance" : "tinted",
-              "value" : "normal"
+              "value" : 0.5
+            }
+          ]
+        },
+        {
+          "glass" : false,
+          "image-name" : "layer_2_book_pages.png",
+          "name" : "Book Pages",
+          "opacity-specializations" : [
+            {
+              "appearance" : "tinted",
+              "value" : 0.7
             }
           ],
-          "glass" : true,
-          "image-name" : "icon.png",
-          "name" : "icon",
           "position" : {
             "scale" : 1,
             "translation-in-points" : [
-              1.2734375,
-              28.828125
+              -8,
+              0
             ]
           }
         }
       ],
       "shadow" : {
-        "kind" : "layer-color",
+        "kind" : "neutral",
         "opacity" : 0.5
       },
-      "specular" : true,
       "translucency" : {
-        "enabled" : false,
-        "value" : 0.5
+        "enabled" : true,
+        "value" : 0.3
       }
     }
   ],
