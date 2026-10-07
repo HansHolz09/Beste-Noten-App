@@ -25,6 +25,7 @@ import platform.BackgroundTasks.BGTask
 import platform.BackgroundTasks.BGTaskScheduler
 import platform.Foundation.NSDate
 import platform.Foundation.NSError
+import platform.Foundation.NSLog
 import platform.Foundation.dateByAddingTimeInterval
 import platform.Network.nw_interface_type_wifi
 import platform.Network.nw_path_monitor_cancel
@@ -44,6 +45,9 @@ import kotlin.coroutines.resume
 import kotlin.time.Duration.Companion.seconds
 
 private const val TASK_IDENTIFIER = "com.hansholz.bestenotenapp.notifications.refresh"
+private var notificationErrorLogger: (String) -> Unit = { NSLog("%@", it) }
+
+internal fun logGradeNotificationError(message: String) = notificationErrorLogger(message)
 
 actual object GradeNotifications {
     actual val isSupported: Boolean = true
@@ -69,18 +73,23 @@ actual object GradeNotifications {
         }
     }
 
-    private suspend fun ensureScheduled(replace: Boolean = false) =
-        schedulingMutex.withLock {
-            try {
-                updateScheduling(replace)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+    private suspend fun ensureScheduled(
+        replace: Boolean = false,
+        delayMillis: Long = GradeNotificationEngine.getNextCheckDelayMillis(),
+    ) = schedulingMutex.withLock {
+        try {
+            updateScheduling(replace, delayMillis)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            logGradeNotificationError("Background notification scheduling failed: ${e::class.simpleName}")
         }
+    }
 
-    private suspend fun updateScheduling(replace: Boolean) {
+    private suspend fun updateScheduling(
+        replace: Boolean,
+        delayMillis: Long,
+    ) {
         if (!initialized || !taskRegistered) {
             return
         }
@@ -88,14 +97,20 @@ actual object GradeNotifications {
             cancelScheduledTasks()
             return
         }
+        if (replace) {
+            scheduleTask(delayMillis)
+            return
+        }
         val pending =
-            suspendCancellableCoroutine { continuation ->
-                BGTaskScheduler.sharedScheduler().getPendingTaskRequestsWithCompletionHandler { requests ->
-                    val scheduled = requests?.filterIsInstance<platform.BackgroundTasks.BGTaskRequest>()?.any { it.identifier == TASK_IDENTIFIER } == true
-                    if (continuation.isActive) continuation.resume(scheduled)
+            withTimeoutOrNull(2.seconds) {
+                suspendCancellableCoroutine { continuation ->
+                    BGTaskScheduler.sharedScheduler().getPendingTaskRequestsWithCompletionHandler { requests ->
+                        val scheduled = requests?.filterIsInstance<platform.BackgroundTasks.BGTaskRequest>()?.any { it.identifier == TASK_IDENTIFIER } == true
+                        if (continuation.isActive) continuation.resume(scheduled)
+                    }
                 }
             }
-        if (!pending || replace) scheduleTask()
+        if (pending != true) scheduleTask(delayMillis)
     }
 
     actual fun onSettingsUpdated() {
@@ -138,20 +153,21 @@ actual object GradeNotifications {
                 }
             }
         taskRegistered = success
+        if (!success) logGradeNotificationError("Background notification task registration failed")
     }
 
     @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
-    private fun scheduleTask() {
+    private fun scheduleTask(delayMillis: Long) {
         val scheduler = BGTaskScheduler.sharedScheduler()
         val request =
             BGAppRefreshTaskRequest(identifier = TASK_IDENTIFIER).apply {
-                earliestBeginDate = NSDate().dateByAddingTimeInterval(GradeNotificationEngine.getNextCheckDelayMillis() / 1000.0)
+                earliestBeginDate = NSDate().dateByAddingTimeInterval(delayMillis / 1000.0)
             }
         memScoped {
             val errorPtr = alloc<ObjCObjectVar<NSError?>>()
             errorPtr.value = null
             if (!scheduler.submitTaskRequest(request, error = errorPtr.ptr)) {
-                println("Background notification scheduling failed: ${errorPtr.value?.domain}/${errorPtr.value?.code}")
+                logGradeNotificationError("Background notification scheduling failed: ${errorPtr.value?.domain}/${errorPtr.value?.code}")
             }
         }
     }
@@ -164,15 +180,23 @@ actual object GradeNotifications {
         var success = false
         val job =
             scope.launch(start = CoroutineStart.LAZY) {
-                ensureScheduled()
-                success = runCheckIfPermitted("background")
-                ensureScheduled(replace = true)
+                try {
+                    withTimeout(25.seconds) {
+                        // Keep a retry pending even if iOS expires this task before the check finishes.
+                        ensureScheduled(replace = true, delayMillis = 15 * 60_000L)
+                        success = runCheckIfPermitted("background")
+                        if (success) ensureScheduled(replace = true)
+                    }
+                } catch (_: TimeoutCancellationException) {
+                    success = false
+                }
             }
         task.expirationHandler = {
             job.cancel()
         }
-        job.invokeOnCompletion {
-            task.setTaskCompletedWithSuccess(success)
+        job.invokeOnCompletion { cause ->
+            val completed = success && cause == null
+            task.setTaskCompletedWithSuccess(completed)
         }
         job.start()
     }
@@ -192,7 +216,7 @@ actual object GradeNotifications {
                         return@withLock true
                     }
                     if (GradeNotificationEngine.isWifiOnlyEnabled() && withTimeoutOrNull(3.seconds) { isOnWifi() } != true) {
-                        return@withLock true
+                        return@withLock false
                     }
                     val outcome = GradeNotificationEngine.runCheck()
                     outcome == GradeNotificationOutcome.Success
@@ -203,7 +227,7 @@ actual object GradeNotifications {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            e.printStackTrace()
+            logGradeNotificationError("Background grade check failed: ${e::class.simpleName}")
             false
         }
     }
@@ -229,7 +253,8 @@ actual object GradeNotifications {
         }
 }
 
-fun ensureIosNotificationsInitialized() {
+fun ensureIosNotificationsInitialized(logError: (String) -> Unit) {
+    notificationErrorLogger = logError
     GradeNotifications.initialize(null)
 }
 

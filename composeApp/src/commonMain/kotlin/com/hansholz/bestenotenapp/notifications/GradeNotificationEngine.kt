@@ -14,6 +14,7 @@ import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.hansholz.bestenotenapp.utils.SecondaryStage
 import com.hansholz.bestenotenapp.utils.secondaryStage
+import eu.anifantakis.lib.ksafe.KSafeWriteMode
 import io.ktor.client.plugins.ClientRequestException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
@@ -156,7 +157,7 @@ internal object GradeNotificationEngine {
                     return GradeNotificationOutcome.Retry
                 }
                 storeKnownGradeIds(knownIds.orEmpty() + currentIds)
-                put(KEY_LAST_CHECK, Clock.System.now().toEpochMilliseconds())
+                kSafe.put(KEY_LAST_CHECK, Clock.System.now().toEpochMilliseconds(), KSafeWriteMode.Plain)
                 GradeNotificationOutcome.Success
             } catch (e: CancellationException) {
                 throw e
@@ -243,14 +244,14 @@ internal object GradeNotificationEngine {
             return runCatching { json.decodeFromString<KnownGrades>(raw).ids.toSet() }.getOrNull()
         }
 
-    private fun storeKnownGradeIds(ids: Set<Int>) = storeGradeIds(KEY_KNOWN_GRADE_IDS, ids)
+    private suspend fun storeKnownGradeIds(ids: Set<Int>) = storeGradeIds(KEY_KNOWN_GRADE_IDS, ids)
 
-    private fun storeGradeIds(
+    private suspend fun storeGradeIds(
         key: String,
         ids: Set<Int>,
     ) = kSafeProvider(kSafe) {
         val payload = json.encodeToString(KnownGrades(ids.toList()))
-        put(key, payload)
+        kSafe.put(key, payload, KSafeWriteMode.Plain)
     }
 
     @Serializable

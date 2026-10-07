@@ -354,23 +354,27 @@ fun Settings(
                     hapticsEnabled = false,
                 )
             }
-            if (GradeNotifications.isSupported && !viewModel.isDemoAccount.value && authToken.isNotEmpty()) {
+            if (GradeNotifications.isSupported) {
                 item {
                     PreferenceCategory("Benachrichtigungen", Modifier.padding(horizontal = 15.dp))
                 }
                 settingsToggleItem(
                     checked = notificationsEnabled,
                     onCheckedChange = {
-                        scope.launch {
-                            if (it) {
-                                val granted = GradeNotifications.requestPermission()
-                                notificationsEnabled = granted
-                                put("gradeNotificationsEnabled", granted)
-                            } else {
-                                notificationsEnabled = false
-                                put("gradeNotificationsEnabled", it)
+                        if (viewModel.isDemoAccount.value) {
+                            notificationsEnabled = it
+                        } else {
+                            scope.launch {
+                                if (it) {
+                                    val granted = GradeNotifications.requestPermission()
+                                    notificationsEnabled = granted
+                                    put("gradeNotificationsEnabled", granted)
+                                } else {
+                                    notificationsEnabled = false
+                                    put("gradeNotificationsEnabled", it)
+                                }
+                                GradeNotifications.onSettingsUpdated()
                             }
-                            GradeNotifications.onSettingsUpdated()
                         }
                     },
                     text = "Benachrichtigungen über neue Noten",
@@ -384,8 +388,10 @@ fun Settings(
                             return@settingsToggleItem
                         }
                         notificationsWifiOnly = enabled
-                        put("gradeNotificationsWifiOnly", enabled)
-                        GradeNotifications.onSettingsUpdated()
+                        if (!viewModel.isDemoAccount.value) {
+                            put("gradeNotificationsWifiOnly", enabled)
+                            GradeNotifications.onSettingsUpdated()
+                        }
                     },
                     text = "Nur mit WLAN überprüfen",
                     icon = MaterialSymbols.Rounded.Wifi,
@@ -400,8 +406,10 @@ fun Settings(
                         if (interval != notificationIntervalMinutes) {
                             notificationIntervalMinutes = interval
                             vibrator.enhancedVibrate(EnhancedVibrations.TICK)
-                            put("gradeNotificationsIntervalMinutes", interval)
-                            GradeNotifications.onSettingsUpdated()
+                            if (!viewModel.isDemoAccount.value) {
+                                put("gradeNotificationsIntervalMinutes", interval)
+                                GradeNotifications.onSettingsUpdated()
+                            }
                         }
                     }
                     PreferenceItem(
