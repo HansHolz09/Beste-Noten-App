@@ -88,7 +88,6 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.oidc.appsupport)
     implementation(libs.ksafe.biometrics)
-    implementation(libs.permission)
     implementation(libs.filekit.dialogs)
 }
 

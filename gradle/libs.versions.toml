@@ -32,7 +32,6 @@ materialyou = "0.4.0"
 markdownRenderer = "0.45.0"
 multihapticCompose = "0.3.2"
 nucleus = "2.5.18"
-permission = "0.15.0"
 platformtools = "0.7.5"
 proguard = "7.9.1"
 navigationCompose = "2.9.2"
@@ -98,7 +97,6 @@ nucleus-aot-runtime = { module = "dev.nucleusframework:nucleus.aot-runtime", ver
 nucleus-graalvm-runtime = { module = "dev.nucleusframework:nucleus.graalvm-runtime", version.ref = "nucleus" }
 nucleus-decorated-window-tao = { module = "dev.nucleusframework:nucleus.decorated-window-tao", version.ref = "nucleus" }
 oidc-appsupport = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-appsupport", version.ref = "oidc" }
-permission = { module = "tech.kotlinlang:permission", version.ref = "permission" }
 platformtools-darkmodedetector = { module = "io.github.kdroidfilter:platformtools.darkmodedetector", version.ref = "platformtools" }
 jetlime = { module = "io.github.pushpalroy:jetlime", version.ref = "jetlime" }
 material3-adaptive-layout = { module = "org.jetbrains.compose.material3.adaptive:adaptive-layout", version.ref = "adaptive" }

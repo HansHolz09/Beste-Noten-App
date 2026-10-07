@@ -137,12 +137,10 @@ kotlin {
             implementation(libs.androidx.fragment)
             implementation(libs.androidx.core.splashscreen)
             implementation(libs.ktor.client.okhttp)
-            implementation(libs.permission)
             implementation(libs.alarmee)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
-            implementation(libs.permission)
             implementation(libs.alarmee)
         }
         desktopMain.dependencies {

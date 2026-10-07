@@ -15,7 +15,6 @@ import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.init
 import kotlinx.coroutines.runBlocking
-import tech.kotlinlang.permission.PermissionInitiation
 
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,7 +22,6 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         GradeNotifications.initialize(this)
-        PermissionInitiation.setActivity(this)
         FileKit.init(this)
         androidCodeAuthFlowFactory.registerActivity(this)
 

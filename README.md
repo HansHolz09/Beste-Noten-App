@@ -98,7 +98,6 @@ Dieser plattformübergreifende Client für beste.schule macht den Schulalltag ü
 - [Capturable](https://github.com/jmseb3/Capturable) - MIT - Grundlage für die inzwischen lokal implementierte Funktion zum Teilen/Speichern von Composables als Bild
 - [FileKit](https://github.com/vinceglb/FileKit) - MIT - Datei-Dialoge für Import/Export
 - [Alarmee](https://github.com/Tweener/alarmee) - Apache 2.0 - Benachrichtigungen für Android; auf iOS werden diese direkt über UserNotifications gesendet
-- [KMM Permission](https://github.com/reyazoct/Kmm-Permissions) - MIT - Anfragen der Benachrichtigungsberechtigung
 - [multihaptic](https://github.com/xfqwdsj/multihaptic) - MIT - Vielseitig anpassbares haptisches Feedback
 - [Advanced MenuBar for Compose Desktop](https://github.com/HansHolz09/Advanced-MenuBar) - Apache 2.0 - Deutsche macOS Menubar mit mehr Optionen
 - [Nucleus](https://github.com/NucleusFramework/Nucleus) - MIT - Erzeugen optimierter Tao-Fenster und App-Installer sowie Ermitteln der Systemfarben für die Desktop-Ziele

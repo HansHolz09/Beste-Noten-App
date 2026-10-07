@@ -1,24 +1,29 @@
 package com.hansholz.bestenotenapp.notifications
 
+import android.Manifest
 import android.app.Activity
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.provider.Settings
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
-import tech.kotlinlang.permission.HelperHolder
-import tech.kotlinlang.permission.Permission
-import tech.kotlinlang.permission.result.NotificationPermissionResult
+import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 
 actual object GradeNotifications {
@@ -29,6 +34,8 @@ actual object GradeNotifications {
     private var applicationContext: Context? = null
     private var activityRef: WeakReference<Activity?> = WeakReference(null)
     private var alarmManager: AlarmManager? = null
+    private var permissionLauncher: ActivityResultLauncher<String>? = null
+    private var permissionResult: CompletableDeferred<Boolean>? = null
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     actual fun initialize(platformContext: Any?) {
@@ -36,6 +43,16 @@ actual object GradeNotifications {
             is Activity -> {
                 activityRef = WeakReference(platformContext)
                 setApplicationContext(platformContext.applicationContext)
+                if (platformContext is ComponentActivity) {
+                    permissionLauncher =
+                        platformContext.activityResultRegistry.register(
+                            "gradeNotificationPermission",
+                            platformContext,
+                            ActivityResultContracts.RequestPermission(),
+                        ) { granted ->
+                            permissionResult?.complete(granted)
+                        }
+                }
             }
 
             is Context -> {
@@ -70,24 +87,30 @@ actual object GradeNotifications {
         GradeNotificationEngine.clearKnownGrades()
     }
 
-    actual suspend fun requestPermission(): Boolean {
-        val activity = activityRef.get()
+    actual suspend fun requestPermission(): Boolean =
+        withContext(Dispatchers.Main) {
+            val activity = activityRef.get() ?: return@withContext false
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                ContextCompat.checkSelfPermission(activity, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+            ) {
+                requestExactAlarmPermissionIfNeeded(activity)
+                return@withContext true
+            }
 
-        val permissionHelper = HelperHolder.getPermissionHelperInstance()
-        val permission = Permission.Notification
-
-        val checkPermissionResult = permissionHelper.checkIsPermissionGranted(permission)
-        var granted = checkPermissionResult == NotificationPermissionResult.Granted
-        if (granted) {
-            requestExactAlarmPermissionIfNeeded(activity)
-            return true
+            val launcher = permissionLauncher ?: return@withContext false
+            val result =
+                permissionResult ?: CompletableDeferred<Boolean>().also {
+                    permissionResult = it
+                    launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+            try {
+                val granted = result.await()
+                if (granted) requestExactAlarmPermissionIfNeeded(activity)
+                granted
+            } finally {
+                if (permissionResult === result) permissionResult = null
+            }
         }
-
-        val requestPermissionResult = permissionHelper.requestForPermission(permission)
-        granted = requestPermissionResult == NotificationPermissionResult.Granted
-        if (granted) requestExactAlarmPermissionIfNeeded(activity)
-        return granted
-    }
 
     internal fun onAlarmFired(
         context: Context,

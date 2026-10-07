@@ -35,12 +35,13 @@ import platform.Network.nw_path_monitor_set_update_handler
 import platform.Network.nw_path_monitor_start
 import platform.Network.nw_path_t
 import platform.Network.nw_path_uses_interface_type
+import platform.UserNotifications.UNAuthorizationOptionAlert
+import platform.UserNotifications.UNAuthorizationOptionBadge
+import platform.UserNotifications.UNAuthorizationOptionSound
+import platform.UserNotifications.UNUserNotificationCenter
 import platform.darwin.DISPATCH_QUEUE_PRIORITY_BACKGROUND
 import platform.darwin.dispatch_get_global_queue
 import platform.darwin.dispatch_queue_t
-import tech.kotlinlang.permission.HelperHolder
-import tech.kotlinlang.permission.Permission
-import tech.kotlinlang.permission.result.NotificationPermissionResult
 import kotlin.coroutines.resume
 import kotlin.time.Duration.Companion.seconds
 
@@ -129,18 +130,15 @@ actual object GradeNotifications {
         GradeNotificationEngine.clearKnownGrades()
     }
 
-    actual suspend fun requestPermission(): Boolean {
-        val permissionHelper = HelperHolder.getPermissionHelperInstance()
-        val permission = Permission.Notification
-
-        val checkPermissionResult = permissionHelper.checkIsPermissionGranted(permission)
-        var granted = checkPermissionResult == NotificationPermissionResult.Granted
-        if (granted) return true
-
-        val requestPermissionResult = permissionHelper.requestForPermission(permission)
-        granted = requestPermissionResult == NotificationPermissionResult.Granted
-        return granted
-    }
+    actual suspend fun requestPermission(): Boolean =
+        suspendCancellableCoroutine { continuation ->
+            UNUserNotificationCenter.currentNotificationCenter().requestAuthorizationWithOptions(
+                UNAuthorizationOptionAlert or UNAuthorizationOptionBadge or UNAuthorizationOptionSound,
+            ) { granted, error ->
+                if (error != null) logGradeNotificationError("Notification permission request failed: ${error.domain}/${error.code}")
+                if (continuation.isActive) continuation.resume(granted)
+            }
+        }
 
     private fun registerTaskHandler() {
         val success =

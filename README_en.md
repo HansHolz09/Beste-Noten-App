@@ -98,7 +98,6 @@ This cross-platform client for beste.schule makes everyday school life more orga
 - [Capturable](https://github.com/jmseb3/Capturable) - MIT - Basis for the now locally implemented feature for sharing/saving Composables as images
 - [FileKit](https://github.com/vinceglb/FileKit) - MIT - File dialogs for import/export
 - [Alarmee](https://github.com/Tweener/alarmee) - Apache 2.0 - Notifications for Android; iOS notifications are sent directly through UserNotifications
-- [KMM Permission](https://github.com/reyazoct/Kmm-Permissions) - MIT - Requesting notification permissions
 - [multihaptic](https://github.com/xfqwdsj/multihaptic) - MIT - Highly customizable haptic feedback
 - [Advanced MenuBar for Compose Desktop](https://github.com/HansHolz09/Advanced-MenuBar) - Apache 2.0 - German macOS menu bar with more options
 - [Nucleus](https://github.com/NucleusFramework/Nucleus) - MIT - Creating optimized Tao windows and app installers, and detecting system colors for desktop targets
