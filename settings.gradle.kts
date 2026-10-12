@@ -27,3 +27,4 @@ plugins {
 
 include(":androidApp")
 include(":composeApp")
+include(":iosFramework")
