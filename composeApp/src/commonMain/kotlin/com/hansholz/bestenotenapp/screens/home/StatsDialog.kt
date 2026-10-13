@@ -311,6 +311,7 @@ fun StatsDialog(
 
 @Composable
 fun LessonsBySlotView(lessonStudentBySlot: List<JournalLessonStudentBySlot>) {
+    val lastLesson = lessonStudentBySlot.mapNotNull { it.lessonNr?.toIntOrNull() }.maxOrNull() ?: 0
     Row {
         lessonStudentBySlot.groupBy { it.weekday }.forEach {
             Column(
@@ -330,13 +331,19 @@ fun LessonsBySlotView(lessonStudentBySlot: List<JournalLessonStudentBySlot>) {
                     color = colorScheme.onSurface,
                     fontWeight = FontWeight.Bold,
                 )
-                it.value.forEach {
+                val lessonsByNumber = it.value.associateBy { it.lessonNr?.toIntOrNull() }
+                for (lessonNumber in 1..lastLesson) {
+                    val lesson = lessonsByNumber[lessonNumber]
+                    if (lesson == null) {
+                        Spacer(Modifier.height(40.dp))
+                        continue
+                    }
                     OutlinedCard(
                         modifier = Modifier.fillMaxWidth().padding(5.dp),
                         colors =
                             CardDefaults.outlinedCardColors(
                                 containerColor =
-                                    Color.Red.copy(((it.count ?: 1).toFloat() / (it.presentCount ?: 1).toFloat() - 1)),
+                                    Color.Red.copy(((lesson.count ?: 1).toFloat() / (lesson.presentCount ?: 1).toFloat() - 1)),
                             ),
                         border =
                             BorderStroke(
@@ -345,7 +352,7 @@ fun LessonsBySlotView(lessonStudentBySlot: List<JournalLessonStudentBySlot>) {
                             ),
                     ) {
                         Text(
-                            text = "${it.presentCount}/${it.count}",
+                            text = "${lesson.presentCount}/${lesson.count}",
                             modifier = Modifier.padding(5.dp).height(20.dp).align(Alignment.CenterHorizontally),
                             autoSize = TextAutoSize.StepBased(stepSize = 5.sp),
                             maxLines = 1,
