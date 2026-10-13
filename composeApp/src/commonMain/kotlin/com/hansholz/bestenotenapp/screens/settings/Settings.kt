@@ -96,6 +96,7 @@ import com.hansholz.bestenotenapp.main.LocalHomeworkGoogleSyncEnabled
 import com.hansholz.bestenotenapp.main.LocalNativeAppearanceSelector
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNativeSlider
+import com.hansholz.bestenotenapp.main.LocalNewestGradesCount
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.LocalScrollZoomAnimationEnabled
 import com.hansholz.bestenotenapp.main.LocalShowAbsences
@@ -166,6 +167,7 @@ fun Settings(
     var notificationsWifiOnly by LocalGradeNotificationsWifiOnly.current
     var showGreetings by LocalShowGreetings.current
     var showNewestGrades by LocalShowNewestGrades.current
+    var newestGradesCount by LocalNewestGradesCount.current
     var showCurrentLesson by LocalShowCurrentLesson.current
     var showYearProgress by LocalShowYearProgress.current
     var showGradeHistory by LocalShowGradeHistory.current
@@ -428,7 +430,7 @@ fun Settings(
                         bottomContent = {
                             val sliderModifier = Modifier.fillMaxWidth().padding(start = 56.dp, end = 16.dp, bottom = 12.dp)
                             if (nativeComponentsEnabled && nativeSlider != null) {
-                                nativeSlider(selectedIndex, onIntervalSelected, notificationsEnabled, sliderModifier)
+                                nativeSlider(selectedIndex, onIntervalSelected, notificationsEnabled, sliderModifier, intervalOptions.lastIndex)
                             } else {
                                 Slider(
                                     value = selectedIndex.toFloat(),
@@ -471,6 +473,30 @@ fun Settings(
                 text = "Neuste Noten anzeigen",
                 icon = MaterialSymbols.Rounded.Fiber_new,
                 position = PreferencePosition.Middle,
+                subtitle = "Anzahl: $newestGradesCount",
+                bottomContent = {
+                    val onCountSelected: (Int) -> Unit = { index ->
+                        val count = (index + 1).coerceIn(1, 10)
+                        if (showNewestGrades && count != newestGradesCount) {
+                            newestGradesCount = count
+                            vibrator.enhancedVibrate(EnhancedVibrations.TICK)
+                            put("newestGradesCount", count)
+                        }
+                    }
+                    val sliderModifier = Modifier.fillMaxWidth().padding(start = 56.dp, end = 16.dp, bottom = 12.dp)
+                    if (nativeComponentsEnabled && nativeSlider != null) {
+                        nativeSlider(newestGradesCount - 1, onCountSelected, showNewestGrades, sliderModifier, 9)
+                    } else {
+                        Slider(
+                            value = newestGradesCount.toFloat(),
+                            onValueChange = { onCountSelected(it.roundToInt() - 1) },
+                            modifier = sliderModifier,
+                            enabled = showNewestGrades,
+                            valueRange = 1f..10f,
+                            steps = 8,
+                        )
+                    }
+                },
             )
             settingsToggleItem(
                 checked = showCurrentLesson,
@@ -801,6 +827,7 @@ fun Settings(
                                 hapticsEnabled = appSettings.hapticsEnabled
                                 showGreetings = appSettings.showGreetings
                                 showNewestGrades = appSettings.showNewestGrades
+                                newestGradesCount = appSettings.newestGradesCount.coerceIn(1, 10)
                                 showCurrentLesson = appSettings.showCurrentLesson
                                 showYearProgress = appSettings.showYearProgress
                                 showGradeHistory = appSettings.showGradeHistory
@@ -829,6 +856,7 @@ fun Settings(
                                 put("hapticsEnabled", appSettings.hapticsEnabled)
                                 put("showGreetings", appSettings.showGreetings)
                                 put("showNewestGrades", appSettings.showNewestGrades)
+                                put("newestGradesCount", newestGradesCount)
                                 put("showCurrentLesson", appSettings.showCurrentLesson)
                                 put("showYearProgress", appSettings.showYearProgress)
                                 put("showGradeHistory", appSettings.showGradeHistory)

@@ -131,6 +131,7 @@ import com.hansholz.bestenotenapp.components.scatteredIconBackground
 import com.hansholz.bestenotenapp.homework.HomeworkEntry
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalHomeworkEnabled
+import com.hansholz.bestenotenapp.main.LocalNewestGradesCount
 import com.hansholz.bestenotenapp.main.LocalShowCurrentLesson
 import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
@@ -187,6 +188,7 @@ fun Home(
         val animationsEnabled by LocalAnimationsEnabled.current
         val showGreetings by LocalShowGreetings.current
         val showNewestGrades by LocalShowNewestGrades.current
+        val newestGradesCount by LocalNewestGradesCount.current
         val showCurrentLesson by LocalShowCurrentLesson.current
         val showNotes by LocalShowNotes.current
         val showOnlyRelevantData by LocalShowOnlyRelevantData.current
@@ -228,7 +230,7 @@ fun Home(
                 }
         }
 
-        val newestGrades by remember {
+        val newestGrades by remember(newestGradesCount) {
             derivedStateOf {
                 viewModel
                     .startGradeCollections
@@ -236,7 +238,7 @@ fun Home(
                     .filter { !it.grades.isNullOrEmpty() }
                     .distinctBy { it.id }
                     .sortedWith(compareByDescending<GradeCollection> { it.givenAt }.thenBy { it.name })
-                    .take(5)
+                    .take(newestGradesCount)
                     .toList()
             }
         }

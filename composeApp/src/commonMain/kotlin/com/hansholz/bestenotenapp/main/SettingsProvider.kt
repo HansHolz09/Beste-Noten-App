@@ -14,6 +14,7 @@ internal val LocalScrollZoomAnimationEnabled = compositionLocalOf { mutableState
 internal val LocalHapticsEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowGreetings = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowNewestGrades = compositionLocalOf { mutableStateOf(false) }
+internal val LocalNewestGradesCount = compositionLocalOf { mutableStateOf(5) }
 internal val LocalShowCurrentLesson = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowYearProgress = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowGradeHistory = compositionLocalOf { mutableStateOf(false) }
@@ -48,6 +49,7 @@ fun SettingsProvider(content: @Composable () -> Unit) =
         val hapticsEnabledState = remember { mutableStateOf(get("hapticsEnabled", getPlatform() == Platform.ANDROID)) }
         val showGreetingsState = remember { mutableStateOf(get("showGreetings", true)) }
         val showNewestGradesState = remember { mutableStateOf(get("showNewestGrades", true)) }
+        val newestGradesCountState = remember { mutableStateOf(get("newestGradesCount", 5).coerceIn(1, 10)) }
         val showCurrentLessonState = remember { mutableStateOf(get("showCurrentLesson", true)) }
         val showYearProgress = remember { mutableStateOf(get("showYearProgress", true)) }
         val showGradeHistoryState = remember { mutableStateOf(get("showGradeHistory", false)) }
@@ -73,6 +75,7 @@ fun SettingsProvider(content: @Composable () -> Unit) =
             LocalHapticsEnabled provides hapticsEnabledState,
             LocalShowGreetings provides showGreetingsState,
             LocalShowNewestGrades provides showNewestGradesState,
+            LocalNewestGradesCount provides newestGradesCountState,
             LocalShowCurrentLesson provides showCurrentLessonState,
             LocalShowYearProgress provides showYearProgress,
             LocalShowGradeHistory provides showGradeHistoryState,

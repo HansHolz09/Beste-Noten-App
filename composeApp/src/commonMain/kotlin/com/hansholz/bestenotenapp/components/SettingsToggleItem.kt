@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -34,6 +35,8 @@ fun LazyListScope.settingsToggleItem(
     hapticsEnabled: Boolean = true,
     controlVisible: Boolean = true,
     nativeControlFadeIn: Boolean = false,
+    subtitle: String? = null,
+    bottomContent: @Composable (() -> Unit)? = null,
 ) {
     item {
         val vibrator = rememberVibrator()
@@ -43,6 +46,7 @@ fun LazyListScope.settingsToggleItem(
             modifier = modifier.padding(horizontal = 16.dp),
             textModifier = textModifier,
             title = text,
+            subtitle = subtitle,
             icon = icon,
             onIconClick =
                 if (onIconClick != null) {
@@ -55,6 +59,7 @@ fun LazyListScope.settingsToggleItem(
                 },
             enabled = enabled,
             position = position,
+            bottomContent = bottomContent,
         ) {
             val change: (Boolean) -> Unit = {
                 onCheckedChange(it)

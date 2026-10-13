@@ -33,6 +33,7 @@ internal fun NativeSlider(
     onSelected: (Int) -> Unit,
     enabled: Boolean,
     modifier: Modifier,
+    maxIndex: Int,
 ) {
     val target = remember { SliderTarget(onSelected) }
     target.onSelected = onSelected
@@ -41,9 +42,9 @@ internal fun NativeSlider(
             PencilAwareSlider()
                 .apply {
                     minimumValue = 0f
-                    maximumValue = 6f
+                    maximumValue = maxIndex.toFloat()
                     if (NSProcessInfo.processInfo.operatingSystemVersion.useContents { majorVersion >= 26 }) {
-                        trackConfiguration = UISliderTrackConfiguration.configurationWithNumberOfTicks(7)
+                        trackConfiguration = UISliderTrackConfiguration.configurationWithNumberOfTicks((maxIndex + 1).toLong())
                     }
                     addTarget(target, NSSelectorFromString("valueChanged:"), UIControlEventValueChanged)
                 }
@@ -119,7 +120,7 @@ private class SliderTarget(
 ) : NSObject() {
     @ObjCAction
     fun valueChanged(sender: PencilAwareSlider) {
-        val index = sender.value.roundToInt().coerceIn(0, 6)
+        val index = sender.value.roundToInt().coerceIn(sender.minimumValue.roundToInt(), sender.maximumValue.roundToInt())
         sender.setValue(index.toFloat(), animated = false)
         if (sender.selectionChanged(index)) onSelected(index)
     }

@@ -82,8 +82,8 @@ fun mainViewController(nativeBridge: NativeComponentBridge? = null): UIViewContr
                 LocalNativeAppearanceSelector provides { selected, onSelected, modifier ->
                     NativeAppearanceSelector(selected, onSelected, modifier)
                 },
-                LocalNativeSlider provides { selected, onSelected, enabled, modifier ->
-                    NativeSlider(selected, onSelected, enabled, modifier)
+                LocalNativeSlider provides { selected, onSelected, enabled, modifier, maxIndex ->
+                    NativeSlider(selected, onSelected, enabled, modifier, maxIndex)
                 },
             ) {
                 EnhancedNativeTextInputProvider {

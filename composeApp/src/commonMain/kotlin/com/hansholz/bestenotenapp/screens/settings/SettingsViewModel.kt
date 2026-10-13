@@ -69,6 +69,7 @@ class SettingsViewModel : ViewModel() {
                             hapticsEnabled = get("hapticsEnabled", false),
                             showGreetings = get("showGreetings", true),
                             showNewestGrades = get("showNewestGrades", true),
+                            newestGradesCount = get("newestGradesCount", 5),
                             showCurrentLesson = get("showCurrentLesson", true),
                             showYearProgress = get("showYearProgress", true),
                             showGradeHistory = get("showGradeHistory", false),

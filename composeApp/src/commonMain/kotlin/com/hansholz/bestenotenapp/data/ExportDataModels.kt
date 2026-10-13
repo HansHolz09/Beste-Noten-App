@@ -33,6 +33,7 @@ data class AppSettings(
     val hapticsEnabled: Boolean = false,
     val showGreetings: Boolean = true,
     val showNewestGrades: Boolean = true,
+    val newestGradesCount: Int = 5,
     val showCurrentLesson: Boolean = true,
     val showYearProgress: Boolean = true,
     val showGradeHistory: Boolean = false,

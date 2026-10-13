@@ -16,7 +16,7 @@ internal val LocalNativeSwitch =
 internal val LocalNativeAppearanceSelector =
     compositionLocalOf<(@Composable (Int, (Int) -> Unit, Modifier) -> Unit)?> { null }
 internal val LocalNativeSlider =
-    compositionLocalOf<(@Composable (Int, (Int) -> Unit, Boolean, Modifier) -> Unit)?> { null }
+    compositionLocalOf<(@Composable (Int, (Int) -> Unit, Boolean, Modifier, Int) -> Unit)?> { null }
 internal val LocalNativeAlignmentHaptic = compositionLocalOf<((Offset) -> Unit)?> { null }
 internal val LocalNativeDialogBackdrop =
     compositionLocalOf<(@Composable (Modifier, List<Rect>) -> Unit)?> { null }
