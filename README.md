@@ -9,14 +9,12 @@ ___
 
 Dieser plattformübergreifende Client für beste.schule macht den Schulalltag übersichtlicher und ist eine einfachere, schönere und schnellere Alternative zur offiziellen beste.schule-App. Die App wird unabhängig von beste.schule entwickelt.
 
-### [Zur Web-Version](https://hansholz09.github.io/Beste-Noten-App)
-
-**Native Apps:** [siehe Releases](https://github.com/HansHolz09/Beste-Noten-App/releases)
-> [!IMPORTANT]  
-> Die für iOS/iPadOS bereitgestellte IPA-Datei ist nicht signiert und kann daher nicht direkt auf diesen Geräten installiert werden.
-> Es wird daher empfohlen, diese Datei mithilfe von SideStore zu sideloaden ([Einrichtung](https://docs.sidestore.io/docs/installation/prerequisites)).
-> Alternativ kann die App auch direkt kompiliert ([siehe **Bauen der App**](#bauenstarten-der-app)) und anschließend über XCode auf dem gewünschten Gerät installiert werden.
-
+<p align="center">
+  <a href="https://play.google.com/store/apps/details?id=dev.hansholz.bestenotenapp"><img src="badges/Google_Play_Badge_DE.svg" height="48" alt="Google Play"></a>
+  <a href="https://apps.apple.com/de/app/beste-noten-app/id6816709897"><img src="badges/App_Store_Badge_DE.svg" height="48" alt="App Store"></a>
+  <a href="https://github.com/HansHolz09/Beste-Noten-App/releases"><img src="badges/GitHub_Releases_Badge.svg" height="48" alt="GitHub Releases"></a>
+  <a href="https://hansholz09.github.io/Beste-Noten-App"><img src="badges/Web_Version_Badge_DE.svg" height="48" alt="Web-Version"></a>
+</p>
 
 ## Funktionen
 - Direkte Anmeldung mit Benutzername/E-Mail und Passwort inklusive Zwei-Faktor-Authentifizierung sowie alternative Anmeldung über Private-Access-Token oder den Browser
