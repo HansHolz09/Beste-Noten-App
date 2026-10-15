@@ -10,9 +10,9 @@ ___
 This cross-platform client for beste.schule makes everyday school life more organized and is a simpler, more beautiful, and faster alternative to the official beste.schule app. The app is developed independently of beste.schule.
 
 <p align="center">
-  <a href="https://play.google.com/store/apps/details?id=dev.hansholz.bestenotenapp"><img src="badges/Google_Play_Badge_EN.svg" height="48" alt="Google Play"></a>
-  <a href="https://apps.apple.com/de/app/beste-noten-app/id6816709897"><img src="badges/App_Store_Badge_EN.svg" height="48" alt="App Store"></a>
-  <a href="https://github.com/HansHolz09/Beste-Noten-App/releases"><img src="badges/GitHub_Releases_Badge.svg" height="48" alt="GitHub Releases"></a>
+  <a href="https://play.google.com/store/apps/details?id=dev.hansholz.bestenotenapp"><img src="badges/Google_Play_Badge_EN.svg" height="48" alt="Google Play"></a>&nbsp;&nbsp;&nbsp;
+  <a href="https://apps.apple.com/de/app/beste-noten-app/id6816709897"><img src="badges/App_Store_Badge_EN.svg" height="48" alt="App Store"></a>&nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/HansHolz09/Beste-Noten-App/releases"><img src="badges/GitHub_Releases_Badge.svg" height="48" alt="GitHub Releases"></a>&nbsp;&nbsp;&nbsp;
   <a href="https://hansholz09.github.io/Beste-Noten-App"><img src="badges/Web_Version_Badge_EN.svg" height="48" alt="Web Version"></a>
 </p>
 
