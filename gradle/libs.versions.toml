@@ -34,7 +34,8 @@ multihapticCompose = "0.3.2"
 nucleus = "2.5.18"
 platformtools = "0.7.5"
 proguard = "7.9.1"
-navigationCompose = "2.10.0-rc01"
+#noinspection NewerVersionAvailable
+navigationCompose = "2.9.2"
 navigationEvent = "1.2.0"
 materialKolor = "5.0.1"
 #noinspection NewerVersionAvailable
