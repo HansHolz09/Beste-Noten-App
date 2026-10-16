@@ -1,6 +1,5 @@
 package com.hansholz.bestenotenapp.screens.login
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -53,6 +52,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
@@ -69,8 +69,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import bestenotenapp.composeapp.generated.resources.Res
-import bestenotenapp.composeapp.generated.resources.logo
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Content_paste
 import com.composables.icons.materialsymbols.rounded.Login
@@ -78,7 +76,6 @@ import com.composables.icons.materialsymbols.rounded.Visibility
 import com.composables.icons.materialsymbols.rounded.Visibility_off
 import com.hansholz.bestenotenapp.api.ManagedPersonalAccessToken
 import com.hansholz.bestenotenapp.api.PasswordLoginStep
-import com.hansholz.bestenotenapp.components.CurvedText
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
@@ -91,7 +88,6 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedTextButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedTextField
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
-import com.hansholz.bestenotenapp.components.rotateForever
 import com.hansholz.bestenotenapp.main.ExactPlatform
 import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
@@ -108,7 +104,6 @@ import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.painterResource
 import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
@@ -133,6 +128,8 @@ fun Login(
     var timetableBlockViewEnabled by LocalTimetableBlockViewEnabled.current
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
 
+    var showWelcomeIntro by rememberSaveable { mutableStateOf(!get("loginWelcomeCompleted", false)) }
+    var welcomeChromeAlpha by remember { mutableFloatStateOf(if (showWelcomeIntro && animationsEnabled) 0f else 1f) }
     var stayLoggedIn by rememberSaveable { mutableStateOf(true) }
     var otherOptions by rememberSaveable { mutableStateOf(getPlatform() == Platform.WEB) }
     var identifier by remember { mutableStateOf("") }
@@ -229,6 +226,7 @@ fun Login(
 
     TopAppBarScaffold(
         title = "Login",
+        topBarModifier = Modifier.graphicsLayer { alpha = welcomeChromeAlpha },
         hazeState = viewModel.hazeBackgroundState3,
     ) { innerPadding, topAppBarBackground ->
         BoxWithConstraints(
@@ -249,370 +247,373 @@ fun Login(
                 if (targetState) {
                     ContainedLoadingIndicator(Modifier.padding(innerPadding))
                 } else {
-                    Box(Modifier.verticalScroll(loginScrollState)) {
-                        Column(
-                            modifier =
-                                Modifier
-                                    .padding(vertical = 20.dp)
-                                    .padding(innerPadding)
-                                    .consumeWindowInsets(innerPadding)
-                                    .imePadding(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Image(
-                                    painter = painterResource(Res.drawable.logo),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(150.dp),
-                                )
-                                CurvedText(
-                                    text = "Willkommen bei der Beste-Noten-App",
-                                    radius = 100.dp,
-                                    modifier = Modifier.size(225.dp).rotateForever(10000, false, animationsEnabled),
-                                    textStyle = typography.headlineLarge,
-                                    startAngle = 110f,
-                                    sweepAngle = 315f,
-                                )
-                            }
-                            Spacer(Modifier.height(30.dp))
-                            Text(
-                                text = "Melde dich mit deinem Account von beste.schule an",
-                                modifier = modifier,
-                                fontFamily = FontFamilies.Schoolbell,
-                                textAlign = TextAlign.Center,
-                                style = typography.headlineMedium,
-                            )
-                            Spacer(Modifier.height(30.dp))
-                            EnhancedAnimatedContent(
-                                targetState = otherOptions,
-                                modifier = modifier,
-                                contentAlignment = Alignment.Center,
-                            ) { showOtherOptions ->
-                                if (showOtherOptions) {
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        val textFieldState = rememberTextFieldState()
-                                        EnhancedTextField(
-                                            state = textFieldState,
-                                            modifier = Modifier.fillMaxWidth().onFocusChanged { tokenFocused = it.isFocused },
-                                            leadingIcon = {
-                                                EnhancedIconButton(onClick = {
-                                                    scope.launch { textFieldState.setTextAndPlaceCursorAtEnd(clipboard.getText()?.text ?: "") }
-                                                }) {
-                                                    Icon(MaterialSymbols.Rounded.Content_paste, null)
-                                                }
-                                            },
-                                            trailingIcon = {
-                                                EnhancedIconButton(
-                                                    onClick = { scope.launch { runLogin { viewModel.authToken.value = textFieldState.text.toString() } } },
-                                                    enabled = textFieldState.text.isNotEmpty(),
-                                                ) {
-                                                    Icon(MaterialSymbols.Rounded.Login, null)
-                                                }
-                                            },
-                                            placeholder = { Text("Private-Access-Token") },
-                                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                            onKeyboardAction =
-                                                KeyboardActionHandler {
-                                                    scope.launch { runLogin { viewModel.authToken.value = textFieldState.text.toString() } }
-                                                },
-                                            lineLimits = TextFieldLineLimits.SingleLine,
-                                            shape = RoundedCornerShape(18.dp),
-                                        )
-                                        Text("oder")
-                                        EnhancedButton(
-                                            onClick = {
-                                                scope.launch {
-                                                    runLogin {
-                                                        if (!viewModel.getAccessToken()) error("Could not get Token")
-                                                    }
-                                                }
-                                            },
-                                            modifier = Modifier.fillMaxWidth(),
-                                        ) {
-                                            Text("Login über beste.schule")
-                                        }
-                                        EnhancedButton(
-                                            onClick = { scope.launch { viewModel.openGradesFromJson(onNavigateToGrades) } },
-                                            modifier = Modifier.fillMaxWidth(),
-                                        ) {
-                                            Text("Noten aus JSON öffnen")
-                                        }
-                                        EnhancedButton(
-                                            onClick = {
-                                                scope.launch {
-                                                    viewModel.loginDemo(
-                                                        isLoading = { loginViewModel.isLoading = it },
-                                                        applySettings = { timetableBlockViewEnabled = it },
-                                                        onNavigateHome = onNavigateHome,
-                                                    )
-                                                }
-                                            },
-                                            modifier = Modifier.fillMaxWidth(),
-                                        ) {
-                                            Text("Demo-Account nutzen")
-                                        }
-                                    }
-                                } else {
-                                    Column(
-                                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                    ) {
-                                        EnhancedTextField(
-                                            value = identifier,
-                                            onValueChange = { identifier = it },
-                                            modifier =
-                                                Modifier
-                                                    .fillMaxWidth()
-                                                    .onFocusChanged { identifierFocused = it.isFocused },
-                                            label = { Text("E-Mail oder Nutzername") },
-                                            singleLine = true,
-                                            enabled = !loginViewModel.isSubmitting && !loginViewModel.twoFactorRequired,
-                                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                                            keyboardActions = KeyboardActions(onNext = { passwordFocus.requestFocus() }),
-                                        )
-                                        EnhancedTextField(
-                                            value = password,
-                                            onValueChange = { password = it },
-                                            modifier =
-                                                Modifier
-                                                    .fillMaxWidth()
-                                                    .focusRequester(passwordFocus)
-                                                    .onFocusChanged { passwordFocused = it.isFocused },
-                                            label = { Text("Passwort") },
-                                            trailingIcon = {
-                                                EnhancedIconButton(
-                                                    onClick = { passwordVisible = !passwordVisible },
-                                                    enabled = !loginViewModel.isSubmitting && !loginViewModel.twoFactorRequired,
-                                                ) {
-                                                    EnhancedAnimatedContent(passwordVisible) { visible ->
-                                                        Icon(if (visible) MaterialSymbols.Rounded.Visibility_off else MaterialSymbols.Rounded.Visibility, null)
-                                                    }
-                                                }
-                                            },
-                                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                                            singleLine = true,
-                                            enabled = !loginViewModel.isSubmitting && !loginViewModel.twoFactorRequired,
-                                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-                                            keyboardActions = KeyboardActions(onDone = { submitNativeLogin() }),
-                                        )
-                                        EnhancedAnimatedVisibility(loginViewModel.twoFactorRequired) {
-                                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                                Text(
-                                                    text = "Code aus deiner Authenticator-App",
-                                                    modifier = Modifier.fillMaxWidth(),
-                                                    textAlign = TextAlign.Center,
-                                                )
-                                                EnhancedBasicTextField(
-                                                    value = code,
-                                                    onValueChange = { value ->
-                                                        val digits = value.text.filter(Char::isDigit).take(6)
-                                                        code = if (digits == value.text) value else TextFieldValue(digits, selection = TextRange(digits.length))
+                    LoginWelcome(
+                        playIntro = showWelcomeIntro,
+                        animationsEnabled = animationsEnabled,
+                        onChromeAlphaChanged = { welcomeChromeAlpha = it },
+                        onIntroCompleted = {
+                            showWelcomeIntro = false
+                            put("loginWelcomeCompleted", true)
+                        },
+                    ) { welcomeHeader, formModifier, introFinished ->
+                        Box(Modifier.verticalScroll(loginScrollState, enabled = introFinished)) {
+                            Column(
+                                modifier =
+                                    Modifier
+                                        .padding(vertical = 20.dp)
+                                        .padding(innerPadding)
+                                        .consumeWindowInsets(innerPadding)
+                                        .imePadding(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                welcomeHeader()
+                                Column(
+                                    modifier = formModifier,
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                ) {
+                                    Spacer(Modifier.height(30.dp))
+                                    Text(
+                                        text = "Melde dich mit deinem Account von beste.schule an",
+                                        modifier = modifier,
+                                        fontFamily = FontFamilies.Schoolbell,
+                                        textAlign = TextAlign.Center,
+                                        style = typography.headlineMedium,
+                                    )
+                                    Spacer(Modifier.height(30.dp))
+                                    EnhancedAnimatedContent(
+                                        targetState = otherOptions,
+                                        modifier = modifier,
+                                        contentAlignment = Alignment.Center,
+                                    ) { showOtherOptions ->
+                                        if (showOtherOptions) {
+                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                val textFieldState = rememberTextFieldState()
+                                                EnhancedTextField(
+                                                    state = textFieldState,
+                                                    modifier = Modifier.fillMaxWidth().onFocusChanged { tokenFocused = it.isFocused },
+                                                    leadingIcon = {
+                                                        EnhancedIconButton(onClick = {
+                                                            scope.launch { textFieldState.setTextAndPlaceCursorAtEnd(clipboard.getText()?.text ?: "") }
+                                                        }) {
+                                                            Icon(MaterialSymbols.Rounded.Content_paste, null)
+                                                        }
                                                     },
+                                                    trailingIcon = {
+                                                        EnhancedIconButton(
+                                                            onClick = { scope.launch { runLogin { viewModel.authToken.value = textFieldState.text.toString() } } },
+                                                            enabled = textFieldState.text.isNotEmpty(),
+                                                        ) {
+                                                            Icon(MaterialSymbols.Rounded.Login, null)
+                                                        }
+                                                    },
+                                                    placeholder = { Text("Private-Access-Token") },
+                                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                                    onKeyboardAction =
+                                                        KeyboardActionHandler {
+                                                            scope.launch { runLogin { viewModel.authToken.value = textFieldState.text.toString() } }
+                                                        },
+                                                    lineLimits = TextFieldLineLimits.SingleLine,
+                                                    shape = RoundedCornerShape(18.dp),
+                                                )
+                                                Text("oder")
+                                                EnhancedButton(
+                                                    onClick = {
+                                                        scope.launch {
+                                                            runLogin {
+                                                                if (!viewModel.getAccessToken()) error("Could not get Token")
+                                                            }
+                                                        }
+                                                    },
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                ) {
+                                                    Text("Login über beste.schule")
+                                                }
+                                                EnhancedButton(
+                                                    onClick = { scope.launch { viewModel.openGradesFromJson(onNavigateToGrades) } },
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                ) {
+                                                    Text("Noten aus JSON öffnen")
+                                                }
+                                                EnhancedButton(
+                                                    onClick = {
+                                                        scope.launch {
+                                                            viewModel.loginDemo(
+                                                                isLoading = { loginViewModel.isLoading = it },
+                                                                applySettings = { timetableBlockViewEnabled = it },
+                                                                onNavigateHome = onNavigateHome,
+                                                            )
+                                                        }
+                                                    },
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                ) {
+                                                    Text("Demo-Account nutzen")
+                                                }
+                                            }
+                                        } else {
+                                            Column(
+                                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                                horizontalAlignment = Alignment.CenterHorizontally,
+                                            ) {
+                                                EnhancedTextField(
+                                                    value = identifier,
+                                                    onValueChange = { identifier = it },
                                                     modifier =
                                                         Modifier
                                                             .fillMaxWidth()
-                                                            .height(56.dp)
-                                                            .focusRequester(codeFocus)
-                                                            .onFocusChanged { codeFocused = it.isFocused },
-                                                    enabled = !loginViewModel.isSubmitting,
+                                                            .onFocusChanged { identifierFocused = it.isFocused },
+                                                    label = { Text("E-Mail oder Nutzername") },
                                                     singleLine = true,
-                                                    textStyle = typography.titleLarge.copy(color = Color.Transparent),
-                                                    cursorBrush = SolidColor(Color.Transparent),
-                                                    keyboardOptions =
-                                                        KeyboardOptions(
-                                                            keyboardType = KeyboardType.NumberPassword,
-                                                            imeAction = ImeAction.Done,
-                                                        ),
-                                                    keyboardActions = KeyboardActions(onDone = { submitNativeLogin() }),
-                                                    decorationBox = { innerTextField ->
-                                                        Box {
-                                                            Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                                                repeat(6) { index ->
-                                                                    Box(
-                                                                        modifier =
-                                                                            Modifier
-                                                                                .weight(1f)
-                                                                                .fillMaxHeight()
-                                                                                .border(
-                                                                                    1.dp,
-                                                                                    if (index == code.text.length) colorScheme.primary else colorScheme.outline,
-                                                                                    RoundedCornerShape(12.dp),
-                                                                                ),
-                                                                        contentAlignment = Alignment.Center,
-                                                                    ) {
-                                                                        Text(
-                                                                            code.text
-                                                                                .getOrNull(index)
-                                                                                ?.toString()
-                                                                                .orEmpty(),
-                                                                            style = typography.titleLarge,
-                                                                        )
-                                                                    }
-                                                                }
-                                                            }
-                                                            Box(Modifier.matchParentSize()) { innerTextField() }
-                                                        }
-                                                    },
+                                                    enabled = !loginViewModel.isSubmitting && !loginViewModel.twoFactorRequired,
+                                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                                                    keyboardActions = KeyboardActions(onNext = { passwordFocus.requestFocus() }),
                                                 )
-                                                EnhancedTextButton(
-                                                    onClick = {
-                                                        val digits =
-                                                            clipboard
-                                                                .getText()
-                                                                ?.text
-                                                                .orEmpty()
-                                                                .filter(Char::isDigit)
-                                                        if (digits.length == 6) {
-                                                            code = TextFieldValue(digits, selection = TextRange(digits.length))
-                                                            loginViewModel.loginError = null
-                                                        } else {
-                                                            loginViewModel.loginError = "Die Zwischenablage enthält keinen sechsstelligen Code."
+                                                EnhancedTextField(
+                                                    value = password,
+                                                    onValueChange = { password = it },
+                                                    modifier =
+                                                        Modifier
+                                                            .fillMaxWidth()
+                                                            .focusRequester(passwordFocus)
+                                                            .onFocusChanged { passwordFocused = it.isFocused },
+                                                    label = { Text("Passwort") },
+                                                    trailingIcon = {
+                                                        EnhancedIconButton(
+                                                            onClick = { passwordVisible = !passwordVisible },
+                                                            enabled = !loginViewModel.isSubmitting && !loginViewModel.twoFactorRequired,
+                                                        ) {
+                                                            EnhancedAnimatedContent(passwordVisible) { visible ->
+                                                                Icon(if (visible) MaterialSymbols.Rounded.Visibility_off else MaterialSymbols.Rounded.Visibility, null)
+                                                            }
                                                         }
                                                     },
-                                                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                                                    enabled = !loginViewModel.isSubmitting,
+                                                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                                    singleLine = true,
+                                                    enabled = !loginViewModel.isSubmitting && !loginViewModel.twoFactorRequired,
+                                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
+                                                    keyboardActions = KeyboardActions(onDone = { submitNativeLogin() }),
+                                                )
+                                                EnhancedAnimatedVisibility(loginViewModel.twoFactorRequired) {
+                                                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                        Text(
+                                                            text = "Code aus deiner Authenticator-App",
+                                                            modifier = Modifier.fillMaxWidth(),
+                                                            textAlign = TextAlign.Center,
+                                                        )
+                                                        EnhancedBasicTextField(
+                                                            value = code,
+                                                            onValueChange = { value ->
+                                                                val digits = value.text.filter(Char::isDigit).take(6)
+                                                                code = if (digits == value.text) value else TextFieldValue(digits, selection = TextRange(digits.length))
+                                                            },
+                                                            modifier =
+                                                                Modifier
+                                                                    .fillMaxWidth()
+                                                                    .height(56.dp)
+                                                                    .focusRequester(codeFocus)
+                                                                    .onFocusChanged { codeFocused = it.isFocused },
+                                                            enabled = !loginViewModel.isSubmitting,
+                                                            singleLine = true,
+                                                            textStyle = typography.titleLarge.copy(color = Color.Transparent),
+                                                            cursorBrush = SolidColor(Color.Transparent),
+                                                            keyboardOptions =
+                                                                KeyboardOptions(
+                                                                    keyboardType = KeyboardType.NumberPassword,
+                                                                    imeAction = ImeAction.Done,
+                                                                ),
+                                                            keyboardActions = KeyboardActions(onDone = { submitNativeLogin() }),
+                                                            decorationBox = { innerTextField ->
+                                                                Box {
+                                                                    Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                                                        repeat(6) { index ->
+                                                                            Box(
+                                                                                modifier =
+                                                                                    Modifier
+                                                                                        .weight(1f)
+                                                                                        .fillMaxHeight()
+                                                                                        .border(
+                                                                                            1.dp,
+                                                                                            if (index == code.text.length) colorScheme.primary else colorScheme.outline,
+                                                                                            RoundedCornerShape(12.dp),
+                                                                                        ),
+                                                                                contentAlignment = Alignment.Center,
+                                                                            ) {
+                                                                                Text(
+                                                                                    code.text
+                                                                                        .getOrNull(index)
+                                                                                        ?.toString()
+                                                                                        .orEmpty(),
+                                                                                    style = typography.titleLarge,
+                                                                                )
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                    Box(Modifier.matchParentSize()) { innerTextField() }
+                                                                }
+                                                            },
+                                                        )
+                                                        EnhancedTextButton(
+                                                            onClick = {
+                                                                val digits =
+                                                                    clipboard
+                                                                        .getText()
+                                                                        ?.text
+                                                                        .orEmpty()
+                                                                        .filter(Char::isDigit)
+                                                                if (digits.length == 6) {
+                                                                    code = TextFieldValue(digits, selection = TextRange(digits.length))
+                                                                    loginViewModel.loginError = null
+                                                                } else {
+                                                                    loginViewModel.loginError = "Die Zwischenablage enthält keinen sechsstelligen Code."
+                                                                }
+                                                            },
+                                                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                                                            enabled = !loginViewModel.isSubmitting,
+                                                        ) {
+                                                            Icon(MaterialSymbols.Rounded.Content_paste, null)
+                                                            Spacer(Modifier.width(8.dp))
+                                                            Text("Code einfügen")
+                                                        }
+                                                    }
+                                                }
+                                                EnhancedAnimatedVisibility(loginViewModel.loginError != null) {
+                                                    Text(
+                                                        text = loginViewModel.loginError.orEmpty(),
+                                                        modifier = Modifier.fillMaxWidth(),
+                                                        color = colorScheme.error,
+                                                        textAlign = TextAlign.Center,
+                                                    )
+                                                }
+                                                EnhancedButton(
+                                                    onClick = ::submitNativeLogin,
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    enabled =
+                                                        !loginViewModel.isSubmitting &&
+                                                            if (loginViewModel.twoFactorRequired) code.text.length == 6 else identifier.isNotBlank() && password.isNotBlank(),
                                                 ) {
-                                                    Icon(MaterialSymbols.Rounded.Content_paste, null)
-                                                    Spacer(Modifier.width(8.dp))
-                                                    Text("Code einfügen")
+                                                    EnhancedAnimatedContent(
+                                                        if (loginViewModel.isSubmitting) {
+                                                            "Bitte warten…"
+                                                        } else if (loginViewModel.twoFactorRequired) {
+                                                            "Bestätigen"
+                                                        } else {
+                                                            "Anmelden"
+                                                        },
+                                                    ) { Text(it) }
                                                 }
                                             }
                                         }
-                                        EnhancedAnimatedVisibility(loginViewModel.loginError != null) {
-                                            Text(
-                                                text = loginViewModel.loginError.orEmpty(),
-                                                modifier = Modifier.fillMaxWidth(),
-                                                color = colorScheme.error,
-                                                textAlign = TextAlign.Center,
-                                            )
-                                        }
-                                        EnhancedButton(
-                                            onClick = ::submitNativeLogin,
-                                            modifier = Modifier.fillMaxWidth(),
-                                            enabled =
-                                                !loginViewModel.isSubmitting &&
-                                                    if (loginViewModel.twoFactorRequired) code.text.length == 6 else identifier.isNotBlank() && password.isNotBlank(),
-                                        ) {
-                                            EnhancedAnimatedContent(
-                                                if (loginViewModel.isSubmitting) {
-                                                    "Bitte warten…"
-                                                } else if (loginViewModel.twoFactorRequired) {
-                                                    "Bestätigen"
-                                                } else {
-                                                    "Anmelden"
-                                                },
-                                            ) { Text(it) }
-                                        }
                                     }
-                                }
-                            }
-                            HorizontalDivider(modifier.padding(top = 10.dp))
-                            Row(
-                                modifier =
-                                    modifier
-                                        .then(if (LocalBiometricAuthenticationAvailable.current) Modifier else loginOptionsModifier)
-                                        .clip(shapes.medium)
-                                        .clickable {
-                                            val newValue = !stayLoggedIn
-                                            stayLoggedIn = newValue
-                                            vibrator.enhancedVibrate(
-                                                if (newValue) {
-                                                    EnhancedVibrations.TOGGLE_ON
-                                                } else {
-                                                    EnhancedVibrations.TOGGLE_OFF
-                                                },
-                                            )
-                                        }.padding(start = 10.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    text = "Angemeldet bleiben",
-                                    modifier = Modifier.weight(1f),
-                                    style = typography.bodyLarge,
-                                )
-                                EnhancedCheckbox(
-                                    checked = stayLoggedIn,
-                                    onCheckedChange = { stayLoggedIn = it },
-                                )
-                            }
-                            if (LocalBiometricAuthenticationAvailable.current) {
-                                Row(
-                                    modifier =
-                                        modifier
-                                            .then(loginOptionsModifier)
-                                            .clip(shapes.medium)
-                                            .clickable {
-                                                val newValue = !requireBiometricAuthentification
-                                                if (newValue) {
-                                                    KSafeBiometrics.verifyBiometricDirect(
-                                                        (if (getExactPlatform() == ExactPlatform.MACOS) "eine Bestätigung" else "Bestätige") +
-                                                            ", um die biometrische Authentifizierung beim Start zu aktivieren",
-                                                    ) { isSuccessful ->
-                                                        if (isSuccessful) {
+                                    HorizontalDivider(modifier.padding(top = 10.dp))
+                                    Row(
+                                        modifier =
+                                            modifier
+                                                .then(if (LocalBiometricAuthenticationAvailable.current) Modifier else loginOptionsModifier)
+                                                .clip(shapes.medium)
+                                                .clickable {
+                                                    val newValue = !stayLoggedIn
+                                                    stayLoggedIn = newValue
+                                                    vibrator.enhancedVibrate(
+                                                        if (newValue) {
+                                                            EnhancedVibrations.TOGGLE_ON
+                                                        } else {
+                                                            EnhancedVibrations.TOGGLE_OFF
+                                                        },
+                                                    )
+                                                }.padding(start = 10.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        Text(
+                                            text = "Angemeldet bleiben",
+                                            modifier = Modifier.weight(1f),
+                                            style = typography.bodyLarge,
+                                        )
+                                        EnhancedCheckbox(
+                                            checked = stayLoggedIn,
+                                            onCheckedChange = { stayLoggedIn = it },
+                                        )
+                                    }
+                                    if (LocalBiometricAuthenticationAvailable.current) {
+                                        Row(
+                                            modifier =
+                                                modifier
+                                                    .then(loginOptionsModifier)
+                                                    .clip(shapes.medium)
+                                                    .clickable {
+                                                        val newValue = !requireBiometricAuthentification
+                                                        if (newValue) {
+                                                            KSafeBiometrics.verifyBiometricDirect(
+                                                                (if (getExactPlatform() == ExactPlatform.MACOS) "eine Bestätigung" else "Bestätige") +
+                                                                    ", um die biometrische Authentifizierung beim Start zu aktivieren",
+                                                            ) { isSuccessful ->
+                                                                if (isSuccessful) {
+                                                                    requireBiometricAuthentification = newValue
+                                                                    putSecure("requireBiometricAuthentification", newValue)
+                                                                }
+                                                            }
+                                                        } else {
                                                             requireBiometricAuthentification = newValue
                                                             putSecure("requireBiometricAuthentification", newValue)
                                                         }
-                                                    }
-                                                } else {
-                                                    requireBiometricAuthentification = newValue
-                                                    putSecure("requireBiometricAuthentification", newValue)
-                                                }
-                                                vibrator.enhancedVibrate(
-                                                    if (newValue) {
-                                                        EnhancedVibrations.TOGGLE_ON
+                                                        vibrator.enhancedVibrate(
+                                                            if (newValue) {
+                                                                EnhancedVibrations.TOGGLE_ON
+                                                            } else {
+                                                                EnhancedVibrations.TOGGLE_OFF
+                                                            },
+                                                        )
+                                                    }.padding(start = 10.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically,
+                                        ) {
+                                            Text(
+                                                text = "Biometrische Authentifizierung erforderlich",
+                                                modifier = Modifier.weight(1f),
+                                                style = typography.bodyLarge,
+                                            )
+                                            EnhancedCheckbox(
+                                                checked = requireBiometricAuthentification,
+                                                onCheckedChange = {
+                                                    if (it) {
+                                                        KSafeBiometrics.verifyBiometricDirect(
+                                                            "Bestätige, um die biometrische Authentifizierung beim Start zu aktiven.",
+                                                        ) { isSuccessful ->
+                                                            if (isSuccessful) {
+                                                                requireBiometricAuthentification = it
+                                                                putSecure("requireBiometricAuthentification", it)
+                                                            }
+                                                        }
                                                     } else {
-                                                        EnhancedVibrations.TOGGLE_OFF
-                                                    },
-                                                )
-                                            }.padding(start = 10.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Text(
-                                        text = "Biometrische Authentifizierung erforderlich",
-                                        modifier = Modifier.weight(1f),
-                                        style = typography.bodyLarge,
-                                    )
-                                    EnhancedCheckbox(
-                                        checked = requireBiometricAuthentification,
-                                        onCheckedChange = {
-                                            if (it) {
-                                                KSafeBiometrics.verifyBiometricDirect("Bestätige, um die biometrische Authentifizierung beim Start zu aktiven.") { isSuccessful ->
-                                                    if (isSuccessful) {
                                                         requireBiometricAuthentification = it
                                                         putSecure("requireBiometricAuthentification", it)
                                                     }
-                                                }
-                                            } else {
-                                                requireBiometricAuthentification = it
-                                                putSecure("requireBiometricAuthentification", it)
-                                            }
-                                        },
-                                    )
-                                }
-                            }
-                            if (getPlatform() != Platform.WEB) {
-                                EnhancedOutlinedButton(
-                                    onClick = {
-                                        otherOptions = !otherOptions
-                                        loginViewModel.resetPasswordLogin()
-                                        password = ""
-                                        code = TextFieldValue()
-                                    },
-                                    modifier = modifier,
-                                ) {
-                                    EnhancedAnimatedContent(otherOptions) {
-                                        Text(if (it) "Direkte Anmeldung" else "Weitere Optionen")
+                                                },
+                                            )
+                                        }
                                     }
-                                }
-                            }
-                            if (getPlatform() == Platform.IOS) {
-                                EnhancedTextButton(
-                                    onClick = { uriHandler.openUri("https://github.com/HansHolz09/Beste-Noten-App/blob/main/PRIVACY.md") },
-                                    modifier = modifier,
-                                ) {
-                                    Text("Datenschutzerklärung")
+                                    if (getPlatform() != Platform.WEB) {
+                                        EnhancedOutlinedButton(
+                                            onClick = {
+                                                otherOptions = !otherOptions
+                                                loginViewModel.resetPasswordLogin()
+                                                password = ""
+                                                code = TextFieldValue()
+                                            },
+                                            modifier = modifier,
+                                        ) {
+                                            EnhancedAnimatedContent(otherOptions) {
+                                                Text(if (it) "Direkte Anmeldung" else "Weitere Optionen")
+                                            }
+                                        }
+                                    }
+                                    if (getPlatform() == Platform.IOS) {
+                                        EnhancedTextButton(
+                                            onClick = { uriHandler.openUri("https://github.com/HansHolz09/Beste-Noten-App/blob/main/PRIVACY.md") },
+                                            modifier = modifier,
+                                        ) {
+                                            Text("Datenschutzerklärung")
+                                        }
+                                    }
                                 }
                             }
                         }

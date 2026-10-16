@@ -43,6 +43,7 @@ fun TopAppBarScaffold(
     navigationIcon: @Composable () -> Unit = {},
     sideMenuExpanded: Boolean? = null,
     hazeState: HazeState? = null,
+    topBarModifier: Modifier = Modifier,
     content: @Composable (
     (
         innerPadding: PaddingValues,
@@ -58,6 +59,7 @@ fun TopAppBarScaffold(
         topBar = {
             if (!useNativeTopBar) {
                 CenterAlignedTopAppBar(
+                    modifier = topBarModifier,
                     title = {
                         Text(
                             text = title,
@@ -105,6 +107,7 @@ fun TopAppBarScaffold(
                 if (!useNativeTopBar) {
                     Box(
                         Modifier
+                            .then(topBarModifier)
                             .fillMaxWidth()
                             .height(height)
                             .then(

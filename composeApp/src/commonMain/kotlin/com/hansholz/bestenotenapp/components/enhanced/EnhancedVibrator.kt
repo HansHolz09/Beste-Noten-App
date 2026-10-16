@@ -25,91 +25,108 @@ enum class EnhancedVibrations {
     TOGGLE_OFF,
     EXPLOSION,
     LOGO_RAIN,
+    WELCOME_LETTER,
+    WELCOME_MOTION,
 }
 
 context(kSafeProvider: KSafeProvider)
 fun Vibrator.enhancedVibrate(
     vibration: EnhancedVibrations,
     forceVibration: Boolean = false,
+    intensity: Float = 1f,
 ) {
     if (kSafeProvider.get("hapticsEnabled", getPlatform() == Platform.ANDROID) || forceVibration) {
-        executeVibration(vibration)
+        executeVibration(vibration, intensity)
     }
 }
 
 fun Vibrator.enhancedVibrateN(
     vibration: EnhancedVibrations,
     forceVibration: Boolean = false,
+    intensity: Float = 1f,
 ) {
     if (kSafeProvider(kSafe()) { get("hapticsEnabled", getPlatform() == Platform.ANDROID) } || forceVibration) {
-        executeVibration(vibration)
+        executeVibration(vibration, intensity)
     }
 }
 
-private fun Vibrator.executeVibration(vibration: EnhancedVibrations) {
+private fun Vibrator.executeVibration(
+    vibration: EnhancedVibrations,
+    intensity: Float,
+) {
+    val strength = intensity.coerceIn(0f, 1f)
+    if (strength == 0f) return
     vibrate(
         HapticEffect {
             when (vibration) {
                 CLICK -> {
-                    predefined(PrimitiveType.Click, 1f)
+                    predefined(PrimitiveType.Click, strength)
                 }
 
                 THUD -> {
-                    predefined(PrimitiveType.Thud, 1f)
+                    predefined(PrimitiveType.Thud, strength)
                 }
 
                 SPIN -> {
-                    predefined(PrimitiveType.Spin, 1f)
+                    predefined(PrimitiveType.Spin, strength)
                 }
 
                 QUICK_RISE -> {
-                    predefined(PrimitiveType.QuickRise, 1f)
+                    predefined(PrimitiveType.QuickRise, strength)
                 }
 
                 SLOW_RISE -> {
-                    predefined(PrimitiveType.SlowRise, 1f)
+                    predefined(PrimitiveType.SlowRise, strength)
                 }
 
                 QUICK_FALL -> {
-                    predefined(PrimitiveType.QuickFall, 1f)
+                    predefined(PrimitiveType.QuickFall, strength)
                 }
 
                 TICK -> {
-                    predefined(PrimitiveType.Tick, 1f)
+                    predefined(PrimitiveType.Tick, strength)
                 }
 
                 LOW_TICK -> {
-                    predefined(PrimitiveType.LowTick, 1f)
+                    predefined(PrimitiveType.LowTick, strength)
                 }
 
                 PAGE_SWIPE -> {
-                    predefined(PrimitiveType.Click, 0.5f)
-                    predefined(PrimitiveType.Tick, 0.5f, 20.milliseconds, DelayType.RelativeStartOffset)
-                    predefined(PrimitiveType.Thud, 1f, 80.milliseconds, DelayType.RelativeStartOffset)
+                    predefined(PrimitiveType.Click, 0.5f * strength)
+                    predefined(PrimitiveType.Tick, 0.5f * strength, 20.milliseconds, DelayType.RelativeStartOffset)
+                    predefined(PrimitiveType.Thud, strength, 80.milliseconds, DelayType.RelativeStartOffset)
                 }
 
                 TOGGLE_ON -> {
-                    predefined(PrimitiveType.Click, 0.5f)
-                    predefined(PrimitiveType.Spin, 1f)
-                    predefined(PrimitiveType.Tick, 1f)
+                    predefined(PrimitiveType.Click, 0.5f * strength)
+                    predefined(PrimitiveType.Spin, strength)
+                    predefined(PrimitiveType.Tick, strength)
                 }
 
                 TOGGLE_OFF -> {
-                    predefined(PrimitiveType.Click, 0.75f)
-                    predefined(PrimitiveType.QuickFall, 0.25f, 20.milliseconds)
+                    predefined(PrimitiveType.Click, 0.75f * strength)
+                    predefined(PrimitiveType.QuickFall, 0.25f * strength, 20.milliseconds)
                 }
 
                 EXPLOSION -> {
-                    predefined(PrimitiveType.Click, 1f)
-                    predefined(PrimitiveType.QuickFall, 1f)
+                    predefined(PrimitiveType.Click, strength)
+                    predefined(PrimitiveType.QuickFall, strength)
                     repeat(20) {
-                        predefined(PrimitiveType.Spin, 0.1f)
+                        predefined(PrimitiveType.Spin, 0.1f * strength)
                     }
+                }
+
+                WELCOME_LETTER -> {
+                    predefined(PrimitiveType.QuickRise, 0.28f * strength)
+                }
+
+                WELCOME_MOTION -> {
+                    predefined(PrimitiveType.Spin, 0.16f * strength)
                 }
 
                 LOGO_RAIN -> {
                     repeat(33) {
-                        predefined(PrimitiveType.QuickRise, 0.25f)
+                        predefined(PrimitiveType.QuickRise, 0.25f * strength)
                     }
                 }
             }
