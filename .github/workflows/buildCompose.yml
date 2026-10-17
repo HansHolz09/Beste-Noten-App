@@ -1219,7 +1219,7 @@ jobs:
 
   linux-arm64:
     if: ${{ inputs.build_linux_arm64 }}
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     env:
       GOOGLE_CLIENT_ID_DESKTOP: ${{ secrets.GOOGLE_CLIENT_ID_DESKTOP }}
       GOOGLE_CLIENT_SECRET_DESKTOP: ${{ secrets.GOOGLE_CLIENT_SECRET_DESKTOP }}
