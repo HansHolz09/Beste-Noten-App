@@ -44,12 +44,13 @@
     },
     {
       "description": "Group Kotlin plugin updates",
-      "matchPackageNames": [
+      "matchDepNames": [
         "org.jetbrains.kotlin.multiplatform",
         "org.jetbrains.kotlin.plugin.compose",
         "org.jetbrains.kotlin.plugin.serialization"
       ],
-      "groupName": "Kotlin"
+      "groupName": "Kotlin",
+      "groupSlug": "kotlin-plugins"
     }
   ],
   "ignoreDeps": [
