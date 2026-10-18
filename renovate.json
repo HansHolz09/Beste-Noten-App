@@ -41,6 +41,15 @@
         "github-actions"
       ],
       "automerge": true
+    },
+    {
+      "description": "Group Kotlin plugin updates",
+      "matchPackageNames": [
+        "org.jetbrains.kotlin.multiplatform",
+        "org.jetbrains.kotlin.plugin.compose",
+        "org.jetbrains.kotlin.plugin.serialization"
+      ],
+      "groupName": "Kotlin"
     }
   ],
   "ignoreDeps": [
