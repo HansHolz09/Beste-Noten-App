@@ -6,12 +6,12 @@ import androidx.compose.ui.Modifier
 import com.hansholz.bestenotenapp.components.ConfettiPresets
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import io.github.vinceglb.confettikit.compose.ConfettiKit
-import top.ltfan.multihaptic.compose.rememberVibrator
 
 @Composable
 fun ConfettiEasterEgg(settingsViewModel: SettingsViewModel) {
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
     if (settingsViewModel.showConfetti) {
         ConfettiKit(
             modifier = Modifier.fillMaxSize(),

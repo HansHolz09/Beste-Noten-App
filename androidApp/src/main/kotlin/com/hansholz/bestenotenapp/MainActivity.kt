@@ -7,6 +7,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
 import com.hansholz.bestenotenapp.api.androidCodeAuthFlowFactory
+import com.hansholz.bestenotenapp.components.enhanced.configureEnhancedVibrator
 import com.hansholz.bestenotenapp.main.App
 import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
@@ -21,6 +22,7 @@ class MainActivity : FragmentActivity() {
         installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        configureEnhancedVibrator(applicationContext)
         GradeNotifications.initialize(this)
         FileKit.init(this)
         androidCodeAuthFlowFactory.registerActivity(this)

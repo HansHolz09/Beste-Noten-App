@@ -7,14 +7,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
-import top.ltfan.multihaptic.compose.rememberVibrator
 
 @Composable
 fun rememberEnhancedPagerState(
     pageCount: Int,
     initialPage: Int = 0,
 ): PagerState {
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
 
     val pagerState = rememberPagerState(initialPage) { pageCount }
     LaunchedEffect(pagerState) {

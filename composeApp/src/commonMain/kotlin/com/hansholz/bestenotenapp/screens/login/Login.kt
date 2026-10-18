@@ -88,6 +88,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedTextButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedTextField
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.main.ExactPlatform
 import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
@@ -104,7 +105,6 @@ import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -119,7 +119,7 @@ fun Login(
 
     val scope = viewModel.viewModelScope
 
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
 
     @Suppress("DEPRECATION")
     val clipboard = LocalClipboardManager.current

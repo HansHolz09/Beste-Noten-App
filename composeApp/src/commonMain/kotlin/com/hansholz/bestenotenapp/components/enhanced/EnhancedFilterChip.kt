@@ -9,7 +9,6 @@ import androidx.compose.material3.SelectableChipElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
-import top.ltfan.multihaptic.compose.rememberVibrator
 
 @Composable
 fun EnhancedFilterChip(
@@ -26,7 +25,7 @@ fun EnhancedFilterChip(
     border: BorderStroke? = FilterChipDefaults.filterChipBorder(enabled, selected),
     interactionSource: MutableInteractionSource? = null,
 ) {
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
 
     FilterChip(
         selected = selected,

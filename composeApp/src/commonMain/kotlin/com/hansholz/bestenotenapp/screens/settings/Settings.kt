@@ -76,6 +76,7 @@ import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.components.icons.Github
 import com.hansholz.bestenotenapp.components.icons.GoogleCalendar
 import com.hansholz.bestenotenapp.components.icons.MathAvg
@@ -131,7 +132,6 @@ import dev.chrisbanes.haze.blur.HazeBlurDefaults
 import dev.chrisbanes.haze.hazeSource
 import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
 import kotlinx.coroutines.launch
-import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.math.roundToInt
 
 @Composable
@@ -142,7 +142,7 @@ fun Settings(
     val settingsViewModel = viewModel { SettingsViewModel() }
 
     val scope = rememberCoroutineScope()
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
     val uriHandler = LocalUriHandler.current
     val globalEasterEgg = LocalGlobalEasterEgg.current
     val hideNativeInterop = LocalHideNativeInterop.current
@@ -340,9 +340,9 @@ fun Settings(
                 },
                 text = "Hintergrundgrafiken",
                 icon = MaterialSymbols.Rounded.Texture,
-                position = if (vibrator.isVibrationSupported && getPlatform() != Platform.IOS) PreferencePosition.Middle else PreferencePosition.Bottom,
+                position = if (getPlatform() != Platform.IOS && vibrator.isVibrationSupported) PreferencePosition.Middle else PreferencePosition.Bottom,
             )
-            if (vibrator.isVibrationSupported && getPlatform() != Platform.IOS) {
+            if (getPlatform() != Platform.IOS && vibrator.isVibrationSupported) {
                 settingsToggleItem(
                     checked = hapticsEnabled,
                     onCheckedChange = {

@@ -20,12 +20,12 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
-import top.ltfan.multihaptic.compose.rememberVibrator
 
 @Composable
 fun ChooseStudentDialog(loginViewModel: LoginViewModel) {
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
 
     var selectedStudent by remember { mutableStateOf("") }
     EnhancedAlertDialog(

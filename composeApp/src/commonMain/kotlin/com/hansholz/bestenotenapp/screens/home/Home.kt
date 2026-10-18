@@ -127,6 +127,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.components.scatteredIconBackground
 import com.hansholz.bestenotenapp.homework.HomeworkEntry
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
@@ -160,7 +161,6 @@ import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import org.kodein.emoji.compose.m3.TextWithNotoAnimatedEmoji
-import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalFoundationApi::class)
@@ -175,7 +175,7 @@ fun Home(
         val homeViewModel = viewModel { HomeViewModel(viewModel) }
 
         val scope = rememberCoroutineScope()
-        val vibrator = rememberVibrator()
+        val vibrator = rememberEnhancedVibrator()
         val layoutDirection = LocalLayoutDirection.current
         val isDark = LocalThemeIsDark.current
         val isCompactWindow =

@@ -9,17 +9,17 @@ import androidx.compose.ui.window.ComposeUIViewController
 import com.hansholz.bestenotenapp.components.ConfettiPresets
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import io.github.vinceglb.confettikit.compose.ConfettiKit
 import platform.UIKit.UIColor
 import platform.UIKit.UIViewController
-import top.ltfan.multihaptic.compose.rememberVibrator
 
 fun easterEggOverlayViewController(nativeBridge: NativeComponentBridge): UIViewController =
     ComposeUIViewController(configure = { opaque = false }) {
         NativeTheme(nativeBridge) {
             val event = nativeBridge.easterEggState.value
             if (event != null) {
-                val vibrator = rememberVibrator()
+                val vibrator = rememberEnhancedVibrator()
                 ConfettiKit(
                     modifier = Modifier.fillMaxSize(),
                     parties = if (event == "logo") ConfettiPresets.logos() else ConfettiPresets.randomFirework(20),

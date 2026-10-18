@@ -62,6 +62,7 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.components.rememberLazyListScrollSpeedState
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNativePrimaryTabRow
@@ -72,7 +73,6 @@ import com.hansholz.bestenotenapp.main.ViewModel
 import com.nomanr.animate.compose.presets.zoomingextrances.ZoomIn
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
-import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -86,7 +86,7 @@ fun SubjectsAndTeachers(
         val subjectsAndTeachersViewModel = viewModel { SubjectsAndTeachersViewModel(viewModel) }
 
         val scope = rememberCoroutineScope()
-        val vibrator = rememberVibrator()
+        val vibrator = rememberEnhancedVibrator()
         val density = LocalDensity.current
         val layoutDirection = LocalLayoutDirection.current
         val isCompactWindow =

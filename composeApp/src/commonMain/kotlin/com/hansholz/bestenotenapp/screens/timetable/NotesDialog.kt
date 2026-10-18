@@ -26,13 +26,13 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedAlertDialog
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.homework.HomeworkEntry
 import com.hansholz.bestenotenapp.homework.HomeworkStatus
 import com.hansholz.bestenotenapp.main.ViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
-import top.ltfan.multihaptic.compose.rememberVibrator
 
 @Composable
 fun NotesDialog(
@@ -44,7 +44,7 @@ fun NotesDialog(
     viewModel: ViewModel,
 ) {
     val scope = rememberCoroutineScope()
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
     val editorVisible = remember { mutableStateOf(false) }
     val editedHomework = remember { mutableStateOf<HomeworkEntry?>(null) }
     val busyEntryId = remember { mutableStateOf<String?>(null) }

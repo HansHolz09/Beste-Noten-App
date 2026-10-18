@@ -143,6 +143,7 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.components.icons.MathAvg
 import com.hansholz.bestenotenapp.components.rememberLazyListScrollSpeedState
 import com.hansholz.bestenotenapp.components.settingsToggleItem
@@ -171,7 +172,6 @@ import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.math.abs
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -188,7 +188,7 @@ fun Grades(
         val gradesViewModel = viewModel { GradesViewModel(viewModel) }
 
         val scope = rememberCoroutineScope()
-        val vibrator = rememberVibrator()
+        val vibrator = rememberEnhancedVibrator()
         val density = LocalDensity.current
         val layoutDirection = LocalLayoutDirection.current
         val softwareKeyboardController = LocalSoftwareKeyboardController.current

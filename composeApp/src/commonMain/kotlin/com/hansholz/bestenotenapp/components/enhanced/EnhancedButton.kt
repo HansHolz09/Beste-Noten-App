@@ -20,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.components.cupertinoHighlight
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
-import top.ltfan.multihaptic.compose.rememberVibrator
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -35,7 +34,7 @@ fun EnhancedButton(
     interactionSource: MutableInteractionSource? = null,
     content: @Composable RowScope.() -> Unit,
 ) {
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
     val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
     val shape = shapes.extraExtraLarge
 
@@ -73,7 +72,7 @@ fun EnhancedOutlinedButton(
     interactionSource: MutableInteractionSource? = null,
     content: @Composable RowScope.() -> Unit,
 ) {
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
     val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
     val shape = shapes.extraExtraLarge
 
@@ -111,7 +110,7 @@ fun EnhancedTextButton(
     interactionSource: MutableInteractionSource? = null,
     content: @Composable RowScope.() -> Unit,
 ) {
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
     val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
     val shape = shapes.extraExtraLarge
 

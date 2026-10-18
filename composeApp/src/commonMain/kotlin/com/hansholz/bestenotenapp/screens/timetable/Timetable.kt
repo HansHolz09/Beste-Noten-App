@@ -123,6 +123,7 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedPagerState
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.components.rememberCaptureController
 import com.hansholz.bestenotenapp.main.LocalHideNativeDateTimePickers
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
@@ -150,7 +151,6 @@ import kotlinx.datetime.format.byUnicodePattern
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.imageResource
-import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -167,7 +167,7 @@ fun Timetable(
         val timetableViewModel = viewModel { TimetableViewModel(viewModel) }
 
         val scope = rememberCoroutineScope()
-        val vibrator = rememberVibrator()
+        val vibrator = rememberEnhancedVibrator()
         val density = LocalDensity.current
         val layoutDirection = LocalLayoutDirection.current
         val hideNativeDateTimePickers = LocalHideNativeDateTimePickers.current

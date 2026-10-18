@@ -27,6 +27,7 @@ import com.composables.icons.materialsymbols.rounded.Article
 import com.hansholz.bestenotenapp.api.models.JournalNote
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.homework.HomeworkEntry
 import com.hansholz.bestenotenapp.homework.HomeworkStatus
 import com.hansholz.bestenotenapp.main.LocalHomeworkEnabled
@@ -37,7 +38,6 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
-import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.time.Clock
 
 @Composable
@@ -47,7 +47,7 @@ fun DayHeader(
     captureOnly: Boolean,
     viewModel: ViewModel,
 ) {
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
     val showNotes by LocalShowNotes.current
     val homeworkEnabled by LocalHomeworkEnabled.current
     val homeworkRevision = viewModel.homeworkRevision.intValue

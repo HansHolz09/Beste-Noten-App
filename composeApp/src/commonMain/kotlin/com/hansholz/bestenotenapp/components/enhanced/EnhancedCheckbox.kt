@@ -38,7 +38,6 @@ import androidx.compose.ui.util.lerp
 import com.hansholz.bestenotenapp.components.cupertinoHighlight
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
-import top.ltfan.multihaptic.compose.rememberVibrator
 
 @Composable
 fun EnhancedCheckbox(
@@ -49,7 +48,7 @@ fun EnhancedCheckbox(
     colors: CheckboxColors = CheckboxDefaults.colors(),
     interactionSource: MutableInteractionSource? = null,
 ) {
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
 
     val strokeWidthPx = with(LocalDensity.current) { 2.5.dp.toPx() }
     val toggleableState = ToggleableState(checked)

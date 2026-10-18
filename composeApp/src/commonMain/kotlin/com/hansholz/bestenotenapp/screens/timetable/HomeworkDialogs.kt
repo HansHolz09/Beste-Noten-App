@@ -81,6 +81,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedTextField
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.homework.HomeworkEntry
 import com.hansholz.bestenotenapp.homework.HomeworkPlacement
@@ -103,7 +104,6 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.number
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
-import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -169,7 +169,7 @@ fun HomeworkEditorDialog(
     onDelete: (suspend (HomeworkEntry) -> Unit)? = null,
 ) = kSafeProviderCompose {
     val scope = rememberCoroutineScope()
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
     val descriptionFocusRequester = remember { FocusRequester() }
@@ -493,7 +493,7 @@ private fun HomeworkTypeEditorDialog(
     onSave: (List<HomeworkType>) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
     val draft = remember(visible) { types.toMutableStateList() }
     val listState = rememberLazyListState()
     var newType by remember(visible) { mutableStateOf("") }

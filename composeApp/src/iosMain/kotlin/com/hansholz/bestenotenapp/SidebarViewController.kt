@@ -13,10 +13,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeUIViewController
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.navigation.AppDrawerContent
 import platform.UIKit.UIColor
 import platform.UIKit.UIViewController
-import top.ltfan.multihaptic.compose.rememberVibrator
 
 fun sidebarViewController(nativeBridge: NativeComponentBridge): UIViewController =
     ComposeUIViewController(configure = { opaque = false }) {
@@ -30,7 +30,7 @@ fun sidebarViewController(nativeBridge: NativeComponentBridge): UIViewController
 
 @Composable
 private fun SidebarContent(nativeBridge: NativeComponentBridge) {
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
     Box(
         Modifier
             .fillMaxSize()

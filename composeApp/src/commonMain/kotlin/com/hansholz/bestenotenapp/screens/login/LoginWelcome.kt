@@ -48,9 +48,9 @@ import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.logo
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import kotlinx.coroutines.isActive
 import org.jetbrains.compose.resources.painterResource
-import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
@@ -72,7 +72,7 @@ internal fun LoginWelcome(
     val onChromeAlpha by rememberUpdatedState(onChromeAlphaChanged)
     val focusManager = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
     var returnElapsed by remember { mutableStateOf<Float?>(null) }
     var returnOrigin by remember { mutableStateOf<Offset?>(null) }
     var motionElapsed by remember { mutableFloatStateOf(0f) }

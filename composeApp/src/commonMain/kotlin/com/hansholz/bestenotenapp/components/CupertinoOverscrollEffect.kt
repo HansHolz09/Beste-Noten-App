@@ -45,11 +45,11 @@ import androidx.compose.ui.unit.toOffset
 import androidx.compose.ui.unit.toSize
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
-import top.ltfan.multihaptic.compose.rememberVibrator
 import top.ltfan.multihaptic.vibrator.Vibrator
 import kotlin.math.abs
 import kotlin.math.exp
@@ -61,7 +61,7 @@ fun ProvideCupertinoOverscrollEffect(
     enabled: Boolean,
     content: @Composable () -> Unit,
 ) {
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
     if (enabled) {
         CompositionLocalProvider(
             LocalOverscrollFactory provides CupertinoOverscrollEffectFactory(LocalDensity.current, vibrator),

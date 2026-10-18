@@ -16,9 +16,9 @@ import com.composables.icons.materialsymbols.rounded.Close
 import com.composables.icons.materialsymbols.rounded.Done
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNativeSwitch
-import top.ltfan.multihaptic.compose.rememberVibrator
 
 fun LazyListScope.settingsToggleItem(
     checked: Boolean,
@@ -39,7 +39,7 @@ fun LazyListScope.settingsToggleItem(
     bottomContent: @Composable (() -> Unit)? = null,
 ) {
     item {
-        val vibrator = rememberVibrator()
+        val vibrator = rememberEnhancedVibrator()
         val nativeComponentsEnabled = LocalNativeComponentsEnabled.current.value
         val nativeSwitch = LocalNativeSwitch.current
         PreferenceItem(

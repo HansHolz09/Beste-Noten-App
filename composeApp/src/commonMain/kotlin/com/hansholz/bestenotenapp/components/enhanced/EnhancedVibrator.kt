@@ -1,15 +1,59 @@
 package com.hansholz.bestenotenapp.components.enhanced
 
+import androidx.compose.runtime.Composable
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.security.KSafeProvider
 import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.security.kSafeProvider
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import top.ltfan.multihaptic.DelayType
 import top.ltfan.multihaptic.HapticEffect
 import top.ltfan.multihaptic.PrimitiveType
+import top.ltfan.multihaptic.getVibrator
 import top.ltfan.multihaptic.vibrator.Vibrator
 import kotlin.time.Duration.Companion.milliseconds
+
+@Composable
+fun rememberEnhancedVibrator(): Vibrator = EnhancedVibrator
+
+fun configureEnhancedVibrator(config: Any) {
+    EnhancedVibrator.configure(config)
+}
+
+internal object EnhancedVibrator : Vibrator {
+    private var config: Any? = null
+
+    private val scope =
+        CoroutineScope(
+            SupervisorJob() + Dispatchers.Main.immediate +
+                CoroutineExceptionHandler { _, error -> error.printStackTrace() },
+        )
+    private val vibrator =
+        lazy {
+            runCatching { getVibrator(scope, config) }
+                .onFailure { it.printStackTrace() }
+                .getOrNull()
+        }
+
+    fun configure(config: Any) {
+        this.config = config
+    }
+
+    override val isVibrationSupported: Boolean
+        get() = vibrator.value?.isVibrationSupported ?: false
+
+    override fun vibrate(effect: HapticEffect) {
+        vibrator.value?.vibrate(effect)
+    }
+
+    override fun cancel() {
+        if (vibrator.isInitialized()) vibrator.value?.cancel()
+    }
+}
 
 enum class EnhancedVibrations {
     CLICK,

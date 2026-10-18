@@ -68,6 +68,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.homework.HomeworkEntry
 import com.hansholz.bestenotenapp.homework.HomeworkPlacement
 import com.hansholz.bestenotenapp.homework.HomeworkStatus
@@ -90,7 +91,6 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
-import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.time.Clock
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -106,7 +106,7 @@ fun WeekScheduleView(
     enabled: Boolean = true,
     captureOnly: Boolean = false,
 ) {
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
     val isDark = LocalThemeIsDark.current
     val blurEnabled = LocalBlurEnabled.current
     val showTeachersWithFirstname by LocalShowTeachersWithFirstname.current

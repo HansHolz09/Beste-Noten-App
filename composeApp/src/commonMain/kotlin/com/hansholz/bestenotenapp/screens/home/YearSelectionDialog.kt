@@ -23,12 +23,12 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrate
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.hansholz.bestenotenapp.utils.formateDate
 import kotlinx.coroutines.launch
-import top.ltfan.multihaptic.compose.rememberVibrator
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -36,7 +36,7 @@ fun YearSelectionDialog(
     viewModel: ViewModel,
     homeViewModel: HomeViewModel,
 ) = kSafeProviderCompose {
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
 
     LaunchedEffect(homeViewModel.isYearSelectionDialogShown) {
         if (homeViewModel.isYearSelectionDialogShown) {

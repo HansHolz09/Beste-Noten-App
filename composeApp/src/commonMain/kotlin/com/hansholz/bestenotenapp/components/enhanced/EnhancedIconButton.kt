@@ -12,7 +12,6 @@ import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.components.cupertinoHighlight
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
-import top.ltfan.multihaptic.compose.rememberVibrator
 
 @Composable
 fun EnhancedIconButton(
@@ -26,7 +25,7 @@ fun EnhancedIconButton(
     interactionSource: MutableInteractionSource? = null,
     content: @Composable (enabled: Boolean) -> Unit,
 ) {
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
     val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
 
     IconButton(

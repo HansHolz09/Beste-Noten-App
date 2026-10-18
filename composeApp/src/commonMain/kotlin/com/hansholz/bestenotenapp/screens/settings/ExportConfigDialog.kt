@@ -42,11 +42,11 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.utils.formateDate
 import kotlinx.coroutines.launch
-import top.ltfan.multihaptic.compose.rememberVibrator
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -54,7 +54,7 @@ fun ExportConfigDialog(
     settingsViewModel: SettingsViewModel,
     viewModel: ViewModel,
 ) {
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
 
     var appSettings by retain { mutableStateOf(true) }
     var gradeWeights by retain { mutableStateOf(true) }

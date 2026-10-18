@@ -19,12 +19,12 @@ import com.hansholz.bestenotenapp.components.ConfettiPresets
 import com.hansholz.bestenotenapp.components.NavigationDrawer
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
+import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.main.ViewModel
 import io.github.vinceglb.confettikit.compose.ConfettiKit
 import kotlinx.coroutines.launch
-import top.ltfan.multihaptic.compose.rememberVibrator
 
 @Composable
 fun AppNavigationDrawer(
@@ -35,7 +35,7 @@ fun AppNavigationDrawer(
     onCanNavigateBackChanged: (Boolean) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
     val isCompactWindow =
         !currentWindowAdaptiveInfoV2()
             .windowSizeClass

@@ -74,7 +74,6 @@ import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import kotlinx.coroutines.delay
-import top.ltfan.multihaptic.compose.rememberVibrator
 import kotlin.time.Duration.Companion.milliseconds
 
 private val LocalEnhancedDialogDepth = compositionLocalOf { 0 }
@@ -173,7 +172,7 @@ fun BasicEnhancedAlertDialog(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit,
 ) {
-    val vibrator = rememberVibrator()
+    val vibrator = rememberEnhancedVibrator()
     val nativeComponentsEnabled = LocalNativeComponentsEnabled.current.value
     val nativeDialogBackdrop = LocalNativeDialogBackdrop.current
     val dialogDepth = LocalEnhancedDialogDepth.current
