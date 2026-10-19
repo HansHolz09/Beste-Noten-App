@@ -76,6 +76,7 @@ fun GoogleCalendarEvent.toHomeworkEntryOrNull(): HomeworkEntry? {
         updatedAt = remoteUpdatedAt,
         deletedAt = deletedAt,
         reminderAt = metadata["reminderAt"]?.let(LocalDateTime::parse),
+        color = metadata["color"]?.toIntOrNull(),
     )
 }
 
@@ -113,6 +114,7 @@ private fun HomeworkEntry.toPrivateProperties(studentId: String?): Map<String, S
         put("title", title)
         description?.let { put("description", it) }
         put("type", type.value)
+        color?.let { put("color", it.toString()) }
         put("status", status.name)
         put("placement", placement.name)
         put("source", source.name)

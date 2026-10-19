@@ -275,10 +275,12 @@ fun WeekScheduleView(
                     key(day.date) {
                         val currentDate = day.date
                         var homeworkBlockKeys by remember(currentDate, homeworkEnabled) { mutableStateOf(emptySet<String>()) }
+                        var homeworkBlockColors by remember(currentDate, homeworkEnabled) { mutableStateOf(emptyMap<String, List<Int?>>()) }
                         var doneHomeworkBlockKeys by remember(currentDate, homeworkEnabled) { mutableStateOf(emptySet<String>()) }
                         LaunchedEffect(currentDate, homeworkEnabled, day.lessonBlocks, homeworkRevision) {
                             val blockKeys = mutableSetOf<String>()
                             val doneBlockKeys = mutableSetOf<String>()
+                            val blockColors = mutableMapOf<String, List<Int?>>()
                             if (homeworkEnabled) {
                                 day.lessonBlocks.forEach { block ->
                                     val entries =
@@ -290,10 +292,12 @@ fun WeekScheduleView(
                                         }
                                     if (entries.isNotEmpty()) {
                                         blockKeys += block.stableKey
+                                        blockColors[block.stableKey] = entries.distinctBy { it.localId }.map { it.color }
                                         if (entries.all { it.status == HomeworkStatus.DONE }) doneBlockKeys += block.stableKey
                                     }
                                 }
                             }
+                            homeworkBlockColors = blockColors
                             homeworkBlockKeys = blockKeys
                             doneHomeworkBlockKeys = doneBlockKeys
                         }
@@ -319,6 +323,7 @@ fun WeekScheduleView(
                                 selectedLesson = selectedLesson,
                                 popupTransition = popupTransition,
                                 homeworkBlockKeys = homeworkBlockKeys,
+                                homeworkBlockColors = homeworkBlockColors,
                                 doneHomeworkBlockKeys = doneHomeworkBlockKeys,
                             ) { block ->
                                 if (enabled) {

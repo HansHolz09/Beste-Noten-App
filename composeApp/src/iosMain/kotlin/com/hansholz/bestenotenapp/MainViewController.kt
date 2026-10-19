@@ -10,6 +10,7 @@ import androidx.compose.ui.uikit.OnFocusBehavior
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeUIViewController
 import com.hansholz.bestenotenapp.components.NativeAppearanceSelector
+import com.hansholz.bestenotenapp.components.NativeColorPicker
 import com.hansholz.bestenotenapp.components.NativeDatePicker
 import com.hansholz.bestenotenapp.components.NativeDialogBackdrop
 import com.hansholz.bestenotenapp.components.NativePrimaryTabRow
@@ -27,6 +28,7 @@ import com.hansholz.bestenotenapp.main.LocalHideNativeDateTimePickers
 import com.hansholz.bestenotenapp.main.LocalHideNativeInterop
 import com.hansholz.bestenotenapp.main.LocalNativeAlignmentHaptic
 import com.hansholz.bestenotenapp.main.LocalNativeAppearanceSelector
+import com.hansholz.bestenotenapp.main.LocalNativeColorPicker
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNativeContentTopPadding
 import com.hansholz.bestenotenapp.main.LocalNativeDatePicker
@@ -60,6 +62,9 @@ fun mainViewController(nativeBridge: NativeComponentBridge? = null): UIViewContr
                 LocalNativeContentTopPadding provides nativeBridge?.contentTopInsetState?.value?.dp,
                 LocalNativeDialogBackdrop provides { modifier, glassFrames ->
                     NativeDialogBackdrop(modifier, glassFrames)
+                },
+                LocalNativeColorPicker provides { color, anchorBounds, onColorChanged, onDismiss ->
+                    NativeColorPicker(color, anchorBounds, onColorChanged, onDismiss)
                 },
                 LocalNativeDatePicker provides { selected, onSelected, modifier ->
                     NativeDatePicker(selected, onSelected, modifier)

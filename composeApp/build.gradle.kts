@@ -119,6 +119,7 @@ kotlin {
             implementation(libs.haze.blur)
             implementation(libs.haze.glass)
             implementation(libs.material.kolor)
+            implementation(libs.colorpicker.compose)
             implementation(libs.markdown.renderer.m3)
             implementation(libs.platformtools.darkmodedetector)
             implementation(libs.multihaptic.compose)

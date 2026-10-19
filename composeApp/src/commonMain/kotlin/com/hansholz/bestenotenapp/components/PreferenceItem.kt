@@ -80,6 +80,7 @@ fun PreferenceItem(
     titleMaxLines: Int = 2,
     position: PreferencePosition = PreferencePosition.Single,
     bottomContent: @Composable (() -> Unit)? = null,
+    leadingContent: @Composable (() -> Unit)? = null,
     trailingContent: @Composable (() -> Unit)? = null,
 ) {
     val targetShape = position.preferenceShape()
@@ -160,6 +161,8 @@ fun PreferenceItem(
 
                     else -> {}
                 }
+
+                leadingContent?.invoke()
 
                 Column(
                     modifier = Modifier.weight(1f),

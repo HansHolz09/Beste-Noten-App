@@ -27,6 +27,7 @@ internal val LocalShowNotes = compositionLocalOf { mutableStateOf(false) }
 internal val LocalTimetableBlockViewEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalHomeworkEnabled = compositionLocalOf { mutableStateOf(true) }
 internal val LocalHomeworkGoogleSyncEnabled = compositionLocalOf { mutableStateOf(false) }
+internal val LocalHomeworkTypeColors = compositionLocalOf { mutableStateOf(emptyMap<String, Int>()) }
 internal val LocalHomeworkTypes = compositionLocalOf { mutableStateOf(HomeworkType.defaults) }
 internal val LocalShowTeachersWithFirstname = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowOnlyRelevantData = compositionLocalOf { mutableStateOf(true) }
@@ -62,6 +63,7 @@ fun SettingsProvider(content: @Composable () -> Unit) =
         val timetableBlockViewEnabled = remember { mutableStateOf(get("timetableBlockViewEnabled", false)) }
         val homeworkEnabled = remember { mutableStateOf(get("homeworkEnabled", true)) }
         val homeworkGoogleSyncEnabled = remember { mutableStateOf(get("homeworkGoogleSyncEnabled", false)) }
+        val homeworkTypeColors = remember { mutableStateOf(get("homeworkTypeColors", emptyMap<String, Int>())) }
         val homeworkTypes = remember { mutableStateOf(get("homeworkTypes", HomeworkType.defaults.map(HomeworkType::value)).map(::HomeworkType).distinct()) }
         val showTeachersWithFirstnameState = remember { mutableStateOf(get("showTeachersWithFirstname", false)) }
         val showOnlyRelevantDataState = remember { mutableStateOf(get("showOnlyRelevantData", get("showOnlyGroupRelevantData", true))) }
@@ -89,6 +91,7 @@ fun SettingsProvider(content: @Composable () -> Unit) =
             LocalHomeworkEnabled provides homeworkEnabled,
             LocalHomeworkGoogleSyncEnabled provides homeworkGoogleSyncEnabled,
             LocalHomeworkTypes provides homeworkTypes,
+            LocalHomeworkTypeColors provides homeworkTypeColors,
             LocalShowTeachersWithFirstname provides showTeachersWithFirstnameState,
             LocalShowOnlyRelevantData provides showOnlyRelevantDataState,
             LocalGradeNotificationsEnabled provides gradeNotificationsEnabledState,

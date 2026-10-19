@@ -33,6 +33,7 @@ data class HomeworkEntry(
     val updatedAt: Instant,
     val deletedAt: Instant?,
     val reminderAt: LocalDateTime? = null,
+    val color: Int? = null,
 )
 
 @Serializable
@@ -141,4 +142,4 @@ fun HomeworkEntry.stableSyncHash(): String =
         updatedAt.toString(),
         deletedAt?.toString().orEmpty(),
         reminderAt?.toString().orEmpty(),
-    ).joinToString("|")
+    ).plus(listOfNotNull(color?.toString())).joinToString("|")

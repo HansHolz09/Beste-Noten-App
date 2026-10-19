@@ -49,7 +49,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -68,6 +70,7 @@ import com.composables.icons.materialsymbols.rounded.Edit_note
 import com.composables.icons.materialsymbols.rounded.News
 import com.composables.icons.materialsymbols.rounded.Task_alt
 import com.hansholz.bestenotenapp.api.models.JournalLesson
+import com.hansholz.bestenotenapp.components.AdaptiveColorPicker
 import com.hansholz.bestenotenapp.components.AdaptiveDatePicker
 import com.hansholz.bestenotenapp.components.AdaptiveTimePicker
 import com.hansholz.bestenotenapp.components.PreferenceItem
@@ -90,6 +93,7 @@ import com.hansholz.bestenotenapp.homework.HomeworkStatus
 import com.hansholz.bestenotenapp.homework.HomeworkType
 import com.hansholz.bestenotenapp.homework.newHomeworkId
 import com.hansholz.bestenotenapp.main.LocalHomeworkGoogleSyncEnabled
+import com.hansholz.bestenotenapp.main.LocalHomeworkTypeColors
 import com.hansholz.bestenotenapp.main.LocalHomeworkTypes
 import com.hansholz.bestenotenapp.main.LocalNativeAlignmentHaptic
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
@@ -127,6 +131,7 @@ fun LazyListScope.homeworkItems(
                     entry.description?.let { add("\n" + it) }
                 }.joinToString(" · "),
             icon = MaterialSymbols.Rounded.News,
+            iconTint = entry.color?.let { Color(it) } ?: colorScheme.error,
             enabled = enabled,
             onClick = { onEdit(entry) },
             modifier = Modifier.alpha(if (done) 0.5f else 1f),
@@ -176,6 +181,7 @@ fun HomeworkEditorDialog(
 
     var title by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.title.orEmpty()) }
     var description by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.description.orEmpty()) }
+    val homeworkTypeColorsState = LocalHomeworkTypeColors.current
     val homeworkTypesState = LocalHomeworkTypes.current
     val homeworkTypes = homeworkTypesState.value
     var type by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.type ?: homeworkTypes.firstOrNull() ?: HomeworkType.HOMEWORK) }
@@ -326,7 +332,7 @@ fun HomeworkEditorDialog(
                                         type = type,
                                         reminderAt = reminderAt,
                                     ) ?: createEntry(title.trim(), description.trim().ifBlank { null }, type).copy(reminderAt = reminderAt)
-                                onSave(entry)
+                                onSave(entry.copy(color = homeworkTypeColorsState.value[type.value]))
                                 visible.value = false
                             } finally {
                                 saving = false
@@ -476,10 +482,13 @@ fun HomeworkEditorDialog(
     HomeworkTypeEditorDialog(
         visible = typeEditorVisible,
         types = homeworkTypes,
+        colors = homeworkTypeColorsState.value,
         onDismissRequest = { typeEditorVisible = false },
-        onSave = { updatedTypes ->
+        onSave = { updatedTypes, updatedColors ->
             homeworkTypesState.value = updatedTypes
             put("homeworkTypes", updatedTypes.map(HomeworkType::value))
+            homeworkTypeColorsState.value = updatedColors
+            put("homeworkTypeColors", updatedColors)
             typeEditorVisible = false
         },
     )
@@ -489,12 +498,14 @@ fun HomeworkEditorDialog(
 private fun HomeworkTypeEditorDialog(
     visible: Boolean,
     types: List<HomeworkType>,
+    colors: Map<String, Int>,
     onDismissRequest: () -> Unit,
-    onSave: (List<HomeworkType>) -> Unit,
+    onSave: (List<HomeworkType>, Map<String, Int>) -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val vibrator = rememberEnhancedVibrator()
     val draft = remember(visible) { types.toMutableStateList() }
+    var draftColors by remember(visible) { mutableStateOf(colors) }
     val listState = rememberLazyListState()
     var newType by remember(visible) { mutableStateOf("") }
     var draggedType by remember(visible) { mutableStateOf<HomeworkType?>(null) }
@@ -536,6 +547,12 @@ private fun HomeworkTypeEditorDialog(
                         PreferenceItem(
                             title = option.label,
                             icon = MaterialSymbols.Rounded.Drag_indicator,
+                            leadingContent = {
+                                AdaptiveColorPicker(
+                                    color = draftColors[option.value]?.let { Color(it) } ?: colorScheme.error,
+                                    onColorChanged = { draftColors = draftColors + (option.value to it.toArgb()) },
+                                )
+                            },
                             position =
                                 when {
                                     draft.size == 1 -> PreferencePosition.Single
@@ -646,7 +663,7 @@ private fun HomeworkTypeEditorDialog(
             }
         },
         confirmButton = {
-            EnhancedButton(onClick = { onSave(draft.toList()) }) {
+            EnhancedButton(onClick = { onSave(draft.toList(), draftColors.filterKeys { key -> draft.any { it.value == key } }) }) {
                 Text("Fertig")
             }
         },

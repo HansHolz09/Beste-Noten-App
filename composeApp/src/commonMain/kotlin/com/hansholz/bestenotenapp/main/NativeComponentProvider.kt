@@ -24,6 +24,8 @@ internal val LocalNativePrimaryTabRow =
     compositionLocalOf<(@Composable (List<String>, Int, (Int) -> Unit, Modifier) -> Unit)?> { null }
 internal val LocalNativeDatePicker =
     compositionLocalOf<(@Composable (Long?, (Long) -> Unit, Modifier) -> Unit)?> { null }
+internal val LocalNativeColorPicker =
+    compositionLocalOf<(@Composable (Color, Rect, (Color) -> Unit, () -> Unit) -> Unit)?> { null }
 internal val LocalNativeTimePicker =
     compositionLocalOf<(@Composable (Int, Int, (Int, Int) -> Unit, Modifier) -> Unit)?> { null }
 internal val LocalHideNativeDateTimePickers = compositionLocalOf { {} }

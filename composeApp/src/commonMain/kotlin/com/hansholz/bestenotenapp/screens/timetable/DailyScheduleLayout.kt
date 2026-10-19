@@ -28,7 +28,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
@@ -60,6 +64,7 @@ internal fun DailyScheduleLayout(
     popupTransition: Transition<Boolean>,
     homeworkBlockKeys: Set<String> = emptySet(),
     doneHomeworkBlockKeys: Set<String> = emptySet(),
+    homeworkBlockColors: Map<String, List<Int?>> = emptyMap(),
     onLessonPopupOpened: (TimetableLessonBlock) -> Unit,
 ) {
     val preparedLessons =
@@ -197,6 +202,7 @@ internal fun DailyScheduleLayout(
                                         contentAlignment = Alignment.Center,
                                     ) {
                                         if (hasHomework) {
+                                            val colors = homeworkBlockColors[prepared.block.stableKey].orEmpty().map { it?.let { color -> Color(color) } ?: colorScheme.error }
                                             Icon(
                                                 imageVector = MaterialSymbols.Rounded.Text_snippet,
                                                 contentDescription = null,
@@ -206,8 +212,16 @@ internal fun DailyScheduleLayout(
                                                         .padding(3.dp)
                                                         .align(Alignment.TopStart)
                                                         .size(25.dp)
-                                                        .alpha(if (homeworkDone) 0.18f else 0.55f),
-                                                tint = if (homeworkDone) colorScheme.onSurfaceVariant else colorScheme.error,
+                                                        .alpha(if (homeworkDone) 0.18f else 0.55f)
+                                                        .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+                                                        .drawWithCache {
+                                                            val brush = Brush.linearGradient(colors.ifEmpty { listOf(Color.White) }.let { if (it.size == 1) it + it else it })
+                                                            onDrawWithContent {
+                                                                drawContent()
+                                                                drawRect(brush, blendMode = BlendMode.SrcIn)
+                                                            }
+                                                        },
+                                                tint = Color.White,
                                             )
                                         }
 

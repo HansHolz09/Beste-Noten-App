@@ -25,7 +25,7 @@ This cross-platform client for beste.schule makes everyday school life more orga
 - Grade charts for comparing different school years
 - Clear timetable view with substitute teacher schedule changes, absence entries, and current daily notes
 - Alternative block view for the timetable (automatically enabled in upper secondary school) with automatic filtering of unnecessary lessons
-- Digital homework planner with customizable entry types and optional Google Calendar synchronization, including when returning to the app
+- Digital homework planner with customizable entry types and colors and optional Google Calendar synchronization including when returning to the app
 - Overview of current subjects and teachers with their abbreviations
 - Annual information on half-year periods and absence statistics, including a heatmap of attendance by lesson
 - Dialogs for viewing lesson times as well as account and school data
@@ -85,6 +85,7 @@ This cross-platform client for beste.schule makes everyday school life more orga
 - [KoalaPlot Core](https://github.com/koalaplot/koalaplot-core) - MIT - Chart library
 - [Jetlime](https://github.com/pushpalroy/Jetlime) - MIT - Timeline components for class overview
 - [Haze](https://github.com/chrisbanes/haze) - Apache 2.0 - Background blur effects
+- [ColorPicker Compose](https://github.com/skydoves/colorpicker-compose) - Apache 2.0 - Entry type color picker dialog
 - [MaterialKolor](https://github.com/jordond/MaterialKolor) - MIT - Animated color transitions
 - [Platform-Tools](https://github.com/kdroidFilter/Platform-Tools) - MIT - Reactive detection of light/dark mode
 - [animate-compose](https://github.com/NomanR/animate-compose) - Apache 2.0 - Animation components

@@ -19,7 +19,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.composables.icons.materialsymbols.MaterialSymbols
@@ -52,7 +57,6 @@ fun DayHeader(
     val homeworkEnabled by LocalHomeworkEnabled.current
     val homeworkRevision = viewModel.homeworkRevision.intValue
     var homework by remember(date) { mutableStateOf(emptyList<HomeworkEntry>()) }
-    var hasManualHomework by remember(date) { mutableStateOf(false) }
 
     LaunchedEffect(date, homeworkEnabled, homeworkRevision) {
         homework =
@@ -61,7 +65,6 @@ fun DayHeader(
             } else {
                 emptyList()
             }
-        hasManualHomework = homeworkEnabled && viewModel.hasUserHomeworkForDate(date)
     }
 
     val isCurrentDate = (
@@ -86,7 +89,24 @@ fun DayHeader(
     val formattedDate = "${date.day.toString().padStart(2, '0')}.${date.month.number.toString().padStart(2, '0')}."
 
     val isNotesDialogShown = remember { mutableStateOf(false) }
-    val allHomeworkDone = homework.isNotEmpty() && homework.all { it.status == HomeworkStatus.DONE }
+    val allHomeworkDone = notes.isNullOrEmpty() && homework.isNotEmpty() && homework.all { it.status == HomeworkStatus.DONE }
+    val noteColor = LocalContentColor.current
+    val errorColor = colorScheme.error
+    val colors =
+        buildList {
+            notes.orEmpty().forEach { note ->
+                add(
+                    note.type
+                        ?.color
+                        ?.removePrefix("#")
+                        ?.toLongOrNull(16)
+                        ?.let { Color(it or 0xFF000000) } ?: noteColor,
+                )
+            }
+            homework.sortedWith(compareBy({ it.lessonNumber ?: 0 }, { it.dueDateTime?.time }, { it.createdAt })).forEach {
+                add(it.color?.let { color -> Color(color) } ?: errorColor)
+            }
+        }
 
     Column(
         modifier =
@@ -109,13 +129,16 @@ fun DayHeader(
                         Modifier
                             .padding(start = 5.dp)
                             .size(20.dp)
-                            .alpha(if (allHomeworkDone) 0.45f else 1f),
-                    tint =
-                        when {
-                            allHomeworkDone -> colorScheme.onSurfaceVariant
-                            hasManualHomework -> colorScheme.error
-                            else -> LocalContentColor.current
-                        },
+                            .alpha(if (allHomeworkDone) 0.45f else 1f)
+                            .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+                            .drawWithCache {
+                                val brush = Brush.linearGradient(colors.ifEmpty { listOf(noteColor) }.let { if (it.size == 1) it + it else it })
+                                onDrawWithContent {
+                                    drawContent()
+                                    drawRect(brush, blendMode = BlendMode.SrcIn)
+                                }
+                            },
+                    tint = Color.White,
                 )
             }
         }

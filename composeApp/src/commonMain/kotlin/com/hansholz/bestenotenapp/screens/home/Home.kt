@@ -746,10 +746,10 @@ fun Home(
                                                                             verticalAlignment = Alignment.CenterVertically,
                                                                         ) {
                                                                             Icon(
-                                                                                MaterialSymbols.Rounded.News,
-                                                                                null,
-                                                                                Modifier.padding(end = 10.dp),
-                                                                                tint = colorScheme.error,
+                                                                                imageVector = MaterialSymbols.Rounded.News,
+                                                                                contentDescription = null,
+                                                                                modifier = Modifier.padding(end = 10.dp),
+                                                                                tint = entry.color?.let { Color(it) } ?: colorScheme.error,
                                                                             )
                                                                             Text(
                                                                                 if (entry.subjectName.isNullOrBlank()) {

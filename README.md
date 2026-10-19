@@ -25,7 +25,7 @@ Dieser plattformübergreifende Client für beste.schule macht den Schulalltag ü
 - Noten-Diagramme zum Vergleich der verschiedenen Schuljahre
 - Übersichtliche Stundenplan-Ansicht mit Vertretungsplan-Änderungen, Abwesenheits-Einträgen und aktuellen Tagesnotizen
 - Alternative Blockansicht für den Stundenplan (in Sek. 2 automatisch aktiv) mit automatischer Ausfilterung unnötiger Stunden
-- Digitales Hausaufgabenheft mit anpassbaren Eintragsarten und optionaler Google-Kalender-Synchronisierung, auch beim Zurückkehren in die App
+- Digitales Hausaufgabenheft mit anpassbaren Eintragsarten und Farben sowie optionaler Google-Kalender-Synchronisierung, auch beim Zurückkehren in die App
 - Übersicht aktueller Fächer und Lehrer mit ihren Abkürzungen
 - Jahresinformationen zu den Halbjahres-Zeiträumen und Abwesenheits-Statistiken inklusive Heatmap zur Anwesenheit nach Stunden
 - Dialoge zum Einsehen der Unterrichtszeiten sowie Account- und Schuldaten
@@ -85,6 +85,7 @@ Dieser plattformübergreifende Client für beste.schule macht den Schulalltag ü
 - [KoalaPlot Core](https://github.com/koalaplot/koalaplot-core) - MIT - Diagramm-Bibliothek
 - [Jetlime](https://github.com/pushpalroy/Jetlime) - MIT - Timeline-Komponenten für Schulstunden-Übersicht
 - [Haze](https://github.com/chrisbanes/haze) - Apache 2.0 - Hintergrund Unschärfe-Effekte
+- [ColorPicker Compose](https://github.com/skydoves/colorpicker-compose) - Apache 2.0 - Farbauswahl im Dialog für Eintragstypen
 - [MaterialKolor](https://github.com/jordond/MaterialKolor) - MIT - Animierte Farb-Übergänge
 - [Platform-Tools](https://github.com/kdroidFilter/Platform-Tools) - MIT - Reaktives Erkennen von Hell/Dunkel-Modus
 - [animate-compose](https://github.com/NomanR/animate-compose) - Apache 2.0 - Animations-Komponenten
