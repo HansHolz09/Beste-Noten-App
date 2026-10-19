@@ -4,6 +4,7 @@ import bestenotenapp.composeApp.BuildConfig
 import com.hansholz.bestenotenapp.api.models.GradeCollection
 import com.hansholz.bestenotenapp.api.models.Level
 import com.hansholz.bestenotenapp.api.models.Year
+import com.hansholz.bestenotenapp.homework.HomeworkType
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.screens.grades.GradeAverageCalculator
@@ -14,11 +15,14 @@ data class ExportData(
     val appVersionCode: String? = BuildConfig.VERSION_CODE,
     val containsAppSettings: Boolean? = null,
     val containsGradeWeights: Boolean? = null,
+    val containsHomeworkTypes: Boolean? = null,
     val containsGradeYears: Boolean? = null,
     val appSettings: AppSettings? = null,
     val gradeWeights: GradeAverageCalculator.GradeWeightingStore? = null,
     val gradeYears: Pair<List<GradeCollection>, List<Year>>? = null,
     val gradeLevels: Map<Int, Level>? = null,
+    val homeworkTypes: List<HomeworkType>? = null,
+    val homeworkTypeColors: Map<String, Int>? = null,
 )
 
 @Serializable

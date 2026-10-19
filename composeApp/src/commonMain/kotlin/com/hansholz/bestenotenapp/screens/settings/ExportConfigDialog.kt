@@ -58,6 +58,7 @@ fun ExportConfigDialog(
 
     var appSettings by retain { mutableStateOf(true) }
     var gradeWeights by retain { mutableStateOf(true) }
+    var homeworkTypes by retain { mutableStateOf(true) }
     val gradeYears = retain { mutableStateListOf<Year>() }
 
     var yearsLoading by remember { mutableStateOf(false) }
@@ -84,13 +85,14 @@ fun ExportConfigDialog(
                             viewModel = viewModel,
                             appSettings = appSettings,
                             gradeWeights = gradeWeights,
+                            homeworkTypes = homeworkTypes,
                             gradeYears = gradeYears.sortedBy { it.id },
                         )
                         settingsViewModel.isExporting = false
                         settingsViewModel.showExportConfigDialog = false
                     }
                 },
-                enabled = appSettings || gradeWeights || gradeYears.isNotEmpty(),
+                enabled = appSettings || gradeWeights || homeworkTypes || gradeYears.isNotEmpty(),
             ) {
                 Text("Speichern")
             }
@@ -136,13 +138,26 @@ fun ExportConfigDialog(
                         item {
                             PreferenceItem(
                                 title = "Gewichtungen der Noten pro Fach",
-                                position = PreferencePosition.Bottom,
+                                position = PreferencePosition.Middle,
                                 onClick = {
                                     gradeWeights = !gradeWeights
                                     vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                 },
                                 trailingContent = {
                                     EnhancedCheckbox(checked = gradeWeights, onCheckedChange = { gradeWeights = it }, modifier = Modifier.size(24.dp))
+                                },
+                            )
+                        }
+                        item {
+                            PreferenceItem(
+                                title = "Typen für eigene Einträge",
+                                position = PreferencePosition.Bottom,
+                                onClick = {
+                                    homeworkTypes = !homeworkTypes
+                                    vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                                },
+                                trailingContent = {
+                                    EnhancedCheckbox(checked = homeworkTypes, onCheckedChange = { homeworkTypes = it }, modifier = Modifier.size(24.dp))
                                 },
                             )
                         }

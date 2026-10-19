@@ -81,6 +81,7 @@ import com.hansholz.bestenotenapp.components.icons.Github
 import com.hansholz.bestenotenapp.components.icons.GoogleCalendar
 import com.hansholz.bestenotenapp.components.icons.MathAvg
 import com.hansholz.bestenotenapp.components.settingsToggleItem
+import com.hansholz.bestenotenapp.homework.HomeworkType
 import com.hansholz.bestenotenapp.main.ExactPlatform
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
@@ -94,6 +95,8 @@ import com.hansholz.bestenotenapp.main.LocalHapticsEnabled
 import com.hansholz.bestenotenapp.main.LocalHideNativeInterop
 import com.hansholz.bestenotenapp.main.LocalHomeworkEnabled
 import com.hansholz.bestenotenapp.main.LocalHomeworkGoogleSyncEnabled
+import com.hansholz.bestenotenapp.main.LocalHomeworkTypeColors
+import com.hansholz.bestenotenapp.main.LocalHomeworkTypes
 import com.hansholz.bestenotenapp.main.LocalNativeAppearanceSelector
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNativeSlider
@@ -180,6 +183,8 @@ fun Settings(
     var timetableBlockViewEnabled by LocalTimetableBlockViewEnabled.current
     var homeworkEnabled by LocalHomeworkEnabled.current
     var homeworkGoogleSyncEnabled by LocalHomeworkGoogleSyncEnabled.current
+    var homeworkTypes by LocalHomeworkTypes.current
+    var homeworkTypeColors by LocalHomeworkTypeColors.current
     var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
     var showOnlyRelevantData by LocalShowOnlyRelevantData.current
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
@@ -816,7 +821,15 @@ fun Settings(
                     icon = MaterialSymbols.Rounded.Settings_backup_restore,
                     onClick = {
                         scope.launch {
-                            settingsViewModel.importJson(viewModel) { appSettings ->
+                            settingsViewModel.importJson(
+                                viewModel = viewModel,
+                                applyHomeworkTypes = { types, colors ->
+                                    homeworkTypes = types.distinct()
+                                    homeworkTypeColors = colors.filterKeys { key -> homeworkTypes.any { it.value == key } }
+                                    put("homeworkTypes", homeworkTypes.map(HomeworkType::value))
+                                    put("homeworkTypeColors", homeworkTypeColors)
+                                },
+                            ) { appSettings ->
                                 useSystemIsDark = appSettings.useSystemIsDark
                                 isDark = appSettings.isDark
                                 useCustomColorScheme = appSettings.useCustomColorScheme

@@ -9,6 +9,7 @@ import com.dokar.sonner.ToastType
 import com.hansholz.bestenotenapp.api.models.Year
 import com.hansholz.bestenotenapp.data.AppSettings
 import com.hansholz.bestenotenapp.data.ExportData
+import com.hansholz.bestenotenapp.homework.HomeworkType
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.screens.grades.GradeAverageCalculator
@@ -52,6 +53,7 @@ class SettingsViewModel : ViewModel() {
         viewModel: AppViewModel,
         appSettings: Boolean,
         gradeWeights: Boolean,
+        homeworkTypes: Boolean,
         gradeYears: List<Year>?,
     ) = withContext(Dispatchers.IO) {
         try {
@@ -124,11 +126,14 @@ class SettingsViewModel : ViewModel() {
                     ExportData(
                         containsAppSettings = appSettings,
                         containsGradeWeights = gradeWeights,
+                        containsHomeworkTypes = homeworkTypes,
                         containsGradeYears = gradeYears != null,
                         appSettings = appSettingsData,
                         gradeWeights = gradeWeightsData,
                         gradeYears = gradeYearsData,
                         gradeLevels = gradeLevelsData,
+                        homeworkTypes = if (homeworkTypes) get("homeworkTypes", HomeworkType.defaults.map(HomeworkType::value)).map(::HomeworkType) else null,
+                        homeworkTypeColors = if (homeworkTypes) get("homeworkTypeColors", emptyMap<String, Int>()) else null,
                     )
                 FileKit.saveOrDownloadBytes(
                     bytes = json.encodeToString(exportDate).toByteArray(),
@@ -149,24 +154,30 @@ class SettingsViewModel : ViewModel() {
 
     suspend fun importJson(
         viewModel: AppViewModel,
+        applyHomeworkTypes: (List<HomeworkType>, Map<String, Int>) -> Unit,
         applySettings: (AppSettings) -> Unit,
     ) = withContext(Dispatchers.IO) {
         try {
             val file =
                 FileKit.openFilePicker(
                     type = FileKitType.File("json"),
-                    dialogSettings = defaultFileKitDialogSettings("JSON mit Einstellungen oder Gewichtungen wählen"),
+                    dialogSettings = defaultFileKitDialogSettings("JSON mit Einstellungen, Gewichtungen oder Eintragstypen wählen"),
                 )
             file?.let { file ->
                 val data = json.decodeFromString<ExportData>(file.readString())
-                if (data.containsAppSettings != true && data.containsGradeWeights != true) {
+                if (data.containsAppSettings != true && data.containsGradeWeights != true &&
+                    (data.containsHomeworkTypes != true || data.homeworkTypes == null)
+                ) {
                     viewModel.toaster.show(
                         Toast(
-                            message = "JSON-Datei enthält keine Einstellungen oder Gewichtungen",
+                            message = "JSON-Datei enthält keine Einstellungen, Gewichtungen oder Eintragstypen",
                             type = ToastType.Error,
                         ),
                     )
                     return@withContext
+                }
+                if (data.containsHomeworkTypes == true) {
+                    data.homeworkTypes?.let { applyHomeworkTypes(it, data.homeworkTypeColors.orEmpty()) }
                 }
                 data.appSettings?.let { applySettings(it) }
                 data.gradeWeights?.let { gradeAverageCalculator.saveStore(viewModel.kSafe, it) }

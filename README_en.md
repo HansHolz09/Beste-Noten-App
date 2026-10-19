@@ -30,7 +30,7 @@ This cross-platform client for beste.schule makes everyday school life more orga
 - Annual information on half-year periods and absence statistics, including a heatmap of attendance by lesson
 - Dialogs for viewing lesson times as well as account and school data
 - Direct support for changing the school year
-- Import/export of app settings and grade weightings as well as grades with the option to view them later without a beste.schule account
+- Import/export of app settings, homework entry types and grade weightings as well as grades with the option to view them later without a beste.schule account
 - Full offline mode thanks to caching
 - Adaptive Material 3 Expressive design on all platforms with dynamically generated background images
 - Native controls with Liquid Glass on iOS/iPadOS 26+

@@ -30,7 +30,7 @@ Dieser plattformübergreifende Client für beste.schule macht den Schulalltag ü
 - Jahresinformationen zu den Halbjahres-Zeiträumen und Abwesenheits-Statistiken inklusive Heatmap zur Anwesenheit nach Stunden
 - Dialoge zum Einsehen der Unterrichtszeiten sowie Account- und Schuldaten
 - Direkte Unterstützung zum Wechsel des Schuljahres
-- Import/Export von App-Einstellungen und Noten-Gewichtungen sowie der Noten mit Möglichkeit zur späteren Ansicht ohne beste.schule-Account
+- Import/Export von App-Einstellungen, Hausaufgaben-Eintragstypen und Noten-Gewichtungen sowie der Noten mit Möglichkeit zur späteren Ansicht ohne beste.schule-Account
 - Vollständiger Offline-Modus dank Caching
 - Adaptives Material-3-Expressive-Design auf allen Plattformen mit dynamisch generierten Hintergrundbildern
 - Native Bedienelemente mit Liquid Glass auf iOS/iPadOS 26+
