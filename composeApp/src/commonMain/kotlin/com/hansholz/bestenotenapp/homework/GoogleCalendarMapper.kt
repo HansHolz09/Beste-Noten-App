@@ -90,7 +90,7 @@ fun newestWins(
     remote: GoogleCalendarEvent,
 ): ConflictWinner {
     val remoteUpdatedAt = remoteUpdatedAt(remote) ?: return ConflictWinner.LOCAL
-    return if (remoteUpdatedAt > local.updatedAt) ConflictWinner.REMOTE else ConflictWinner.LOCAL
+    return if (remoteUpdatedAt >= local.updatedAt) ConflictWinner.REMOTE else ConflictWinner.LOCAL
 }
 
 enum class ConflictWinner {
@@ -108,7 +108,7 @@ private fun HomeworkEntry.eventSummary(): String =
 private fun HomeworkEntry.toPrivateProperties(studentId: String?): Map<String, String> =
     buildMap {
         put("app", "beste-noten-app")
-        put("schemaVersion", "1")
+        put("schemaVersion", HOMEWORK_SYNC_SCHEMA_VERSION.toString())
         put("localId", localId)
         studentId?.let { put("studentId", it) }
         put("title", title)

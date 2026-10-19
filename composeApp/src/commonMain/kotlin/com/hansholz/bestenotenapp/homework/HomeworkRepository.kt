@@ -50,6 +50,7 @@ interface HomeworkSyncSettings {
     var googleCalendarId: String?
     var googleCalendarResolved: Boolean
     var nextSyncToken: String?
+    var syncSchemaVersion: Int
     var lastSuccessfulSyncAt: Instant?
     var lastSyncError: String?
 }
@@ -143,6 +144,10 @@ class KSafeHomeworkSyncSettings(
         get() = kSafeProvider(kSafe) { get("homeworkGoogleNextSyncToken", "") }.takeIf(String::isNotBlank)
         set(value) = kSafeProvider(kSafe) { put("homeworkGoogleNextSyncToken", value.orEmpty()) }
 
+    override var syncSchemaVersion: Int
+        get() = kSafeProvider(kSafe) { get("homeworkGoogleSyncSchemaVersion", 1) }
+        set(value) = kSafeProvider(kSafe) { put("homeworkGoogleSyncSchemaVersion", value) }
+
     override var lastSuccessfulSyncAt: Instant?
         get() =
             kSafeProvider(kSafe) { get("homeworkLastSuccessfulSyncAt", "") }
@@ -225,6 +230,7 @@ private class HomeworkSyncManager(
     private suspend fun sync() {
         if (!settings.homeworkEnabled || !settings.googleSyncEnabled) return
         try {
+            if (settings.syncSchemaVersion < HOMEWORK_SYNC_SCHEMA_VERSION) settings.nextSyncToken = null
             val calendarId =
                 if (settings.googleCalendarResolved) {
                     settings.googleCalendarId
@@ -240,6 +246,7 @@ private class HomeworkSyncManager(
             pull(calendarId)
             enqueueUnsynced(calendarId)
             push(calendarId)
+            settings.syncSchemaVersion = HOMEWORK_SYNC_SCHEMA_VERSION
             settings.lastSuccessfulSyncAt = Clock.System.now()
             settings.lastSyncError = null
         } catch (e: InvalidGoogleCalendarSyncTokenException) {

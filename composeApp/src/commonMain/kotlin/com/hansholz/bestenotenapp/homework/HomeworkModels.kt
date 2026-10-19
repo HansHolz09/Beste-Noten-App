@@ -8,6 +8,8 @@ import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.Instant
 
+internal const val HOMEWORK_SYNC_SCHEMA_VERSION = 2
+
 @Serializable
 data class HomeworkEntry(
     val localId: String,
