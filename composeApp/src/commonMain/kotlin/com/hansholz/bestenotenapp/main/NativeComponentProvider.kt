@@ -1,5 +1,6 @@
 package com.hansholz.bestenotenapp.main
 
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
@@ -21,7 +22,7 @@ internal val LocalNativeAlignmentHaptic = compositionLocalOf<((Offset) -> Unit)?
 internal val LocalNativeDialogBackdrop =
     compositionLocalOf<(@Composable (Modifier, List<Rect>) -> Unit)?> { null }
 internal val LocalNativePrimaryTabRow =
-    compositionLocalOf<(@Composable (List<String>, Int, (Int) -> Unit, Modifier) -> Unit)?> { null }
+    compositionLocalOf<(@Composable (List<String>, Int, (Int) -> Unit, Modifier, AnimatedVisibilityScope?) -> Unit)?> { null }
 internal val LocalNativeDatePicker =
     compositionLocalOf<(@Composable (Long?, (Long) -> Unit, Modifier) -> Unit)?> { null }
 internal val LocalNativeColorPicker =

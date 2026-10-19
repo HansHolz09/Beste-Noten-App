@@ -222,6 +222,7 @@ fun Grades(
                     animatedVisibilityScope = animatedVisibilityScope,
                 ),
             title = "Noten",
+            nativePrimaryTabs = usesNativePrimaryTabs,
             titleModifier =
                 Modifier
                     .enhancedSharedElement(
@@ -781,6 +782,7 @@ fun Grades(
                 }
                 topAppBarBackground(effectiveTopPadding)
                 AdaptivePrimaryTabRow(
+                    animatedVisibilityScope = animatedVisibilityScope,
                     labels = listOf("Nach Datum", "Nach Fächern"),
                     selectedTabIndex = pagerState.currentPage,
                     onTabSelected = { page -> scope.launch { pagerState.animateScrollToPage(page) } },

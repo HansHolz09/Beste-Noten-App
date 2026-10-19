@@ -75,8 +75,8 @@ fun mainViewController(nativeBridge: NativeComponentBridge? = null): UIViewContr
                 LocalHideNativeDateTimePickers provides { hideVisibleNativeDateTimePickers() },
                 LocalNativePrimaryTabRow provides
                     nativeBridge?.let { bridge ->
-                        { labels, selected, onSelected, modifier ->
-                            NativePrimaryTabRow(bridge, labels, selected, onSelected, modifier)
+                        { labels, selected, onSelected, modifier, visibilityScope ->
+                            NativePrimaryTabRow(bridge, labels, selected, onSelected, modifier, visibilityScope)
                         }
                     },
                 LocalGlobalEasterEgg provides { type -> nativeBridge?.showEasterEgg(type) },

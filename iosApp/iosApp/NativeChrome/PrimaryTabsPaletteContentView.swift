@@ -4,19 +4,28 @@ final class PrimaryTabsPaletteContentView: UIView {
     var selectionChanged: (Int) -> Void
 
     private let segmentedControl = UISegmentedControl()
-    private let horizontalCenter: (UIView) -> CGFloat?
-    private var horizontalCenterConstraint: NSLayoutConstraint!
+    private let tabContainer = UIView()
     private var titles: [String] = []
-    private var lastHostWidth: CGFloat = 0
+    private let updateLayout: () -> Void
+    private var layoutDisplayLink: CADisplayLink?
 
     init(
         font: UIFont,
-        horizontalCenter: @escaping (UIView) -> CGFloat?,
+        updateLayout: @escaping () -> Void,
         selectionChanged: @escaping (Int) -> Void
     ) {
-        self.horizontalCenter = horizontalCenter
+        self.updateLayout = updateLayout
         self.selectionChanged = selectionChanged
         super.init(frame: .zero)
+
+        tabContainer.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(tabContainer)
+        NSLayoutConstraint.activate([
+            tabContainer.leadingAnchor.constraint(equalTo: leadingAnchor),
+            tabContainer.trailingAnchor.constraint(equalTo: trailingAnchor),
+            tabContainer.topAnchor.constraint(equalTo: topAnchor),
+            tabContainer.bottomAnchor.constraint(equalTo: bottomAnchor),
+        ])
 
         segmentedControl.setTitleTextAttributes([.font: font], for: .normal)
         segmentedControl.setTitleTextAttributes([.font: font], for: .selected)
@@ -34,7 +43,7 @@ final class PrimaryTabsPaletteContentView: UIView {
             glassView.translatesAutoresizingMaskIntoConstraints = false
             glassView.layer.cornerRadius = 20
             glassView.clipsToBounds = true
-            addSubview(glassView)
+            tabContainer.addSubview(glassView)
             glassView.contentView.addSubview(segmentedControl)
             NSLayoutConstraint.activate([
                 glassView.leadingAnchor.constraint(equalTo: segmentedControl.leadingAnchor),
@@ -47,16 +56,15 @@ final class PrimaryTabsPaletteContentView: UIView {
                 UIColor.black.withAlphaComponent(traits.userInterfaceStyle == .dark ? 0.35 : 0.08)
             }
         } else {
-            addSubview(segmentedControl)
+            tabContainer.addSubview(segmentedControl)
         }
         let preferredWidth = segmentedControl.widthAnchor.constraint(equalToConstant: 370)
         preferredWidth.priority = .defaultHigh
-        horizontalCenterConstraint = segmentedControl.centerXAnchor.constraint(equalTo: centerXAnchor)
         NSLayoutConstraint.activate([
-            horizontalCenterConstraint,
-            segmentedControl.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 16),
-            segmentedControl.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -16),
-            segmentedControl.centerYAnchor.constraint(equalTo: centerYAnchor),
+            segmentedControl.centerXAnchor.constraint(equalTo: tabContainer.centerXAnchor),
+            segmentedControl.leadingAnchor.constraint(greaterThanOrEqualTo: tabContainer.leadingAnchor, constant: 16),
+            segmentedControl.trailingAnchor.constraint(lessThanOrEqualTo: tabContainer.trailingAnchor, constant: -16),
+            segmentedControl.centerYAnchor.constraint(equalTo: tabContainer.centerYAnchor),
             segmentedControl.heightAnchor.constraint(equalToConstant: 40),
             preferredWidth,
         ])
@@ -67,32 +75,34 @@ final class PrimaryTabsPaletteContentView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override var intrinsicContentSize: CGSize {
-        CGSize(width: window?.bounds.width ?? UIScreen.main.bounds.width, height: 56)
-    }
-
     override func didMoveToWindow() {
         super.didMoveToWindow()
-        lastHostWidth = window?.bounds.width ?? UIScreen.main.bounds.width
-        invalidateIntrinsicContentSize()
+        layoutDisplayLink?.invalidate()
+        layoutDisplayLink = nil
+        if window != nil {
+            let link = CADisplayLink(target: self, selector: #selector(updateTabLayout))
+            link.add(to: .main, forMode: .common)
+            layoutDisplayLink = link
+            updateLayout()
+        }
     }
 
-    override func layoutSubviews() {
-        updateHorizontalCenter()
-        super.layoutSubviews()
+    @objc private func updateTabLayout() {
+        updateLayout()
     }
 
-    func updateHorizontalCenter() {
-        let hostWidth = window?.bounds.width ?? UIScreen.main.bounds.width
-        if abs(lastHostWidth - hostWidth) > 0.5 {
-            lastHostWidth = hostWidth
-            invalidateIntrinsicContentSize()
-        }
-        guard bounds.width > 0, let desiredCenter = horizontalCenter(self) else { return }
-        let offset = desiredCenter - bounds.midX
-        if abs(horizontalCenterConstraint.constant - offset) > 0.5 {
-            horizontalCenterConstraint.constant = offset
-        }
+    override var intrinsicContentSize: CGSize {
+        CGSize(width: UIView.noIntrinsicMetric, height: 56)
+    }
+
+    func setTabsVisible(_ visible: Bool) {
+        setTabsVisibilityProgress(visible ? 1 : 0)
+    }
+
+    func setTabsVisibilityProgress(_ progress: CGFloat) {
+        tabContainer.transform = UIAccessibility.isReduceMotionEnabled
+            ? .identity
+            : CGAffineTransform(translationX: 0, y: -16 * (1 - progress))
     }
 
     func update(titles: [String], selectedIndex: Int) {

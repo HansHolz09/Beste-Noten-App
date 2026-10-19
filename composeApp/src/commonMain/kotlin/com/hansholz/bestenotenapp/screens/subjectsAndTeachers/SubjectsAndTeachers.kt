@@ -109,6 +109,7 @@ fun SubjectsAndTeachers(
                     animatedVisibilityScope = animatedVisibilityScope,
                 ),
             title = "Fächer und Lehrer",
+            nativePrimaryTabs = usesNativePrimaryTabs,
             titleModifier =
                 Modifier
                     .enhancedSharedElement(
@@ -277,6 +278,7 @@ fun SubjectsAndTeachers(
             }
             topAppBarBackground(effectiveTopPadding)
             AdaptivePrimaryTabRow(
+                animatedVisibilityScope = animatedVisibilityScope,
                 labels = listOf("Fächer", "Lehrer"),
                 selectedTabIndex = pagerState.currentPage,
                 onTabSelected = { page -> scope.launch { pagerState.animateScrollToPage(page) } },

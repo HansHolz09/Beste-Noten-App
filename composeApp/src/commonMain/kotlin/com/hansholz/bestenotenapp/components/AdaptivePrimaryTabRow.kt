@@ -1,5 +1,6 @@
 package com.hansholz.bestenotenapp.components
 
+import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,6 +14,7 @@ fun AdaptivePrimaryTabRow(
     selectedTabIndex: Int,
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    animatedVisibilityScope: AnimatedVisibilityScope? = null,
     containerColor: Color = Color.Transparent,
     divider: @Composable () -> Unit,
     content: @Composable () -> Unit,
@@ -20,7 +22,7 @@ fun AdaptivePrimaryTabRow(
     val nativeComponentsEnabled = LocalNativeComponentsEnabled.current.value
     val nativeTabRow = LocalNativePrimaryTabRow.current
     if (nativeComponentsEnabled && nativeTabRow != null) {
-        nativeTabRow(labels, selectedTabIndex, onTabSelected, modifier)
+        nativeTabRow(labels, selectedTabIndex, onTabSelected, modifier, animatedVisibilityScope)
     } else {
         PrimaryTabRow(
             selectedTabIndex = selectedTabIndex,

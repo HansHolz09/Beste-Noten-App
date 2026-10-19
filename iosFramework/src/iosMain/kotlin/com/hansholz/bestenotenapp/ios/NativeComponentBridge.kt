@@ -11,6 +11,7 @@ public class NativeComponentBridge {
         onCanNavigateBackChanged: (Boolean) -> Unit,
         onThemeChanged: (Boolean, Boolean) -> Unit,
         onPrimaryTabsChanged: (String, Int, Boolean) -> Unit,
+        onPrimaryTabsVisibilityChanged: (Double) -> Unit,
         onOfflineStatusChanged: (Boolean) -> Unit,
     ): Unit = appBridge.setCallbacks(
         onRootDestinationChanged,
@@ -18,6 +19,7 @@ public class NativeComponentBridge {
         onCanNavigateBackChanged,
         onThemeChanged,
         onPrimaryTabsChanged,
+        onPrimaryTabsVisibilityChanged,
         onOfflineStatusChanged,
     )
 

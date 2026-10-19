@@ -22,6 +22,7 @@ class NativeComponentBridge {
     private var canNavigateBackChanged: ((Boolean) -> Unit)? = null
     private var themeChanged: ((Boolean, Boolean) -> Unit)? = null
     private var primaryTabsChanged: ((String, Int, Boolean) -> Unit)? = null
+    private var primaryTabsVisibilityChanged: ((Double) -> Unit)? = null
     private var offlineStatusChanged: ((Boolean) -> Unit)? = null
     private var primaryTabsOwner: String? = null
     private var primaryTabSelected: ((Int) -> Unit)? = null
@@ -32,6 +33,7 @@ class NativeComponentBridge {
         onCanNavigateBackChanged: (Boolean) -> Unit,
         onThemeChanged: (Boolean, Boolean) -> Unit,
         onPrimaryTabsChanged: (String, Int, Boolean) -> Unit,
+        onPrimaryTabsVisibilityChanged: (Double) -> Unit,
         onOfflineStatusChanged: (Boolean) -> Unit,
     ) {
         rootDestinationChanged = onRootDestinationChanged
@@ -39,6 +41,7 @@ class NativeComponentBridge {
         canNavigateBackChanged = onCanNavigateBackChanged
         themeChanged = onThemeChanged
         primaryTabsChanged = onPrimaryTabsChanged
+        primaryTabsVisibilityChanged = onPrimaryTabsVisibilityChanged
         offlineStatusChanged = onOfflineStatusChanged
     }
 
@@ -83,10 +86,20 @@ class NativeComponentBridge {
         labels: List<String>,
         selectedIndex: Int,
         onSelected: (Int) -> Unit,
+        replaceOwner: Boolean = true,
     ) {
+        if (!replaceOwner && primaryTabsOwner != null && primaryTabsOwner != owner) return
         primaryTabsOwner = owner
         primaryTabSelected = onSelected
         primaryTabsChanged?.invoke(labels.joinToString("\u001F"), selectedIndex, true)
+    }
+
+    internal fun primaryTabsVisibilityChanged(
+        owner: String,
+        visibility: Double,
+    ) {
+        if (primaryTabsOwner != owner) return
+        primaryTabsVisibilityChanged?.invoke(visibility.coerceIn(0.0, 1.0))
     }
 
     internal fun hidePrimaryTabs(owner: String) {

@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Cloud_off
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
@@ -44,6 +45,7 @@ fun TopAppBarScaffold(
     sideMenuExpanded: Boolean? = null,
     hazeState: HazeState? = null,
     topBarModifier: Modifier = Modifier,
+    nativePrimaryTabs: Boolean = false,
     content: @Composable (
     (
         innerPadding: PaddingValues,
@@ -96,7 +98,9 @@ fun TopAppBarScaffold(
                 if (useNativeTopBar && nativeTopPadding != null) {
                     PaddingValues(
                         start = innerPadding.calculateStartPadding(layoutDirection),
-                        top = maxOf(innerPadding.calculateTopPadding(), nativeTopPadding),
+                        top =
+                            maxOf(innerPadding.calculateTopPadding(), nativeTopPadding) +
+                                if (nativePrimaryTabs) 56.dp else 0.dp,
                         end = innerPadding.calculateEndPadding(layoutDirection),
                         bottom = innerPadding.calculateBottomPadding(),
                     )
