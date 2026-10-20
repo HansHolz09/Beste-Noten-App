@@ -23,6 +23,7 @@ import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.reviews.LocalStoreReviewManager
 import io.github.vinceglb.confettikit.compose.ConfettiKit
 import kotlinx.coroutines.launch
 
@@ -45,7 +46,15 @@ fun AppNavigationDrawer(
 
     val navController = rememberNavController()
     val currentRoute by navController.currentBackStackEntryAsState()
+    val reviewManager = LocalStoreReviewManager.current
+    var previousReviewRoute by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(currentRoute?.destination?.route) {
+        reviewManager?.cancelPending()
+        val route = currentRoute?.destination?.route
+        if (previousReviewRoute == Fragment.Settings.route && route == Fragment.Home.route) {
+            reviewManager?.completedAction()
+        }
+        previousReviewRoute = route
         currentRoute?.destination?.route?.let(onDestinationChanged)
         onCanNavigateBackChanged(navController.previousBackStackEntry != null)
     }

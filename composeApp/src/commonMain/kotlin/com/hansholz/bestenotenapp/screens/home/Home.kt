@@ -141,6 +141,7 @@ import com.hansholz.bestenotenapp.main.LocalShowOnlyRelevantData
 import com.hansholz.bestenotenapp.main.LocalShowYearProgress
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.navigation.Fragment
+import com.hansholz.bestenotenapp.reviews.ReviewAfterDismiss
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
@@ -173,6 +174,15 @@ fun Home(
 ) {
     with(sharedTransitionScope) {
         val homeViewModel = viewModel { HomeViewModel(viewModel) }
+
+        ReviewAfterDismiss(
+            visible = homeViewModel.isStatsDialogShown || homeViewModel.isTimesDialogShown || homeViewModel.isAccountSchoolDialogShown,
+            ready =
+                !homeViewModel.isYearSelectionDialogShown && !homeViewModel.isGradesLoading &&
+                    !homeViewModel.isTimetableLoading && !homeViewModel.isStatsLoading &&
+                    (!homeViewModel.isStatsDialogShown || !homeViewModel.isStatsDialogLoading) &&
+                    (!homeViewModel.isTimesDialogShown || !homeViewModel.isTimesDialogLoading),
+        )
 
         val scope = rememberCoroutineScope()
         val vibrator = rememberEnhancedVibrator()

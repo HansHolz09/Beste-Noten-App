@@ -60,6 +60,7 @@ import com.composables.icons.materialsymbols.rounded.Notifications
 import com.composables.icons.materialsymbols.rounded.Percent
 import com.composables.icons.materialsymbols.rounded.Privacy_tip
 import com.composables.icons.materialsymbols.rounded.Settings_backup_restore
+import com.composables.icons.materialsymbols.rounded.Star
 import com.composables.icons.materialsymbols.rounded.Subject
 import com.composables.icons.materialsymbols.rounded.Sync
 import com.composables.icons.materialsymbols.rounded.Task_alt
@@ -120,6 +121,8 @@ import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
+import com.hansholz.bestenotenapp.reviews.LocalStoreReviewManager
+import com.hansholz.bestenotenapp.reviews.StoreReview
 import com.hansholz.bestenotenapp.screens.grades.GradeAverageCalculator
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
@@ -147,6 +150,7 @@ fun Settings(
     val scope = rememberCoroutineScope()
     val vibrator = rememberEnhancedVibrator()
     val uriHandler = LocalUriHandler.current
+    val storeReviewManager = LocalStoreReviewManager.current
     val globalEasterEgg = LocalGlobalEasterEgg.current
     val hideNativeInterop = LocalHideNativeInterop.current
     val nativeAppearanceSelector = LocalNativeAppearanceSelector.current
@@ -937,6 +941,20 @@ fun Settings(
                     },
                     position = PreferencePosition.Top,
                 )
+            }
+            if (StoreReview.isSupported) {
+                item {
+                    PreferenceItem(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        title = "App Bewerten",
+                        icon = MaterialSymbols.Rounded.Star,
+                        onClick = {
+                            storeReviewManager?.openReviewPage()
+                            vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                        },
+                        position = PreferencePosition.Middle,
+                    )
+                }
             }
             item {
                 PreferenceItem(

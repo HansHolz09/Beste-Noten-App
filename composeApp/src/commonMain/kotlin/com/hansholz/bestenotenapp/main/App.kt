@@ -40,6 +40,7 @@ import com.hansholz.bestenotenapp.components.ScatterItem
 import com.hansholz.bestenotenapp.components.ScatteredIconBackground
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.navigation.AppNavigation
+import com.hansholz.bestenotenapp.reviews.StoreReviewHost
 import com.hansholz.bestenotenapp.theme.AppTheme
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
@@ -127,14 +128,16 @@ fun App(
                         )
                     }
 
-                    CompositionLocalProvider(LocalUsingOfflineCache provides viewModel.isUsingOfflineCache) {
-                        AppNavigation(
-                            viewModel = viewModel,
-                            onNavHostReady = onNavHostReady,
-                            onRootDestinationChanged = onRootDestinationChanged,
-                            onFragmentDestinationChanged = onFragmentDestinationChanged,
-                            onCanNavigateBackChanged = onCanNavigateBackChanged,
-                        )
+                    StoreReviewHost(viewModel) {
+                        CompositionLocalProvider(LocalUsingOfflineCache provides viewModel.isUsingOfflineCache) {
+                            AppNavigation(
+                                viewModel = viewModel,
+                                onNavHostReady = onNavHostReady,
+                                onRootDestinationChanged = onRootDestinationChanged,
+                                onFragmentDestinationChanged = onFragmentDestinationChanged,
+                                onCanNavigateBackChanged = onCanNavigateBackChanged,
+                            )
+                        }
                     }
 
                     if (getPlatform() != Platform.IOS) UpdateDialogHost()

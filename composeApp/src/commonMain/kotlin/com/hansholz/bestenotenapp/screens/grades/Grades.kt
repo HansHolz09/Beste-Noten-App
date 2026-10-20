@@ -159,6 +159,7 @@ import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.main.isApplePlatform
+import com.hansholz.bestenotenapp.reviews.ReviewAfterDismiss
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
@@ -213,6 +214,13 @@ fun Grades(
         val subjectWeightings = remember { mutableStateMapOf<String, GradeAverageCalculator.SubjectWeightingConfig>() }
         var weightingDialogState by remember { mutableStateOf<SubjectWeightingDialogState?>(null) }
         var weightingDialogVisible by remember { mutableStateOf(false) }
+
+        ReviewAfterDismiss(
+            visible = gradesViewModel.toolbarState == 3 || gradesViewModel.toolbarState == 4,
+            ready =
+                !isOpened && !gradesViewModel.isLoading && !weightingDialogVisible &&
+                    (gradesViewModel.toolbarState == 0 || gradesViewModel.toolbarState == 3 || gradesViewModel.toolbarState == 4),
+        )
 
         TopAppBarScaffold(
             modifier =

@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
 import com.hansholz.bestenotenapp.main.LocalRequireBiometricAuthentification
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.reviews.LocalStoreReviewManager
 import com.hansholz.bestenotenapp.screens.biometry.Biometry
 import com.hansholz.bestenotenapp.screens.grades.Grades
 import com.hansholz.bestenotenapp.screens.login.Login
@@ -45,7 +46,9 @@ fun AppNavigation(
         }
     val navController = rememberNavController()
     val currentDestination by navController.currentBackStackEntryAsState()
+    val reviewManager = LocalStoreReviewManager.current
     LaunchedEffect(currentDestination?.destination?.route) {
+        reviewManager?.cancelPending()
         currentDestination?.destination?.route?.let { route ->
             onRootDestinationChanged(route)
             if (route != Screen.Main.route) {

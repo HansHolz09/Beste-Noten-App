@@ -85,6 +85,8 @@ private var nextEnhancedDialogId = 0
 private val IosDialogEnterEasing = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1f)
 private val IosDialogExitEasing = CubicBezierEasing(0.4f, 0f, 1f, 1f)
 
+internal val hasActiveEnhancedDialogs: Boolean get() = ActiveEnhancedDialogCount.intValue > 0
+
 private fun Rect.isValidNativeDialogFrame() =
     !isEmpty &&
         left.isFinite() &&
