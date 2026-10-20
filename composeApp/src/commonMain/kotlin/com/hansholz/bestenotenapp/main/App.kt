@@ -66,9 +66,9 @@ fun App(
         theme(isDark, LocalUseSystemIsDark.current.value)
         ProvidePlatformInteractionFeedback {
             ProvideCupertinoOverscrollEffect(getPlatform() != Platform.DESKTOP) {
-                SettingsProvider {
-                    val toasterState = rememberToasterState()
-                    val viewModel = viewModel { ViewModel(toasterState) }
+                val toasterState = rememberToasterState()
+                val viewModel = viewModel { ViewModel(toasterState) }
+                SettingsProvider(viewModel) {
                     val lifecycle = LocalLifecycleOwner.current.lifecycle
                     DisposableEffect(lifecycle, viewModel) {
                         var wasBackgrounded = false

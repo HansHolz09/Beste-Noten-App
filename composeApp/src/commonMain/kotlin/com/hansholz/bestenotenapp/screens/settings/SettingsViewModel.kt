@@ -69,7 +69,7 @@ class SettingsViewModel : ViewModel() {
                             blurEnabled = get("blurEnabled", HazeBlurDefaults.isBlurEnabledByDefault()),
                             backgroundEnabled = get("backgroundEnabled", true),
                             hapticsEnabled = get("hapticsEnabled", false),
-                            showGreetings = get("showGreetings", true),
+                            showGreetings = get("showGreetings", viewModel.user.value?.role == "student"),
                             showNewestGrades = get("showNewestGrades", true),
                             newestGradesCount = get("newestGradesCount", 5),
                             showCurrentLesson = get("showCurrentLesson", true),
