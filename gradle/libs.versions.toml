@@ -15,7 +15,7 @@ composeMultiplatform = "1.12.2"
 emoji = "2.5.0"
 filekit = "0.16.0"
 fragment = "1.9.1"
-graalvm = "25.0.4.1.1"
+graalvm = "25.0.5"
 haze = "2.0.1"
 #noinspection NewerVersionAvailable
 koalaplotCore = "0.9.1"
