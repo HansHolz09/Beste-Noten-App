@@ -167,6 +167,10 @@ kotlin {
 nucleus.application {
     mainClass = "com.hansholz.bestenotenapp.MainKt"
 
+    providers.environmentVariable("DESKTOP_PACKAGING_JAVA_HOME").orNull?.let {
+        javaHome = it
+    }
+
     val appName = libs.versions.appName.get()
     val appVersion = libs.versions.appVersion.get()
 

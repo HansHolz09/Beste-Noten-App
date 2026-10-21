@@ -37,6 +37,9 @@ on:
       build_ios:
         type: boolean
         default: true
+      build_ios_simulator:
+        type: boolean
+        default: true
       build_windows_x64:
         type: boolean
         default: true
@@ -341,7 +344,7 @@ jobs:
           path: ios-unsigned.ipa
 
   ios_simulator:
-    if: ${{ inputs.run_smoke_tests }}
+    if: ${{ inputs.run_smoke_tests && inputs.build_ios_simulator }}
     runs-on: macos-26
     env:
       GOOGLE_CLIENT_ID_IOS: ${{ secrets.GOOGLE_CLIENT_ID_IOS }}
@@ -721,9 +724,17 @@ jobs:
           TARBALL="$(cygpath -u "$RUNNER_TEMP/jbr.tar.gz")"
           DEST="$(cygpath -u "$RUNNER_TEMP/jbr")"
           tar -xzf "$TARBALL" -C "$DEST" --strip-components=1
-          echo "JAVA_HOME=$RUNNER_TEMP/jbr" >> $GITHUB_ENV
-          echo "$RUNNER_TEMP/jbr/bin" >> $GITHUB_PATH
-          java -version
+          echo "DESKTOP_PACKAGING_JAVA_HOME=$RUNNER_TEMP/jbr" >> "$GITHUB_ENV"
+          "$DEST/bin/java.exe" -version
+
+      # JDK-8371740: JBR 25 on Windows ARM64 can hang in LinkedTransferQueue at Gradle shutdown.
+      # Only Gradle uses Microsoft 21.0.1; compilation, packaging and AOT keep using JBR 25.
+      - name: Setup Microsoft JDK for Gradle
+        uses: actions/setup-java@v6
+        with:
+          distribution: microsoft
+          java-version: "21.0.1"
+          architecture: aarch64
 
       - uses: gradle/actions/setup-gradle@v6
 
@@ -738,25 +749,11 @@ jobs:
           ELECTRON_BUILDER_7Z_FILTER: BCJ
         run: |
           set -e
-          # BEGIN TEMPORARY Windows ARM64 debug (remove with .github/temporary-ci-debug)
-          python .github/temporary-ci-debug/windows_arm64.py -- \
-            ./gradlew ":${MODULE_PATH}:packageReleaseNsis" --stacktrace --info --console=plain
-          # END TEMPORARY Windows ARM64 debug
+          ./gradlew ":${MODULE_PATH}:packageReleaseNsis" \
+            "-Porg.gradle.java.installations.paths=$DESKTOP_PACKAGING_JAVA_HOME"
           mkdir -p artifacts
           EXE=$(find "${MODULE_PATH}/build/compose/binaries/main-release/nsis" -type f -name "*.exe" | head -n1)
           cp "$EXE" artifacts/windows-arm64.exe
-
-      # BEGIN TEMPORARY Windows ARM64 debug (remove with .github/temporary-ci-debug)
-      - name: TEMPORARY Windows ARM64 debug - upload diagnostics
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v7
-        continue-on-error: true
-        with:
-          name: temporary-windows-arm64-debug
-          path: ${{ runner.temp }}/windows-arm64-debug
-          if-no-files-found: warn
-          retention-days: 7
-      # END TEMPORARY Windows ARM64 debug
 
       - name: Smoke test Windows app
         if: ${{ inputs.run_smoke_tests }}

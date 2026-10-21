@@ -4,27 +4,9 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "composeApp/**"
-      - "androidApp/**"
-      - "iosApp/**"
-      - "iosFramework/**"
-      - "gradle/**"
-      - "build.gradle.kts"
-      - "settings.gradle.kts"
-      - ".github/workflows/**"
   pull_request:
     branches:
       - main
-    paths:
-      - "composeApp/**"
-      - "androidApp/**"
-      - "iosApp/**"
-      - "iosFramework/**"
-      - "gradle/**"
-      - "build.gradle.kts"
-      - "settings.gradle.kts"
-      - ".github/workflows/**"
   workflow_dispatch:
 
 permissions:
@@ -35,7 +17,69 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Select relevant platforms
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      scope: ${{ steps.scope.outputs.scope }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      - name: Detect changed paths
+        id: scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          selected=()
+          desktop=(windows_x64 windows_arm64 macos_x64 macos_arm64 linux_x64 linux_arm64)
+          targets=(android ios_simulator wasm "${desktop[@]}")
+          select_targets() { selected+=("$@"); }
+
+          base=""
+          if [[ "$EVENT_NAME" == pull_request ]]; then
+            base=HEAD^1
+          elif [[ "$EVENT_NAME" == push && "$BEFORE" =~ ^[0-9a-f]{40}$ && "$BEFORE" != 0000000000000000000000000000000000000000 ]]; then
+            if git cat-file -e "$BEFORE^{commit}" 2>/dev/null || git fetch --no-tags --depth=1 origin "$BEFORE"; then
+              base="$BEFORE"
+            fi
+          fi
+
+          if [[ -z "$base" ]] || ! git diff --name-only --no-renames -z "$base" HEAD -- > "$RUNNER_TEMP/ci-changes"; then
+            select_targets lint "${targets[@]}"
+          else
+            while IFS= read -r -d '' file; do
+              if [[ "$file" == *.kt || "$file" == *.kts ]]; then select_targets lint; fi
+              case "$file" in
+                .github/*|gradle/*|buildSrc/*|build-logic/*|*.gradle|*.gradle.kts|gradle.properties|*/gradle.properties|gradlew|gradlew.bat|libs.versions.toml|*/libs.versions.toml)
+                  select_targets lint "${targets[@]}" ;;
+                .editorconfig) select_targets lint ;;
+                iosApp/iosApp/Beste-Noten-App.icon/*) select_targets ios_simulator macos_x64 macos_arm64 ;;
+                iosApp/*|iosFramework/src/*|composeApp/src/ios*/*|composeApp/src/apple*/*) select_targets ios_simulator ;;
+                androidApp/*|composeApp/src/android*/*) select_targets android ;;
+                composeApp/src/commonMain/*|composeApp/src/commonTest/*) select_targets android ios_simulator wasm linux_arm64 ;;
+                composeApp/src/desktopMain/*|composeApp/src/desktopTest/*|composeApp/src/desktopDev/*) select_targets "${desktop[@]}" ;;
+                composeApp/src/wasmJs*/*|composeApp/src/web*/*|composeApp/src/js*/*) select_targets wasm ;;
+                composeApp/src/*) select_targets lint "${targets[@]}" ;;
+                docs/*|screenshots/*|badges/*|apiReferences/*|.run/*|.idea/*|*.md|LICENSE.txt|renovate.json|.gitignore|.DS_Store) ;;
+                *) select_targets lint "${targets[@]}" ;;
+              esac
+            done < "$RUNNER_TEMP/ci-changes"
+          fi
+
+          json=$(printf '%s\n' "${selected[@]}" | jq -Rnc --arg targets "${targets[*]} lint" '
+            [inputs] as $selected |
+            reduce ($targets | split(" "))[] as $target ({}; .[$target] = ($selected | index($target) != null)) |
+            .build = ([del(.lint)[]] | any)')
+          echo "scope=$json" >> "$GITHUB_OUTPUT"
+          echo "$json" | jq .
+
   ktlint:
+    needs: changes
+    if: ${{ fromJSON(needs.changes.outputs.scope).lint }}
     name: ktlintCheck
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -58,41 +102,45 @@ jobs:
 
   release-binaries:
     name: Build release binaries and run smoke tests
+    needs: changes
+    if: ${{ fromJSON(needs.changes.outputs.scope).build }}
     uses: ./.github/workflows/buildCompose.yml
     with:
       upload_wasm_as_pages_artifact: false
       run_smoke_tests: true
       quick_build: true
       ignore_artifact_upload_errors: true
-      build_android: true
+      build_android: ${{ fromJSON(needs.changes.outputs.scope).android }}
       build_ios: false
-      build_windows_x64: true
-      build_windows_arm64: true
-      build_macos_x64: true
-      build_macos_arm64: true
-      build_linux_x64: true
-      build_linux_arm64: true
-      build_wasm: true
+      build_ios_simulator: ${{ fromJSON(needs.changes.outputs.scope).ios_simulator }}
+      build_windows_x64: ${{ fromJSON(needs.changes.outputs.scope).windows_x64 }}
+      build_windows_arm64: ${{ fromJSON(needs.changes.outputs.scope).windows_arm64 }}
+      build_macos_x64: ${{ fromJSON(needs.changes.outputs.scope).macos_x64 }}
+      build_macos_arm64: ${{ fromJSON(needs.changes.outputs.scope).macos_arm64 }}
+      build_linux_x64: ${{ fromJSON(needs.changes.outputs.scope).linux_x64 }}
+      build_linux_arm64: ${{ fromJSON(needs.changes.outputs.scope).linux_arm64 }}
+      build_wasm: ${{ fromJSON(needs.changes.outputs.scope).wasm }}
     secrets: inherit
 
   ci-success:
     name: ci-success
     runs-on: ubuntu-latest
     needs:
+      - changes
       - ktlint
       - release-binaries
     if: always() && !cancelled()
     steps:
       - name: Check CI result
+        env:
+          SELECTION_RESULT: ${{ needs.changes.result }}
+          SCOPE: ${{ needs.changes.outputs.scope }}
+          LINT_RESULT: ${{ needs.ktlint.result }}
+          BUILD_RESULT: ${{ needs.release-binaries.result }}
         run: |
-          if [ "${{ needs.ktlint.result }}" != "success" ]; then
-            echo "ktlint failed"
-            exit 1
-          fi
-
-          if [ "${{ needs.release-binaries.result }}" != "success" ]; then
-            echo "release-binaries failed"
-            exit 1
-          fi
-
-          echo "All required CI jobs passed"
+          test "$SELECTION_RESULT" = success
+          lint_expected=$(jq -r 'if .lint then "success" else "skipped" end' <<< "$SCOPE")
+          build_expected=$(jq -r 'if .build then "success" else "skipped" end' <<< "$SCOPE")
+          test "$LINT_RESULT" = "$lint_expected"
+          test "$BUILD_RESULT" = "$build_expected"
+          echo "All selected CI checks passed"
