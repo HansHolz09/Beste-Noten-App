@@ -738,10 +738,25 @@ jobs:
           ELECTRON_BUILDER_7Z_FILTER: BCJ
         run: |
           set -e
-          ./gradlew :${MODULE_PATH}:packageReleaseNsis
+          # BEGIN TEMPORARY Windows ARM64 debug (remove with .github/temporary-ci-debug)
+          python .github/temporary-ci-debug/windows_arm64.py -- \
+            ./gradlew ":${MODULE_PATH}:packageReleaseNsis" --stacktrace --info --console=plain
+          # END TEMPORARY Windows ARM64 debug
           mkdir -p artifacts
           EXE=$(find "${MODULE_PATH}/build/compose/binaries/main-release/nsis" -type f -name "*.exe" | head -n1)
           cp "$EXE" artifacts/windows-arm64.exe
+
+      # BEGIN TEMPORARY Windows ARM64 debug (remove with .github/temporary-ci-debug)
+      - name: TEMPORARY Windows ARM64 debug - upload diagnostics
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        continue-on-error: true
+        with:
+          name: temporary-windows-arm64-debug
+          path: ${{ runner.temp }}/windows-arm64-debug
+          if-no-files-found: warn
+          retention-days: 7
+      # END TEMPORARY Windows ARM64 debug
 
       - name: Smoke test Windows app
         if: ${{ inputs.run_smoke_tests }}
