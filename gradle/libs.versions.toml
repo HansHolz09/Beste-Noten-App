@@ -43,6 +43,9 @@ materialKolor = "5.0.1"
 oidc = "0.15.3"
 sonner = "0.4.0"
 
+# TODO: Remove the iOS-specific Compose overrides when upgrading to the final Compose Multiplatform 1.13.0 release.
+composeMultiplatformIos = "1.13.0-alpha02"
+
 # App configurations
 appName = "Beste-Noten-App"
 appVersion = "4.0.0"
@@ -111,6 +114,11 @@ runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "com
 ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
 ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", version.ref = "composeMultiplatform" }
 sonner = { module = "io.github.dokar3:sonner", version.ref = "sonner" }
+
+# TODO: Remove the iOS-specific Compose overrides when upgrading to the final Compose Multiplatform 1.13.0 release.
+ios-compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeMultiplatformIos" }
+ios-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatformIos" }
+ios-compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatformIos" }
 
 [plugins]
 aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutLibraries" }

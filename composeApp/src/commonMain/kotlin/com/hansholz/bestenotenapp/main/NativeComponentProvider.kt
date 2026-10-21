@@ -34,6 +34,5 @@ internal val LocalGlobalEasterEgg = compositionLocalOf<((String) -> Unit)?> { nu
 internal val LocalHideNativeInterop = compositionLocalOf { {} }
 internal val LocalNavigationDrawerTopPadding = compositionLocalOf<Dp?> { null }
 internal val LocalNativeContentTopPadding = compositionLocalOf<Dp?> { null }
-internal val LocalNativeTextInputTint = compositionLocalOf<((Color) -> Unit)?> { null }
 internal val LocalNativeKeyboardHandoff = compositionLocalOf<((() -> Unit) -> Unit)?> { null }
 internal val LocalNativeTextInputOptions = compositionLocalOf<PlatformImeOptions?> { null }

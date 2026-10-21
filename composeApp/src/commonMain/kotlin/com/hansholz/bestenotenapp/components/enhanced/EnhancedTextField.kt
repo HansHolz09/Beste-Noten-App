@@ -20,6 +20,7 @@ import androidx.compose.foundation.text.input.OutputTransformation
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -65,7 +66,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.main.LocalNativeKeyboardHandoff
 import com.hansholz.bestenotenapp.main.LocalNativeTextInputOptions
-import com.hansholz.bestenotenapp.main.LocalNativeTextInputTint
 
 internal val LocalEnhancedTextFieldFocusOwner = compositionLocalOf<MutableState<Any?>?> { null }
 internal val LocalNativeTextInputRefresh = compositionLocalOf<(() -> Unit)?> { null }
@@ -132,7 +132,9 @@ fun EnhancedTextField(
         // Keep native input bounds inside the text slot, excluding Compose icon buttons.
         val focusRequester = remember { FocusRequester() }
         val labelPadding = with(LocalDensity.current) { typography.bodySmall.lineHeight.toDp() / 2 }
-        CompositionLocalProvider(LocalTextSelectionColors provides colors.textSelectionColors) {
+        CompositionLocalProvider(
+            LocalTextSelectionColors provides TextSelectionColors(cursorColor, colors.textSelectionColors.backgroundColor),
+        ) {
             Box(
                 modifier
                     .semantics(mergeDescendants = true) {}
@@ -241,7 +243,9 @@ fun EnhancedTextField(
         )
     } else {
         val focusRequester = remember { FocusRequester() }
-        CompositionLocalProvider(LocalTextSelectionColors provides colors.textSelectionColors) {
+        CompositionLocalProvider(
+            LocalTextSelectionColors provides TextSelectionColors(cursorColor, colors.textSelectionColors.backgroundColor),
+        ) {
             Box(
                 modifier
                     .semantics(mergeDescendants = true) {}
@@ -414,16 +418,13 @@ private fun Modifier.enhancedNativeTextInput(
     val owner = remember { Any() }
     val focusOwner = LocalEnhancedTextFieldFocusOwner.current
     val handoff = LocalNativeKeyboardHandoff.current
-    val updateTint = LocalNativeTextInputTint.current
     val refresh = LocalNativeTextInputRefresh.current
     val focusManager = LocalFocusManager.current
     var focused by remember { mutableStateOf(false) }
     LaunchedEffect(focused, cursorColor, transformation) {
         if (focused) {
             withFrameNanos {}
-            updateTint?.invoke(cursorColor)
             withFrameNanos {}
-            updateTint?.invoke(cursorColor)
             // UIKit otherwise keeps the old caret geometry after a visual transformation.
             refresh?.invoke()
         }

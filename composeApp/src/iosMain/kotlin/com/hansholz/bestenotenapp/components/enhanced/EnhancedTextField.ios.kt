@@ -7,13 +7,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.text.input.PlatformImeOptions
-import androidx.compose.ui.uikit.LocalNativeTextInputContext
 import androidx.compose.ui.uikit.LocalUIView
 import com.hansholz.bestenotenapp.main.LocalNativeKeyboardHandoff
 import com.hansholz.bestenotenapp.main.LocalNativeTextInputOptions
-import com.hansholz.bestenotenapp.main.LocalNativeTextInputTint
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -23,16 +20,14 @@ import platform.UIKit.UITextInputProtocol
 import platform.UIKit.UIView
 import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(ExperimentalComposeUiApi::class, InternalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun EnhancedNativeTextInputProvider(content: @Composable () -> Unit) {
     val options = remember { PlatformImeOptions { usingNativeTextInput(true) } }
-    val context = LocalNativeTextInputContext.current
     CompositionLocalProvider(
         LocalNativeTextInputOptions provides options,
         LocalEnhancedTextFieldFocusOwner provides remember { mutableStateOf<Any?>(null) },
         LocalNativeTextInputRefresh provides rememberNativeTextInputRefresh(),
-        LocalNativeTextInputTint provides { color -> context.updateNativeTextInputTintColor(color) },
         LocalNativeKeyboardHandoff provides rememberNativeKeyboardHandoff(),
         content = content,
     )

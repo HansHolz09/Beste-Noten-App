@@ -138,6 +138,11 @@ kotlin {
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
             implementation(libs.alarmee)
+
+            // TODO: Remove the iOS-specific Compose overrides when upgrading to the final Compose Multiplatform 1.13.0 release.
+            implementation(libs.ios.compose.foundation)
+            implementation(libs.ios.compose.runtime)
+            implementation(libs.ios.compose.ui)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
