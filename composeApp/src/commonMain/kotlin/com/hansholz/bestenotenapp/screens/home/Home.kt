@@ -55,6 +55,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -159,12 +160,16 @@ import com.pushpal.jetlime.JetLimeEventDefaults
 import com.pushpal.jetlime.JetLimeExtendedEvent
 import com.pushpal.jetlime.LocalJetLimeStyle
 import dev.chrisbanes.haze.hazeSource
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import org.kodein.emoji.compose.m3.TextWithNotoAnimatedEmoji
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalFoundationApi::class, FlowPreview::class)
 @Composable
 fun Home(
     viewModel: ViewModel,
@@ -277,6 +282,18 @@ fun Home(
         ) { innerPadding, topAppBarBackground ->
             val masonryScrollState = rememberScrollState()
             val masonryState = remember { StableMasonryState() }
+            val isLoading = homeViewModel.isGradesLoading || homeViewModel.isTimetableLoading || homeViewModel.isStatsLoading
+            LaunchedEffect(masonryState, isLoading) {
+                if (!isLoading) {
+                    snapshotFlow { masonryState.itemHeights }
+                        .debounce(350.milliseconds)
+                        .first { it.isNotEmpty() }
+                    masonryState.rebalance(
+                        fixedKeys = setOf("greeting-text"),
+                        preferredKeys = setOf("grades-card", "timetable-card"),
+                    )
+                }
+            }
             val density = LocalDensity.current
             val topInset = innerPadding.calculateTopPadding()
             val bottomInset = innerPadding.calculateBottomPadding()

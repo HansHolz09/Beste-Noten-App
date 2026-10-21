@@ -6,7 +6,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.LookaheadScope
@@ -36,9 +39,10 @@ fun StableAdaptiveMasonry(
             ((availableWidth + horizontalSpacingPx) / (minColumnWidthPx + horizontalSpacingPx))
                 .coerceAtLeast(1)
 
+        val laneByKey = state.laneByKey
         if (state.columnCount != columnCount) {
             state.columnCount = columnCount
-            state.laneByKey.clear()
+            laneByKey.clear()
         }
 
         val totalHorizontalSpacing = horizontalSpacingPx * (columnCount - 1)
@@ -69,9 +73,9 @@ fun StableAdaptiveMasonry(
                     }
 
                     MasonryLanePolicy.StableBalanced -> {
-                        state.laneByKey[key]
+                        laneByKey[key]
                             ?.takeIf { it in 0 until columnCount }
-                            ?: laneHeights.indices.minBy { laneHeights[it] }.also { state.laneByKey[key] = it }
+                            ?: laneHeights.indices.minBy { laneHeights[it] }.also { laneByKey[key] = it }
                     }
                 }
 
@@ -89,6 +93,14 @@ fun StableAdaptiveMasonry(
             xPositions[index] = columnX[lane]
             yPositions[index] = laneHeights[lane]
             laneHeights[lane] += placeable.height + verticalSpacingPx
+        }
+
+        if (!isLookingAhead && columnCount > 1) {
+            state.itemHeights =
+                measurables.indices.associate { index ->
+                    val key = measurables[index].layoutId?.toString() ?: "masonry-$index"
+                    key to (placeables[index].height + verticalSpacingPx)
+                }
         }
 
         val contentHeight =
@@ -174,5 +186,32 @@ enum class MasonryLanePolicy {
 
 class StableMasonryState {
     var columnCount: Int = 0
-    val laneByKey = mutableMapOf<String, Int>()
+    var laneByKey by mutableStateOf(mutableMapOf<String, Int>())
+        private set
+    internal var itemHeights by mutableStateOf(emptyMap<String, Int>())
+
+    fun rebalance(
+        fixedKeys: Set<String> = emptySet(),
+        preferredKeys: Set<String> = emptySet(),
+    ) {
+        if (columnCount <= 1 || itemHeights.isEmpty()) return
+
+        fun balance(preservedKeys: Set<String>): Pair<MutableMap<String, Int>, Int> {
+            val laneHeights = IntArray(columnCount)
+            val lanes = mutableMapOf<String, Int>()
+            for ((key, height) in itemHeights) {
+                val lane =
+                    laneByKey[key]
+                        ?.takeIf { key in preservedKeys && it in laneHeights.indices }
+                        ?: laneHeights.indices.minBy { laneHeights[it] }
+                lanes[key] = lane
+                laneHeights[lane] += height
+            }
+            return lanes to laneHeights.max()
+        }
+
+        val stable = balance(fixedKeys + preferredKeys)
+        val relaxed = if (preferredKeys.isEmpty()) stable else balance(fixedKeys)
+        laneByKey = if (stable.second > relaxed.second * 1.2f) relaxed.first else stable.first
+    }
 }
