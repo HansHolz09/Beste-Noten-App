@@ -36,7 +36,7 @@ nucleus = "2.5.18"
 platformtools = "0.7.5"
 proguard = "7.9.1"
 #noinspection NewerVersionAvailable
-navigationCompose = "2.9.2"
+navigationCompose = "2.10.0"
 navigationEvent = "1.2.0"
 materialKolor = "5.0.1"
 #noinspection NewerVersionAvailable
