@@ -63,6 +63,9 @@ env:
   MODULE_PATH: ${{ inputs.module_path }}
   JBR_VERSION: ${{ inputs.jbr_version }}
   JBR_BUILD: ${{ inputs.jbr_build }}
+  NPM_CONFIG_FETCH_RETRIES: "3"
+  NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: "10000"
+  NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: "60000"
 
 jobs:
   android:
@@ -711,7 +714,9 @@ jobs:
           set -e
           BASE="https://cache-redirector.jetbrains.com/intellij-jbr"
           FILE="jbrsdk-${JBR_VERSION}-windows-aarch64-${JBR_BUILD}.tar.gz"
-          curl -fsSL "$BASE/$FILE" -o "$RUNNER_TEMP/jbr.tar.gz"
+          curl -fsSL --retry 3 --retry-all-errors --retry-max-time 180 \
+            --connect-timeout 20 --max-time 120 \
+            "$BASE/$FILE" -o "$RUNNER_TEMP/jbr.tar.gz"
           mkdir -p "$RUNNER_TEMP/jbr"
           TARBALL="$(cygpath -u "$RUNNER_TEMP/jbr.tar.gz")"
           DEST="$(cygpath -u "$RUNNER_TEMP/jbr")"
@@ -844,7 +849,9 @@ jobs:
           set -e
           BASE="https://cache-redirector.jetbrains.com/intellij-jbr"
           FILE="jbrsdk-${JBR_VERSION}-osx-x64-${JBR_BUILD}.tar.gz"
-          curl -fsSL "$BASE/$FILE" -o "$RUNNER_TEMP/jbr.tar.gz"
+          curl -fsSL --retry 3 --retry-all-errors --retry-max-time 180 \
+            --connect-timeout 20 --max-time 120 \
+            "$BASE/$FILE" -o "$RUNNER_TEMP/jbr.tar.gz"
           mkdir -p "$RUNNER_TEMP/jbr"
           tar -xzf "$RUNNER_TEMP/jbr.tar.gz" -C "$RUNNER_TEMP/jbr" --strip-components=1
           echo "JAVA_HOME=$RUNNER_TEMP/jbr/Contents/Home" >> $GITHUB_ENV
