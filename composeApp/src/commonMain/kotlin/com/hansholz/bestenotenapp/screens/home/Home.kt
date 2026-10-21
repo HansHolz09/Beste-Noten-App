@@ -527,7 +527,7 @@ fun Home(
                                             }
                                         }
                                         Text(
-                                            text = "Tippen, um deine Noten ansehen und analysieren zu können",
+                                            text = "Tippen, um ${if (showGreetings) "deine" else "die"} Noten ansehen und analysieren zu können",
                                             modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
                                             textAlign = TextAlign.Center,
                                         )
@@ -795,7 +795,7 @@ fun Home(
                                             }
                                         }
                                         Text(
-                                            text = "Tippen, um deinen wöchentlichen Stundenplan zu sehen",
+                                            text = "Tippen, um ${if (showGreetings) "deinen" else "den"} wöchentlichen Stundenplan zu sehen",
                                             modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
                                             textAlign = TextAlign.Center,
                                         )
@@ -956,7 +956,12 @@ fun Home(
                                                             modifier = Modifier.height(40.dp).fillMaxWidth().padding(10.dp),
                                                         )
                                                         Text(
-                                                            text = "Du hast aktuell ${(progress * 100).roundToInt()}% des Schuljahres geschafft",
+                                                            text =
+                                                                if (showGreetings) {
+                                                                    "Du hast aktuell ${(progress * 100).roundToInt()}% des Schuljahres geschafft"
+                                                                } else {
+                                                                    "Aktuell sind ${(progress * 100).roundToInt()}% des Schuljahres vergangen"
+                                                                },
                                                             modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
                                                             textAlign = TextAlign.Center,
                                                         )
@@ -1011,7 +1016,7 @@ fun Home(
                                                 )
                                             }
                                             Text(
-                                                text = "Tippen, um die Unterrichtszeiten deiner Schule anschauen zu können",
+                                                text = "Tippen, um die Unterrichtszeiten ${if (showGreetings) "deiner" else "der"} Schule anschauen zu können",
                                                 modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
                                                 textAlign = TextAlign.Center,
                                             )
@@ -1058,7 +1063,7 @@ fun Home(
                                                 )
                                             }
                                             Text(
-                                                text = "Tippen, um deine Account- und Schuldaten einsehen zu können",
+                                                text = "Tippen, um ${if (showGreetings) "deine" else "die"} Account- und Schuldaten einsehen zu können",
                                                 modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
                                                 textAlign = TextAlign.Center,
                                             )

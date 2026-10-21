@@ -463,7 +463,7 @@ fun Settings(
                     showGreetings = it
                     put("showGreetings", it)
                 },
-                text = "Begrüßung anzeigen",
+                text = "Persönliche Begrüßung anzeigen",
                 icon = MaterialSymbols.Rounded.Waving_hand,
                 position = PreferencePosition.Top,
             )

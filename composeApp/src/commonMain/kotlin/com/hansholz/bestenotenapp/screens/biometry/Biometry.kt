@@ -22,6 +22,7 @@ import com.hansholz.bestenotenapp.components.EmptyStateMessage
 import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
+import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.navigation.Screen
 import kotlinx.coroutines.launch
@@ -34,9 +35,10 @@ fun Biometry(
     val biometryViewModel = viewModel { BiometryViewModel() }
     val scope = rememberCoroutineScope()
     val uriHandler = LocalUriHandler.current
+    val showGreetings = LocalShowGreetings.current
 
     LaunchedEffect(Unit) {
-        biometryViewModel.tryBiometricAuthentication(onNavigateToScreen)
+        biometryViewModel.tryBiometricAuthentication(showGreetings.value, onNavigateToScreen)
     }
 
     TopAppBarScaffold(
@@ -54,7 +56,7 @@ fun Biometry(
                     Column {
                         EnhancedButton(
                             onClick = {
-                                biometryViewModel.tryBiometricAuthentication(onNavigateToScreen)
+                                biometryViewModel.tryBiometricAuthentication(showGreetings.value, onNavigateToScreen)
                             },
                             modifier = Modifier.sizeIn(maxWidth = 300.dp).fillMaxWidth().padding(10.dp),
                         ) {

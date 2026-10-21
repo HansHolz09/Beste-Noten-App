@@ -18,25 +18,27 @@ class BiometryViewModel : ViewModel() {
 
     val kSafe = kSafe()
 
-    fun tryBiometricAuthentication(onNavigateToScreen: (Screen) -> Unit) =
-        kSafeProvider(kSafe) {
-            KSafeBiometrics.verifyBiometricDirect(
-                (if (getExactPlatform() == ExactPlatform.MACOS) "eine Authentifizierung" else "Authentifiziere dich") +
-                    ", um einen Einblick in deine Noten zu gestatten",
-            ) { isSuccessful ->
-                viewModelScope.launch {
-                    if (isSuccessful) {
-                        onNavigateToScreen(
-                            if (get("authToken", "").isEmpty()) {
-                                Screen.Login
-                            } else {
-                                Screen.Main
-                            },
-                        )
-                    } else {
-                        isFailure = true
-                    }
+    fun tryBiometricAuthentication(
+        showGreetings: Boolean,
+        onNavigateToScreen: (Screen) -> Unit,
+    ) = kSafeProvider(kSafe) {
+        KSafeBiometrics.verifyBiometricDirect(
+            (if (getExactPlatform() == ExactPlatform.MACOS) "eine Authentifizierung" else "Authentifiziere dich") +
+                ", um einen Einblick in ${if (showGreetings) "deine" else "die"} Noten zu gestatten",
+        ) { isSuccessful ->
+            viewModelScope.launch {
+                if (isSuccessful) {
+                    onNavigateToScreen(
+                        if (get("authToken", "").isEmpty()) {
+                            Screen.Login
+                        } else {
+                            Screen.Main
+                        },
+                    )
+                } else {
+                    isFailure = true
                 }
             }
         }
+    }
 }

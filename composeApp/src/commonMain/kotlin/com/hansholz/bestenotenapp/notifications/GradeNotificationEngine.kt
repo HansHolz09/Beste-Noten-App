@@ -117,6 +117,7 @@ internal object GradeNotificationEngine {
                 val newIds = knownIds?.let { currentIds - it - loadGradeIds(KEY_SEEN_GRADE_IDS).orEmpty() }.orEmpty()
 
                 if (newIds.isNotEmpty()) {
+                    val showGreetings = get<Boolean?>("showGreetings", null) ?: (api.usersShow(studentId).data.role == "student")
                     val newGrades =
                         collections
                             .flatMap { collection ->
@@ -144,7 +145,7 @@ internal object GradeNotificationEngine {
                                 if (entry.first.id in loadGradeIds(KEY_SEEN_GRADE_IDS).orEmpty()) {
                                     true
                                 } else {
-                                    notifyNewGrades(listOf(entry), levelsByYear)
+                                    notifyNewGrades(listOf(entry), levelsByYear, showGreetings)
                                 }
                             }
                         if (!submitted) return GradeNotificationOutcome.Retry
@@ -217,6 +218,7 @@ internal object GradeNotificationEngine {
     private suspend fun notifyNewGrades(
         entries: List<Pair<Grade, GradeCollection>>,
         levelsByYear: Map<Int, Level>,
+        showGreetings: Boolean,
     ): Boolean {
         if (entries.isEmpty()) return true
 
@@ -225,7 +227,9 @@ internal object GradeNotificationEngine {
                 val title = collection.subject?.name?.let { "Neue Note in $it" } ?: "Neue Note"
                 val isSecondaryTwo = collection.interval?.yearId?.let { levelsByYear[it]?.secondaryStage() } == SecondaryStage.TWO
                 val value = if (isSecondaryTwo) "${grade.value} Punkte" else "die Note ${grade.value}"
-                val body = "Bei " + (collection.name ?: "einer unbekannten Leistung") + " hast du $value erreicht"
+                val body =
+                    "Bei " + (collection.name ?: "einer unbekannten Leistung") +
+                        if (showGreetings) " hast du $value erreicht" else " ${if (isSecondaryTwo) "wurden" else "wurde"} $value vergeben"
                 GradeNotificationPayload(
                     id = grade.id.toString(),
                     title = title,
