@@ -44,7 +44,7 @@ oidc = "0.15.3"
 sonner = "0.4.0"
 
 # TODO: Remove the iOS-specific Compose overrides when upgrading to the final Compose Multiplatform 1.13.0 release.
-composeMultiplatformIos = "1.13.0-alpha02"
+composeMultiplatformIos = "1.13.0-beta01"
 
 # App configurations
 appName = "Beste-Noten-App"
