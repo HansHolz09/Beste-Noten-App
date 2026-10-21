@@ -309,24 +309,27 @@ fun EnhancedBasicTextField(
     cursorBrush: Brush = SolidColor(colorScheme.primary),
     decorationBox: @Composable (@Composable () -> Unit) -> Unit = { it() },
 ) {
-    BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier.enhancedNativeTextInput(if ((cursorBrush as? SolidColor)?.value == Color.Transparent) Color.Transparent else colorScheme.primary, visualTransformation),
-        enabled = enabled,
-        readOnly = readOnly,
-        textStyle = textStyle,
-        keyboardOptions = enhancedKeyboardOptions(keyboardOptions),
-        keyboardActions = enhancedKeyboardActions(keyboardActions),
-        singleLine = singleLine,
-        maxLines = maxLines,
-        minLines = minLines,
-        visualTransformation = visualTransformation,
-        onTextLayout = onTextLayout,
-        interactionSource = interactionSource,
-        cursorBrush = cursorBrush,
-        decorationBox = decorationBox,
-    )
+    val cursorColor = (cursorBrush as? SolidColor)?.value ?: colorScheme.primary
+    EnhancedNativeTextSelectionColors(cursorColor) {
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = modifier.enhancedNativeTextInput(cursorColor, visualTransformation),
+            enabled = enabled,
+            readOnly = readOnly,
+            textStyle = textStyle,
+            keyboardOptions = enhancedKeyboardOptions(keyboardOptions),
+            keyboardActions = enhancedKeyboardActions(keyboardActions),
+            singleLine = singleLine,
+            maxLines = maxLines,
+            minLines = minLines,
+            visualTransformation = visualTransformation,
+            onTextLayout = onTextLayout,
+            interactionSource = interactionSource,
+            cursorBrush = cursorBrush,
+            decorationBox = decorationBox,
+        )
+    }
 }
 
 @Composable
@@ -348,24 +351,43 @@ fun EnhancedBasicTextField(
     cursorBrush: Brush = SolidColor(colorScheme.primary),
     decorationBox: @Composable (@Composable () -> Unit) -> Unit = { it() },
 ) {
-    BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier.enhancedNativeTextInput(if ((cursorBrush as? SolidColor)?.value == Color.Transparent) Color.Transparent else colorScheme.primary, visualTransformation),
-        enabled = enabled,
-        readOnly = readOnly,
-        textStyle = textStyle,
-        keyboardOptions = enhancedKeyboardOptions(keyboardOptions),
-        keyboardActions = enhancedKeyboardActions(keyboardActions),
-        singleLine = singleLine,
-        maxLines = maxLines,
-        minLines = minLines,
-        visualTransformation = visualTransformation,
-        onTextLayout = onTextLayout,
-        interactionSource = interactionSource,
-        cursorBrush = cursorBrush,
-        decorationBox = decorationBox,
-    )
+    val cursorColor = (cursorBrush as? SolidColor)?.value ?: colorScheme.primary
+    EnhancedNativeTextSelectionColors(cursorColor) {
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = modifier.enhancedNativeTextInput(cursorColor, visualTransformation),
+            enabled = enabled,
+            readOnly = readOnly,
+            textStyle = textStyle,
+            keyboardOptions = enhancedKeyboardOptions(keyboardOptions),
+            keyboardActions = enhancedKeyboardActions(keyboardActions),
+            singleLine = singleLine,
+            maxLines = maxLines,
+            minLines = minLines,
+            visualTransformation = visualTransformation,
+            onTextLayout = onTextLayout,
+            interactionSource = interactionSource,
+            cursorBrush = cursorBrush,
+            decorationBox = decorationBox,
+        )
+    }
+}
+
+@Composable
+private fun EnhancedNativeTextSelectionColors(
+    cursorColor: Color,
+    content: @Composable () -> Unit,
+) {
+    if (LocalNativeTextInputOptions.current == null) {
+        content()
+    } else {
+        val selectionColors = LocalTextSelectionColors.current
+        CompositionLocalProvider(
+            LocalTextSelectionColors provides TextSelectionColors(cursorColor, selectionColors.backgroundColor),
+            content = content,
+        )
+    }
 }
 
 @Composable
