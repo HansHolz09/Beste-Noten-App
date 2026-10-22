@@ -19,7 +19,7 @@ graalvm = "25.0.5"
 haze = "2.0.1"
 #noinspection NewerVersionAvailable
 koalaplotCore = "0.9.1"
-kotlin = "2.4.10"
+kotlin = "2.4.21"
 ksafe = "3.3.0"
 ksoup = "0.2.6"
 ktlint = "14.2.0"
