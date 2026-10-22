@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
@@ -178,6 +179,8 @@ fun HomeworkEditorDialog(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusRequester = remember { FocusRequester() }
     val descriptionFocusRequester = remember { FocusRequester() }
+    var titleFocused by remember { mutableStateOf(false) }
+    var descriptionFocused by remember { mutableStateOf(false) }
 
     var title by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.title.orEmpty()) }
     var description by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.description.orEmpty()) }
@@ -211,7 +214,7 @@ fun HomeworkEditorDialog(
 
     EnhancedAlertDialog(
         visible = visible.value,
-        onDismissRequest = { if (!busy) visible.value = false },
+        onDismissRequest = { if (!busy && !titleFocused && !descriptionFocused) visible.value = false },
         icon = { Icon(if (initialEntry == null) MaterialSymbols.Rounded.Add_task else MaterialSymbols.Rounded.Task_alt, null) },
         title = { Text(if (initialEntry == null) "Eintrag hinzufügen" else "Eintrag bearbeiten") },
         text = {
@@ -231,7 +234,8 @@ fun HomeworkEditorDialog(
                     onValueChange = { title = it },
                     modifier =
                         Modifier
-                            .fillMaxWidth(),
+                            .fillMaxWidth()
+                            .onFocusChanged { titleFocused = it.isFocused },
                     label = { Text("Titel") },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     keyboardActions = KeyboardActions(onNext = { descriptionFocusRequester.requestFocus() }),
@@ -244,7 +248,8 @@ fun HomeworkEditorDialog(
                     modifier =
                         Modifier
                             .fillMaxWidth()
-                            .focusRequester(descriptionFocusRequester),
+                            .focusRequester(descriptionFocusRequester)
+                            .onFocusChanged { descriptionFocused = it.isFocused },
                     label = { Text("Beschreibung") },
                     minLines = 2,
                     enabled = !busy,
@@ -510,6 +515,8 @@ private fun HomeworkTypeEditorDialog(
     var newType by remember(visible) { mutableStateOf("") }
     var draggedType by remember(visible) { mutableStateOf<HomeworkType?>(null) }
     var draggedOffset by remember(visible) { mutableFloatStateOf(0f) }
+    var newTypeFocused by remember { mutableStateOf(false) }
+    var colorPickerVisible by remember { mutableStateOf(false) }
 
     fun addType() {
         val label = newType.trim()
@@ -524,7 +531,7 @@ private fun HomeworkTypeEditorDialog(
 
     EnhancedAlertDialog(
         visible = visible,
-        onDismissRequest = onDismissRequest,
+        onDismissRequest = { if (!newTypeFocused && !colorPickerVisible) onDismissRequest() },
         maxWidth = 400.dp,
         icon = { Icon(MaterialSymbols.Rounded.Edit_note, null) },
         title = { Text("Eintragstypen bearbeiten") },
@@ -551,6 +558,7 @@ private fun HomeworkTypeEditorDialog(
                                 AdaptiveColorPicker(
                                     color = draftColors[option.value]?.let { Color(it) } ?: colorScheme.error,
                                     onColorChanged = { draftColors = draftColors + (option.value to it.toArgb()) },
+                                    onVisibilityChanged = { colorPickerVisible = it },
                                 )
                             },
                             position =
@@ -639,7 +647,7 @@ private fun HomeworkTypeEditorDialog(
                 EnhancedTextField(
                     value = newType,
                     onValueChange = { newType = it },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().onFocusChanged { newTypeFocused = it.isFocused },
                     label = { Text("Neuer Eintragstyp") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),

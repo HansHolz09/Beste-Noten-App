@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,11 +37,18 @@ fun AdaptiveColorPicker(
     color: Color,
     onColorChanged: (Color) -> Unit,
     modifier: Modifier = Modifier,
+    onVisibilityChanged: (Boolean) -> Unit = {},
 ) {
     val nativePicker = LocalNativeColorPicker.current
     var visible by remember { mutableStateOf(false) }
     var anchorBounds by remember { mutableStateOf(Rect.Zero) }
     var selectedColor by remember(visible) { mutableStateOf(color) }
+    if (visible) {
+        DisposableEffect(Unit) {
+            onVisibilityChanged(true)
+            onDispose { onVisibilityChanged(false) }
+        }
+    }
     EnhancedIconButton(
         onClick = { visible = true },
         modifier =
