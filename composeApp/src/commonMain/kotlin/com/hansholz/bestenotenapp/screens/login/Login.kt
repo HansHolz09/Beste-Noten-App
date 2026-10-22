@@ -27,6 +27,7 @@ import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
@@ -606,10 +607,19 @@ fun Login(
                                             }
                                         }
                                     }
+                                    EnhancedAnimatedVisibility(!otherOptions) {
+                                        EnhancedTextButton(
+                                            onClick = { uriHandler.openUri("https://beste.schule/password/reset") },
+                                            modifier = modifier,
+                                        ) {
+                                            Text("Passwort vergessen?")
+                                        }
+                                    }
                                     if (getPlatform() == Platform.IOS) {
                                         EnhancedTextButton(
                                             onClick = { uriHandler.openUri("https://github.com/HansHolz09/Beste-Noten-App/blob/main/PRIVACY.md") },
                                             modifier = modifier,
+                                            colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.onSurfaceVariant),
                                         ) {
                                             Text("Datenschutzerklärung")
                                         }
