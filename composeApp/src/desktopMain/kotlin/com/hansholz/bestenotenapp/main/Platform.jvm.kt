@@ -2,6 +2,8 @@ package com.hansholz.bestenotenapp.main
 
 import org.jetbrains.skiko.hostOs
 
+actual fun isStoreDistribution(): Boolean = false
+
 actual fun getPlatform(): Platform = Platform.DESKTOP
 
 actual fun getExactPlatform(): ExactPlatform =

@@ -18,4 +18,5 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 /composeApp/release/
 /androidApp/release/
+/androidApp/**/release/
 /kotlin-js-store/

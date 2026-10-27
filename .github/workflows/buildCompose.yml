@@ -109,10 +109,9 @@ jobs:
       - name: Build universal APK
         run: |
           set -e
-          ./gradlew :androidApp:packageReleaseUniversalApk || ./gradlew :androidApp:assembleRelease
+          ./gradlew :androidApp:assembleGithubRelease
           mkdir -p artifacts
-          APK=$(find "androidApp/build" -type f -iname "*universal*.apk" | head -n1)
-          if [ -z "$APK" ]; then APK=$(find "androidApp/build" -type f -iname "*release*.apk" | head -n1); fi
+          APK=$(find "androidApp/build/outputs/apk/github/release" -type f -iname "*.apk" | head -n1)
           cp "$APK" artifacts/android-universal.apk
 
       - name: Enable KVM

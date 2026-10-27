@@ -2,6 +2,8 @@ package com.hansholz.bestenotenapp.main
 
 import platform.UIKit.UIDevice
 
+actual fun isStoreDistribution(): Boolean = true
+
 actual fun getPlatform(): Platform = Platform.IOS
 
 actual fun getExactPlatform(): ExactPlatform =

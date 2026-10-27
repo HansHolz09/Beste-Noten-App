@@ -14,7 +14,10 @@
 
     <application
             android:name="com.hansholz.bestenotenapp.BesteNotenApplication"
-            android:allowBackup="true"
+            android:allowBackup="false"
+            android:fullBackupContent="false"
+            android:dataExtractionRules="@xml/data_extraction_rules"
+            tools:replace="android:fullBackupContent,android:dataExtractionRules"
             android:icon="@mipmap/ic_launcher"
             android:label="Beste-Noten-App"
             android:roundIcon="@mipmap/ic_launcher_round"
@@ -45,7 +48,7 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
 
-                <data android:scheme="com.hansholz.bestenotenapp"/>
+                <data android:scheme="${applicationId}"/>
             </intent-filter>
         </activity>
         <receiver

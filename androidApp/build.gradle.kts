@@ -36,14 +36,24 @@ android {
                 .toInt()
         versionName = libs.versions.appVersion.get()
         base.archivesName = "${libs.versions.appName.get()}-${libs.versions.appVersion.get()}-${libs.versions.appVersionCode.get()}"
-
-        addManifestPlaceholders(
-            mapOf("oidcRedirectScheme" to "bestenotenapp"), // de.schulverwalter.beste:/oauth
-        )
     }
 
     buildFeatures {
         compose = true
+    }
+
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("github") {
+            dimension = "distribution"
+            isDefault = true
+            manifestPlaceholders["oidcRedirectScheme"] = "bestenotenapp"
+        }
+        create("play") {
+            dimension = "distribution"
+            applicationId = "dev.hansholz.bestenotenapp"
+            manifestPlaceholders["oidcRedirectScheme"] = "dev.hansholz.bestenotenapp"
+        }
     }
 
     packaging {

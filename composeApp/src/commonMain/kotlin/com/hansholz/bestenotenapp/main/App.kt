@@ -140,7 +140,7 @@ fun App(
                         }
                     }
 
-                    if (getPlatform() != Platform.IOS) UpdateDialogHost()
+                    if (!isStoreDistribution()) UpdateDialogHost()
 
                     Toaster(
                         state = toasterState,

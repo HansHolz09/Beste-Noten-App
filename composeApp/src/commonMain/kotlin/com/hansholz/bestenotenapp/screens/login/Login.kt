@@ -98,6 +98,7 @@ import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.hansholz.bestenotenapp.main.getPlatform
+import com.hansholz.bestenotenapp.main.isStoreDistribution
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
@@ -615,7 +616,7 @@ fun Login(
                                             Text("Passwort vergessen?")
                                         }
                                     }
-                                    if (getPlatform() == Platform.IOS) {
+                                    if (isStoreDistribution()) {
                                         EnhancedTextButton(
                                             onClick = { uriHandler.openUri("https://github.com/HansHolz09/Beste-Noten-App/blob/main/PRIVACY.md") },
                                             modifier = modifier,

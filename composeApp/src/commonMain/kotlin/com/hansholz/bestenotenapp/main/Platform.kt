@@ -27,6 +27,8 @@ fun isApplePlatform() =
         ExactPlatform.VISIONOS,
     ).contains(getExactPlatform())
 
+expect fun isStoreDistribution(): Boolean
+
 expect fun getPlatform(): Platform
 
 expect fun getExactPlatform(): ExactPlatform

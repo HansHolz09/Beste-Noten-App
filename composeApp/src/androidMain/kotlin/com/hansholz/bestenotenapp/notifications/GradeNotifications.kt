@@ -206,7 +206,7 @@ actual object GradeNotifications {
         if (!manager.canScheduleExactAlarms()) {
             val intent =
                 Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-                    data = "package:${'$'}{activity.packageName}".toUri()
+                    data = "package:${activity.packageName}".toUri()
                 }
             activity.startActivity(intent)
         }

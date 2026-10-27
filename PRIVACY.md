@@ -1,8 +1,8 @@
 # Datenschutzerklärung der Beste-Noten-App
 
-**Stand: 27. September 2026**
+**Stand: 22. Oktober 2026**
 
-Diese Erklärung gilt für die iOS- und iPadOS-Version der Beste-Noten-App. Die App ist ein unabhängiger Client für beste.schule und keine offizielle Anwendung dieses Dienstes. Die Datenverarbeitung durch beste.schule und die angebundene Schule richtet sich nach deren eigenen Datenschutzhinweisen.
+Diese Erklärung gilt für die über Google Play und den App Store vertriebenen Android-, iOS- und iPadOS-Versionen der Beste-Noten-App. Die App ist ein unabhängiger Client für beste.schule und keine offizielle Anwendung dieses Dienstes. Die Datenverarbeitung durch beste.schule und die angebundene Schule richtet sich nach deren eigenen Datenschutzhinweisen.
 
 ## Datenverarbeitung und Zwecke
 
@@ -12,7 +12,7 @@ Hausaufgaben werden lokal gespeichert. Nur bei aktivierter Google-Kalender-Synch
 
 Bei aktivierten Notenbenachrichtigungen ruft die App in den vom Betriebssystem zugelassenen Intervallen neue Noten bei beste.schule ab und erzeugt lokale Benachrichtigungen; ein eigener Push-Server wird nicht eingesetzt. Eine optionale biometrische Sperre verwendet die Systemfunktion, ohne dass die App biometrische Rohdaten erhält. Ein manuell angelegter JSON-Export kann Einstellungen und Notendaten enthalten und wird nicht zusätzlich von der App verschlüsselt.
 
-Updates erfolgen über den App Store. Beim bewussten Aufruf externer Links gelten die Datenschutzhinweise des jeweiligen Anbieters.
+Updates erfolgen über den App Store beziehungsweise Google Play. Beim bewussten Aufruf externer Links gelten die Datenschutzhinweise des jeweiligen Anbieters.
 
 ## Empfänger, Rechtsgrundlagen und Schutz
 

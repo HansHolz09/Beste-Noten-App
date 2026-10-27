@@ -28,6 +28,7 @@ buildConfig {
 
     listOf(
         "GOOGLE_CLIENT_ID_ANDROID",
+        "GOOGLE_CLIENT_ID_ANDROID_PLAY",
         "GOOGLE_CLIENT_ID_IOS",
         "GOOGLE_CLIENT_SECRET_IOS",
         "GOOGLE_CLIENT_ID_DESKTOP",
