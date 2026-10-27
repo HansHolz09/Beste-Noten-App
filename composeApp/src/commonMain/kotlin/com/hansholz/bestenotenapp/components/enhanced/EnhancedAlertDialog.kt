@@ -64,6 +64,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.components.FullscreenDialog
 import com.hansholz.bestenotenapp.components.clippedShadow
@@ -246,7 +247,7 @@ fun BasicEnhancedAlertDialog(
                         enter = fadeIn(),
                         exit = fadeOut(),
                     ) {
-                        val alpha = (if (nativeComponentsEnabled) nativeScrimAlpha else 0.5f) * animatedScale
+                        val scrimColor = MaterialTheme.colorScheme.scrim
                         Box(
                             modifier =
                                 Modifier
@@ -257,12 +258,14 @@ fun BasicEnhancedAlertDialog(
                                         }
                                     }.then(
                                         if (nativeComponentsEnabled) {
-                                            Modifier.background(MaterialTheme.colorScheme.scrim.copy(alpha = alpha))
+                                            Modifier.drawBehind {
+                                                drawRect(scrimColor.copy(alpha = nativeScrimAlpha * animatedScale))
+                                            }
                                         } else {
                                             Modifier.enhancedHazeEffect(
                                                 AppHazeState.current.value,
-                                                MaterialTheme.colorScheme.scrim,
-                                                fallbackAlpha = alpha,
+                                                scrimColor,
+                                                fallbackAlpha = 0.5f * animatedScale,
                                             )
                                         },
                                     ).fillMaxSize(),
@@ -314,7 +317,7 @@ fun BasicEnhancedAlertDialog(
                                 },
                         ) {
                             Box(
-                                modifier = dialogContentModifier.offset(y = panelOffset),
+                                modifier = dialogContentModifier.offset { IntOffset(0, panelOffset.roundToPx()) },
                                 contentAlignment = Alignment.Center,
                                 content = content,
                             )

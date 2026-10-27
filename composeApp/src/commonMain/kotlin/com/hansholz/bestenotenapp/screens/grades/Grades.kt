@@ -86,12 +86,12 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.PredictiveBackHandler
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -135,6 +135,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedVisibility
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedBasicTextField
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedContentBlur
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
@@ -325,355 +326,44 @@ fun Grades(
                             .toList()
                     }
                 }
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier.hazeSource(viewModel.hazeBackgroundState).enhancedHazeEffect(blurRadius = contentBlurRadius.value),
-                    userScrollEnabled = gradesViewModel.userScrollEnabled,
-                ) { currentPage ->
-                    EnhancedAnimatedContent(gradesViewModel.isLoading || filteredGradeItems.isEmpty()) { targetState ->
-                        Box(Modifier.fillMaxSize()) {
-                            if (targetState) {
-                                EnhancedAnimatedContent(gradesViewModel.isLoading) { isLoading ->
-                                    if (isLoading) {
-                                        Box(
-                                            modifier = Modifier.padding(overlayPadding).fillMaxSize(),
-                                            contentAlignment = Alignment.Center,
-                                        ) {
-                                            ContainedLoadingIndicator()
-                                        }
-                                    } else {
-                                        EmptyStateMessage(
-                                            title = if (gradesViewModel.searchQuery.isEmpty()) "Keine Noten vorhanden" else "Keine Noten gefunden",
-                                            icon = if (gradesViewModel.searchQuery.isEmpty()) MaterialSymbols.Rounded.Playlist_remove else MaterialSymbols.Rounded.Search_off,
-                                            modifier = Modifier.padding(overlayPadding).consumeWindowInsets(overlayPadding).imePadding(),
-                                        )
-                                    }
-                                }
-                            } else {
-                                when (currentPage) {
-                                    0 -> {
-                                        val speedState = rememberLazyListScrollSpeedState(firstLazyListState)
-                                        LazyColumn(
-                                            state = firstLazyListState,
-                                            contentPadding = contentPadding,
-                                            userScrollEnabled = gradesViewModel.userScrollEnabled,
-                                        ) {
-                                            items(dateSortedGradeItems, key = { it.id }) {
-                                                EnhancedAnimated(
-                                                    modifier = Modifier.padding(verticalPadding),
-                                                    preset = ZoomIn(),
-                                                    enabled = scrollZoomAnimationEnabled,
-                                                    durationMillis = 200,
-                                                ) { isAnimated ->
-                                                    LaunchedEffect(Unit) {
-                                                        if (firstLazyListState.isScrollInProgress && isAnimated && abs(speedState.pxPerSecond) > 4000) {
-                                                            vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
-                                                        }
-                                                    }
-                                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                                        val grade = it.grades?.getOrNull(0)
-                                                        val notRead = grade?.read == false && viewModel.user.value?.role == "guardian"
-                                                        ListItem(
-                                                            modifier = Modifier.weight(1f),
-                                                            headlineContent = {
-                                                                Text("${it.subject?.name}: ${it.name}")
-                                                            },
-                                                            supportingContent = {
-                                                                Column {
-                                                                    Text("${it.type} vom ${formateDate(it.givenAt)}")
-
-                                                                    val collectionHistories = it.histories ?: emptyList()
-                                                                    val gradeHistories = grade?.histories ?: emptyList()
-
-                                                                    val teachers =
-                                                                        (collectionHistories + gradeHistories)
-                                                                            .map { (it.conductor?.id ?: 0) to (it.conductor?.name ?: "") }
-                                                                            .distinct()
-
-                                                                    if ((collectionHistories.isNotEmpty() || gradeHistories.isNotEmpty()) && showGradeHistory) {
-                                                                        Spacer(Modifier.height(10.dp))
-                                                                        Text("Historie:", textDecoration = TextDecoration.Underline)
-                                                                        collectionHistories.filterHistory().forEach {
-                                                                            Row {
-                                                                                Text(
-                                                                                    "${if (showTeachersWithFirstname) {
-                                                                                        it.conductor?.forename
-                                                                                    } else {
-                                                                                        it.conductor?.forename?.take(
-                                                                                            1,
-                                                                                        ) + "."
-                                                                                    }} ${it.conductor?.name}: ",
-                                                                                )
-                                                                                Text(translateHistoryBody("Leistung", it.body, teachers))
-                                                                            }
-                                                                        }
-                                                                        gradeHistories.filterHistory().forEach {
-                                                                            Row {
-                                                                                Text(
-                                                                                    "${if (showTeachersWithFirstname) {
-                                                                                        it.conductor?.forename
-                                                                                    } else {
-                                                                                        it.conductor?.forename?.take(
-                                                                                            1,
-                                                                                        ) + "."
-                                                                                    }} ${it.conductor?.name}: ",
-                                                                                )
-                                                                                Text(translateHistoryBody("Note", it.body, teachers))
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            },
-                                                            leadingContent = {
-                                                                BadgedBox(
-                                                                    badge = {
-                                                                        if (notRead) {
-                                                                            Badge {
-                                                                                Text("N")
-                                                                            }
-                                                                        }
-                                                                    },
-                                                                ) {
-                                                                    GradeValueBox(grade?.value, viewModel.levelFor(it))
-                                                                }
-                                                            },
-                                                            colors = ListItemDefaults.colors(Color.Transparent),
-                                                        )
-                                                        EnhancedAnimatedVisibility(notRead) {
-                                                            val isLoading = grade?.id in viewModel.gradesBeingMarkedAsRead
-                                                            Box(
-                                                                modifier = Modifier.padding(10.dp),
-                                                                contentAlignment = Alignment.Center,
-                                                            ) {
-                                                                EnhancedIconButton(
-                                                                    enabled = !isLoading,
-                                                                    onClick = {
-                                                                        grade?.let {
-                                                                            viewModel.viewModelScope.launch {
-                                                                                viewModel.markGradeAsRead(it)
-                                                                            }
-                                                                        }
-                                                                    },
-                                                                ) {
-                                                                    Icon(imageVector = MaterialSymbols.Rounded.Check, null)
-                                                                }
-                                                                this@Row.EnhancedAnimatedVisibility(isLoading) {
-                                                                    CircularWavyProgressIndicator(Modifier.size(32.dp))
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
+                EnhancedContentBlur(
+                    blurRadius = contentBlurRadius,
+                    modifier = Modifier.hazeSource(viewModel.hazeBackgroundState),
+                ) {
+                    HorizontalPager(
+                        state = pagerState,
+                        beyondViewportPageCount = 1,
+                        userScrollEnabled = gradesViewModel.userScrollEnabled,
+                    ) { currentPage ->
+                        EnhancedAnimatedContent(gradesViewModel.isLoading || filteredGradeItems.isEmpty()) { targetState ->
+                            Box(Modifier.fillMaxSize()) {
+                                if (targetState) {
+                                    EnhancedAnimatedContent(gradesViewModel.isLoading) { isLoading ->
+                                        if (isLoading) {
+                                            Box(
+                                                modifier = Modifier.padding(overlayPadding).fillMaxSize(),
+                                                contentAlignment = Alignment.Center,
+                                            ) {
+                                                ContainedLoadingIndicator()
                                             }
+                                        } else {
+                                            EmptyStateMessage(
+                                                title = if (gradesViewModel.searchQuery.isEmpty()) "Keine Noten vorhanden" else "Keine Noten gefunden",
+                                                icon = if (gradesViewModel.searchQuery.isEmpty()) MaterialSymbols.Rounded.Playlist_remove else MaterialSymbols.Rounded.Search_off,
+                                                modifier = Modifier.padding(overlayPadding).consumeWindowInsets(overlayPadding).imePadding(),
+                                            )
                                         }
                                     }
-
-                                    1 -> {
-                                        val speedState = rememberLazyListScrollSpeedState(secondLazyListState)
-                                        val stickyHeaderStartInset =
-                                            with(density) {
-                                                (verticalPadding.calculateStartPadding(layoutDirection) + 10.dp).toPx()
-                                            }
-                                        val stickyHeaderEndInset =
-                                            with(density) {
-                                                (verticalPadding.calculateEndPadding(layoutDirection) + 10.dp).toPx()
-                                            }
-                                        val stickyHeaderCornerRadius = with(density) { 28.5.dp.toPx() }
-                                        val stickyHeaderClipTopInset = with(density) { 1.5.dp.toPx() }
-                                        val nativeStickyHeaderClipShape =
-                                            remember(stickyHeaderStartInset, stickyHeaderEndInset, stickyHeaderCornerRadius, stickyHeaderClipTopInset) {
-                                                GenericShape { size, _ ->
-                                                    val left = stickyHeaderStartInset
-                                                    val right = size.width - stickyHeaderEndInset
-                                                    val radius = stickyHeaderCornerRadius
-                                                    val top = stickyHeaderClipTopInset
-                                                    val cornerBottom = top + radius
-                                                    val control = radius * 0.5522848f
-                                                    moveTo(left + radius, top)
-                                                    lineTo(right - radius, top)
-                                                    cubicTo(
-                                                        right - radius + control,
-                                                        top,
-                                                        right,
-                                                        cornerBottom - control,
-                                                        right,
-                                                        cornerBottom,
-                                                    )
-                                                    lineTo(size.width, cornerBottom)
-                                                    lineTo(size.width, size.height)
-                                                    lineTo(0f, size.height)
-                                                    lineTo(0f, cornerBottom)
-                                                    lineTo(left, cornerBottom)
-                                                    cubicTo(
-                                                        left,
-                                                        cornerBottom - control,
-                                                        left + radius - control,
-                                                        top,
-                                                        left + radius,
-                                                        top,
-                                                    )
-                                                    close()
-                                                }
-                                            }
-                                        LazyColumn(
-                                            state = secondLazyListState,
-                                            modifier =
-                                                Modifier
-                                                    .fillMaxSize()
-                                                    .padding(top = contentPadding.calculateTopPadding())
-                                                    .then(
-                                                        if (nativeComponentsEnabled) {
-                                                            Modifier.clip(nativeStickyHeaderClipShape)
-                                                        } else {
-                                                            Modifier
-                                                        },
-                                                    ),
-                                            contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
-                                            userScrollEnabled = gradesViewModel.userScrollEnabled,
-                                        ) {
-                                            subjectGroupedGradeItems.forEach { (title, subjectItems) ->
-                                                stickyHeader {
-                                                    EnhancedAnimated(
-                                                        preset = ZoomIn(),
-                                                        enabled = scrollZoomAnimationEnabled,
-                                                        durationMillis = 200,
-                                                    ) { isAnimated ->
-                                                        LaunchedEffect(Unit) {
-                                                            if (secondLazyListState.isScrollInProgress && isAnimated && abs(speedState.pxPerSecond) > 4000) {
-                                                                vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
-                                                            }
-                                                        }
-                                                        val subjectKey = remember(title, subjectItems) { gradeAverageCalculator.subjectWeightingKey(title, subjectItems) }
-                                                        val averageText =
-                                                            remember(
-                                                                gradeAverageEnabled,
-                                                                subjectKey,
-                                                                subjectItems,
-                                                                subjectWeightings.toMap(),
-                                                                gradeAverageUseWeighting,
-                                                                viewModel.levelsByYear.toMap(),
-                                                            ) {
-                                                                if (gradeAverageEnabled) {
-                                                                    val typeNames = gradeAverageCalculator.subjectTypeNames(subjectItems)
-                                                                    val subjectWeighting =
-                                                                        subjectWeightings[subjectKey] ?: gradeAverageCalculator.loadSubjectWeighting(
-                                                                            kSafe = kSafe,
-                                                                            subjectKey = subjectKey,
-                                                                            typeNames = typeNames,
-                                                                            useWeightingInsteadOfPercent = gradeAverageUseWeighting,
-                                                                        )
-                                                                    gradeAverageCalculator.formatAverageLabel(
-                                                                        gradeAverageCalculator.calculateSubjectAverage(
-                                                                            collections = subjectItems,
-                                                                            weighting = subjectWeighting,
-                                                                            useWeightingInsteadOfPercent = gradeAverageUseWeighting,
-                                                                            level = subjectItems.firstNotNullOfOrNull { viewModel.levelFor(it) },
-                                                                        ),
-                                                                    )
-                                                                } else {
-                                                                    null
-                                                                }
-                                                            }
-                                                        val interactionSource = remember { MutableInteractionSource() }
-                                                        Column(
-                                                            Modifier
-                                                                .fillMaxWidth()
-                                                                .height(56.dp)
-                                                                .then(
-                                                                    if (nativeComponentsEnabled) {
-                                                                        Modifier
-                                                                            .padding(verticalPadding)
-                                                                            .padding(horizontal = 10.dp)
-                                                                            .clip(RoundedCornerShape(28.dp))
-                                                                    } else {
-                                                                        Modifier
-                                                                    },
-                                                                ).then(
-                                                                    if (gradeAverageEnabled && !isOpened) {
-                                                                        Modifier
-                                                                            .hoverable(interactionSource)
-                                                                            .indication(
-                                                                                interactionSource,
-                                                                                if (getPlatform() == Platform.ANDROID) ripple() else LocalIndication.current,
-                                                                            ).pointerInput(Unit) {
-                                                                                detectTapGestures(
-                                                                                    onPress = { offset ->
-                                                                                        val press = PressInteraction.Press(offset)
-                                                                                        interactionSource.emit(press)
-                                                                                        tryAwaitRelease()
-                                                                                        interactionSource.emit(PressInteraction.Release(press))
-                                                                                    },
-                                                                                    onTap = {
-                                                                                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
-                                                                                        weightingDialogState =
-                                                                                            SubjectWeightingDialogState(
-                                                                                                subjectTitle = title ?: "Kein Fach",
-                                                                                                subjectKey = subjectKey,
-                                                                                                subjectCollections = subjectItems,
-                                                                                            )
-                                                                                        weightingDialogVisible = true
-                                                                                    },
-                                                                                )
-                                                                            }
-                                                                    } else {
-                                                                        Modifier
-                                                                    },
-                                                                ),
-                                                        ) {
-                                                            if (!nativeComponentsEnabled) HorizontalDivider(thickness = 1.dp)
-                                                            Box(Modifier.weight(1f)) {
-                                                                Box(
-                                                                    Modifier
-                                                                        .fillMaxSize()
-                                                                        .enhancedHazeEffect(
-                                                                            hazeState =
-                                                                                if (nativeComponentsEnabled) {
-                                                                                    viewModel.hazeBackgroundState2
-                                                                                } else {
-                                                                                    viewModel.hazeBackgroundState3
-                                                                                },
-                                                                            color = colorScheme.secondaryContainer,
-                                                                        ).then(
-                                                                            if (nativeComponentsEnabled) {
-                                                                                Modifier
-                                                                            } else {
-                                                                                Modifier.enhancedHazeEffect(viewModel.hazeBackgroundState2, colorScheme.secondaryContainer) {
-                                                                                    mask(Brush.verticalGradient(colors = listOf(Color.Transparent, Color.Red)))
-                                                                                }
-                                                                            },
-                                                                        ),
-                                                                )
-                                                                Row(
-                                                                    modifier =
-                                                                        Modifier
-                                                                            .fillMaxSize()
-                                                                            .padding(horizontal = 16.dp)
-                                                                            .then(if (nativeComponentsEnabled) Modifier else Modifier.padding(verticalPadding)),
-                                                                    verticalAlignment = Alignment.CenterVertically,
-                                                                ) {
-                                                                    Text(
-                                                                        text = title ?: "Kein Fach",
-                                                                        modifier = Modifier.weight(1f),
-                                                                        style = typography.titleMedium,
-                                                                        maxLines = 1,
-                                                                        overflow = TextOverflow.Ellipsis,
-                                                                    )
-                                                                    if (averageText != null && !isOpened) {
-                                                                        Text(
-                                                                            text = averageText,
-                                                                            style = typography.titleMedium,
-                                                                            fontFamily = FontFamilies.Sniglet,
-                                                                            maxLines = 1,
-                                                                            overflow = TextOverflow.Ellipsis,
-                                                                        )
-                                                                    }
-                                                                }
-                                                            }
-                                                            if (!nativeComponentsEnabled) HorizontalDivider(thickness = 1.dp)
-                                                        }
-                                                    }
-                                                }
-                                                items(subjectItems, key = { it.id }) {
+                                } else {
+                                    when (currentPage) {
+                                        0 -> {
+                                            val speedState = rememberLazyListScrollSpeedState(firstLazyListState)
+                                            LazyColumn(
+                                                state = firstLazyListState,
+                                                contentPadding = contentPadding,
+                                                userScrollEnabled = gradesViewModel.userScrollEnabled,
+                                            ) {
+                                                items(dateSortedGradeItems, key = { it.id }) {
                                                     EnhancedAnimated(
                                                         modifier = Modifier.padding(verticalPadding),
                                                         preset = ZoomIn(),
@@ -681,7 +371,7 @@ fun Grades(
                                                         durationMillis = 200,
                                                     ) { isAnimated ->
                                                         LaunchedEffect(Unit) {
-                                                            if (secondLazyListState.isScrollInProgress && isAnimated && abs(speedState.pxPerSecond) > 4000) {
+                                                            if (firstLazyListState.isScrollInProgress && isAnimated && abs(speedState.pxPerSecond) > 4000) {
                                                                 vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
                                                             }
                                                         }
@@ -689,12 +379,13 @@ fun Grades(
                                                             val grade = it.grades?.getOrNull(0)
                                                             val notRead = grade?.read == false && viewModel.user.value?.role == "guardian"
                                                             ListItem(
+                                                                modifier = Modifier.weight(1f),
                                                                 headlineContent = {
-                                                                    Text("${it.name} - ${it.type}")
+                                                                    Text("${it.subject?.name}: ${it.name}")
                                                                 },
                                                                 supportingContent = {
                                                                     Column {
-                                                                        Text("Gegeben am ${formateDate(it.givenAt)}")
+                                                                        Text("${it.type} vom ${formateDate(it.givenAt)}")
 
                                                                         val collectionHistories = it.histories ?: emptyList()
                                                                         val gradeHistories = grade?.histories ?: emptyList()
@@ -752,7 +443,6 @@ fun Grades(
                                                                     }
                                                                 },
                                                                 colors = ListItemDefaults.colors(Color.Transparent),
-                                                                modifier = Modifier.weight(1f).hazeSource(viewModel.hazeBackgroundState2),
                                                             )
                                                             EnhancedAnimatedVisibility(notRead) {
                                                                 val isLoading = grade?.id in viewModel.gradesBeingMarkedAsRead
@@ -774,6 +464,324 @@ fun Grades(
                                                                     }
                                                                     this@Row.EnhancedAnimatedVisibility(isLoading) {
                                                                         CircularWavyProgressIndicator(Modifier.size(32.dp))
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        1 -> {
+                                            val speedState = rememberLazyListScrollSpeedState(secondLazyListState)
+                                            val stickyHeaderStartInset =
+                                                with(density) {
+                                                    (verticalPadding.calculateStartPadding(layoutDirection) + 10.dp).toPx()
+                                                }
+                                            val stickyHeaderEndInset =
+                                                with(density) {
+                                                    (verticalPadding.calculateEndPadding(layoutDirection) + 10.dp).toPx()
+                                                }
+                                            val stickyHeaderCornerRadius = with(density) { 28.5.dp.toPx() }
+                                            val stickyHeaderClipTopInset = with(density) { 1.5.dp.toPx() }
+                                            val nativeStickyHeaderClipShape =
+                                                remember(stickyHeaderStartInset, stickyHeaderEndInset, stickyHeaderCornerRadius, stickyHeaderClipTopInset) {
+                                                    GenericShape { size, _ ->
+                                                        val left = stickyHeaderStartInset
+                                                        val right = size.width - stickyHeaderEndInset
+                                                        val radius = stickyHeaderCornerRadius
+                                                        val top = stickyHeaderClipTopInset
+                                                        val cornerBottom = top + radius
+                                                        val control = radius * 0.5522848f
+                                                        moveTo(left + radius, top)
+                                                        lineTo(right - radius, top)
+                                                        cubicTo(
+                                                            right - radius + control,
+                                                            top,
+                                                            right,
+                                                            cornerBottom - control,
+                                                            right,
+                                                            cornerBottom,
+                                                        )
+                                                        lineTo(size.width, cornerBottom)
+                                                        lineTo(size.width, size.height)
+                                                        lineTo(0f, size.height)
+                                                        lineTo(0f, cornerBottom)
+                                                        lineTo(left, cornerBottom)
+                                                        cubicTo(
+                                                            left,
+                                                            cornerBottom - control,
+                                                            left + radius - control,
+                                                            top,
+                                                            left + radius,
+                                                            top,
+                                                        )
+                                                        close()
+                                                    }
+                                                }
+                                            LazyColumn(
+                                                state = secondLazyListState,
+                                                modifier =
+                                                    Modifier
+                                                        .fillMaxSize()
+                                                        .padding(top = contentPadding.calculateTopPadding())
+                                                        .then(
+                                                            if (nativeComponentsEnabled) {
+                                                                Modifier.clip(nativeStickyHeaderClipShape)
+                                                            } else {
+                                                                Modifier
+                                                            },
+                                                        ),
+                                                contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding()),
+                                                userScrollEnabled = gradesViewModel.userScrollEnabled,
+                                            ) {
+                                                subjectGroupedGradeItems.forEach { (title, subjectItems) ->
+                                                    stickyHeader {
+                                                        EnhancedAnimated(
+                                                            preset = ZoomIn(),
+                                                            enabled = scrollZoomAnimationEnabled,
+                                                            durationMillis = 200,
+                                                        ) { isAnimated ->
+                                                            LaunchedEffect(Unit) {
+                                                                if (secondLazyListState.isScrollInProgress && isAnimated && abs(speedState.pxPerSecond) > 4000) {
+                                                                    vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
+                                                                }
+                                                            }
+                                                            val subjectKey = remember(title, subjectItems) { gradeAverageCalculator.subjectWeightingKey(title, subjectItems) }
+                                                            val storedSubjectWeighting = subjectWeightings[subjectKey]
+                                                            val subjectLevel = subjectItems.firstNotNullOfOrNull { viewModel.levelFor(it) }
+                                                            val averageText =
+                                                                remember(
+                                                                    gradeAverageEnabled,
+                                                                    subjectKey,
+                                                                    subjectItems,
+                                                                    storedSubjectWeighting,
+                                                                    gradeAverageUseWeighting,
+                                                                    subjectLevel,
+                                                                ) {
+                                                                    if (gradeAverageEnabled) {
+                                                                        val typeNames = gradeAverageCalculator.subjectTypeNames(subjectItems)
+                                                                        val subjectWeighting =
+                                                                            storedSubjectWeighting ?: gradeAverageCalculator.loadSubjectWeighting(
+                                                                                kSafe = kSafe,
+                                                                                subjectKey = subjectKey,
+                                                                                typeNames = typeNames,
+                                                                                useWeightingInsteadOfPercent = gradeAverageUseWeighting,
+                                                                            )
+                                                                        gradeAverageCalculator.formatAverageLabel(
+                                                                            gradeAverageCalculator.calculateSubjectAverage(
+                                                                                collections = subjectItems,
+                                                                                weighting = subjectWeighting,
+                                                                                useWeightingInsteadOfPercent = gradeAverageUseWeighting,
+                                                                                level = subjectLevel,
+                                                                            ),
+                                                                        )
+                                                                    } else {
+                                                                        null
+                                                                    }
+                                                                }
+                                                            val interactionSource = remember { MutableInteractionSource() }
+                                                            Column(
+                                                                Modifier
+                                                                    .fillMaxWidth()
+                                                                    .height(56.dp)
+                                                                    .then(
+                                                                        if (nativeComponentsEnabled) {
+                                                                            Modifier
+                                                                                .padding(verticalPadding)
+                                                                                .padding(horizontal = 10.dp)
+                                                                                .clip(RoundedCornerShape(28.dp))
+                                                                        } else {
+                                                                            Modifier
+                                                                        },
+                                                                    ).then(
+                                                                        if (gradeAverageEnabled && !isOpened) {
+                                                                            Modifier
+                                                                                .hoverable(interactionSource)
+                                                                                .indication(
+                                                                                    interactionSource,
+                                                                                    if (getPlatform() == Platform.ANDROID) ripple() else LocalIndication.current,
+                                                                                ).pointerInput(Unit) {
+                                                                                    detectTapGestures(
+                                                                                        onPress = { offset ->
+                                                                                            val press = PressInteraction.Press(offset)
+                                                                                            interactionSource.emit(press)
+                                                                                            tryAwaitRelease()
+                                                                                            interactionSource.emit(PressInteraction.Release(press))
+                                                                                        },
+                                                                                        onTap = {
+                                                                                            vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                                                                                            weightingDialogState =
+                                                                                                SubjectWeightingDialogState(
+                                                                                                    subjectTitle = title ?: "Kein Fach",
+                                                                                                    subjectKey = subjectKey,
+                                                                                                    subjectCollections = subjectItems,
+                                                                                                )
+                                                                                            weightingDialogVisible = true
+                                                                                        },
+                                                                                    )
+                                                                                }
+                                                                        } else {
+                                                                            Modifier
+                                                                        },
+                                                                    ),
+                                                            ) {
+                                                                if (!nativeComponentsEnabled) HorizontalDivider(thickness = 1.dp)
+                                                                Box(Modifier.weight(1f)) {
+                                                                    Box(
+                                                                        Modifier
+                                                                            .fillMaxSize()
+                                                                            .enhancedHazeEffect(
+                                                                                hazeState =
+                                                                                    if (nativeComponentsEnabled) {
+                                                                                        viewModel.hazeBackgroundState2
+                                                                                    } else {
+                                                                                        viewModel.hazeBackgroundState3
+                                                                                    },
+                                                                                color = colorScheme.secondaryContainer,
+                                                                            ).then(
+                                                                                if (nativeComponentsEnabled) {
+                                                                                    Modifier
+                                                                                } else {
+                                                                                    Modifier.enhancedHazeEffect(viewModel.hazeBackgroundState2, colorScheme.secondaryContainer) {
+                                                                                        mask(Brush.verticalGradient(colors = listOf(Color.Transparent, Color.Red)))
+                                                                                    }
+                                                                                },
+                                                                            ),
+                                                                    )
+                                                                    Row(
+                                                                        modifier =
+                                                                            Modifier
+                                                                                .fillMaxSize()
+                                                                                .padding(horizontal = 16.dp)
+                                                                                .then(if (nativeComponentsEnabled) Modifier else Modifier.padding(verticalPadding)),
+                                                                        verticalAlignment = Alignment.CenterVertically,
+                                                                    ) {
+                                                                        Text(
+                                                                            text = title ?: "Kein Fach",
+                                                                            modifier = Modifier.weight(1f),
+                                                                            style = typography.titleMedium,
+                                                                            maxLines = 1,
+                                                                            overflow = TextOverflow.Ellipsis,
+                                                                        )
+                                                                        if (averageText != null && !isOpened) {
+                                                                            Text(
+                                                                                text = averageText,
+                                                                                style = typography.titleMedium,
+                                                                                fontFamily = FontFamilies.Sniglet,
+                                                                                maxLines = 1,
+                                                                                overflow = TextOverflow.Ellipsis,
+                                                                            )
+                                                                        }
+                                                                    }
+                                                                }
+                                                                if (!nativeComponentsEnabled) HorizontalDivider(thickness = 1.dp)
+                                                            }
+                                                        }
+                                                    }
+                                                    items(subjectItems, key = { it.id }) {
+                                                        EnhancedAnimated(
+                                                            modifier = Modifier.padding(verticalPadding),
+                                                            preset = ZoomIn(),
+                                                            enabled = scrollZoomAnimationEnabled,
+                                                            durationMillis = 200,
+                                                        ) { isAnimated ->
+                                                            LaunchedEffect(Unit) {
+                                                                if (secondLazyListState.isScrollInProgress && isAnimated && abs(speedState.pxPerSecond) > 4000) {
+                                                                    vibrator.enhancedVibrate(EnhancedVibrations.LOW_TICK)
+                                                                }
+                                                            }
+                                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                                val grade = it.grades?.getOrNull(0)
+                                                                val notRead = grade?.read == false && viewModel.user.value?.role == "guardian"
+                                                                ListItem(
+                                                                    headlineContent = {
+                                                                        Text("${it.name} - ${it.type}")
+                                                                    },
+                                                                    supportingContent = {
+                                                                        Column {
+                                                                            Text("Gegeben am ${formateDate(it.givenAt)}")
+
+                                                                            val collectionHistories = it.histories ?: emptyList()
+                                                                            val gradeHistories = grade?.histories ?: emptyList()
+
+                                                                            val teachers =
+                                                                                (collectionHistories + gradeHistories)
+                                                                                    .map { (it.conductor?.id ?: 0) to (it.conductor?.name ?: "") }
+                                                                                    .distinct()
+
+                                                                            if ((collectionHistories.isNotEmpty() || gradeHistories.isNotEmpty()) && showGradeHistory) {
+                                                                                Spacer(Modifier.height(10.dp))
+                                                                                Text("Historie:", textDecoration = TextDecoration.Underline)
+                                                                                collectionHistories.filterHistory().forEach {
+                                                                                    Row {
+                                                                                        Text(
+                                                                                            "${if (showTeachersWithFirstname) {
+                                                                                                it.conductor?.forename
+                                                                                            } else {
+                                                                                                it.conductor?.forename?.take(
+                                                                                                    1,
+                                                                                                ) + "."
+                                                                                            }} ${it.conductor?.name}: ",
+                                                                                        )
+                                                                                        Text(translateHistoryBody("Leistung", it.body, teachers))
+                                                                                    }
+                                                                                }
+                                                                                gradeHistories.filterHistory().forEach {
+                                                                                    Row {
+                                                                                        Text(
+                                                                                            "${if (showTeachersWithFirstname) {
+                                                                                                it.conductor?.forename
+                                                                                            } else {
+                                                                                                it.conductor?.forename?.take(
+                                                                                                    1,
+                                                                                                ) + "."
+                                                                                            }} ${it.conductor?.name}: ",
+                                                                                        )
+                                                                                        Text(translateHistoryBody("Note", it.body, teachers))
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    },
+                                                                    leadingContent = {
+                                                                        BadgedBox(
+                                                                            badge = {
+                                                                                if (notRead) {
+                                                                                    Badge {
+                                                                                        Text("N")
+                                                                                    }
+                                                                                }
+                                                                            },
+                                                                        ) {
+                                                                            GradeValueBox(grade?.value, viewModel.levelFor(it))
+                                                                        }
+                                                                    },
+                                                                    colors = ListItemDefaults.colors(Color.Transparent),
+                                                                    modifier = Modifier.weight(1f).hazeSource(viewModel.hazeBackgroundState2),
+                                                                )
+                                                                EnhancedAnimatedVisibility(notRead) {
+                                                                    val isLoading = grade?.id in viewModel.gradesBeingMarkedAsRead
+                                                                    Box(
+                                                                        modifier = Modifier.padding(10.dp),
+                                                                        contentAlignment = Alignment.Center,
+                                                                    ) {
+                                                                        EnhancedIconButton(
+                                                                            enabled = !isLoading,
+                                                                            onClick = {
+                                                                                grade?.let {
+                                                                                    viewModel.viewModelScope.launch {
+                                                                                        viewModel.markGradeAsRead(it)
+                                                                                    }
+                                                                                }
+                                                                            },
+                                                                        ) {
+                                                                            Icon(imageVector = MaterialSymbols.Rounded.Check, null)
+                                                                        }
+                                                                        this@Row.EnhancedAnimatedVisibility(isLoading) {
+                                                                            CircularWavyProgressIndicator(Modifier.size(32.dp))
+                                                                        }
                                                                     }
                                                                 }
                                                             }
@@ -888,7 +896,10 @@ fun Grades(
                     }
                     val backHandlingModifier =
                         if (isBackInProgress) {
-                            Modifier.scale(1f - (backProgress * 0.2f))
+                            Modifier.graphicsLayer {
+                                scaleX = 1f - (backProgress * 0.2f)
+                                scaleY = 1f - (backProgress * 0.2f)
+                            }
                         } else {
                             Modifier
                         }
@@ -1271,6 +1282,12 @@ fun Grades(
                             }
 
                             3 -> {
+                                var settingsControlsReady by remember { mutableStateOf(!nativeComponentsEnabled) }
+                                LaunchedEffect(Unit) {
+                                    delay(60.milliseconds)
+                                    settingsControlsReady = true
+                                }
+                                val settingsControlsVisible = targetState == gradesViewModel.toolbarState && settingsControlsReady
                                 Box(
                                     contentAlignment = Alignment.BottomCenter,
                                 ) {
@@ -1318,7 +1335,7 @@ fun Grades(
                                                         icon = MathAvg,
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Top,
-                                                        controlVisible = targetState == gradesViewModel.toolbarState,
+                                                        controlVisible = settingsControlsVisible,
                                                         nativeControlFadeIn = true,
                                                     )
                                                     settingsToggleItem(
@@ -1338,7 +1355,7 @@ fun Grades(
                                                         icon = MaterialSymbols.Rounded.Balance,
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Middle,
-                                                        controlVisible = targetState == gradesViewModel.toolbarState,
+                                                        controlVisible = settingsControlsVisible,
                                                         nativeControlFadeIn = true,
                                                     )
                                                 }
@@ -1359,7 +1376,7 @@ fun Grades(
                                                         } else {
                                                             PreferencePosition.Middle
                                                         },
-                                                    controlVisible = targetState == gradesViewModel.toolbarState,
+                                                    controlVisible = settingsControlsVisible,
                                                     nativeControlFadeIn = true,
                                                 )
                                                 if (!viewModel.isDemoAccount.value && !isOpened) {
@@ -1373,7 +1390,7 @@ fun Grades(
                                                         icon = MaterialSymbols.Rounded.Disabled_visible,
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Middle,
-                                                        controlVisible = targetState == gradesViewModel.toolbarState,
+                                                        controlVisible = settingsControlsVisible,
                                                         nativeControlFadeIn = true,
                                                     )
                                                     settingsToggleItem(
@@ -1386,7 +1403,7 @@ fun Grades(
                                                         icon = MaterialSymbols.Rounded.Title,
                                                         textModifier = Modifier.skipToLookaheadSize(),
                                                         position = PreferencePosition.Bottom,
-                                                        controlVisible = targetState == gradesViewModel.toolbarState,
+                                                        controlVisible = settingsControlsVisible,
                                                         nativeControlFadeIn = true,
                                                     )
                                                 }

@@ -38,6 +38,7 @@ import com.hansholz.bestenotenapp.components.ProvidePlatformInteractionFeedback
 import com.hansholz.bestenotenapp.components.ScatterConfig
 import com.hansholz.bestenotenapp.components.ScatterItem
 import com.hansholz.bestenotenapp.components.ScatteredIconBackground
+import com.hansholz.bestenotenapp.components.cacheAsBitmap
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.navigation.AppNavigation
 import com.hansholz.bestenotenapp.reviews.StoreReviewHost
@@ -118,6 +119,7 @@ fun App(
                                     .hazeSource(viewModel.hazeBackgroundState1)
                                     .hazeSource(viewModel.hazeBackgroundState2)
                                     .hazeSource(viewModel.hazeBackgroundState3)
+                                    .cacheAsBitmap(backgroundAlpha, blurEnabled)
                                     .enhancedHazeEffect(),
                             config =
                                 ScatterConfig(

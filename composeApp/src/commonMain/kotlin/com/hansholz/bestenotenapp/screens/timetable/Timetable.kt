@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.rememberScrollState
@@ -79,7 +80,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.PredictiveBackHandler
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -115,6 +115,7 @@ import com.hansholz.bestenotenapp.components.TopAppBarScaffold
 import com.hansholz.bestenotenapp.components.capturable
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedContentBlur
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
@@ -409,12 +410,16 @@ fun Timetable(
                     }
                 }
 
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier.hazeSource(viewModel.hazeBackgroundState).enhancedHazeEffect(blurRadius = contentBlurRadius.value),
-                    beyondViewportPageCount = 1,
-                    userScrollEnabled = timetableViewModel.userScrollEnabled && !lessonPopupShown.value,
-                ) { pageContent(it) }
+                EnhancedContentBlur(
+                    blurRadius = contentBlurRadius,
+                    modifier = Modifier.hazeSource(viewModel.hazeBackgroundState),
+                ) {
+                    HorizontalPager(
+                        state = pagerState,
+                        beyondViewportPageCount = 1,
+                        userScrollEnabled = timetableViewModel.userScrollEnabled && !lessonPopupShown.value,
+                    ) { pageContent(it) }
+                }
                 topAppBarBackground(innerPadding.calculateTopPadding())
 
                 SharedTransitionLayout(
@@ -455,7 +460,10 @@ fun Timetable(
                     }
                     val backHandlingModifier =
                         if (isBackInProgress) {
-                            Modifier.scale(1f - (backProgress * 0.2f))
+                            Modifier.graphicsLayer {
+                                scaleX = 1f - (backProgress * 0.2f)
+                                scaleY = 1f - (backProgress * 0.2f)
+                            }
                         } else {
                             Modifier
                         }
@@ -715,7 +723,7 @@ fun Timetable(
                                         AdaptiveDatePicker(
                                             selectedDateMillis = datePickerState.selectedDateMillis,
                                             onSelectedDateChanged = { datePickerState.selectedDateMillis = it },
-                                            modifier = Modifier.requiredHeight(370.dp).requiredWidth(400.dp),
+                                            modifier = Modifier.requiredHeight(370.dp).widthIn(max = 400.dp).fillMaxWidth(),
                                         ) {
                                             DatePicker(
                                                 state = datePickerState,

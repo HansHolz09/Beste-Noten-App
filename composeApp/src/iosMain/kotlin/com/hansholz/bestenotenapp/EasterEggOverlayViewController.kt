@@ -27,7 +27,10 @@ fun easterEggOverlayViewController(nativeBridge: NativeComponentBridge): UIViewC
                         if (event != "logo") vibrator.enhancedVibrateN(EnhancedVibrations.EXPLOSION)
                     },
                     onParticleSystemEnded = { _, activeSystems ->
-                        if (activeSystems == 0) nativeBridge.easterEggState.value = null
+                        if (activeSystems == 0) {
+                            nativeBridge.easterEggState.value = null
+                            nativeBridge.easterEggOverlayView?.hidden = true
+                        }
                     },
                 )
             }
@@ -36,4 +39,6 @@ fun easterEggOverlayViewController(nativeBridge: NativeComponentBridge): UIViewC
         controller.view.backgroundColor = UIColor.clearColor
         controller.view.opaque = false
         controller.view.userInteractionEnabled = false
+        controller.view.hidden = true
+        nativeBridge.easterEggOverlayView = controller.view
     }

@@ -80,9 +80,11 @@ final class PrimaryTabsPaletteContentView: UIView {
         layoutDisplayLink?.invalidate()
         layoutDisplayLink = nil
         if window != nil {
-            let link = CADisplayLink(target: self, selector: #selector(updateTabLayout))
-            link.add(to: .main, forMode: .common)
-            layoutDisplayLink = link
+            if traitCollection.userInterfaceIdiom == .pad {
+                let link = CADisplayLink(target: self, selector: #selector(updateTabLayout))
+                link.add(to: .main, forMode: .common)
+                layoutDisplayLink = link
+            }
             updateLayout()
         }
     }

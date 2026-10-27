@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.navigation.NavController
 import com.hansholz.bestenotenapp.components.hideNativeSwitches
 import com.hansholz.bestenotenapp.components.showNativeSwitches
+import platform.UIKit.UIView
 
 class NativeComponentBridge {
     internal val enabledState = mutableStateOf(true)
@@ -15,6 +16,7 @@ class NativeComponentBridge {
     internal val easterEggState = mutableStateOf<String?>(null)
     internal val sidebarTopInsetState = mutableStateOf(15.0)
     internal val contentTopInsetState = mutableStateOf(0.0)
+    internal var easterEggOverlayView: UIView? = null
 
     private var navController: NavController? = null
     private var rootDestinationChanged: ((String) -> Unit)? = null
@@ -61,6 +63,7 @@ class NativeComponentBridge {
     fun navigateBack(): Boolean = navController?.popBackStack() ?: false
 
     fun showEasterEgg(type: String) {
+        easterEggOverlayView?.hidden = false
         easterEggState.value = null
         easterEggState.value = type
     }

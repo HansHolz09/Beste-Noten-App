@@ -72,6 +72,7 @@ internal fun NativeSwitch(
                         UISwitch().apply {
                             translatesAutoresizingMaskIntoConstraints = false
                             onTintColor = null
+                            on = checked
                             alpha = if (fadeIn) 0.0 else 1.0
                             addTarget(target, NSSelectorFromString("valueChanged:"), UIControlEventValueChanged)
                         }
@@ -131,7 +132,7 @@ private class NativeSwitchContainerView(
         contentVisible = visible
         val toggle = subviews.firstOrNull() as? UISwitch ?: return
         if (visible) {
-            animateWithDuration(0.25) {
+            animateWithDuration(0.4) {
                 toggle.alpha = 1.0
             }
         } else {

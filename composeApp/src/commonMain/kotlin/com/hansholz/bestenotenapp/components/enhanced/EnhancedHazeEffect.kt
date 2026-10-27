@@ -1,9 +1,12 @@
 package com.hansholz.bestenotenapp.components.enhanced
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.graphics.Color
@@ -48,7 +51,7 @@ fun Modifier.enhancedHazeEffect(
                             whitePoint(0.15f)
                             shape(RoundedCornerShape(32.dp))
                         },
-                    performanceMode = HazePerformanceMode.Balanced,
+                    performanceMode = HazePerformanceMode.Performance,
                 )
             } else {
                 this.hazeBlur(
@@ -93,4 +96,16 @@ fun Modifier.enhancedHazeEffect(
             this
         }
     }
+}
+
+@Composable
+fun EnhancedContentBlur(
+    blurRadius: State<Dp>,
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    Box(
+        modifier = modifier.enhancedHazeEffect(blurRadius = blurRadius.value),
+        content = content,
+    )
 }

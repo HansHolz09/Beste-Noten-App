@@ -63,9 +63,9 @@ import com.composables.icons.materialsymbols.rounded.Close
 import com.hansholz.bestenotenapp.api.models.Absence
 import com.hansholz.bestenotenapp.api.models.JournalLesson
 import com.hansholz.bestenotenapp.api.models.JournalWeek
+import com.hansholz.bestenotenapp.components.enhanced.EnhancedContentBlur
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
-import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
@@ -188,21 +188,16 @@ fun WeekScheduleView(
             popupVisibilityState.animateTo(popupVisible)
         }
     }
-    val animatedScheduleScale by animateFloatAsState(
-        targetValue = if (popupVisible) 0.985f else 1f,
-        animationSpec =
-            spring(
-                dampingRatio = Spring.DampingRatioNoBouncy,
-                stiffness = Spring.StiffnessMediumLow,
-            ),
-        label = "TimetablePopupContentScale",
-    )
-    val effectiveScheduleScale =
-        if (isBackInProgress) {
-            0.985f + ((1f - 0.985f) * backProgress)
-        } else {
-            animatedScheduleScale
-        }
+    val animatedScheduleScale =
+        animateFloatAsState(
+            targetValue = if (popupVisible) 0.985f else 1f,
+            animationSpec =
+                spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessMediumLow,
+                ),
+            label = "TimetablePopupContentScale",
+        )
 
     @Suppress("DEPRECATION")
     PredictiveBackHandler(enabled = isCurrentPage && popupVisible) { progressFlow ->
@@ -250,88 +245,99 @@ fun WeekScheduleView(
         }
     }
 
-    val animatedBlurRadius by animateDpAsState(
-        targetValue = if (popupVisible) 10.dp else 0.dp,
-        animationSpec = tween(if (popupVisible) 180 else 140),
-        label = "TimetablePopupBlurRadius",
-    )
+    val animatedBlurRadius =
+        animateDpAsState(
+            targetValue = if (popupVisible) 10.dp else 0.dp,
+            animationSpec = tween(if (popupVisible) 180 else 140),
+            label = "TimetablePopupBlurRadius",
+        )
 
     SharedTransitionLayout(
         modifier = modifier,
     ) {
         Box(Modifier.fillMaxSize()) {
-            Row(
-                modifier =
-                    Modifier
-                        .fillMaxHeight()
-                        .enhancedHazeEffect(blurRadius = animatedBlurRadius)
-                        .graphicsLayer {
-                            scaleX = effectiveScheduleScale
-                            scaleY = effectiveScheduleScale
-                            if (!blurEnabled.value) alpha = 30 * effectiveScheduleScale - 29
-                        }.padding(contentPadding),
+            EnhancedContentBlur(
+                blurRadius = animatedBlurRadius,
+                modifier = Modifier.fillMaxHeight(),
             ) {
-                preparedDays.forEach { day ->
-                    key(day.date) {
-                        val currentDate = day.date
-                        var homeworkBlockKeys by remember(currentDate, homeworkEnabled) { mutableStateOf(emptySet<String>()) }
-                        var homeworkBlockColors by remember(currentDate, homeworkEnabled) { mutableStateOf(emptyMap<String, List<Int?>>()) }
-                        var doneHomeworkBlockKeys by remember(currentDate, homeworkEnabled) { mutableStateOf(emptySet<String>()) }
-                        LaunchedEffect(currentDate, homeworkEnabled, day.lessonBlocks, homeworkRevision) {
-                            val blockKeys = mutableSetOf<String>()
-                            val doneBlockKeys = mutableSetOf<String>()
-                            val blockColors = mutableMapOf<String, List<Int?>>()
-                            if (homeworkEnabled) {
-                                day.lessonBlocks.forEach { block ->
-                                    val entries =
-                                        block.sourceLessons.flatMap { lesson ->
-                                            val lessonId = lesson.homeworkLessonId() ?: return@flatMap emptyList()
-                                            viewModel
-                                                .getHomeworkForLesson(lessonId, currentDate)
-                                                .filter { it.belongsToCurrentLessonSubject(lesson) }
+                Row(
+                    modifier =
+                        Modifier
+                            .fillMaxHeight()
+                            .graphicsLayer {
+                                val scheduleScale =
+                                    if (isBackInProgress) {
+                                        0.985f + ((1f - 0.985f) * backProgress)
+                                    } else {
+                                        animatedScheduleScale.value
+                                    }
+                                scaleX = scheduleScale
+                                scaleY = scheduleScale
+                                if (!blurEnabled.value) alpha = 30 * scheduleScale - 29
+                            }.padding(contentPadding),
+                ) {
+                    preparedDays.forEach { day ->
+                        key(day.date) {
+                            val currentDate = day.date
+                            var homeworkBlockKeys by remember(currentDate, homeworkEnabled) { mutableStateOf(emptySet<String>()) }
+                            var homeworkBlockColors by remember(currentDate, homeworkEnabled) { mutableStateOf(emptyMap<String, List<Int?>>()) }
+                            var doneHomeworkBlockKeys by remember(currentDate, homeworkEnabled) { mutableStateOf(emptySet<String>()) }
+                            LaunchedEffect(currentDate, homeworkEnabled, day.lessonBlocks, homeworkRevision) {
+                                val blockKeys = mutableSetOf<String>()
+                                val doneBlockKeys = mutableSetOf<String>()
+                                val blockColors = mutableMapOf<String, List<Int?>>()
+                                if (homeworkEnabled) {
+                                    day.lessonBlocks.forEach { block ->
+                                        val entries =
+                                            block.sourceLessons.flatMap { lesson ->
+                                                val lessonId = lesson.homeworkLessonId() ?: return@flatMap emptyList()
+                                                viewModel
+                                                    .getHomeworkForLesson(lessonId, currentDate)
+                                                    .filter { it.belongsToCurrentLessonSubject(lesson) }
+                                            }
+                                        if (entries.isNotEmpty()) {
+                                            blockKeys += block.stableKey
+                                            blockColors[block.stableKey] = entries.distinctBy { it.localId }.map { it.color }
+                                            if (entries.all { it.status == HomeworkStatus.DONE }) doneBlockKeys += block.stableKey
                                         }
-                                    if (entries.isNotEmpty()) {
-                                        blockKeys += block.stableKey
-                                        blockColors[block.stableKey] = entries.distinctBy { it.localId }.map { it.color }
-                                        if (entries.all { it.status == HomeworkStatus.DONE }) doneBlockKeys += block.stableKey
                                     }
                                 }
+                                homeworkBlockColors = blockColors
+                                homeworkBlockKeys = blockKeys
+                                doneHomeworkBlockKeys = doneBlockKeys
                             }
-                            homeworkBlockColors = blockColors
-                            homeworkBlockKeys = blockKeys
-                            doneHomeworkBlockKeys = doneBlockKeys
-                        }
-                        Column(
-                            modifier = Modifier.weight(1f).fillMaxHeight(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            DayHeader(
-                                date = currentDate,
-                                viewModel = viewModel,
-                                notes = days[day.sourceIndex].notes?.filter { it.description != null },
-                                captureOnly = captureOnly,
-                            )
-                            DailyScheduleLayout(
-                                lessonBlocks = day.lessonBlocks,
-                                absences = absences,
-                                date = currentDate,
-                                modifier = Modifier.fillMaxHeight(),
-                                captureOnly = captureOnly,
-                                minTime = minTimeHour,
-                                maxTime = latestLessonEnd,
-                                sharedTransitionScope = this@SharedTransitionLayout,
-                                selectedLesson = selectedLesson,
-                                popupTransition = popupTransition,
-                                homeworkBlockKeys = homeworkBlockKeys,
-                                homeworkBlockColors = homeworkBlockColors,
-                                doneHomeworkBlockKeys = doneHomeworkBlockKeys,
-                            ) { block ->
-                                if (enabled) {
-                                    vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
-                                    selectedLesson = block.lesson
-                                    selectedLessonSources = block.sourceLessons
-                                    selectedDay = currentDate
-                                    lessonPopupShown.value = true
+                            Column(
+                                modifier = Modifier.weight(1f).fillMaxHeight(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
+                                DayHeader(
+                                    date = currentDate,
+                                    viewModel = viewModel,
+                                    notes = days[day.sourceIndex].notes?.filter { it.description != null },
+                                    captureOnly = captureOnly,
+                                )
+                                DailyScheduleLayout(
+                                    lessonBlocks = day.lessonBlocks,
+                                    absences = absences,
+                                    date = currentDate,
+                                    modifier = Modifier.fillMaxHeight(),
+                                    captureOnly = captureOnly,
+                                    minTime = minTimeHour,
+                                    maxTime = latestLessonEnd,
+                                    sharedTransitionScope = this@SharedTransitionLayout,
+                                    selectedLesson = selectedLesson,
+                                    popupTransition = popupTransition,
+                                    homeworkBlockKeys = homeworkBlockKeys,
+                                    homeworkBlockColors = homeworkBlockColors,
+                                    doneHomeworkBlockKeys = doneHomeworkBlockKeys,
+                                ) { block ->
+                                    if (enabled) {
+                                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                                        selectedLesson = block.lesson
+                                        selectedLessonSources = block.sourceLessons
+                                        selectedDay = currentDate
+                                        lessonPopupShown.value = true
+                                    }
                                 }
                             }
                         }

@@ -1,7 +1,12 @@
 package com.hansholz.bestenotenapp.components
 
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.UIKitInteropInteractionMode
@@ -10,6 +15,7 @@ import androidx.compose.ui.viewinterop.UIKitView
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.ObjCAction
+import kotlinx.coroutines.delay
 import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSCalendar
 import platform.Foundation.NSCalendarUnitHour
@@ -32,6 +38,7 @@ import platform.UIKit.UILabel
 import platform.UIKit.UIView
 import platform.darwin.NSObject
 import kotlin.math.abs
+import kotlin.time.Duration.Companion.milliseconds
 
 private const val REFERENCE_DATE_UNIX_OFFSET_SECONDS = 978_307_200.0
 private const val APP_BODY_FONT_NAME = "Sniglet-Regular"
@@ -43,6 +50,7 @@ private var nativeDateTimePickerGeneration = 0
 private class AppDatePicker : UIDatePicker {
     private val applyCalendarTypography: Boolean
     private var typographyDisplayLink: CADisplayLink? = null
+    var fadeInOnAppear = false
 
     constructor(applyCalendarTypography: Boolean) : super(frame = CGRectMake(0.0, 0.0, 0.0, 0.0)) {
         this.applyCalendarTypography = applyCalendarTypography
@@ -56,6 +64,12 @@ private class AppDatePicker : UIDatePicker {
 
     override fun didMoveToWindow() {
         super.didMoveToWindow()
+        if (fadeInOnAppear && window != null) {
+            fadeInOnAppear = false
+            animateWithDuration(0.25) {
+                alpha = 1.0
+            }
+        }
         if (!applyCalendarTypography) return
         if (window != null) startTypographyDisplayLink() else stopTypographyDisplayLink()
     }
@@ -119,10 +133,22 @@ internal fun NativeDatePicker(
 ) {
     val target = remember { DatePickerTarget(onSelectedDateChanged) }
     target.onSelectedDateChanged = onSelectedDateChanged
+    var pickerCreated by remember { mutableStateOf(false) }
+    val pickerGeneration = remember { nativeDateTimePickerGeneration }
+    LaunchedEffect(Unit) {
+        delay(120.milliseconds)
+        if (pickerGeneration == nativeDateTimePickerGeneration) pickerCreated = true
+    }
+    if (!pickerCreated) {
+        Spacer(modifier)
+        return
+    }
     UIKitView(
         factory = {
             AppDatePicker(applyCalendarTypography = true)
                 .apply {
+                    alpha = 0.0
+                    fadeInOnAppear = true
                     datePickerMode = UIDatePickerMode.UIDatePickerModeDate
                     // Material date selections represent calendar days at UTC midnight.
                     timeZone = NSTimeZone.timeZoneForSecondsFromGMT(0)
