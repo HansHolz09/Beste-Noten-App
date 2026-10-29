@@ -61,7 +61,6 @@ import com.composables.icons.materialsymbols.rounded.Percent
 import com.composables.icons.materialsymbols.rounded.Privacy_tip
 import com.composables.icons.materialsymbols.rounded.Settings_backup_restore
 import com.composables.icons.materialsymbols.rounded.Star
-import com.composables.icons.materialsymbols.rounded.Subject
 import com.composables.icons.materialsymbols.rounded.Sync
 import com.composables.icons.materialsymbols.rounded.Task_alt
 import com.composables.icons.materialsymbols.rounded.Texture
@@ -716,18 +715,20 @@ fun Settings(
                 }
             }
             if (!viewModel.isDemoAccount.value) {
-                item {
-                    PreferenceCategory("Fächer und Lehrer", Modifier.padding(horizontal = 15.dp))
-                }
-                settingsToggleItem(
-                    checked = showAllSubjects,
-                    onCheckedChange = {
-                        showAllSubjects = it
-                        put("showAllSubjects", it)
-                    },
-                    text = "Alle Fächer der Schule anzeigen",
-                    icon = MaterialSymbols.Rounded.Subject,
-                )
+//                [beste.schule currently doesn't return the needed data]
+//
+//                item {
+//                    PreferenceCategory("Fächer und Lehrer", Modifier.padding(horizontal = 15.dp))
+//                }
+//                settingsToggleItem(
+//                    checked = showAllSubjects,
+//                    onCheckedChange = {
+//                        showAllSubjects = it
+//                        put("showAllSubjects", it)
+//                    },
+//                    text = "Alle Fächer der Schule anzeigen",
+//                    icon = MaterialSymbols.Rounded.Subject,
+//                )
                 item {
                     PreferenceCategory("Allgemein", Modifier.padding(horizontal = 15.dp))
                 }
