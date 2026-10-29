@@ -11,6 +11,7 @@ import com.hansholz.bestenotenapp.components.enhanced.configureEnhancedVibrator
 import com.hansholz.bestenotenapp.main.App
 import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
+import com.hansholz.bestenotenapp.reviews.StoreReviewActivity
 import eu.anifantakis.lib.ksafe.biometrics.BiometricHelper
 import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
 import io.github.vinceglb.filekit.FileKit
@@ -24,6 +25,7 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         configureEnhancedVibrator(applicationContext)
         GradeNotifications.initialize(this)
+        StoreReviewActivity.register(this)
         FileKit.init(this)
         androidCodeAuthFlowFactory.registerActivity(this)
 

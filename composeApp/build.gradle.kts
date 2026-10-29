@@ -135,6 +135,7 @@ kotlin {
             implementation(libs.androidx.core.splashscreen)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.alarmee)
+            implementation(libs.play.review)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
