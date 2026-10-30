@@ -4,6 +4,7 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
@@ -169,8 +170,8 @@ fun EnhancedTextField(
                     interactionSource = resolvedInteractionSource,
                     label = label,
                     placeholder = placeholder,
-                    leadingIcon = leadingIcon,
-                    trailingIcon = trailingIcon,
+                    leadingIcon = leadingIcon?.redirectFocusOnEnter(focusRequester) { focused },
+                    trailingIcon = trailingIcon?.redirectFocusOnEnter(focusRequester) { focused },
                     prefix = prefix,
                     suffix = suffix,
                     supportingText = supportingText,
@@ -261,8 +262,8 @@ fun EnhancedTextField(
                         outputTransformation = outputTransformation,
                         interactionSource = resolvedInteractionSource,
                         placeholder = placeholder,
-                        leadingIcon = leadingIcon,
-                        trailingIcon = trailingIcon,
+                        leadingIcon = leadingIcon?.redirectFocusOnEnter(focusRequester) { focused },
+                        trailingIcon = trailingIcon?.redirectFocusOnEnter(focusRequester) { focused },
                         isError = isError,
                         colors = colors,
                         container = {
@@ -411,6 +412,16 @@ private fun enhancedKeyboardActions(actions: KeyboardActions): KeyboardActions {
     )
 }
 
+private fun (@Composable () -> Unit).redirectFocusOnEnter(
+    focusRequester: FocusRequester,
+    focused: () -> Boolean,
+): @Composable () -> Unit =
+    {
+        Box(Modifier.onFocusChanged { if (it.hasFocus && !focused()) focusRequester.requestFocus() }) {
+            this@redirectFocusOnEnter()
+        }
+    }
+
 @Composable
 private fun Modifier.focusNativeTextFieldOnTap(
     focusRequester: FocusRequester,
@@ -458,8 +469,7 @@ private fun Modifier.enhancedNativeTextInput(
         .onPreviewKeyEvent { event ->
             if (event.key == Key.Tab && handoff != null) {
                 if (event.type == KeyEventType.KeyDown) {
-                    val direction = if (event.isShiftPressed) FocusDirection.Previous else FocusDirection.Next
-                    handoff { focusManager.moveFocus(direction) }
+                    focusManager.moveFocus(if (event.isShiftPressed) FocusDirection.Previous else FocusDirection.Next)
                 }
                 true
             } else {
@@ -468,7 +478,8 @@ private fun Modifier.enhancedNativeTextInput(
         }.pointerInput(handoff, focusOwner) {
             awaitEachGesture {
                 awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                if (focusOwner?.value != null && focusOwner.value !== owner) handoff?.invoke {}
+                val up = waitForUpOrCancellation(PointerEventPass.Initial)
+                if (up != null && focusOwner?.value != null && focusOwner.value !== owner) handoff?.invoke {}
             }
         }.onFocusChanged {
             focused = it.isFocused

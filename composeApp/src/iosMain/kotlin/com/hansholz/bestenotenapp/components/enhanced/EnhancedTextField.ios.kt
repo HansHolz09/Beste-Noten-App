@@ -18,6 +18,8 @@ import platform.CoreGraphics.CGRectMake
 import platform.UIKit.UITextField
 import platform.UIKit.UITextInputProtocol
 import platform.UIKit.UIView
+import platform.darwin.dispatch_async
+import platform.darwin.dispatch_get_main_queue
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -40,21 +42,23 @@ private fun rememberNativeKeyboardHandoff(): ((() -> Unit) -> Unit) {
     val scope = rememberCoroutineScope()
     return remember(view, scope) {
         { action ->
-            // Keep the keyboard active while Compose replaces its native text input view.
-            val keeper = UITextField(frame = CGRectMake(0.0, 0.0, 1.0, 1.0))
-            keeper.alpha = 0.01
-            view.addSubview(keeper)
-            keeper.becomeFirstResponder()
-            scope.launch {
-                try {
-                    withFrameNanos {}
-                    action()
-                    withTimeoutOrNull(750.milliseconds) {
-                        while (keeper.isFirstResponder()) withFrameNanos {}
+            action()
+            dispatch_async(dispatch_get_main_queue()) {
+                if ((view.focusedTextInput() as? UIView)?.canBecomeFirstResponder() != false) return@dispatch_async
+                // Keep the keyboard active while Compose replaces its native text input view.
+                val keeper = UITextField(frame = CGRectMake(0.0, 0.0, 1.0, 1.0))
+                keeper.alpha = 0.01
+                view.addSubview(keeper)
+                keeper.becomeFirstResponder()
+                scope.launch {
+                    try {
+                        withTimeoutOrNull(750.milliseconds) {
+                            while (keeper.isFirstResponder()) withFrameNanos {}
+                        }
+                    } finally {
+                        keeper.resignFirstResponder()
+                        keeper.removeFromSuperview()
                     }
-                } finally {
-                    keeper.resignFirstResponder()
-                    keeper.removeFromSuperview()
                 }
             }
         }
