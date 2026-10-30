@@ -258,7 +258,7 @@ fun WeekScheduleView(
         Box(Modifier.fillMaxSize()) {
             EnhancedContentBlur(
                 blurRadius = animatedBlurRadius,
-                modifier = Modifier.fillMaxHeight(),
+                modifier = Modifier.padding(bottom = 10.dp).fillMaxHeight(),
             ) {
                 Row(
                     modifier =
