@@ -12,10 +12,15 @@ import androidx.compose.ui.node.ObserverModifierNode
 import androidx.compose.ui.node.invalidateDraw
 import androidx.compose.ui.node.observeReads
 import androidx.compose.ui.node.requireGraphicsContext
+import com.hansholz.bestenotenapp.main.Platform
+import com.hansholz.bestenotenapp.main.getPlatform
+import com.hansholz.bestenotenapp.main.getPlatformVersion
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
-fun Modifier.cacheAsBitmap(vararg keys: Any?): Modifier = this then CacheAsBitmapElement(keys.toList())
+fun Modifier.cacheAsBitmap(vararg keys: Any?): Modifier = if (bitmapCacheSupported) this then CacheAsBitmapElement(keys.toList()) else this
+
+private val bitmapCacheSupported = getPlatform() != Platform.ANDROID || (getPlatformVersion()?.toIntOrNull() ?: 0) >= 28
 
 private data class CacheAsBitmapElement(
     val keys: List<Any?>,
