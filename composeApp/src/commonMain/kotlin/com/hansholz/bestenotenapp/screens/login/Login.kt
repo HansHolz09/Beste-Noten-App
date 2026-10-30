@@ -258,7 +258,10 @@ fun Login(
                             put("loginWelcomeCompleted", true)
                         },
                     ) { welcomeHeader, formModifier, introFinished ->
-                        Box(Modifier.verticalScroll(loginScrollState, enabled = introFinished)) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().verticalScroll(loginScrollState, enabled = introFinished),
+                            contentAlignment = Alignment.TopCenter,
+                        ) {
                             Column(
                                 modifier =
                                     Modifier
