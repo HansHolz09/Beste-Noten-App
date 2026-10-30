@@ -5,6 +5,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import com.hansholz.bestenotenapp.components.enhanced.hapticsEnabledByDefault
 import com.hansholz.bestenotenapp.homework.HomeworkType
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import dev.chrisbanes.haze.HazeState
@@ -50,7 +51,7 @@ fun SettingsProvider(
     val role = viewModel.user.value?.role
     val backgroundEnabledState = remember { mutableStateOf(get("backgroundEnabled", true)) }
     val scrollZoomAnimationEnabledState = remember { mutableStateOf(get("scrollZoomAnimationEnabled", getPlatform() == Platform.ANDROID)) }
-    val hapticsEnabledState = remember { mutableStateOf(get("hapticsEnabled", getPlatform() == Platform.ANDROID)) }
+    val hapticsEnabledState = remember { mutableStateOf(get("hapticsEnabled", hapticsEnabledByDefault())) }
     val showGreetingsState = remember(role) { mutableStateOf(get("showGreetings", role == "student")) }
     val showNewestGradesState = remember { mutableStateOf(get("showNewestGrades", true)) }
     val newestGradesCountState = remember { mutableStateOf(get("newestGradesCount", 5).coerceIn(1, 10)) }

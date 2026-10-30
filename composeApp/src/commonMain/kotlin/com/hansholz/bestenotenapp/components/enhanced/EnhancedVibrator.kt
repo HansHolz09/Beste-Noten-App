@@ -1,8 +1,6 @@
 package com.hansholz.bestenotenapp.components.enhanced
 
 import androidx.compose.runtime.Composable
-import com.hansholz.bestenotenapp.main.Platform
-import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.security.KSafeProvider
 import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.security.kSafeProvider
@@ -79,7 +77,7 @@ fun Vibrator.enhancedVibrate(
     forceVibration: Boolean = false,
     intensity: Float = 1f,
 ) {
-    if (kSafeProvider.get("hapticsEnabled", getPlatform() == Platform.ANDROID) || forceVibration) {
+    if (kSafeProvider.get("hapticsEnabled", hapticsEnabledByDefault()) || forceVibration) {
         executeVibration(vibration, intensity)
     }
 }
@@ -89,7 +87,7 @@ fun Vibrator.enhancedVibrateN(
     forceVibration: Boolean = false,
     intensity: Float = 1f,
 ) {
-    if (kSafeProvider(kSafe()) { get("hapticsEnabled", getPlatform() == Platform.ANDROID) } || forceVibration) {
+    if (kSafeProvider(kSafe()) { get("hapticsEnabled", hapticsEnabledByDefault()) } || forceVibration) {
         executeVibration(vibration, intensity)
     }
 }
@@ -177,3 +175,5 @@ private fun Vibrator.executeVibration(
         },
     )
 }
+
+expect fun hapticsEnabledByDefault(): Boolean
