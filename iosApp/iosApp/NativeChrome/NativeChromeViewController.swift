@@ -1,5 +1,6 @@
 import ComposeApp
 import CoreText
+import SwiftUI
 import UIKit
 
 final class NativeChromeViewController: UIViewController, UISplitViewControllerDelegate, UITabBarDelegate, UIGestureRecognizerDelegate {
@@ -57,6 +58,7 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
     private var usesSystemAppearance = true
     private var bottomTabsVisible = false
     private var bottomTabsAnimationGeneration = 0
+    private var storeUpdateBannerBottomConstraint: NSLayoutConstraint?
     private lazy var primaryTabsContent = PrimaryTabsPaletteContentView(
         font: nativeBodyFont(ofSize: 17),
         updateLayout: { [weak self] in
@@ -87,6 +89,7 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
         configureBridge()
         configureSplitView()
         configureTabBar()
+        configureStoreUpdateBanner()
         configureEasterEggOverlay()
         updateLayout(for: traitCollection, animated: false)
     }
@@ -254,6 +257,24 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
             tabBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tabBar.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
+    }
+
+    private func configureStoreUpdateBanner() {
+        guard #available(iOS 26.0, *) else { return }
+        let bannerController = UIHostingController(rootView: StoreUpdateBanner())
+        bannerController.sizingOptions = .intrinsicContentSize
+        bannerController.view.backgroundColor = .clear
+        addChild(bannerController)
+        view.addSubview(bannerController.view)
+        bannerController.view.translatesAutoresizingMaskIntoConstraints = false
+        let bottomConstraint = bannerController.view.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+        storeUpdateBannerBottomConstraint = bottomConstraint
+        NSLayoutConstraint.activate([
+            bannerController.view.centerXAnchor.constraint(equalTo: view.safeAreaLayoutGuide.centerXAnchor),
+            bannerController.view.leadingAnchor.constraint(greaterThanOrEqualTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            bottomConstraint,
+        ])
+        bannerController.didMove(toParent: self)
     }
 
     private func configureEasterEggOverlay() {
@@ -513,6 +534,7 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
         contentHostController.additionalSafeAreaInsets.top = 0
         bridge.contentTopInsetChanged(points: Double(max(baseTop, chromeBottom)))
         contentHostController.additionalSafeAreaInsets.bottom = bottomTabsVisible ? tabBar.bounds.height : 0
+        storeUpdateBannerBottomConstraint?.constant = -12 - (bottomTabsVisible ? tabBar.bounds.height - view.safeAreaInsets.bottom : 0)
     }
 
     private func updateBottomTabs(visible: Bool, animated: Bool) {

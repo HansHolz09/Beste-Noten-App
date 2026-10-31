@@ -46,6 +46,7 @@ import com.hansholz.bestenotenapp.theme.AppTheme
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.theme.LocalUseSystemIsDark
+import com.hansholz.bestenotenapp.updates.StoreUpdateHost
 import com.hansholz.bestenotenapp.updates.UpdateDialogHost
 import dev.chrisbanes.haze.hazeSource
 import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
@@ -142,7 +143,7 @@ fun App(
                         }
                     }
 
-                    if (!isStoreDistribution()) UpdateDialogHost()
+                    if (isStoreDistribution()) StoreUpdateHost(toasterState) else UpdateDialogHost()
 
                     Toaster(
                         state = toasterState,

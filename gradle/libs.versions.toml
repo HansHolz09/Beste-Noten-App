@@ -34,6 +34,7 @@ markdownRenderer = "0.46.0"
 multihapticCompose = "0.3.2"
 nucleus = "2.5.18"
 platformtools = "0.7.5"
+playAppUpdate = "2.1.0"
 playReview = "2.0.2"
 proguard = "7.9.1"
 #noinspection NewerVersionAvailable
@@ -104,6 +105,7 @@ nucleus-aot-runtime = { module = "dev.nucleusframework:nucleus.aot-runtime", ver
 nucleus-graalvm-runtime = { module = "dev.nucleusframework:nucleus.graalvm-runtime", version.ref = "nucleus" }
 nucleus-decorated-window-tao = { module = "dev.nucleusframework:nucleus.decorated-window-tao", version.ref = "nucleus" }
 oidc-appsupport = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-appsupport", version.ref = "oidc" }
+play-app-update = { module = "com.google.android.play:app-update-ktx", version.ref = "playAppUpdate" }
 play-review = { module = "com.google.android.play:review", version.ref = "playReview" }
 platformtools-darkmodedetector = { module = "io.github.kdroidfilter:platformtools.darkmodedetector", version.ref = "platformtools" }
 jetlime = { module = "io.github.pushpalroy:jetlime", version.ref = "jetlime" }
