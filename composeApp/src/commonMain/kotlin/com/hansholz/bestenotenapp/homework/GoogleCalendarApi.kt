@@ -42,23 +42,25 @@ class GoogleCalendarApi(
         description: String? = null,
     ): GoogleCalendar =
         withTimeout(5.seconds) {
-            httpClient
-                .post("$baseUrl/calendars") {
-                    authorize()
+            authorizedRequest { forceRefresh ->
+                httpClient.post("$baseUrl/calendars") {
+                    authorize(forceRefresh)
                     contentType(ContentType.Application.Json)
                     setBody(GoogleCalendarCreateRequest(summary, description))
-                }.bodyOrThrow()
+                }
+            }.bodyOrThrow()
         }
 
     suspend fun listCalendars(pageToken: String? = null): GoogleCalendarListResponse =
         withTimeout(5.seconds) {
-            httpClient
-                .get("$baseUrl/users/me/calendarList") {
-                    authorize()
+            authorizedRequest { forceRefresh ->
+                httpClient.get("$baseUrl/users/me/calendarList") {
+                    authorize(forceRefresh)
                     parameter("maxResults", 250)
                     parameter("showHidden", true)
                     pageToken?.let { parameter("pageToken", it) }
-                }.bodyOrThrow()
+                }
+            }.bodyOrThrow()
         }
 
     suspend fun createEvent(
@@ -66,12 +68,13 @@ class GoogleCalendarApi(
         event: GoogleCalendarEvent,
     ): GoogleCalendarEvent =
         withTimeout(5.seconds) {
-            httpClient
-                .post("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events") {
-                    authorize()
+            authorizedRequest { forceRefresh ->
+                httpClient.post("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events") {
+                    authorize(forceRefresh)
                     contentType(ContentType.Application.Json)
                     setBody(event)
-                }.bodyOrThrow()
+                }
+            }.bodyOrThrow()
         }
 
     suspend fun patchEvent(
@@ -80,12 +83,13 @@ class GoogleCalendarApi(
         event: GoogleCalendarEvent,
     ): GoogleCalendarEvent =
         withTimeout(5.seconds) {
-            httpClient
-                .patch("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events/${eventId.encodeURLPathPart()}") {
-                    authorize()
+            authorizedRequest { forceRefresh ->
+                httpClient.patch("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events/${eventId.encodeURLPathPart()}") {
+                    authorize(forceRefresh)
                     contentType(ContentType.Application.Json)
                     setBody(event)
-                }.bodyOrThrow()
+                }
+            }.bodyOrThrow()
         }
 
     suspend fun deleteEvent(
@@ -94,8 +98,10 @@ class GoogleCalendarApi(
     ) {
         withTimeout(5.seconds) {
             val response =
-                httpClient.delete("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events/${eventId.encodeURLPathPart()}") {
-                    authorize()
+                authorizedRequest { forceRefresh ->
+                    httpClient.delete("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events/${eventId.encodeURLPathPart()}") {
+                        authorize(forceRefresh)
+                    }
                 }
             if (!response.status.isSuccess() && response.status != HttpStatusCode.NotFound) {
                 response.throwGoogleError()
@@ -111,14 +117,16 @@ class GoogleCalendarApi(
     ): GoogleCalendarEventsResponse =
         withTimeout(5.seconds) {
             val response =
-                httpClient.get("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events") {
-                    authorize()
-                    parameter("singleEvents", true)
-                    parameter("showDeleted", true)
-                    parameter("maxResults", 2500)
-                    syncToken?.let { parameter("syncToken", it) }
-                    pageToken?.let { parameter("pageToken", it) }
-                    privateExtendedProperties.forEach { parameter("privateExtendedProperty", it) }
+                authorizedRequest { forceRefresh ->
+                    httpClient.get("$baseUrl/calendars/${calendarId.encodeURLPathPart()}/events") {
+                        authorize(forceRefresh)
+                        parameter("singleEvents", true)
+                        parameter("showDeleted", true)
+                        parameter("maxResults", 2500)
+                        syncToken?.let { parameter("syncToken", it) }
+                        pageToken?.let { parameter("pageToken", it) }
+                        privateExtendedProperties.forEach { parameter("privateExtendedProperty", it) }
+                    }
                 }
             if (response.status == HttpStatusCode.Gone) {
                 throw InvalidGoogleCalendarSyncTokenException()
@@ -126,13 +134,19 @@ class GoogleCalendarApi(
             response.bodyOrThrow()
         }
 
-    private suspend fun io.ktor.client.request.HttpRequestBuilder.authorize() {
+    // A rejected token is refreshed once regardless of its stored expiry, e.g. after the device clock was changed
+    private suspend fun authorizedRequest(request: suspend (forceRefresh: Boolean) -> HttpResponse): HttpResponse {
+        val response = request(false)
+        return if (response.status == HttpStatusCode.Unauthorized) request(true) else response
+    }
+
+    private suspend fun io.ktor.client.request.HttpRequestBuilder.authorize(forceRefresh: Boolean) {
         timeout {
             requestTimeoutMillis = 5000
             connectTimeoutMillis = 3000
             socketTimeoutMillis = 5000
         }
-        val token = withTimeout(5.seconds) { authProvider.getAccessToken() } ?: throw MissingGoogleAuthException()
+        val token = withTimeout(5.seconds) { authProvider.getAccessToken(forceRefresh) } ?: throw MissingGoogleAuthException()
         bearerAuth(token)
         header(HttpHeaders.Accept, ContentType.Application.Json)
     }

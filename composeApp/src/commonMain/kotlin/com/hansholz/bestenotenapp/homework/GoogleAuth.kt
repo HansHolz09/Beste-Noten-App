@@ -14,7 +14,7 @@ import kotlin.time.Clock
 interface GoogleAuthProvider {
     suspend fun signIn()
 
-    suspend fun getAccessToken(): String?
+    suspend fun getAccessToken(forceRefresh: Boolean = false): String?
 
     suspend fun signOut()
 }
@@ -75,10 +75,12 @@ class KSafeGoogleAuthProvider(
         }
     }
 
-    override suspend fun getAccessToken(): String? {
+    override suspend fun getAccessToken(forceRefresh: Boolean): String? {
         val accessToken = kSafeProvider(kSafe) { get("homeworkGoogleAccessToken", "") }.takeIf { it.isNotBlank() }
         val expiresAt = kSafeProvider(kSafe) { get("homeworkGoogleAccessTokenExpiresAt", 0L) }
-        if (accessToken != null && Clock.System.now().epochSeconds < expiresAt - 60) {
+        val now = Clock.System.now().epochSeconds
+        // Google access tokens live at most an hour, a later expiry means the device clock was ahead when it was saved
+        if (!forceRefresh && accessToken != null && now < expiresAt - 60 && expiresAt - now <= 3600) {
             return accessToken
         }
 
