@@ -1,5 +1,6 @@
 package com.hansholz.bestenotenapp.screens.timetable
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.focusable
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
@@ -25,7 +27,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
+import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,6 +40,7 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -68,8 +73,12 @@ import com.composables.icons.materialsymbols.rounded.Delete
 import com.composables.icons.materialsymbols.rounded.Done
 import com.composables.icons.materialsymbols.rounded.Drag_indicator
 import com.composables.icons.materialsymbols.rounded.Edit_note
+import com.composables.icons.materialsymbols.rounded.Event_repeat
+import com.composables.icons.materialsymbols.rounded.Move_down
 import com.composables.icons.materialsymbols.rounded.News
+import com.composables.icons.materialsymbols.rounded.Schedule
 import com.composables.icons.materialsymbols.rounded.Task_alt
+import com.composables.icons.materialsymbols.rounded.Today
 import com.hansholz.bestenotenapp.api.models.JournalLesson
 import com.hansholz.bestenotenapp.components.AdaptiveColorPicker
 import com.hansholz.bestenotenapp.components.AdaptiveDatePicker
@@ -97,9 +106,17 @@ import com.hansholz.bestenotenapp.main.LocalHomeworkGoogleSyncEnabled
 import com.hansholz.bestenotenapp.main.LocalHomeworkTypeColors
 import com.hansholz.bestenotenapp.main.LocalHomeworkTypes
 import com.hansholz.bestenotenapp.main.LocalNativeAlignmentHaptic
+import com.hansholz.bestenotenapp.main.LocalShowOnlyRelevantData
+import com.hansholz.bestenotenapp.main.LocalTimetableBlockViewEnabled
+import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
+import com.hansholz.bestenotenapp.utils.TimetableLessonBlock
+import com.hansholz.bestenotenapp.utils.createTimetableLessonBlocks
+import com.hansholz.bestenotenapp.utils.formateDate
+import com.hansholz.bestenotenapp.utils.withRelevantLessons
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
@@ -107,6 +124,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.minus
 import kotlinx.datetime.number
+import kotlinx.datetime.plus
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
@@ -167,6 +185,7 @@ fun LazyListScope.homeworkItems(
 
 @Composable
 fun HomeworkEditorDialog(
+    viewModel: ViewModel,
     visible: MutableState<Boolean>,
     initialEntry: HomeworkEntry?,
     dueDate: LocalDate,
@@ -193,6 +212,7 @@ fun HomeworkEditorDialog(
     var selectedReminderDate by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.reminderAt?.date) }
     var datePickerVisible by remember(visible.value) { mutableStateOf(false) }
     var timePickerVisible by remember(visible.value) { mutableStateOf(false) }
+    val moveDialogVisible = remember(visible.value) { mutableStateOf(false) }
     var saving by remember { mutableStateOf(false) }
     var deleting by remember { mutableStateOf(false) }
     val busy = saving || deleting
@@ -375,11 +395,23 @@ fun HomeworkEditorDialog(
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = colorScheme.error),
                             border = BorderStroke(1.dp, colorScheme.onErrorContainer),
                         ) {
-                            Text("Löschen")
+                            Icon(MaterialSymbols.Rounded.Delete, null)
                         }
                         this@Row.EnhancedAnimatedVisibility(deleting) {
                             CircularWavyProgressIndicator(Modifier.size(32.dp))
                         }
+                    }
+                }
+                if (initialEntry != null) {
+                    EnhancedOutlinedButton(
+                        onClick = {
+                            focusRequester.requestFocus()
+                            keyboardController?.hide()
+                            moveDialogVisible.value = true
+                        },
+                        enabled = !busy,
+                    ) {
+                        Icon(MaterialSymbols.Rounded.Move_down, null)
                     }
                 }
                 EnhancedOutlinedButton(
@@ -396,47 +428,15 @@ fun HomeworkEditorDialog(
         },
     )
 
-    val initialDate = reminderAt?.date ?: dueDate.minus(DatePeriod(days = 1))
-    val datePickerState =
-        rememberDatePickerState(
-            initialSelectedDateMillis = initialDate.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
-        )
-    EnhancedAlertDialog(
+    HomeworkDatePickerDialog(
         visible = datePickerVisible,
-        withBlur = false,
+        initialDate = reminderAt?.date ?: dueDate.minus(DatePeriod(days = 1)),
+        confirmText = "Weiter",
         onDismissRequest = { datePickerVisible = false },
-        title = { Text("Datum wählen") },
-        confirmButton = {
-            EnhancedButton(
-                onClick = {
-                    selectedReminderDate =
-                        datePickerState.selectedDateMillis?.let {
-                            Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()).date
-                        }
-                    datePickerVisible = false
-                    if (selectedReminderDate != null) timePickerVisible = true
-                },
-                enabled = datePickerState.selectedDateMillis != null,
-            ) {
-                Text("Weiter")
-            }
-        },
-        dismissButton = {
-            EnhancedOutlinedButton(onClick = { datePickerVisible = false }) {
-                Text("Abbrechen")
-            }
-        },
-        text = {
-            AdaptiveDatePicker(
-                selectedDateMillis = datePickerState.selectedDateMillis,
-                onSelectedDateChanged = { datePickerState.selectedDateMillis = it },
-                modifier = Modifier.fillMaxWidth().size(height = 350.dp, width = 400.dp),
-            ) {
-                DatePicker(
-                    state = datePickerState,
-                    title = {},
-                )
-            }
+        onConfirm = {
+            selectedReminderDate = it
+            datePickerVisible = false
+            timePickerVisible = true
         },
     )
 
@@ -497,7 +497,272 @@ fun HomeworkEditorDialog(
             typeEditorVisible = false
         },
     )
+
+    if (initialEntry != null) {
+        HomeworkMoveDialog(
+            visible = moveDialogVisible,
+            entry = initialEntry,
+            viewModel = viewModel,
+            onMoved = { visible.value = false },
+        )
+    }
 }
+
+@Composable
+private fun HomeworkDatePickerDialog(
+    visible: Boolean,
+    initialDate: LocalDate,
+    confirmText: String,
+    onDismissRequest: () -> Unit,
+    onConfirm: (LocalDate) -> Unit,
+) {
+    val datePickerState =
+        rememberDatePickerState(
+            initialSelectedDateMillis = initialDate.atStartOfDayIn(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
+        )
+    EnhancedAlertDialog(
+        visible = visible,
+        withBlur = false,
+        onDismissRequest = onDismissRequest,
+        title = { Text("Datum wählen") },
+        confirmButton = {
+            EnhancedButton(
+                onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        onConfirm(Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()).date)
+                    }
+                },
+                enabled = datePickerState.selectedDateMillis != null,
+            ) {
+                Text(confirmText)
+            }
+        },
+        dismissButton = {
+            EnhancedOutlinedButton(onClick = onDismissRequest) {
+                Text("Abbrechen")
+            }
+        },
+        text = {
+            AdaptiveDatePicker(
+                selectedDateMillis = datePickerState.selectedDateMillis,
+                onSelectedDateChanged = { datePickerState.selectedDateMillis = it },
+                modifier = Modifier.fillMaxWidth().size(height = 350.dp, width = 400.dp),
+            ) {
+                DatePicker(
+                    state = datePickerState,
+                    title = {},
+                )
+            }
+        },
+    )
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun HomeworkMoveDialog(
+    visible: MutableState<Boolean>,
+    entry: HomeworkEntry,
+    viewModel: ViewModel,
+    onMoved: () -> Unit,
+) {
+    val scope = rememberCoroutineScope()
+    val vibrator = rememberEnhancedVibrator()
+    val showOnlyRelevantData by LocalShowOnlyRelevantData.current
+    val timetableBlockViewEnabled by LocalTimetableBlockViewEnabled.current
+    var selectedDate by remember(entry, visible.value) { mutableStateOf(entry.dueDate) }
+    var lessonBlocks by remember { mutableStateOf<List<TimetableLessonBlock>?>(null) }
+    var nextLesson by remember(entry, visible.value) { mutableStateOf<Pair<LocalDate, JournalLesson>?>(null) }
+    var nextLessonLoading by remember(entry, visible.value) { mutableStateOf(true) }
+    var target by remember(entry, visible.value) { mutableStateOf<Pair<LocalDate, JournalLesson?>?>(null) }
+    var datePickerVisible by remember(visible.value) { mutableStateOf(false) }
+    var moving by remember { mutableStateOf(false) }
+
+    LaunchedEffect(visible.value, entry, showOnlyRelevantData, timetableBlockViewEnabled) {
+        if (!visible.value || entry.placement != HomeworkPlacement.LESSON) return@LaunchedEffect
+        nextLesson =
+            (1..28).firstNotNullOfOrNull { offset ->
+                val date = entry.dueDate.plus(offset, DateTimeUnit.DAY)
+                viewModel
+                    .lessonBlocksForDate(date, showOnlyRelevantData, timetableBlockViewEnabled)
+                    .map { it.lesson }
+                    .firstOrNull { it.status != "canceled" && entry.belongsToCurrentLessonSubject(it) }
+                    ?.let { date to it }
+            }
+        if (target == null) target = nextLesson
+        nextLessonLoading = false
+    }
+
+    LaunchedEffect(visible.value, selectedDate, showOnlyRelevantData, timetableBlockViewEnabled) {
+        if (!visible.value) return@LaunchedEffect
+        lessonBlocks = null
+        lessonBlocks = viewModel.lessonBlocksForDate(selectedDate, showOnlyRelevantData, timetableBlockViewEnabled)
+    }
+
+    EnhancedAlertDialog(
+        visible = visible.value,
+        onDismissRequest = { if (!moving) visible.value = false },
+        icon = { Icon(MaterialSymbols.Rounded.Move_down, null) },
+        title = { Text("Eintrag verschieben") },
+        text = {
+            val scrollState = rememberScrollState()
+            Column(
+                modifier =
+                    Modifier
+                        .scrollableEdgeFade(scrollState)
+                        .verticalScroll(scrollState),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                if (entry.placement == HomeworkPlacement.LESSON) {
+                    val next = nextLesson
+                    PreferenceItem(
+                        title = "Nächste ${entry.subjectName ?: "Fach"}-Stunde",
+                        subtitle =
+                            when {
+                                nextLessonLoading -> "Wird gesucht …"
+                                next == null -> "Keine in den nächsten 4 Wochen gefunden"
+                                else -> "${formateDate(next.first.toString())} · ${next.second.nr}. Stunde"
+                            },
+                        icon = MaterialSymbols.Rounded.Event_repeat,
+                        enabled = next != null && !moving,
+                        onClick = {
+                            target = next
+                            vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                        },
+                        backgroundColor = animateColorAsState(if (next != null && target == next) colorScheme.secondaryContainer else colorScheme.surfaceContainerLow).value,
+                    )
+                }
+                EnhancedOutlinedButton(
+                    onClick = { datePickerVisible = true },
+                    enabled = !moving,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Datum: ${formateDate(selectedDate.toString())}")
+                }
+                EnhancedAnimatedContent(lessonBlocks) { lessonBlocks ->
+                    if (lessonBlocks == null) {
+                        Box(Modifier.fillMaxWidth().sizeIn(minHeight = 100.dp)) {
+                            ContainedLoadingIndicator(Modifier.align(Alignment.Center))
+                        }
+                    } else {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            val options = listOf(null) + lessonBlocks
+                            options.forEachIndexed { index, block ->
+                                val lesson = block?.lesson
+                                val isCurrent =
+                                    (entry.sourceDate ?: entry.dueDate) == selectedDate &&
+                                        if (block == null) {
+                                            entry.placement == HomeworkPlacement.DAY
+                                        } else {
+                                            entry.placement == HomeworkPlacement.LESSON &&
+                                                block.sourceLessons.any { it.homeworkLessonId() == entry.timetableTimeLessonId }
+                                        }
+                                PreferenceItem(
+                                    title = if (lesson == null) "Ganzer Tag" else lesson.subject?.name ?: "Unbekanntes Fach",
+                                    subtitle = if (lesson == null) "Als Tagesnotiz" else "${lesson.nr}. Stunde",
+                                    icon = if (lesson == null) MaterialSymbols.Rounded.Today else MaterialSymbols.Rounded.Schedule,
+                                    enabled = !isCurrent && !moving,
+                                    onClick = {
+                                        target = selectedDate to lesson
+                                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                                    },
+                                    position =
+                                        when {
+                                            options.size == 1 -> PreferencePosition.Single
+                                            index == 0 -> PreferencePosition.Top
+                                            index == options.lastIndex -> PreferencePosition.Bottom
+                                            else -> PreferencePosition.Middle
+                                        },
+                                    backgroundColor =
+                                        animateColorAsState(
+                                            if (target == selectedDate to lesson) colorScheme.secondaryContainer else colorScheme.surfaceContainerLow,
+                                        ).value,
+                                )
+                            }
+                        }
+                    }
+                }
+                if (entry.reminderAt != null) {
+                    Text(
+                        text = "Die Erinnerung wird beim Verschieben entfernt.",
+                        color = colorScheme.onSurfaceVariant,
+                        style = typography.bodySmall,
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Box(contentAlignment = Alignment.Center) {
+                EnhancedButton(
+                    onClick = {
+                        target?.let { (date, lesson) ->
+                            scope.launch {
+                                moving = true
+                                try {
+                                    viewModel.updateHomework(entry.movedTo(date, lesson, viewModel.currentTimetable.value?.id))
+                                    visible.value = false
+                                    onMoved()
+                                } finally {
+                                    moving = false
+                                }
+                            }
+                        }
+                    },
+                    enabled = target != null && !moving,
+                ) {
+                    Text("Verschieben")
+                }
+                EnhancedAnimatedVisibility(moving) {
+                    CircularWavyProgressIndicator(Modifier.size(32.dp))
+                }
+            }
+        },
+        dismissButton = {
+            EnhancedOutlinedButton(
+                onClick = { visible.value = false },
+                enabled = !moving,
+            ) {
+                Text("Abbrechen")
+            }
+        },
+    )
+
+    HomeworkDatePickerDialog(
+        visible = datePickerVisible,
+        initialDate = selectedDate,
+        confirmText = "Übernehmen",
+        onDismissRequest = { datePickerVisible = false },
+        onConfirm = {
+            selectedDate = it
+            datePickerVisible = false
+        },
+    )
+}
+
+private suspend fun ViewModel.lessonBlocksForDate(
+    date: LocalDate,
+    onlyRelevant: Boolean,
+    blockViewEnabled: Boolean,
+): List<TimetableLessonBlock> {
+    val day = getJournalWeek(date)?.days?.find { it.date == date.toString() } ?: return emptyList()
+    if (onlyRelevant) loadStudentGroups(day.lessons.orEmpty().mapNotNull { it.group?.yearId })
+    return (if (onlyRelevant) day.withRelevantLessons(studentGroupsByYear) else day)
+        .lessons
+        .orEmpty()
+        .filter { it.homeworkLessonId() != null }
+        .let { createTimetableLessonBlocks(it, blockViewEnabled) }
+}
+
+private fun HomeworkEntry.movedTo(
+    date: LocalDate,
+    lesson: JournalLesson?,
+    timetableId: String?,
+): HomeworkEntry =
+    if (lesson == null) {
+        newDayHomeworkEntry(date, title, description, type)
+    } else {
+        newLessonHomeworkEntry(date, lesson, timetableId, title, description, type)
+    }.copy(localId = localId, status = status, createdAt = createdAt, color = color)
 
 @Composable
 private fun HomeworkTypeEditorDialog(
@@ -632,6 +897,7 @@ private fun HomeworkTypeEditorDialog(
                                             }
                                         }
                                     },
+                            backgroundColor = colorScheme.surfaceContainerLow,
                         ) {
                             IconButton(
                                 onClick = {

@@ -180,7 +180,7 @@ private fun WeightingItem(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = position.preferenceShape(),
-        color = colorScheme.surfaceContainerHighest.copy(alpha = 0.7f),
+        color = colorScheme.surfaceContainerLow.copy(alpha = 0.7f),
     ) {
         Box(Modifier.padding(horizontal = 8.dp)) { content() }
     }

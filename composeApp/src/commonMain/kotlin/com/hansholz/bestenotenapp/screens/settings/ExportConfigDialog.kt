@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -133,6 +134,7 @@ fun ExportConfigDialog(
                                 trailingContent = {
                                     EnhancedCheckbox(checked = appSettings, onCheckedChange = { appSettings = it }, modifier = Modifier.size(24.dp))
                                 },
+                                backgroundColor = colorScheme.surfaceContainerLow,
                             )
                         }
                         item {
@@ -146,6 +148,7 @@ fun ExportConfigDialog(
                                 trailingContent = {
                                     EnhancedCheckbox(checked = gradeWeights, onCheckedChange = { gradeWeights = it }, modifier = Modifier.size(24.dp))
                                 },
+                                backgroundColor = colorScheme.surfaceContainerLow,
                             )
                         }
                         item {
@@ -159,6 +162,7 @@ fun ExportConfigDialog(
                                 trailingContent = {
                                     EnhancedCheckbox(checked = homeworkTypes, onCheckedChange = { homeworkTypes = it }, modifier = Modifier.size(24.dp))
                                 },
+                                backgroundColor = colorScheme.surfaceContainerLow,
                             )
                         }
                         item {
@@ -207,6 +211,7 @@ fun ExportConfigDialog(
                                                     modifier = Modifier.size(24.dp),
                                                 )
                                             },
+                                            backgroundColor = colorScheme.surfaceContainerLow,
                                         )
                                     }
                                 }

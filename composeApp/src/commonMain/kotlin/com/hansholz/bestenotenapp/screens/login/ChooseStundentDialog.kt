@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -75,6 +76,7 @@ fun ChooseStudentDialog(loginViewModel: LoginViewModel) {
                             trailingContent = {
                                 RadioButton(selected = student.id.toString() == selectedStudent, onClick = null)
                             },
+                            backgroundColor = colorScheme.surfaceContainerLow,
                         )
                     }
                 }

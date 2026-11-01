@@ -157,6 +157,7 @@ fun NotesDialog(
     )
 
     HomeworkEditorDialog(
+        viewModel = viewModel,
         visible = editorVisible,
         initialEntry = editedHomework.value,
         dueDate = date,

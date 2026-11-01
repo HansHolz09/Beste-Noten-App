@@ -85,7 +85,7 @@ fun LibrariesDialog(settingsViewModel: SettingsViewModel) {
                         Modifier
                             .padding(bottom = if (index == lastIndex) 0.dp else 2.dp)
                             .clip(position.preferenceShape())
-                            .background(colorScheme.surfaceContainerHighest.copy(alpha = 0.7f)),
+                            .background(colorScheme.surfaceContainerLow.copy(alpha = 0.7f)),
                     ) {
                         LibraryRow(library, expanded, toggle, style)
                     }
