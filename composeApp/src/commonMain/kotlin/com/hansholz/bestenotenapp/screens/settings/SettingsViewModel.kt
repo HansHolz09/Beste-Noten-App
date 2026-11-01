@@ -74,6 +74,7 @@ class SettingsViewModel : ViewModel() {
                             newestGradesCount = get("newestGradesCount", 5),
                             showCurrentLesson = get("showCurrentLesson", true),
                             showYearProgress = get("showYearProgress", true),
+                            showUsageHints = get("showUsageHints", true),
                             showGradeHistory = get("showGradeHistory", false),
                             gradeAverageEnabled = get("gradeAverageEnabled", true),
                             gradeAverageUseWeighting = get("gradeAverageUseWeighting", false),

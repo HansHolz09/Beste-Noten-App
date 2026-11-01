@@ -65,6 +65,7 @@ import com.composables.icons.materialsymbols.rounded.Sync
 import com.composables.icons.materialsymbols.rounded.Task_alt
 import com.composables.icons.materialsymbols.rounded.Texture
 import com.composables.icons.materialsymbols.rounded.Title
+import com.composables.icons.materialsymbols.rounded.Touch_app
 import com.composables.icons.materialsymbols.rounded.Vibration
 import com.composables.icons.materialsymbols.rounded.Waving_hand
 import com.composables.icons.materialsymbols.rounded.Wifi
@@ -113,6 +114,7 @@ import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
 import com.hansholz.bestenotenapp.main.LocalShowNotes
 import com.hansholz.bestenotenapp.main.LocalShowOnlyRelevantData
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
+import com.hansholz.bestenotenapp.main.LocalShowUsageHints
 import com.hansholz.bestenotenapp.main.LocalShowYearProgress
 import com.hansholz.bestenotenapp.main.LocalTimetableBlockViewEnabled
 import com.hansholz.bestenotenapp.main.Platform
@@ -176,6 +178,7 @@ fun Settings(
     var newestGradesCount by LocalNewestGradesCount.current
     var showCurrentLesson by LocalShowCurrentLesson.current
     var showYearProgress by LocalShowYearProgress.current
+    var showUsageHints by LocalShowUsageHints.current
     var showGradeHistory by LocalShowGradeHistory.current
     var gradeAverageEnabled by LocalGradeAverageEnabled.current
     var gradeAverageUseWeighting by LocalGradeAverageUseWeighting.current
@@ -520,7 +523,7 @@ fun Settings(
                 },
                 text = "Aktuellen Schultag anzeigen",
                 icon = MaterialSymbols.Rounded.Format_list_bulleted,
-                position = if (viewModel.isDemoAccount.value) PreferencePosition.Bottom else PreferencePosition.Middle,
+                position = PreferencePosition.Middle,
             )
             if (!viewModel.isDemoAccount.value) {
                 settingsToggleItem(
@@ -537,9 +540,19 @@ fun Settings(
                     },
                     text = "Schuljahres-Fortschritt anzeigen",
                     icon = MaterialSymbols.Rounded.Percent,
-                    position = PreferencePosition.Bottom,
+                    position = PreferencePosition.Middle,
                 )
             }
+            settingsToggleItem(
+                checked = showUsageHints,
+                onCheckedChange = {
+                    showUsageHints = it
+                    put("showUsageHints", it)
+                },
+                text = "Bedienhinweise anzeigen",
+                icon = MaterialSymbols.Rounded.Touch_app,
+                position = PreferencePosition.Bottom,
+            )
             item {
                 PreferenceCategory("Noten", Modifier.padding(horizontal = 15.dp))
             }
@@ -848,6 +861,7 @@ fun Settings(
                                 newestGradesCount = appSettings.newestGradesCount.coerceIn(1, 10)
                                 showCurrentLesson = appSettings.showCurrentLesson
                                 showYearProgress = appSettings.showYearProgress
+                                showUsageHints = appSettings.showUsageHints
                                 showGradeHistory = appSettings.showGradeHistory
                                 gradeAverageEnabled = appSettings.gradeAverageEnabled
                                 gradeAverageUseWeighting = appSettings.gradeAverageUseWeighting
@@ -877,6 +891,7 @@ fun Settings(
                                 put("newestGradesCount", newestGradesCount)
                                 put("showCurrentLesson", appSettings.showCurrentLesson)
                                 put("showYearProgress", appSettings.showYearProgress)
+                                put("showUsageHints", appSettings.showUsageHints)
                                 put("showGradeHistory", appSettings.showGradeHistory)
                                 put("gradeAverageEnabled", appSettings.gradeAverageEnabled)
                                 put("gradeAverageUseWeighting", appSettings.gradeAverageUseWeighting)

@@ -18,6 +18,7 @@ internal val LocalShowNewestGrades = compositionLocalOf { mutableStateOf(false) 
 internal val LocalNewestGradesCount = compositionLocalOf { mutableStateOf(5) }
 internal val LocalShowCurrentLesson = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowYearProgress = compositionLocalOf { mutableStateOf(false) }
+internal val LocalShowUsageHints = compositionLocalOf { mutableStateOf(true) }
 internal val LocalShowGradeHistory = compositionLocalOf { mutableStateOf(false) }
 internal val LocalGradeAverageEnabled = compositionLocalOf { mutableStateOf(true) }
 internal val LocalGradeAverageUseWeighting = compositionLocalOf { mutableStateOf(false) }
@@ -57,6 +58,7 @@ fun SettingsProvider(
     val newestGradesCountState = remember { mutableStateOf(get("newestGradesCount", 5).coerceIn(1, 10)) }
     val showCurrentLessonState = remember { mutableStateOf(get("showCurrentLesson", true)) }
     val showYearProgress = remember { mutableStateOf(get("showYearProgress", true)) }
+    val showUsageHints = remember { mutableStateOf(get("showUsageHints", true)) }
     val showGradeHistoryState = remember { mutableStateOf(get("showGradeHistory", false)) }
     val gradeAverageEnabledState = remember { mutableStateOf(get("gradeAverageEnabled", true)) }
     val gradeAverageUseWeightingState = remember { mutableStateOf(get("gradeAverageUseWeighting", false)) }
@@ -84,6 +86,7 @@ fun SettingsProvider(
         LocalNewestGradesCount provides newestGradesCountState,
         LocalShowCurrentLesson provides showCurrentLessonState,
         LocalShowYearProgress provides showYearProgress,
+        LocalShowUsageHints provides showUsageHints,
         LocalShowGradeHistory provides showGradeHistoryState,
         LocalGradeAverageEnabled provides gradeAverageEnabledState,
         LocalGradeAverageUseWeighting provides gradeAverageUseWeightingState,

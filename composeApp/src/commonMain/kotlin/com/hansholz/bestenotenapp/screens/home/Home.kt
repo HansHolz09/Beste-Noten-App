@@ -139,6 +139,7 @@ import com.hansholz.bestenotenapp.main.LocalShowGreetings
 import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
 import com.hansholz.bestenotenapp.main.LocalShowNotes
 import com.hansholz.bestenotenapp.main.LocalShowOnlyRelevantData
+import com.hansholz.bestenotenapp.main.LocalShowUsageHints
 import com.hansholz.bestenotenapp.main.LocalShowYearProgress
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.navigation.Fragment
@@ -208,6 +209,7 @@ fun Home(
         val showNotes by LocalShowNotes.current
         val showOnlyRelevantData by LocalShowOnlyRelevantData.current
         val showYearProgress by LocalShowYearProgress.current
+        val showUsageHints by LocalShowUsageHints.current
         val homeworkEnabled by LocalHomeworkEnabled.current
         val homeworkRevision = viewModel.homeworkRevision.intValue
         var homework by remember { mutableStateOf(emptyList<HomeworkEntry>()) }
@@ -526,11 +528,15 @@ fun Home(
                                                 }
                                             }
                                         }
-                                        Text(
-                                            text = "Tippen, um ${if (showGreetings) "deine" else "die"} Noten ansehen und analysieren zu können",
-                                            modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
-                                            textAlign = TextAlign.Center,
-                                        )
+                                        if (showUsageHints) {
+                                            Text(
+                                                text = "Tippen, um ${if (showGreetings) "deine" else "die"} Noten ansehen und analysieren zu können",
+                                                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                                textAlign = TextAlign.Center,
+                                            )
+                                        } else {
+                                            Spacer(Modifier.height(10.dp))
+                                        }
                                     }
                                 }
                             }
@@ -794,11 +800,15 @@ fun Home(
                                                 }
                                             }
                                         }
-                                        Text(
-                                            text = "Tippen, um ${if (showGreetings) "deinen" else "den"} wöchentlichen Stundenplan zu sehen",
-                                            modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
-                                            textAlign = TextAlign.Center,
-                                        )
+                                        if (showUsageHints) {
+                                            Text(
+                                                text = "Tippen, um ${if (showGreetings) "deinen" else "den"} wöchentlichen Stundenplan zu sehen",
+                                                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                                textAlign = TextAlign.Center,
+                                            )
+                                        } else {
+                                            Spacer(Modifier.height(10.dp))
+                                        }
                                     }
                                 }
                             }
@@ -868,11 +878,15 @@ fun Home(
                                             )
                                             EnhancedIconButton(onClick = {}, enabled = false) {}
                                         }
-                                        Text(
-                                            text = "Tippen, um einen Überblick über Fächer und Lehrer zu bekommen",
-                                            modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
-                                            textAlign = TextAlign.Center,
-                                        )
+                                        if (showUsageHints) {
+                                            Text(
+                                                text = "Tippen, um einen Überblick über Fächer und Lehrer zu bekommen",
+                                                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                                textAlign = TextAlign.Center,
+                                            )
+                                        } else {
+                                            Spacer(Modifier.height(10.dp))
+                                        }
                                     }
                                 }
                             }
@@ -969,11 +983,15 @@ fun Home(
                                                 }
                                             }
                                         }
-                                        Text(
-                                            text = "Tippen, um Informationen zum aktuellen Schuljahr zu erhalten",
-                                            modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
-                                            textAlign = TextAlign.Center,
-                                        )
+                                        if (showUsageHints) {
+                                            Text(
+                                                text = "Tippen, um Informationen zum aktuellen Schuljahr zu erhalten",
+                                                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                                textAlign = TextAlign.Center,
+                                            )
+                                        } else {
+                                            Spacer(Modifier.height(10.dp))
+                                        }
                                     }
                                 }
                             }
@@ -1015,11 +1033,15 @@ fun Home(
                                                     style = typography.headlineSmall,
                                                 )
                                             }
-                                            Text(
-                                                text = "Tippen, um die Unterrichtszeiten ${if (showGreetings) "deiner" else "der"} Schule anschauen zu können",
-                                                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
-                                                textAlign = TextAlign.Center,
-                                            )
+                                            if (showUsageHints) {
+                                                Text(
+                                                    text = "Tippen, um die Unterrichtszeiten ${if (showGreetings) "deiner" else "der"} Schule anschauen zu können",
+                                                    modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                                    textAlign = TextAlign.Center,
+                                                )
+                                            } else {
+                                                Spacer(Modifier.height(10.dp))
+                                            }
                                         }
                                     }
                                 }
@@ -1062,11 +1084,15 @@ fun Home(
                                                     style = typography.headlineSmall,
                                                 )
                                             }
-                                            Text(
-                                                text = "Tippen, um ${if (showGreetings) "deine" else "die"} Account- und Schuldaten einsehen zu können",
-                                                modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
-                                                textAlign = TextAlign.Center,
-                                            )
+                                            if (showUsageHints) {
+                                                Text(
+                                                    text = "Tippen, um ${if (showGreetings) "deine" else "die"} Account- und Schuldaten einsehen zu können",
+                                                    modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                                    textAlign = TextAlign.Center,
+                                                )
+                                            } else {
+                                                Spacer(Modifier.height(10.dp))
+                                            }
                                         }
                                     }
                                 }

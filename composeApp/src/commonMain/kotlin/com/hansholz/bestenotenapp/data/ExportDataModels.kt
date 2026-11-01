@@ -40,6 +40,7 @@ data class AppSettings(
     val newestGradesCount: Int = 5,
     val showCurrentLesson: Boolean = true,
     val showYearProgress: Boolean = true,
+    val showUsageHints: Boolean = true,
     val showGradeHistory: Boolean = false,
     val gradeAverageEnabled: Boolean = true,
     val gradeAverageUseWeighting: Boolean = false,
