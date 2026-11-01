@@ -363,13 +363,22 @@ fun Home(
                             }
                             if (showGreetings) {
                                 MasonryItem("greeting-text", masonryLookaheadScope, animationsEnabled) {
-                                    EnhancedAnimatedContent(viewModel.isBesteSchuleNotReachable.value) { notReachable ->
+                                    EnhancedAnimatedContent(viewModel.isBesteSchuleNotReachable.value to viewModel.isBesteSchuleDown.value) { (notReachable, besteSchuleDown) ->
                                         if (notReachable) {
                                             Text(
                                                 text =
                                                     "beste.schule konnte nicht erreicht werden, somit können deine Daten momentan nicht geladen werden." +
                                                         "\n\nBitte überprüfe deine Internetverbindung und den Status von beste.schule." +
                                                         "\n\nSollte der Fehler weiterhin auftreten, versuche dich erneut anzumelden.",
+                                                modifier = Modifier.padding(20.dp),
+                                                textAlign = TextAlign.Center,
+                                                style = typography.bodyLarge,
+                                            )
+                                        } else if (besteSchuleDown) {
+                                            Text(
+                                                text =
+                                                    "beste.schule ist gerade nicht erreichbar, z.B. wegen Wartungsarbeiten." +
+                                                        "\n\nBis dahin werden deine zuletzt geladenen Daten im Offline-Modus angezeigt.",
                                                 modifier = Modifier.padding(20.dp),
                                                 textAlign = TextAlign.Center,
                                                 style = typography.bodyLarge,

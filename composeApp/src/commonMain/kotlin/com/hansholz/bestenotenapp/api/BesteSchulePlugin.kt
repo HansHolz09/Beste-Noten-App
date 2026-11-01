@@ -3,6 +3,12 @@ package com.hansholz.bestenotenapp.api
 import io.ktor.client.plugins.api.Send
 import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.request.bearerAuth
+import io.ktor.http.HttpStatusCode
+import kotlinx.io.IOException
+
+class BesteSchuleUnavailableException(
+    status: HttpStatusCode,
+) : IOException("beste.schule is unavailable: $status")
 
 class BesteSchulePluginConfig {
     var accessTokenProvider: suspend () -> String? = { null }
@@ -26,6 +32,10 @@ val BesteSchulePlugin =
                 }
             }
             proceed(request)
+        }
+
+        onResponse { response ->
+            if (response.status.value in 500..599) throw BesteSchuleUnavailableException(response.status)
         }
     }
 

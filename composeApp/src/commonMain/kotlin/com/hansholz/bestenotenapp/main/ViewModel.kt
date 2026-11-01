@@ -16,6 +16,7 @@ import com.dokar.sonner.ToasterState
 import com.hansholz.bestenotenapp.api.BesteSchuleApi
 import com.hansholz.bestenotenapp.api.BesteSchuleAuth
 import com.hansholz.bestenotenapp.api.BesteSchulePasswordLogin
+import com.hansholz.bestenotenapp.api.BesteSchuleUnavailableException
 import com.hansholz.bestenotenapp.api.ManagedPersonalAccessToken
 import com.hansholz.bestenotenapp.api.codeAuthFlowFactory
 import com.hansholz.bestenotenapp.api.createHttpClient
@@ -128,6 +129,7 @@ class ViewModel(
     val studentId = mutableStateOf<String?>(null)
     val isBesteSchuleNotReachable = mutableStateOf(false)
     val isUsingOfflineCache = mutableStateOf(false)
+    val isBesteSchuleDown = mutableStateOf(false)
     private val api = BesteSchuleApi(httpClient, authToken, studentId, besteSchuleAuth::getValidAccessToken)
     val homeworkSyncSettings = KSafeHomeworkSyncSettings(kSafe)
     val homeworkRevision = mutableIntStateOf(0)
@@ -299,13 +301,15 @@ class ViewModel(
     private fun couldReachBesteSchule() {
         isBesteSchuleNotReachable.value = false
         isUsingOfflineCache.value = false
+        isBesteSchuleDown.value = false
     }
 
     private var besteSchuleRetryJob: Job? = null
 
-    private fun useOfflineCache() {
+    private fun useOfflineCache(besteSchuleDown: Boolean = false) {
         isBesteSchuleNotReachable.value = false
         isUsingOfflineCache.value = true
+        isBesteSchuleDown.value = besteSchuleDown
         if (besteSchuleRetryJob?.isActive == true) return
         besteSchuleRetryJob =
             viewModelScope.launch {
@@ -333,6 +337,7 @@ class ViewModel(
 
     private fun couldNotReachBesteSchule() {
         isUsingOfflineCache.value = false
+        isBesteSchuleDown.value = false
         if (isBesteSchuleNotReachable.value) return
         isBesteSchuleNotReachable.value = true
         toaster.show(
@@ -387,7 +392,7 @@ class ViewModel(
             e.printStackTrace()
             if (e.isConnectionFailure()) {
                 readBesteSchuleCache<T>(key)?.also {
-                    useOfflineCache()
+                    useOfflineCache(e is BesteSchuleUnavailableException)
                 } ?: run {
                     if (!isUsingOfflineCache.value) couldNotReachBesteSchule()
                     null
@@ -1164,6 +1169,7 @@ class ViewModel(
         demoTotalLessonStudentBySlot = emptyList()
         isBesteSchuleNotReachable.value = false
         isUsingOfflineCache.value = false
+        isBesteSchuleDown.value = false
     }
 }
 
