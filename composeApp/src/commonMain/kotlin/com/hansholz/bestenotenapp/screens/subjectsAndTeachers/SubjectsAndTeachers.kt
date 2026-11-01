@@ -125,7 +125,10 @@ fun SubjectsAndTeachers(
                         }
                     },
                 ) {
-                    Icon(MaterialSymbols.Rounded.Menu, null)
+                    Icon(
+                        imageVector = MaterialSymbols.Rounded.Menu,
+                        contentDescription = "Menü",
+                    )
                 }
             },
             sideMenuExpanded = viewModel.mediumExpandedDrawerState.value.isOpen,

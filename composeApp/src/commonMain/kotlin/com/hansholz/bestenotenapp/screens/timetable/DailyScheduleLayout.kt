@@ -205,7 +205,7 @@ internal fun DailyScheduleLayout(
                                             val colors = homeworkBlockColors[prepared.block.stableKey].orEmpty().map { it?.let { color -> Color(color) } ?: colorScheme.error }
                                             Icon(
                                                 imageVector = MaterialSymbols.Rounded.Text_snippet,
-                                                contentDescription = null,
+                                                contentDescription = if (homeworkDone) "Hausaufgabe erledigt" else "Hausaufgabe",
                                                 modifier =
                                                     Modifier
                                                         .graphicsLayer { scaleX = -1f }

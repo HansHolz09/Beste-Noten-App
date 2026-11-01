@@ -83,7 +83,10 @@ fun TopAppBarScaffold(
                                 onClick = {},
                                 enabled = false,
                             ) {
-                                Icon(MaterialSymbols.Rounded.Cloud_off, null)
+                                Icon(
+                                    imageVector = MaterialSymbols.Rounded.Cloud_off,
+                                    contentDescription = "Offline",
+                                )
                             }
                         }
                         Spacer(Modifier.width(topAppBarEndPadding()))

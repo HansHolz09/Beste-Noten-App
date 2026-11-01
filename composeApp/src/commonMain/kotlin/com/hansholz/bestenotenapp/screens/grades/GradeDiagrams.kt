@@ -690,9 +690,15 @@ fun GradeDiagrams(
                     ) {
                         EnhancedAnimatedContent(gradesViewModel.filterShown) {
                             if (it) {
-                                Icon(MaterialSymbols.Rounded.Remove, null)
+                                Icon(
+                                    imageVector = MaterialSymbols.Rounded.Remove,
+                                    contentDescription = "Filter ausblenden",
+                                )
                             } else {
-                                Icon(MaterialSymbols.Rounded.Add, null)
+                                Icon(
+                                    imageVector = MaterialSymbols.Rounded.Add,
+                                    contentDescription = "Filter einblenden",
+                                )
                             }
                         }
                     }

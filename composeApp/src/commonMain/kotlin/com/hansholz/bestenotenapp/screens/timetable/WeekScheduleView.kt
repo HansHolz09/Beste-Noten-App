@@ -406,7 +406,10 @@ fun WeekScheduleView(
                                 modifier = Modifier.padding(start = 2.dp, top = 2.dp),
                                 isExpressive = false,
                             ) {
-                                Icon(MaterialSymbols.Rounded.Close, null)
+                                Icon(
+                                    imageVector = MaterialSymbols.Rounded.Close,
+                                    contentDescription = "Schließen",
+                                )
                             }
                             Text(
                                 text = selectedLesson?.subject?.localId ?: "?",

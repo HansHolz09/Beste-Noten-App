@@ -21,12 +21,16 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
         item.accessibilityLabel = "Offline"
         return item
     }()
-    private lazy var composeBackItem = UIBarButtonItem(
-        image: UIImage(systemName: "chevron.backward"),
-        style: .plain,
-        target: self,
-        action: #selector(navigateComposeBack)
-    )
+    private lazy var composeBackItem: UIBarButtonItem = {
+        let item = UIBarButtonItem(
+            image: UIImage(systemName: "chevron.backward"),
+            style: .plain,
+            target: self,
+            action: #selector(navigateComposeBack)
+        )
+        item.accessibilityLabel = "Zurück"
+        return item
+    }()
     private lazy var composeBackGesture = UIScreenEdgePanGestureRecognizer(
         target: self,
         action: #selector(handleComposeBackGesture(_:))
@@ -35,12 +39,16 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
         target: self,
         action: #selector(handleSidebarRevealGesture(_:))
     )
-    private lazy var sidebarToggleItem = UIBarButtonItem(
-        image: UIImage(systemName: "sidebar.left"),
-        style: .plain,
-        target: self,
-        action: #selector(toggleAppSidebar)
-    )
+    private lazy var sidebarToggleItem: UIBarButtonItem = {
+        let item = UIBarButtonItem(
+            image: UIImage(systemName: "sidebar.left"),
+            style: .plain,
+            target: self,
+            action: #selector(toggleAppSidebar)
+        )
+        item.accessibilityLabel = "Seitenleiste"
+        return item
+    }()
     private var composeController: UIViewController!
     private var contentHostController: ComposeScrollHostViewController!
     private var contentNavigationController: UINavigationController!

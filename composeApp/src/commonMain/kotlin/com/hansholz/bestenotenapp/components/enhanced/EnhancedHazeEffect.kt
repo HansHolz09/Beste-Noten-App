@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
+import com.hansholz.bestenotenapp.theme.LocalSystemAccessibility
 import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInput
 import dev.chrisbanes.haze.HazePerformanceMode
@@ -37,38 +38,41 @@ fun Modifier.enhancedHazeEffect(
     val backgroundColor = colorScheme.background
     val surface = colorScheme.surfaceContainerHighest
     val blurEnabled = LocalBlurEnabled.current.value
+    val systemAccessibility = LocalSystemAccessibility.current
+    val reduceTransparency = systemAccessibility.reduceTransparency
+    val increaseContrast = systemAccessibility.increaseContrast
     val useLiquidGlass = LocalNativeComponentsEnabled.current.value
     return when {
+        hazeState != null && useLiquidGlass && block == null && (blurEnabled || reduceTransparency) -> {
+            this.hazeGlass(
+                input = HazeInput.Sources(hazeState),
+                style =
+                    GlassStyle.regular.then {
+                        backgroundColor(backgroundColor)
+                        tint(surface.copy(if (reduceTransparency || increaseContrast) 0.85f else 0.5f))
+                        specularIntensity(0f)
+                        whitePoint(0.15f)
+                        shape(RoundedCornerShape(32.dp))
+                    },
+                performanceMode = HazePerformanceMode.Performance,
+            )
+        }
+
         hazeState != null && blurEnabled -> {
-            if (useLiquidGlass && block == null) {
-                this.hazeGlass(
-                    input = HazeInput.Sources(hazeState),
-                    style =
-                        GlassStyle.regular.then {
-                            backgroundColor(backgroundColor)
-                            tint(surface.copy(0.5f))
-                            specularIntensity(0f)
-                            whitePoint(0.15f)
-                            shape(RoundedCornerShape(32.dp))
-                        },
-                    performanceMode = HazePerformanceMode.Performance,
-                )
-            } else {
-                this.hazeBlur(
-                    input = HazeInput.Sources(hazeState),
-                    style =
-                        HazeBlurStyle {
-                            blurRadius(blurRadius ?: 20.dp)
-                            color?.let {
-                                backgroundColor(it)
-                                fallbackColorEffect(HazeColorEffect.tint(it.copy(fallbackAlpha)))
-                            }
-                            noiseFactor(0f)
-                            block?.invoke(this)
-                        },
-                    performanceMode = HazePerformanceMode.Balanced,
-                )
-            }
+            this.hazeBlur(
+                input = HazeInput.Sources(hazeState),
+                style =
+                    HazeBlurStyle {
+                        blurRadius(blurRadius ?: 20.dp)
+                        color?.let {
+                            backgroundColor(it)
+                            fallbackColorEffect(HazeColorEffect.tint(it.copy(fallbackAlpha)))
+                        }
+                        noiseFactor(0f)
+                        block?.invoke(this)
+                    },
+                performanceMode = HazePerformanceMode.Balanced,
+            )
         }
 
         hazeState != null && color != null -> {
@@ -96,6 +100,13 @@ fun Modifier.enhancedHazeEffect(
             this
         }
     }
+}
+
+@Composable
+fun enhancedHazeContentColor(onColor: Color): Color {
+    val systemAccessibility = LocalSystemAccessibility.current
+    val useLiquidGlass = LocalNativeComponentsEnabled.current.value && (LocalBlurEnabled.current.value || systemAccessibility.reduceTransparency)
+    return if (useLiquidGlass && systemAccessibility.increaseContrast) colorScheme.onSurface else onColor
 }
 
 @Composable

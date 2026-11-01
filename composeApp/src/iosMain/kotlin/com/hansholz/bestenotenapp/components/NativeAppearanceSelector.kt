@@ -16,6 +16,8 @@ import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGRectInset
 import platform.CoreGraphics.CGRectMake
 import platform.Foundation.NSSelectorFromString
+import platform.UIKit.UIAccessibilityTraitButton
+import platform.UIKit.UIAccessibilityTraitSelected
 import platform.UIKit.UIBezierPath
 import platform.UIKit.UIButton
 import platform.UIKit.UIButtonConfiguration
@@ -38,6 +40,8 @@ import platform.UIKit.UIView
 import platform.UIKit.UIViewAutoresizingFlexibleHeight
 import platform.UIKit.UIViewAutoresizingFlexibleWidth
 import platform.UIKit.UIVisualEffectView
+import platform.UIKit.setAccessibilityLabel
+import platform.UIKit.setAccessibilityTraits
 import platform.darwin.NSObject
 
 private val appearanceSelectors = mutableSetOf<AppearanceSelectorView>()
@@ -100,6 +104,7 @@ private class AppearanceSelectorView(
         addSubview(container)
 
         val imageNames = listOf("material-brightness-auto", "material-light-mode", "material-dark-mode")
+        val accessibilityLabels = listOf("Wie System", "Hell", "Dunkel")
         imageNames.forEachIndexed { index, imageName ->
             val glass = makeGlassView(selected = false)
             glass.setFrame(CGRectMake(1.0 + index * 50.0, 2.0, 40.0, 40.0))
@@ -113,6 +118,7 @@ private class AppearanceSelectorView(
             button.layer.cornerRadius = 20.0
             button.clipsToBounds = true
             button.setTag(index.toLong())
+            button.setAccessibilityLabel(accessibilityLabels[index])
             button.setPointerInteractionEnabled(true)
             button.setPointerStyleProvider { btn, _, _ ->
                 val boundsRect = btn!!.bounds
@@ -154,6 +160,9 @@ private class AppearanceSelectorView(
             view.setEffect(makeGlassEffect(index == selectedIndex))
             val foregroundColor = if (index == selectedIndex) UIColor.blackColor else null
             buttons[index].setTintColor(foregroundColor)
+            buttons[index].setAccessibilityTraits(
+                if (index == selectedIndex) UIAccessibilityTraitButton or UIAccessibilityTraitSelected else UIAccessibilityTraitButton,
+            )
             buttons[index].configuration =
                 buttons[index].configuration?.apply {
                     baseForegroundColor = foregroundColor

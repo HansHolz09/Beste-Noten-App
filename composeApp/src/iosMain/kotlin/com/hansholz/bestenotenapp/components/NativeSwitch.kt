@@ -25,6 +25,7 @@ import platform.UIKit.NSLayoutConstraint
 import platform.UIKit.UIControlEventValueChanged
 import platform.UIKit.UISwitch
 import platform.UIKit.UIView
+import platform.UIKit.setAccessibilityLabel
 import platform.darwin.NSObject
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -51,6 +52,7 @@ internal fun NativeSwitch(
     enabled: Boolean,
     modifier: Modifier,
     fadeIn: Boolean,
+    accessibilityLabel: String,
 ) {
     val scope = rememberCoroutineScope()
     val target = remember { SwitchTarget(scope, onCheckedChange) }
@@ -73,6 +75,7 @@ internal fun NativeSwitch(
                             translatesAutoresizingMaskIntoConstraints = false
                             onTintColor = null
                             on = checked
+                            setAccessibilityLabel(accessibilityLabel)
                             alpha = if (fadeIn) 0.0 else 1.0
                             addTarget(target, NSSelectorFromString("valueChanged:"), UIControlEventValueChanged)
                         }
@@ -97,6 +100,7 @@ internal fun NativeSwitch(
                 toggle.setOn(checked, animated = true)
             }
             if (toggle.enabled != enabled) toggle.enabled = enabled
+            toggle.setAccessibilityLabel(accessibilityLabel)
         },
         onRelease = {
             target.cancelPendingChange()

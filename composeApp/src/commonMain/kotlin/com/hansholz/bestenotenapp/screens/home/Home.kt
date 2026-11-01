@@ -63,6 +63,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
@@ -276,7 +277,10 @@ fun Home(
                         }
                     },
                 ) {
-                    Icon(MaterialSymbols.Rounded.Menu, null)
+                    Icon(
+                        imageVector = MaterialSymbols.Rounded.Menu,
+                        contentDescription = "Menü",
+                    )
                 }
             },
             sideMenuExpanded = viewModel.mediumExpandedDrawerState.value.isOpen,
@@ -505,7 +509,10 @@ fun Home(
                                                     enter = scaleIn(),
                                                     exit = scaleOut(),
                                                 ) {
-                                                    Icon(MaterialSymbols.Rounded.Refresh, null)
+                                                    Icon(
+                                                        imageVector = MaterialSymbols.Rounded.Refresh,
+                                                        contentDescription = "Noten aktualisieren",
+                                                    )
                                                 }
                                             }
                                         }
@@ -624,7 +631,10 @@ fun Home(
                                                     enter = scaleIn(),
                                                     exit = scaleOut(),
                                                 ) {
-                                                    Icon(MaterialSymbols.Rounded.Refresh, null)
+                                                    Icon(
+                                                        imageVector = MaterialSymbols.Rounded.Refresh,
+                                                        contentDescription = "Stundenplan aktualisieren",
+                                                    )
                                                 }
                                             }
                                         }
@@ -885,7 +895,11 @@ fun Home(
                                                 fontFamily = FontFamilies.KeaniaOne,
                                                 style = typography.headlineSmall,
                                             )
-                                            EnhancedIconButton(onClick = {}, enabled = false) {}
+                                            EnhancedIconButton(
+                                                onClick = {},
+                                                modifier = Modifier.clearAndSetSemantics {},
+                                                enabled = false,
+                                            ) {}
                                         }
                                         if (showUsageHints) {
                                             Text(
@@ -949,7 +963,10 @@ fun Home(
                                                     enter = scaleIn(),
                                                     exit = scaleOut(),
                                                 ) {
-                                                    Icon(MaterialSymbols.Rounded.Refresh, null)
+                                                    Icon(
+                                                        imageVector = MaterialSymbols.Rounded.Refresh,
+                                                        contentDescription = "Statistiken aktualisieren",
+                                                    )
                                                 }
                                             }
                                         }

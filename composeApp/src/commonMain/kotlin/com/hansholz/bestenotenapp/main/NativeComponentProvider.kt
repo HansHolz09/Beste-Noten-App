@@ -13,11 +13,11 @@ import androidx.compose.ui.unit.Dp
 
 internal val LocalNativeComponentsEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalNativeSwitch =
-    compositionLocalOf<(@Composable (Boolean, (Boolean) -> Unit, Boolean, Modifier, Boolean) -> Unit)?> { null }
+    compositionLocalOf<(@Composable (Boolean, (Boolean) -> Unit, Boolean, Modifier, Boolean, String) -> Unit)?> { null }
 internal val LocalNativeAppearanceSelector =
     compositionLocalOf<(@Composable (Int, (Int) -> Unit, Modifier) -> Unit)?> { null }
 internal val LocalNativeSlider =
-    compositionLocalOf<(@Composable (Int, (Int) -> Unit, Boolean, Modifier, Int) -> Unit)?> { null }
+    compositionLocalOf<(@Composable (Int, (Int) -> Unit, Boolean, Modifier, Int, String, String) -> Unit)?> { null }
 internal val LocalNativeAlignmentHaptic = compositionLocalOf<((Offset) -> Unit)?> { null }
 internal val LocalNativeDialogBackdrop =
     compositionLocalOf<(@Composable (Modifier, List<Rect>) -> Unit)?> { null }

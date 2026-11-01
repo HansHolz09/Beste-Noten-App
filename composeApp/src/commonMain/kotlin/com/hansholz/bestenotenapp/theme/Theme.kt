@@ -18,10 +18,14 @@ import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
+import com.materialkolor.Contrast
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.ktx.animateColorScheme
 import com.materialkolor.rememberDynamicColorScheme
+import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.blur.HazeBlurDefaults
+import dev.chrisbanes.haze.glass.GlassAccessibilitySettings
+import dev.chrisbanes.haze.glass.LocalGlassAccessibilitySettings
 import dev.chrisbanes.haze.hazeSource
 import io.github.kdroidfilter.platformtools.darkmodedetector.isSystemInDarkMode
 
@@ -33,7 +37,16 @@ internal val LocalSupportsCustomColorScheme = compositionLocalOf { mutableStateO
 internal val LocalAnimationsEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalBlurEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalNativeSystemIsDark = compositionLocalOf<Boolean?> { null }
+internal val LocalSystemAccessibility = compositionLocalOf { SystemAccessibility() }
 
+internal data class SystemAccessibility(
+    val reduceMotion: Boolean = false,
+    val increaseContrast: Boolean = false,
+    val reduceTransparency: Boolean = false,
+    val showBorders: Boolean = false,
+)
+
+@OptIn(ExperimentalHazeApi::class)
 @Composable
 internal fun AppTheme(
     finalTheme: (ColorScheme) -> Unit = {},
@@ -53,14 +66,22 @@ internal fun AppTheme(
     val supportsCustomColorSchemeState = remember { mutableStateOf(false) }
     val animationsEnabledState = remember { mutableStateOf(get("animationsEnabled", true)) }
     val blurEnabledState = remember { mutableStateOf(get("blurEnabled", HazeBlurDefaults.isBlurEnabledByDefault() && getPlatform() != Platform.WEB)) }
+    val systemAccessibility = LocalSystemAccessibility.current
+    val systemDisabledState = remember { mutableStateOf(false) }
     CompositionLocalProvider(
         LocalUseSystemIsDark provides useSystemIsDark,
         LocalIsDark provides isDark,
         LocalThemeIsDark provides isDarkState,
         LocalUseCustomColorScheme provides useCustomColorSchemeState,
         LocalSupportsCustomColorScheme provides supportsCustomColorSchemeState,
-        LocalAnimationsEnabled provides animationsEnabledState,
-        LocalBlurEnabled provides blurEnabledState,
+        LocalAnimationsEnabled provides if (systemAccessibility.reduceMotion) systemDisabledState else animationsEnabledState,
+        LocalBlurEnabled provides if (systemAccessibility.reduceTransparency) systemDisabledState else blurEnabledState,
+        LocalGlassAccessibilitySettings provides
+            GlassAccessibilitySettings(
+                reduceTransparency = systemAccessibility.reduceTransparency,
+                increaseContrast = systemAccessibility.increaseContrast,
+                showBorders = systemAccessibility.showBorders,
+            ),
     ) {
         val isDark = isDarkState
         val useCustomColorScheme by useCustomColorSchemeState
@@ -73,6 +94,7 @@ internal fun AppTheme(
             (if (useCustomColorScheme) customColorScheme else null) ?: rememberDynamicColorScheme(
                 seedColor = Color.Yellow,
                 isDark = isDark,
+                contrastLevel = if (systemAccessibility.increaseContrast) Contrast.High.value else Contrast.Default.value,
                 specVersion = ColorSpec.SpecVersion.SPEC_2025,
             )
         LaunchedEffect(colorScheme) {

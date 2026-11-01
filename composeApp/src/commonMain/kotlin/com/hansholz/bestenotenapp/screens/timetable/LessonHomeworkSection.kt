@@ -78,7 +78,10 @@ fun LessonHomeworkSection(
                 },
                 enabled = busyEntryId.value == null,
             ) {
-                Icon(MaterialSymbols.Rounded.Add, null)
+                Icon(
+                    imageVector = MaterialSymbols.Rounded.Add,
+                    contentDescription = "Hausaufgabe hinzufügen",
+                )
             }
         },
         colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f)),
@@ -115,8 +118,8 @@ fun LessonHomeworkSection(
                         },
                     ) {
                         Icon(
-                            MaterialSymbols.Rounded.Done,
-                            null,
+                            imageVector = MaterialSymbols.Rounded.Done,
+                            contentDescription = if (done) "Als nicht erledigt markieren" else "Als erledigt markieren",
                             tint = if (done) colorScheme.primary else colorScheme.onSurfaceVariant,
                         )
                     }

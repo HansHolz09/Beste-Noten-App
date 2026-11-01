@@ -170,8 +170,8 @@ fun LazyListScope.homeworkItems(
                     enabled = enabled,
                 ) {
                     Icon(
-                        MaterialSymbols.Rounded.Done,
-                        null,
+                        imageVector = MaterialSymbols.Rounded.Done,
+                        contentDescription = if (done) "Als nicht erledigt markieren" else "Als erledigt markieren",
                         tint = if (done) colorScheme.primary else colorScheme.onSurfaceVariant,
                     )
                 }
@@ -304,7 +304,10 @@ fun HomeworkEditorDialog(
                         },
                         enabled = !busy,
                     ) {
-                        Icon(MaterialSymbols.Rounded.Edit_note, null)
+                        Icon(
+                            imageVector = MaterialSymbols.Rounded.Edit_note,
+                            contentDescription = "Hausaufgabentypen bearbeiten",
+                        )
                     }
                 }
                 if (LocalHomeworkGoogleSyncEnabled.current.value) {
@@ -329,7 +332,10 @@ fun HomeworkEditorDialog(
                                 modifier = Modifier.padding(start = 10.dp),
                                 enabled = !busy,
                             ) {
-                                Icon(MaterialSymbols.Rounded.Close, null)
+                                Icon(
+                                    imageVector = MaterialSymbols.Rounded.Close,
+                                    contentDescription = "Erinnerung entfernen",
+                                )
                             }
                         }
                     }
@@ -395,7 +401,10 @@ fun HomeworkEditorDialog(
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = colorScheme.error),
                             border = BorderStroke(1.dp, colorScheme.onErrorContainer),
                         ) {
-                            Icon(MaterialSymbols.Rounded.Delete, null)
+                            Icon(
+                                imageVector = MaterialSymbols.Rounded.Delete,
+                                contentDescription = "Hausaufgabe löschen",
+                            )
                         }
                         this@Row.EnhancedAnimatedVisibility(deleting) {
                             CircularWavyProgressIndicator(Modifier.size(32.dp))
@@ -411,7 +420,10 @@ fun HomeworkEditorDialog(
                         },
                         enabled = !busy,
                     ) {
-                        Icon(MaterialSymbols.Rounded.Move_down, null)
+                        Icon(
+                            imageVector = MaterialSymbols.Rounded.Move_down,
+                            contentDescription = "Hausaufgabe verschieben",
+                        )
                     }
                 }
                 EnhancedOutlinedButton(
@@ -905,7 +917,10 @@ private fun HomeworkTypeEditorDialog(
                                     vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                 },
                             ) {
-                                Icon(MaterialSymbols.Rounded.Delete, null)
+                                Icon(
+                                    imageVector = MaterialSymbols.Rounded.Delete,
+                                    contentDescription = "${option.label} löschen",
+                                )
                             }
                         }
                     }
@@ -930,7 +945,10 @@ private fun HomeworkTypeEditorDialog(
                                         it == HomeworkType(newType.trim()) || it.label.equals(newType.trim(), ignoreCase = true)
                                     },
                         ) {
-                            Icon(MaterialSymbols.Rounded.Add, null)
+                            Icon(
+                                imageVector = MaterialSymbols.Rounded.Add,
+                                contentDescription = "Typ hinzufügen",
+                            )
                         }
                     },
                 )

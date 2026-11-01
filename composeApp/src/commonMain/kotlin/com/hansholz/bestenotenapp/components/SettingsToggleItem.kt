@@ -10,6 +10,8 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Close
@@ -26,6 +28,7 @@ fun LazyListScope.settingsToggleItem(
     text: String,
     icon: ImageVector? = null,
     onIconClick: (() -> Unit)? = null,
+    iconContentDescription: String? = null,
     enabled: Boolean = true,
     modifier: Modifier = Modifier,
     textModifier: Modifier = Modifier,
@@ -48,6 +51,7 @@ fun LazyListScope.settingsToggleItem(
             title = text,
             subtitle = subtitle,
             icon = icon,
+            iconContentDescription = iconContentDescription,
             onIconClick =
                 if (onIconClick != null) {
                     {
@@ -72,11 +76,12 @@ fun LazyListScope.settingsToggleItem(
             if (!controlVisible) {
                 Spacer(Modifier.size(width = 64.dp, height = 44.dp))
             } else if (nativeComponentsEnabled && nativeSwitch != null) {
-                nativeSwitch(checked, change, enabled, Modifier, nativeControlFadeIn)
+                nativeSwitch(checked, change, enabled, Modifier, nativeControlFadeIn, text)
             } else {
                 Switch(
                     checked = checked,
                     onCheckedChange = change,
+                    modifier = Modifier.semantics { contentDescription = text },
                     thumbContent =
                         if (checked) {
                             {

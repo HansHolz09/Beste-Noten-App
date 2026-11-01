@@ -70,6 +70,7 @@ fun PreferenceItem(
     title: String,
     subtitle: String? = null,
     icon: Any? = null,
+    iconContentDescription: String? = null,
     enabled: Boolean = true,
     onClick: (() -> Unit)? = null,
     onIconClick: (() -> Unit)? = null,
@@ -128,34 +129,44 @@ fun PreferenceItem(
                     is ImageVector -> {
                         Icon(
                             imageVector = icon,
-                            contentDescription = null,
+                            contentDescription = iconContentDescription,
                             tint = iconTint,
                             modifier =
                                 Modifier
                                     .size(24.dp)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null,
-                                    ) {
-                                        onIconClick?.invoke()
-                                    },
+                                    .then(
+                                        if (onIconClick != null) {
+                                            Modifier.clickable(
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                indication = null,
+                                                onClick = onIconClick,
+                                            )
+                                        } else {
+                                            Modifier
+                                        },
+                                    ),
                         )
                     }
 
                     is Painter -> {
                         Icon(
                             painter = icon,
-                            contentDescription = null,
+                            contentDescription = iconContentDescription,
                             tint = iconTint,
                             modifier =
                                 Modifier
                                     .size(24.dp)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null,
-                                    ) {
-                                        onIconClick?.invoke()
-                                    },
+                                    .then(
+                                        if (onIconClick != null) {
+                                            Modifier.clickable(
+                                                interactionSource = remember { MutableInteractionSource() },
+                                                indication = null,
+                                                onClick = onIconClick,
+                                            )
+                                        } else {
+                                            Modifier
+                                        },
+                                    ),
                         )
                     }
 

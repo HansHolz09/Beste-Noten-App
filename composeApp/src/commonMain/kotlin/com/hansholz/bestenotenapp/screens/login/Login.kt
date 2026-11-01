@@ -300,7 +300,10 @@ fun Login(
                                                         EnhancedIconButton(onClick = {
                                                             scope.launch { textFieldState.setTextAndPlaceCursorAtEnd(clipboard.getText()?.text ?: "") }
                                                         }) {
-                                                            Icon(MaterialSymbols.Rounded.Content_paste, null)
+                                                            Icon(
+                                                                imageVector = MaterialSymbols.Rounded.Content_paste,
+                                                                contentDescription = "Aus Zwischenablage einfügen",
+                                                            )
                                                         }
                                                     },
                                                     trailingIcon = {
@@ -308,7 +311,10 @@ fun Login(
                                                             onClick = { scope.launch { runLogin { viewModel.authToken.value = textFieldState.text.toString() } } },
                                                             enabled = textFieldState.text.isNotEmpty(),
                                                         ) {
-                                                            Icon(MaterialSymbols.Rounded.Login, null)
+                                                            Icon(
+                                                                imageVector = MaterialSymbols.Rounded.Login,
+                                                                contentDescription = "Anmelden",
+                                                            )
                                                         }
                                                     },
                                                     placeholder = { Text("Private-Access-Token") },
@@ -387,7 +393,10 @@ fun Login(
                                                             enabled = !loginViewModel.isSubmitting && !loginViewModel.twoFactorRequired,
                                                         ) {
                                                             EnhancedAnimatedContent(passwordVisible) { visible ->
-                                                                Icon(if (visible) MaterialSymbols.Rounded.Visibility_off else MaterialSymbols.Rounded.Visibility, null)
+                                                                Icon(
+                                                                    imageVector = if (visible) MaterialSymbols.Rounded.Visibility_off else MaterialSymbols.Rounded.Visibility,
+                                                                    contentDescription = if (visible) "Passwort verbergen" else "Passwort anzeigen",
+                                                                )
                                                             }
                                                         }
                                                     },

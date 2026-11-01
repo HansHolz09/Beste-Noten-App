@@ -119,6 +119,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedContentBlur
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
+import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeContentColor
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
@@ -173,6 +174,7 @@ fun Timetable(
         val layoutDirection = LocalLayoutDirection.current
         val hideNativeDateTimePickers = LocalHideNativeDateTimePickers.current
         val nativeComponentsEnabled by LocalNativeComponentsEnabled.current
+        val hazeContentColor = enhancedHazeContentColor(colorScheme.onPrimaryContainer)
 
         var showAbsences by LocalShowAbsences.current
         val showOnlyRelevantData by LocalShowOnlyRelevantData.current
@@ -205,7 +207,10 @@ fun Timetable(
                         }
                     },
                 ) {
-                    Icon(MaterialSymbols.Rounded.Menu, null)
+                    Icon(
+                        imageVector = MaterialSymbols.Rounded.Menu,
+                        contentDescription = "Menü",
+                    )
                 }
             },
             sideMenuExpanded = viewModel.mediumExpandedDrawerState.value.isOpen,
@@ -540,8 +545,8 @@ fun Timetable(
                                                         } else {
                                                             MaterialSymbols.Rounded.Arrow_back
                                                         },
-                                                    contentDescription = null,
-                                                    tint = colorScheme.onPrimaryContainer,
+                                                    contentDescription = "Vorherige Woche",
+                                                    tint = hazeContentColor,
                                                 )
                                             }
                                             var showCaptureArea by remember { mutableStateOf(false) }
@@ -607,8 +612,13 @@ fun Timetable(
                                                             Platform.DESKTOP -> MaterialSymbols.Rounded.Save
                                                             Platform.WEB -> MaterialSymbols.Rounded.Download
                                                         },
-                                                    contentDescription = null,
-                                                    tint = colorScheme.onPrimaryContainer,
+                                                    contentDescription =
+                                                        when (getPlatform()) {
+                                                            Platform.ANDROID, Platform.IOS -> "Stundenplan teilen"
+                                                            Platform.DESKTOP -> "Stundenplan speichern"
+                                                            Platform.WEB -> "Stundenplan herunterladen"
+                                                        },
+                                                    tint = hazeContentColor,
                                                 )
                                             }
                                         },
@@ -620,8 +630,8 @@ fun Timetable(
                                             ) {
                                                 Icon(
                                                     imageVector = MaterialSymbols.Rounded.Refresh,
-                                                    contentDescription = null,
-                                                    tint = colorScheme.onPrimaryContainer,
+                                                    contentDescription = "Stundenplan aktualisieren",
+                                                    tint = hazeContentColor,
                                                 )
                                             }
                                             EnhancedIconButton(
@@ -641,8 +651,8 @@ fun Timetable(
                                                         } else {
                                                             MaterialSymbols.Rounded.Arrow_forward
                                                         },
-                                                    contentDescription = null,
-                                                    tint = colorScheme.onPrimaryContainer,
+                                                    contentDescription = "Nächste Woche",
+                                                    tint = hazeContentColor,
                                                 )
                                             }
                                         },
@@ -667,8 +677,8 @@ fun Timetable(
                                         ) { enabled ->
                                             Icon(
                                                 imageVector = MaterialSymbols.Rounded.Calendar_month,
-                                                contentDescription = null,
-                                                tint = if (enabled) colorScheme.onPrimary else colorScheme.onPrimaryContainer,
+                                                contentDescription = "Datum auswählen",
+                                                tint = if (enabled) colorScheme.onPrimary else hazeContentColor,
                                             )
                                         }
                                     }
@@ -708,7 +718,7 @@ fun Timetable(
                                         Text(
                                             text = "Datum wählen",
                                             modifier = Modifier.padding(15.dp).align(Alignment.CenterHorizontally),
-                                            color = colorScheme.onPrimaryContainer,
+                                            color = hazeContentColor,
                                             style = typography.headlineSmall,
                                         )
                                         val datePickerState =
@@ -732,7 +742,7 @@ fun Timetable(
                                                     DatePickerDefaults.colors(
                                                         containerColor = colorScheme.primaryContainer,
                                                         headlineContentColor = colorScheme.onSurface,
-                                                        weekdayContentColor = colorScheme.onPrimaryContainer,
+                                                        weekdayContentColor = hazeContentColor,
                                                         navigationContentColor = colorScheme.onSurface,
                                                         yearContentColor = colorScheme.onSurface,
                                                         dividerColor = colorScheme.onSurface,

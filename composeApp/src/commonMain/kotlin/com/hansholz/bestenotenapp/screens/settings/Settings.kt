@@ -23,6 +23,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withLink
@@ -130,6 +133,7 @@ import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalIsDark
 import com.hansholz.bestenotenapp.theme.LocalSupportsCustomColorScheme
+import com.hansholz.bestenotenapp.theme.LocalSystemAccessibility
 import com.hansholz.bestenotenapp.theme.LocalUseCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseSystemIsDark
 import com.hansholz.bestenotenapp.utils.formateInterval
@@ -168,6 +172,7 @@ fun Settings(
     var animationsEnabled by LocalAnimationsEnabled.current
     var scrollZoomAnimationEnabled by LocalScrollZoomAnimationEnabled.current
     var blurEnabled by LocalBlurEnabled.current
+    val systemAccessibility = LocalSystemAccessibility.current
     var backgroundEnabled by LocalBackgroundEnabled.current
     var hapticsEnabled by LocalHapticsEnabled.current
     var notificationsEnabled by LocalGradeNotificationsEnabled.current
@@ -214,7 +219,10 @@ fun Settings(
                     }
                 },
             ) {
-                Icon(MaterialSymbols.Rounded.Menu, null)
+                Icon(
+                    imageVector = MaterialSymbols.Rounded.Menu,
+                    contentDescription = "Menü",
+                )
             }
         },
         sideMenuExpanded = viewModel.mediumExpandedDrawerState.value.isOpen,
@@ -274,21 +282,30 @@ fun Settings(
                                 onCheckedChange = { appearanceActions[0]() },
                                 shapes = IconButtonDefaults.toggleableShapes(),
                             ) {
-                                Icon(MaterialSymbols.Rounded.Brightness_auto, null)
+                                Icon(
+                                    imageVector = MaterialSymbols.Rounded.Brightness_auto,
+                                    contentDescription = "Wie System",
+                                )
                             }
                             FilledIconToggleButton(
                                 checked = selectedAppearance == 1,
                                 onCheckedChange = { appearanceActions[1]() },
                                 shapes = IconButtonDefaults.toggleableShapes(),
                             ) {
-                                Icon(MaterialSymbols.Rounded.Light_mode, null)
+                                Icon(
+                                    imageVector = MaterialSymbols.Rounded.Light_mode,
+                                    contentDescription = "Hell",
+                                )
                             }
                             FilledIconToggleButton(
                                 checked = selectedAppearance == 2,
                                 onCheckedChange = { appearanceActions[2]() },
                                 shapes = IconButtonDefaults.toggleableShapes(),
                             ) {
-                                Icon(MaterialSymbols.Rounded.Dark_mode, null)
+                                Icon(
+                                    imageVector = MaterialSymbols.Rounded.Dark_mode,
+                                    contentDescription = "Dunkel",
+                                )
                             }
                         }
                     }
@@ -315,6 +332,7 @@ fun Settings(
                     },
                     text = "Animationen",
                     icon = MaterialSymbols.Rounded.Animation,
+                    enabled = !systemAccessibility.reduceMotion,
                     position = PreferencePosition.Middle,
                 )
             }
@@ -339,6 +357,7 @@ fun Settings(
                         },
                         text = "Unschärfe-Effekt",
                         icon = MaterialSymbols.Rounded.Blur_on,
+                        enabled = !systemAccessibility.reduceTransparency,
                         position = PreferencePosition.Middle,
                     )
                 }
@@ -441,12 +460,24 @@ fun Settings(
                         bottomContent = {
                             val sliderModifier = Modifier.fillMaxWidth().padding(start = 56.dp, end = 16.dp, bottom = 12.dp)
                             if (nativeComponentsEnabled && nativeSlider != null) {
-                                nativeSlider(selectedIndex, onIntervalSelected, notificationsEnabled, sliderModifier, intervalOptions.lastIndex)
+                                nativeSlider(
+                                    selectedIndex,
+                                    onIntervalSelected,
+                                    notificationsEnabled,
+                                    sliderModifier,
+                                    intervalOptions.lastIndex,
+                                    "Überprüfungsintervall",
+                                    formateInterval(notificationIntervalMinutes),
+                                )
                             } else {
                                 Slider(
                                     value = selectedIndex.toFloat(),
                                     onValueChange = { onIntervalSelected(it.roundToInt()) },
-                                    modifier = sliderModifier,
+                                    modifier =
+                                        sliderModifier.semantics {
+                                            contentDescription = "Überprüfungsintervall"
+                                            stateDescription = formateInterval(notificationIntervalMinutes)
+                                        },
                                     enabled = notificationsEnabled,
                                     valueRange = 0f..intervalOptions.lastIndex.toFloat(),
                                     steps = intervalOptions.size - 2,
@@ -496,12 +527,24 @@ fun Settings(
                     }
                     val sliderModifier = Modifier.fillMaxWidth().padding(start = 56.dp, end = 16.dp, bottom = 12.dp)
                     if (nativeComponentsEnabled && nativeSlider != null) {
-                        nativeSlider(newestGradesCount - 1, onCountSelected, showNewestGrades, sliderModifier, 9)
+                        nativeSlider(
+                            newestGradesCount - 1,
+                            onCountSelected,
+                            showNewestGrades,
+                            sliderModifier,
+                            9,
+                            "Anzahl neuster Noten",
+                            newestGradesCount.toString(),
+                        )
                     } else {
                         Slider(
                             value = newestGradesCount.toFloat(),
                             onValueChange = { onCountSelected(it.roundToInt() - 1) },
-                            modifier = sliderModifier,
+                            modifier =
+                                sliderModifier.semantics {
+                                    contentDescription = "Anzahl neuster Noten"
+                                    stateDescription = newestGradesCount.toString()
+                                },
                             enabled = showNewestGrades,
                             valueRange = 1f..10f,
                             steps = 8,
@@ -696,6 +739,7 @@ fun Settings(
                 text = "Eingetragenes mit Google Kalender synchronisieren",
                 icon = GoogleCalendar,
                 onIconClick = { openGoogleCalendar() },
+                iconContentDescription = "Google Kalender öffnen",
                 enabled = homeworkEnabled,
                 position = if (homeworkGoogleSyncEnabled) PreferencePosition.Middle else PreferencePosition.Bottom,
             )

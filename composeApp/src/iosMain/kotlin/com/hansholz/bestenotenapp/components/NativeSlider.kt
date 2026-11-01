@@ -23,6 +23,8 @@ import platform.UIKit.UISlider
 import platform.UIKit.UISliderTrackConfiguration
 import platform.UIKit.UITouch
 import platform.UIKit.UITouchTypePencil
+import platform.UIKit.setAccessibilityLabel
+import platform.UIKit.setAccessibilityValue
 import platform.darwin.NSObject
 import kotlin.math.roundToInt
 
@@ -34,6 +36,8 @@ internal fun NativeSlider(
     enabled: Boolean,
     modifier: Modifier,
     maxIndex: Int,
+    accessibilityLabel: String,
+    accessibilityValue: String,
 ) {
     val target = remember { SliderTarget(onSelected) }
     target.onSelected = onSelected
@@ -54,6 +58,8 @@ internal fun NativeSlider(
             if (it.value.roundToInt() != selectedIndex) it.setValue(selectedIndex.toFloat(), animated = false)
             it.currentIndex = selectedIndex
             it.enabled = enabled
+            it.setAccessibilityLabel(accessibilityLabel)
+            it.setAccessibilityValue(accessibilityValue)
         },
         properties =
             UIKitInteropProperties(

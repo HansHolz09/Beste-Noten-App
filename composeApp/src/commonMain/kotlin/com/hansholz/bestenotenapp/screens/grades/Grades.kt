@@ -98,6 +98,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -138,6 +139,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedCheckbox
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedContentBlur
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
+import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeContentColor
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
@@ -203,6 +205,7 @@ fun Grades(
         val animationsEnabled by LocalAnimationsEnabled.current
         val scrollZoomAnimationEnabled by LocalScrollZoomAnimationEnabled.current
         val nativeComponentsEnabled by LocalNativeComponentsEnabled.current
+        val hazeContentColor = enhancedHazeContentColor(colorScheme.onPrimaryContainer)
         val nativePrimaryTabRow = LocalNativePrimaryTabRow.current
         val usesNativePrimaryTabs = nativeComponentsEnabled && nativePrimaryTabRow != null
         var gradeAverageEnabled by LocalGradeAverageEnabled.current
@@ -251,7 +254,7 @@ fun Grades(
                                 } else {
                                     MaterialSymbols.Rounded.Arrow_back
                                 },
-                            contentDescription = null,
+                            contentDescription = "Zurück",
                         )
                     }
                 } else {
@@ -262,7 +265,10 @@ fun Grades(
                             }
                         },
                     ) {
-                        Icon(MaterialSymbols.Rounded.Menu, null)
+                        Icon(
+                            imageVector = MaterialSymbols.Rounded.Menu,
+                            contentDescription = "Menü",
+                        )
                     }
                 }
             },
@@ -460,7 +466,10 @@ fun Grades(
                                                                             }
                                                                         },
                                                                     ) {
-                                                                        Icon(imageVector = MaterialSymbols.Rounded.Check, null)
+                                                                        Icon(
+                                                                            imageVector = MaterialSymbols.Rounded.Check,
+                                                                            contentDescription = "Als gelesen markieren",
+                                                                        )
                                                                     }
                                                                     this@Row.EnhancedAnimatedVisibility(isLoading) {
                                                                         CircularWavyProgressIndicator(Modifier.size(32.dp))
@@ -777,7 +786,10 @@ fun Grades(
                                                                                 }
                                                                             },
                                                                         ) {
-                                                                            Icon(imageVector = MaterialSymbols.Rounded.Check, null)
+                                                                            Icon(
+                                                                                imageVector = MaterialSymbols.Rounded.Check,
+                                                                                contentDescription = "Als gelesen markieren",
+                                                                            )
                                                                         }
                                                                         this@Row.EnhancedAnimatedVisibility(isLoading) {
                                                                             CircularWavyProgressIndicator(Modifier.size(32.dp))
@@ -974,8 +986,8 @@ fun Grades(
                                             ) {
                                                 Icon(
                                                     imageVector = MaterialSymbols.Rounded.Search,
-                                                    contentDescription = null,
-                                                    tint = colorScheme.onPrimaryContainer,
+                                                    contentDescription = "Suchen",
+                                                    tint = hazeContentColor,
                                                 )
                                             }
                                             EnhancedIconButton(
@@ -990,8 +1002,8 @@ fun Grades(
                                             ) {
                                                 Icon(
                                                     imageVector = MaterialSymbols.Rounded.Calendar_month,
-                                                    contentDescription = null,
-                                                    tint = colorScheme.onPrimaryContainer,
+                                                    contentDescription = "Jahre auswählen",
+                                                    tint = hazeContentColor,
                                                 )
                                             }
                                         },
@@ -1021,8 +1033,8 @@ fun Grades(
                                             ) {
                                                 Icon(
                                                     imageVector = MaterialSymbols.Rounded.Refresh,
-                                                    contentDescription = null,
-                                                    tint = colorScheme.onPrimaryContainer,
+                                                    contentDescription = "Noten aktualisieren",
+                                                    tint = hazeContentColor,
                                                 )
                                             }
                                             EnhancedIconButton(
@@ -1038,8 +1050,8 @@ fun Grades(
                                             ) {
                                                 Icon(
                                                     imageVector = MaterialSymbols.Rounded.Settings,
-                                                    contentDescription = null,
-                                                    tint = colorScheme.onPrimaryContainer,
+                                                    contentDescription = "Einstellungen",
+                                                    tint = hazeContentColor,
                                                 )
                                             }
                                         },
@@ -1065,8 +1077,8 @@ fun Grades(
                                         ) { enabled ->
                                             Icon(
                                                 imageVector = MaterialSymbols.Rounded.Bar_chart,
-                                                contentDescription = null,
-                                                tint = if (enabled) colorScheme.onPrimary else colorScheme.onPrimaryContainer,
+                                                contentDescription = "Diagramme",
+                                                tint = if (enabled) colorScheme.onPrimary else hazeContentColor,
                                             )
                                         }
                                     }
@@ -1115,12 +1127,13 @@ fun Grades(
                                             }
                                             EnhancedIconButton(
                                                 onClick = {},
+                                                modifier = Modifier.clearAndSetSemantics {},
                                                 enabled = false,
                                             ) {
                                                 Icon(
                                                     imageVector = MaterialSymbols.Rounded.Search,
                                                     contentDescription = null,
-                                                    tint = colorScheme.onPrimaryContainer,
+                                                    tint = hazeContentColor,
                                                 )
                                             }
                                             EnhancedBasicTextField(
@@ -1132,8 +1145,8 @@ fun Grades(
                                                         .padding(vertical = 15.dp)
                                                         .focusRequester(focusRequester),
                                                 singleLine = true,
-                                                textStyle = TextStyle.Default.copy(colorScheme.onPrimaryContainer, 20.sp),
-                                                cursorBrush = SolidColor(colorScheme.onPrimaryContainer),
+                                                textStyle = TextStyle.Default.copy(hazeContentColor, 20.sp),
+                                                cursorBrush = SolidColor(hazeContentColor),
                                             )
                                             EnhancedIconButton(
                                                 onClick = {
@@ -1145,8 +1158,8 @@ fun Grades(
                                             ) {
                                                 Icon(
                                                     imageVector = MaterialSymbols.Rounded.Close,
-                                                    contentDescription = null,
-                                                    tint = colorScheme.onPrimaryContainer,
+                                                    contentDescription = "Suche schließen",
+                                                    tint = hazeContentColor,
                                                 )
                                             }
                                         }
@@ -1191,10 +1204,10 @@ fun Grades(
                                         Text(
                                             text = "Jahre",
                                             modifier = Modifier.padding(15.dp).align(Alignment.CenterHorizontally),
-                                            color = colorScheme.onPrimaryContainer,
+                                            color = hazeContentColor,
                                             style = typography.headlineSmall,
                                         )
-                                        ProvideTextStyle(LocalTextStyle.current.copy(colorScheme.onPrimaryContainer)) {
+                                        ProvideTextStyle(LocalTextStyle.current.copy(hazeContentColor)) {
                                             val availableStages =
                                                 viewModel.years
                                                     .mapNotNull { viewModel.levelsByYear[it.id]?.secondaryStage() }
@@ -1313,10 +1326,10 @@ fun Grades(
                                         Text(
                                             text = "Einstellungen",
                                             modifier = Modifier.padding(15.dp).align(Alignment.CenterHorizontally),
-                                            color = colorScheme.onPrimaryContainer,
+                                            color = hazeContentColor,
                                             style = typography.headlineSmall,
                                         )
-                                        ProvideTextStyle(LocalTextStyle.current.copy(colorScheme.onPrimaryContainer)) {
+                                        ProvideTextStyle(LocalTextStyle.current.copy(hazeContentColor)) {
                                             LazyColumn(
                                                 modifier = Modifier.weight(1f, false),
                                                 verticalArrangement = Arrangement.spacedBy(2.dp),

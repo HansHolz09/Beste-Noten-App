@@ -39,6 +39,8 @@ import com.hansholz.bestenotenapp.main.LocalNativeSwitch
 import com.hansholz.bestenotenapp.main.LocalNativeTimePicker
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.theme.LocalNativeSystemIsDark
+import com.hansholz.bestenotenapp.theme.LocalSystemAccessibility
+import com.hansholz.bestenotenapp.theme.rememberSystemAccessibility
 import com.hansholz.bestenotenapp.utils.isInWindowMode
 import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
 import kotlinx.coroutines.runBlocking
@@ -59,6 +61,7 @@ fun mainViewController(nativeBridge: NativeComponentBridge? = null): UIViewContr
                 LocalNativeComponentsEnabled provides nativeComponentsEnabled,
                 LocalNativeAlignmentHaptic provides rememberNativeAlignmentHaptic(),
                 LocalNativeSystemIsDark provides nativeBridge?.systemIsDarkState?.value,
+                LocalSystemAccessibility provides rememberSystemAccessibility(),
                 LocalNativeContentTopPadding provides nativeBridge?.contentTopInsetState?.value?.dp,
                 LocalNativeDialogBackdrop provides { modifier, glassFrames ->
                     NativeDialogBackdrop(modifier, glassFrames)
@@ -81,14 +84,14 @@ fun mainViewController(nativeBridge: NativeComponentBridge? = null): UIViewContr
                     },
                 LocalGlobalEasterEgg provides { type -> nativeBridge?.showEasterEgg(type) },
                 LocalHideNativeInterop provides { hideNativeSwitches() },
-                LocalNativeSwitch provides { checked, onCheckedChange, enabled, modifier, fadeIn ->
-                    NativeSwitch(checked, onCheckedChange, enabled, modifier, fadeIn)
+                LocalNativeSwitch provides { checked, onCheckedChange, enabled, modifier, fadeIn, accessibilityLabel ->
+                    NativeSwitch(checked, onCheckedChange, enabled, modifier, fadeIn, accessibilityLabel)
                 },
                 LocalNativeAppearanceSelector provides { selected, onSelected, modifier ->
                     NativeAppearanceSelector(selected, onSelected, modifier)
                 },
-                LocalNativeSlider provides { selected, onSelected, enabled, modifier, maxIndex ->
-                    NativeSlider(selected, onSelected, enabled, modifier, maxIndex)
+                LocalNativeSlider provides { selected, onSelected, enabled, modifier, maxIndex, accessibilityLabel, accessibilityValue ->
+                    NativeSlider(selected, onSelected, enabled, modifier, maxIndex, accessibilityLabel, accessibilityValue)
                 },
             ) {
                 EnhancedNativeTextInputProvider {

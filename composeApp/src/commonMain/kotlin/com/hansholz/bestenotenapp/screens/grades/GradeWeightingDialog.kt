@@ -214,7 +214,10 @@ private fun WeightControlRow(
                     onValueChange((value - step).coerceAtLeast(0))
                 },
             ) {
-                Icon(MaterialSymbols.Rounded.Remove, null)
+                Icon(
+                    imageVector = MaterialSymbols.Rounded.Remove,
+                    contentDescription = "Verringern",
+                )
             }
             EnhancedBasicTextField(
                 value = if (useWeightingInsteadOfPercent) textFieldValue else "$textFieldValue%",
@@ -250,7 +253,10 @@ private fun WeightControlRow(
                     onValueChange((value + step).coerceAtMost(100))
                 },
             ) {
-                Icon(MaterialSymbols.Rounded.Add, null)
+                Icon(
+                    imageVector = MaterialSymbols.Rounded.Add,
+                    contentDescription = "Erhöhen",
+                )
             }
         }
     }

@@ -32,6 +32,7 @@ import com.hansholz.bestenotenapp.components.cupertinoHighlight
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimated
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedAnimatedContent
 import com.hansholz.bestenotenapp.theme.FontFamilies
+import com.hansholz.bestenotenapp.theme.LocalSystemAccessibility
 import com.nomanr.animate.compose.animated.rememberAnimatedState
 import com.nomanr.animate.compose.presets.attentionseekers.Jello
 import com.nomanr.animate.compose.presets.attentionseekers.RubberBand
@@ -136,7 +137,7 @@ private fun DrawerItem(
             icon = { Icon(screen.icon, null) },
             colors =
                 NavigationDrawerItemDefaults.colors(
-                    selectedContainerColor = colorScheme.secondaryContainer.copy(0.7f),
+                    selectedContainerColor = colorScheme.secondaryContainer.copy(if (LocalSystemAccessibility.current.increaseContrast) 1f else 0.7f),
                     unselectedTextColor = colorScheme.onSurface,
                 ),
             interactionSource = interactionSource,

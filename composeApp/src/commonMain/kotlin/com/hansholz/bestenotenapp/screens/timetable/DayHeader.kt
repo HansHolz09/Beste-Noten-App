@@ -124,7 +124,7 @@ fun DayHeader(
             if (showNotes && !captureOnly && (!notes.isNullOrEmpty() || homework.isNotEmpty())) {
                 Icon(
                     imageVector = MaterialSymbols.Rounded.Article,
-                    contentDescription = null,
+                    contentDescription = "Notizen oder Hausaufgaben vorhanden",
                     modifier =
                         Modifier
                             .padding(start = 5.dp)
