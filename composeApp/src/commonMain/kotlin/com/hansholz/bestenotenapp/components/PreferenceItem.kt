@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
@@ -67,7 +68,7 @@ fun PreferencePosition.preferenceShape(): CornerBasedShape =
 
 @Composable
 fun PreferenceItem(
-    title: String,
+    title: CharSequence,
     subtitle: String? = null,
     icon: Any? = null,
     iconContentDescription: String? = null,
@@ -180,7 +181,7 @@ fun PreferenceItem(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Text(
-                        text = title,
+                        text = title as? AnnotatedString ?: AnnotatedString(title.toString()),
                         modifier = textModifier,
                         style = MaterialTheme.typography.bodyLarge,
                         maxLines = titleMaxLines,

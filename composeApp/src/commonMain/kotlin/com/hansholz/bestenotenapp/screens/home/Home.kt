@@ -64,6 +64,8 @@ import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
@@ -151,6 +153,7 @@ import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.utils.SimpleTime
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.getGreeting
+import com.hansholz.bestenotenapp.utils.parseMarkdown
 import com.hansholz.bestenotenapp.utils.percentOfSchoolYearAt
 import com.hansholz.bestenotenapp.utils.rememberCurrentSimpleTime
 import com.hansholz.bestenotenapp.utils.switchPercent
@@ -746,8 +749,11 @@ fun Home(
                                                                                     groupLessons.value.flatMap { it.notes.orEmpty() }.forEach {
                                                                                         Text(
                                                                                             text =
-                                                                                                (it.type?.name?.replace("Substitution Plan", "Vertretungsplan") ?: "?") +
-                                                                                                    ": ${it.description ?: "Keine Beschreibung"}",
+                                                                                                buildAnnotatedString {
+                                                                                                    append(it.type?.name?.replace("Substitution Plan", "Vertretungsplan") ?: "?")
+                                                                                                    append(": ")
+                                                                                                    append(it.description?.parseMarkdown() ?: AnnotatedString("Keine Beschreibung"))
+                                                                                                },
                                                                                             modifier = Modifier.padding(vertical = 5.dp),
                                                                                             color =
                                                                                                 if (currentTime in
@@ -785,7 +791,7 @@ fun Home(
                                                                                 verticalAlignment = Alignment.CenterVertically,
                                                                             ) {
                                                                                 Icon(MaterialSymbols.Rounded.News, null, Modifier.padding(end = 10.dp))
-                                                                                Text(note.description ?: "Keine Beschreibung vorhanden")
+                                                                                Text(note.description?.parseMarkdown() ?: AnnotatedString("Keine Beschreibung vorhanden"))
                                                                             }
                                                                         }
                                                                     }

@@ -57,6 +57,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Close
@@ -82,6 +83,7 @@ import com.hansholz.bestenotenapp.utils.SimpleTime
 import com.hansholz.bestenotenapp.utils.TimetableLessonBlock
 import com.hansholz.bestenotenapp.utils.createTimetableLessonBlocks
 import com.hansholz.bestenotenapp.utils.formateDate
+import com.hansholz.bestenotenapp.utils.parseMarkdown
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
@@ -513,7 +515,7 @@ fun WeekScheduleView(
                         selectedLesson?.notes?.forEach { note ->
                             HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
                             ListItem(
-                                headlineContent = { Text(note.description ?: "Leer") },
+                                headlineContent = { Text(note.description?.parseMarkdown() ?: AnnotatedString("Leer")) },
                                 overlineContent = { Text(note.type?.name?.replace("Substitution Plan", "Vertretungsplan") ?: "Unbenannte Notiz") },
                                 trailingContent = {
                                     note.type?.color?.let {

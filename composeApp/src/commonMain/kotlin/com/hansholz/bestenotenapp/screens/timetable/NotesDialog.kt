@@ -31,6 +31,7 @@ import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.homework.HomeworkEntry
 import com.hansholz.bestenotenapp.homework.HomeworkStatus
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.utils.parseMarkdown
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 
@@ -76,7 +77,7 @@ fun NotesDialog(
                 }
                 itemsIndexed(notes ?: emptyList()) { index, note ->
                     PreferenceItem(
-                        title = note.description ?: "$note",
+                        title = note.description?.parseMarkdown() ?: "$note",
                         icon = MaterialSymbols.Rounded.News,
                         enabled = busyEntryId.value == null,
                         titleMaxLines = 10,
