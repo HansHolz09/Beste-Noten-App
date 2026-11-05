@@ -22,7 +22,6 @@ import com.materialkolor.Contrast
 import com.materialkolor.dynamiccolor.ColorSpec
 import com.materialkolor.ktx.animateColorScheme
 import com.materialkolor.rememberDynamicColorScheme
-import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.blur.HazeBlurDefaults
 import dev.chrisbanes.haze.glass.GlassAccessibilitySettings
 import dev.chrisbanes.haze.glass.LocalGlassAccessibilitySettings
@@ -46,7 +45,6 @@ internal data class SystemAccessibility(
     val showBorders: Boolean = false,
 )
 
-@OptIn(ExperimentalHazeApi::class)
 @Composable
 internal fun AppTheme(
     finalTheme: (ColorScheme) -> Unit = {},

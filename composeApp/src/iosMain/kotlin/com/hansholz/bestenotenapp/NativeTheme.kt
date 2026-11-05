@@ -12,11 +12,9 @@ import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalSystemAccessibility
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.theme.rememberSystemAccessibility
-import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.glass.GlassAccessibilitySettings
 import dev.chrisbanes.haze.glass.LocalGlassAccessibilitySettings
 
-@OptIn(ExperimentalHazeApi::class)
 @Composable
 internal fun NativeTheme(
     nativeBridge: NativeComponentBridge,

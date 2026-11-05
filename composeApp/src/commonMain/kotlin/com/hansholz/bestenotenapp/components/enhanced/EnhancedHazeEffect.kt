@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalSystemAccessibility
-import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInput
 import dev.chrisbanes.haze.HazePerformanceMode
 import dev.chrisbanes.haze.HazeState
@@ -26,7 +25,6 @@ import dev.chrisbanes.haze.blur.hazeBlur
 import dev.chrisbanes.haze.glass.GlassStyle
 import dev.chrisbanes.haze.glass.hazeGlass
 
-@OptIn(ExperimentalHazeApi::class)
 @Composable
 fun Modifier.enhancedHazeEffect(
     hazeState: HazeState? = null,
