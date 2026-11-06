@@ -1,9 +1,12 @@
 package com.hansholz.bestenotenapp.components.enhanced
 
+import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -11,7 +14,10 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -42,19 +48,26 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.PredictiveBackHandler
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.addOutline
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -65,16 +78,21 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.components.FullscreenDialog
 import com.hansholz.bestenotenapp.components.clippedShadow
+import com.hansholz.bestenotenapp.components.trackpadSwipeToDismiss
 import com.hansholz.bestenotenapp.main.AppHazeState
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNativeDialogBackdrop
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 
 private val LocalEnhancedDialogDepth = compositionLocalOf { 0 }
@@ -189,9 +207,92 @@ fun BasicEnhancedAlertDialog(
     }
     val animatedScale by animateFloatAsState(scale)
 
+    var dragOffset by remember { mutableFloatStateOf(0f) }
+    var dragSpringBack by remember { mutableStateOf<Job?>(null) }
+    var dismissedByDrag by remember { mutableStateOf(false) }
+    val dragExitDistance = remember { floatArrayOf(0f) }
+    val dragScope = rememberCoroutineScope()
+    val currentVisible by rememberUpdatedState(visible)
+    val currentOnDismissRequest by rememberUpdatedState(onDismissRequest)
+    val releaseDrag: (Float, Float) -> Unit = { offset, velocity ->
+        val dismiss = velocity > -100 * density && offset + velocity * 0.2f > 140 * density
+        if (dismiss) {
+            dismissedByDrag = true
+            currentOnDismissRequest()
+        }
+        dragSpringBack =
+            dragScope.launch {
+                if (dismiss) {
+                    val exit =
+                        launch {
+                            animate(
+                                initialValue = offset,
+                                targetValue = maxOf(dragExitDistance[0], offset),
+                                initialVelocity = velocity.coerceAtLeast(0f),
+                                animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                            ) { value, _ -> dragOffset = value }
+                        }
+                    repeat(2) { withFrameNanos {} }
+                    if (!currentVisible) {
+                        vibrator.enhancedVibrateN(EnhancedVibrations.QUICK_FALL)
+                        return@launch
+                    }
+                    exit.cancel()
+                    dismissedByDrag = false
+                }
+                val settle = AnimationState(dragOffset, if (dismiss) 0f else velocity)
+                settle.animateTo(0f, spring(dampingRatio = 0.7f, stiffness = Spring.StiffnessMediumLow)) {
+                    dragOffset = value
+                    if (value < 0f && this.velocity > 0f) cancelAnimation()
+                }
+                settle.animateTo(0f, spring(stiffness = Spring.StiffnessMediumLow), sequentialAnimation = true) {
+                    dragOffset = value
+                }
+            }
+    }
+    val dragState = rememberDraggableState { delta -> dragOffset += delta }
+    val dragNestedScroll =
+        remember {
+            object : NestedScrollConnection {
+                override fun onPreScroll(
+                    available: Offset,
+                    source: NestedScrollSource,
+                ): Offset {
+                    val consumed =
+                        when {
+                            dragOffset > 0f && available.y < 0f -> maxOf(available.y, -dragOffset)
+                            dragOffset < 0f && available.y > 0f -> minOf(available.y, -dragOffset)
+                            else -> return Offset.Zero
+                        }
+                    dragOffset += consumed
+                    return Offset(0f, consumed)
+                }
+
+                override fun onPostScroll(
+                    consumed: Offset,
+                    available: Offset,
+                    source: NestedScrollSource,
+                ): Offset {
+                    if (available.y == 0f || source != NestedScrollSource.UserInput) return Offset.Zero
+                    dragSpringBack?.cancel()
+                    dragOffset += available.y
+                    return Offset(0f, available.y)
+                }
+
+                override suspend fun onPreFling(available: Velocity): Velocity {
+                    if (dragOffset == 0f) return Velocity.Zero
+                    releaseDrag(dragOffset, available.y)
+                    return available
+                }
+            }
+        }
+
     LaunchedEffect(visible) {
         if (visible) {
             scale = 1f
+            dragSpringBack?.cancel()
+            dragOffset = 0f
+            dismissedByDrag = false
             visibleAnimated = true
         } else if (nativeComponentsEnabled) {
             delay(320.milliseconds)
@@ -226,7 +327,15 @@ fun BasicEnhancedAlertDialog(
                 LocalEnhancedDialogDepth provides dialogDepth + 1,
             ) {
                 BoxWithConstraints(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier =
+                        Modifier.fillMaxSize().trackpadSwipeToDismiss(
+                            enabled = nativeComponentsEnabled && visible,
+                            onDrag = { offset ->
+                                dragSpringBack?.cancel()
+                                dragOffset = offset
+                            },
+                            onRelease = releaseDrag,
+                        ),
                     contentAlignment = Alignment.Center,
                 ) {
                     var animateIn by remember { mutableStateOf(false) }
@@ -259,7 +368,13 @@ fun BasicEnhancedAlertDialog(
                                     }.then(
                                         if (nativeComponentsEnabled) {
                                             Modifier.drawBehind {
-                                                drawRect(scrimColor.copy(alpha = nativeScrimAlpha * animatedScale))
+                                                val dragFraction =
+                                                    if (constraints.hasBoundedHeight) {
+                                                        (dragOffset.coerceAtLeast(0f) / constraints.maxHeight).coerceIn(0f, 1f)
+                                                    } else {
+                                                        0f
+                                                    }
+                                                drawRect(scrimColor.copy(alpha = nativeScrimAlpha * animatedScale * (1f - dragFraction)))
                                             }
                                         } else {
                                             Modifier.enhancedHazeEffect(
@@ -291,9 +406,10 @@ fun BasicEnhancedAlertDialog(
                             } else {
                                 48.dp
                             }
+                        dragExitDistance[0] = hiddenPanelOffset.value * density
                         val panelOffset by
                             animateDpAsState(
-                                targetValue = if (animateIn && visible) 0.dp else hiddenPanelOffset,
+                                targetValue = if ((animateIn && visible) || dismissedByDrag) 0.dp else hiddenPanelOffset,
                                 animationSpec =
                                     tween(
                                         durationMillis = if (visible) 480 else 300,
@@ -317,7 +433,17 @@ fun BasicEnhancedAlertDialog(
                                 },
                         ) {
                             Box(
-                                modifier = dialogContentModifier.offset { IntOffset(0, panelOffset.roundToPx()) },
+                                modifier =
+                                    dialogContentModifier
+                                        .offset { IntOffset(0, panelOffset.roundToPx() + rubberBand(dragOffset, 80.dp.toPx()).roundToInt()) }
+                                        .nestedScroll(dragNestedScroll)
+                                        .draggable(
+                                            state = dragState,
+                                            orientation = Orientation.Vertical,
+                                            enabled = visible,
+                                            onDragStarted = { dragSpringBack?.cancel() },
+                                            onDragStopped = { velocity -> releaseDrag(dragOffset, velocity) },
+                                        ),
                                 contentAlignment = Alignment.Center,
                                 content = content,
                             )
@@ -375,6 +501,11 @@ fun BasicEnhancedAlertDialog(
         }
     }
 }
+
+private fun rubberBand(
+    offset: Float,
+    limit: Float,
+) = if (offset >= 0f) offset else -(1f - 1f / (-offset * 0.55f / limit + 1f)) * limit
 
 @Composable
 private fun EnhancedAlertDialogContent(

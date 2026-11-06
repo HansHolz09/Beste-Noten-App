@@ -1,7 +1,6 @@
 package com.hansholz.bestenotenapp.navigation
 
 import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -10,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.hansholz.bestenotenapp.components.TrackpadBackTransition
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.screens.grades.Grades
 import com.hansholz.bestenotenapp.screens.home.Home
@@ -30,17 +30,17 @@ fun FragmentNavigation(
             enterTransition = {
                 val isBackwards = initialState.destination.route != navController.previousBackStackEntry?.destination?.route
                 if (isBackwards) {
-                    slideInHorizontally(tween()) { -it / 4 } + fadeIn()
+                    slideInHorizontally(TrackpadBackTransition.spec()) { -it / 4 } + fadeIn()
                 } else {
-                    slideInHorizontally(tween()) { it }
+                    slideInHorizontally(TrackpadBackTransition.spec()) { it }
                 }
             },
             exitTransition = {
                 val isBackwards = initialState.destination.route != navController.previousBackStackEntry?.destination?.route
                 if (isBackwards) {
-                    slideOutHorizontally(tween()) { it }
+                    slideOutHorizontally(TrackpadBackTransition.spec()) { it }
                 } else {
-                    slideOutHorizontally(tween()) { -it / 4 } + fadeOut()
+                    slideOutHorizontally(TrackpadBackTransition.spec()) { -it / 4 } + fadeOut()
                 }
             },
         ) {

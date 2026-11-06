@@ -3,6 +3,7 @@ package com.hansholz.bestenotenapp
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.mutableStateOf
 import androidx.navigation.NavController
+import com.hansholz.bestenotenapp.components.TrackpadBackController
 import com.hansholz.bestenotenapp.components.hideNativeSwitches
 import com.hansholz.bestenotenapp.components.showNativeSwitches
 import platform.UIKit.UIView
@@ -17,6 +18,7 @@ class NativeComponentBridge {
     internal val sidebarTopInsetState = mutableStateOf(15.0)
     internal val contentTopInsetState = mutableStateOf(0.0)
     internal var easterEggOverlayView: UIView? = null
+    internal var trackpadBack: TrackpadBackController? = null
 
     private var navController: NavController? = null
     private var rootDestinationChanged: ((String) -> Unit)? = null
@@ -61,6 +63,16 @@ class NativeComponentBridge {
     }
 
     fun navigateBack(): Boolean = navController?.popBackStack() ?: false
+
+    fun trackpadBackShouldBegin(): Boolean = trackpadBack?.shouldBegin() == true
+
+    fun trackpadBackChanged(fraction: Double) {
+        trackpadBack?.changed(fraction)
+    }
+
+    fun trackpadBackEnded(complete: Boolean) {
+        trackpadBack?.ended(complete)
+    }
 
     fun showEasterEgg(type: String) {
         easterEggOverlayView?.hidden = false

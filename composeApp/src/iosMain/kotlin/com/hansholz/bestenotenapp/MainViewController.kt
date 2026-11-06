@@ -2,10 +2,13 @@
 
 package com.hansholz.bestenotenapp
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.uikit.OnFocusBehavior
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeUIViewController
@@ -21,6 +24,8 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedNativeTextInputPro
 import com.hansholz.bestenotenapp.components.hideNativeSwitches
 import com.hansholz.bestenotenapp.components.hideVisibleNativeDateTimePickers
 import com.hansholz.bestenotenapp.components.rememberNativeAlignmentHaptic
+import com.hansholz.bestenotenapp.components.rememberTrackpadBackController
+import com.hansholz.bestenotenapp.components.trackpadBackContent
 import com.hansholz.bestenotenapp.main.App
 import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
 import com.hansholz.bestenotenapp.main.LocalGlobalEasterEgg
@@ -55,6 +60,15 @@ fun mainViewController(nativeBridge: NativeComponentBridge? = null): UIViewContr
         }) {
             val nativeComponentsEnabled = nativeBridge?.enabledState ?: remember { mutableStateOf(false) }
             val biometricAuthenticationAvailable = remember { runBlocking { KSafeBiometrics.biometricsAvailable() } }
+            val trackpadBack =
+                nativeBridge?.let { bridge ->
+                    rememberTrackpadBackController().also { backController ->
+                        DisposableEffect(backController) {
+                            bridge.trackpadBack = backController
+                            onDispose { bridge.trackpadBack = null }
+                        }
+                    }
+                }
             CompositionLocalProvider(
                 LocalNavigationDrawerTopPadding provides if (isInWindowMode()) 50.dp else null,
                 LocalBiometricAuthenticationAvailable provides biometricAuthenticationAvailable,
@@ -95,17 +109,19 @@ fun mainViewController(nativeBridge: NativeComponentBridge? = null): UIViewContr
                 },
             ) {
                 EnhancedNativeTextInputProvider {
-                    App(
-                        theme = { isDark, usesSystemAppearance ->
-                            nativeBridge?.updateTheme(isDark, usesSystemAppearance)
-                        },
-                        colors = { colors -> nativeBridge?.updateColorScheme(colors) },
-                        onNavHostReady = { controller -> nativeBridge?.attach(controller) },
-                        onRootDestinationChanged = { route -> nativeBridge?.rootDestinationChanged(route) },
-                        onFragmentDestinationChanged = { route -> nativeBridge?.fragmentDestinationChanged(route) },
-                        onCanNavigateBackChanged = { canNavigateBack -> nativeBridge?.canNavigateBackChanged(canNavigateBack) },
-                        onOfflineStatusChanged = { offline -> nativeBridge?.offlineStatusChanged(offline) },
-                    )
+                    Box(trackpadBack?.let { Modifier.trackpadBackContent(it) } ?: Modifier) {
+                        App(
+                            theme = { isDark, usesSystemAppearance ->
+                                nativeBridge?.updateTheme(isDark, usesSystemAppearance)
+                            },
+                            colors = { colors -> nativeBridge?.updateColorScheme(colors) },
+                            onNavHostReady = { controller -> nativeBridge?.attach(controller) },
+                            onRootDestinationChanged = { route -> nativeBridge?.rootDestinationChanged(route) },
+                            onFragmentDestinationChanged = { route -> nativeBridge?.fragmentDestinationChanged(route) },
+                            onCanNavigateBackChanged = { canNavigateBack -> nativeBridge?.canNavigateBackChanged(canNavigateBack) },
+                            onOfflineStatusChanged = { offline -> nativeBridge?.offlineStatusChanged(offline) },
+                        )
+                    }
                 }
             }
         }

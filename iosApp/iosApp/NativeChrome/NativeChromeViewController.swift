@@ -35,6 +35,13 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
         target: self,
         action: #selector(handleComposeBackGesture(_:))
     )
+    private lazy var trackpadBackGesture: UIPanGestureRecognizer = {
+        let gesture = UIPanGestureRecognizer(target: self, action: #selector(handleTrackpadBackGesture(_:)))
+        gesture.allowedScrollTypesMask = .continuous
+        gesture.allowedTouchTypes = []
+        gesture.delegate = self
+        return gesture
+    }()
     private lazy var sidebarRevealGesture = UIScreenEdgePanGestureRecognizer(
         target: self,
         action: #selector(handleSidebarRevealGesture(_:))
@@ -226,6 +233,7 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
         splitController.displayModeButtonVisibility = .never
         splitController.view.backgroundColor = .clear
         contentHostController.view.addGestureRecognizer(sidebarRevealGesture)
+        view.addGestureRecognizer(trackpadBackGesture)
 
         addChild(splitController)
         view.addSubview(splitController.view)
@@ -629,7 +637,38 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
         splitController.show(.primary)
     }
 
+    @objc private func handleTrackpadBackGesture(_ gesture: UIPanGestureRecognizer) {
+        let width = max(contentNavigationController.view.bounds.width, 1)
+        let translation = gesture.translation(in: view).x
+        switch gesture.state {
+        case .began, .changed:
+            bridge.trackpadBackChanged(fraction: Double(translation / width))
+        case .ended, .cancelled, .failed:
+            let velocity = gesture.velocity(in: view).x
+            let projected = translation + velocity * 0.2
+            let complete = gesture.state == .ended && velocity > -20 && projected > width / 2
+            bridge.trackpadBackEnded(complete: complete)
+        default:
+            break
+        }
+    }
+
+    func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+    ) -> Bool {
+        gestureRecognizer === trackpadBackGesture
+    }
+
     func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        if gestureRecognizer === trackpadBackGesture {
+            let translation = trackpadBackGesture.translation(in: view)
+            guard translation.x > 0, translation.x > abs(translation.y) * 1.5,
+                  let hitView = view.hitTest(trackpadBackGesture.location(in: view), with: nil),
+                  hitView.isDescendant(of: contentNavigationController.view) || hitView.isDescendant(of: primaryTabsContent),
+                  !hitView.isDescendant(of: sidebarController.view) else { return false }
+            return bridge.trackpadBackShouldBegin()
+        }
         guard gestureRecognizer === sidebarRevealGesture else { return true }
         return displaysMainContent && usesSidebar && !canNavigateBack &&
             splitController.displayMode == .secondaryOnly

@@ -27,6 +27,12 @@ public class NativeComponentBridge {
 
     public fun navigateBack(): Boolean = appBridge.navigateBack()
 
+    public fun trackpadBackShouldBegin(): Boolean = appBridge.trackpadBackShouldBegin()
+
+    public fun trackpadBackChanged(fraction: Double): Unit = appBridge.trackpadBackChanged(fraction)
+
+    public fun trackpadBackEnded(complete: Boolean): Unit = appBridge.trackpadBackEnded(complete)
+
     public fun selectPrimaryTab(index: Int): Unit = appBridge.selectPrimaryTab(index)
 
     public fun showEasterEgg(type: String): Unit = appBridge.showEasterEgg(type)

@@ -108,6 +108,8 @@ private fun UIView.applyCalendarTypography() {
     subviews.forEach { (it as UIView).applyCalendarTypography() }
 }
 
+internal fun isNativeDateTimePickerVisible() = activeNativeDateTimePickers.keys.any { !it.hidden && it.window != null }
+
 internal fun hideVisibleNativeDateTimePickers() {
     nativeDateTimePickerGeneration++
     activeNativeDateTimePickers.keys.forEach { it.hidden = true }
