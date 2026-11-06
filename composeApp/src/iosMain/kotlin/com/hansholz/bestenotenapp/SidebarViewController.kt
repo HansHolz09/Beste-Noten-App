@@ -11,6 +11,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeUIViewController
+import com.hansholz.bestenotenapp.components.KeepMotionDurationScale
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
@@ -20,6 +21,7 @@ import platform.UIKit.UIViewController
 
 fun sidebarViewController(nativeBridge: NativeComponentBridge): UIViewController =
     ComposeUIViewController(configure = { opaque = false }) {
+        KeepMotionDurationScale()
         NativeTheme(nativeBridge) {
             SidebarContent(nativeBridge)
         }

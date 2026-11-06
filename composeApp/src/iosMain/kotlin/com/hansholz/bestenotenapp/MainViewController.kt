@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.uikit.OnFocusBehavior
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeUIViewController
+import com.hansholz.bestenotenapp.components.KeepMotionDurationScale
 import com.hansholz.bestenotenapp.components.NativeAppearanceSelector
 import com.hansholz.bestenotenapp.components.NativeColorPicker
 import com.hansholz.bestenotenapp.components.NativeDatePicker
@@ -58,6 +59,7 @@ fun mainViewController(nativeBridge: NativeComponentBridge? = null): UIViewContr
             opaque = nativeBridge == null
             onFocusBehavior = OnFocusBehavior.DoNothing
         }) {
+            KeepMotionDurationScale()
             val nativeComponentsEnabled = nativeBridge?.enabledState ?: remember { mutableStateOf(false) }
             val biometricAuthenticationAvailable = remember { runBlocking { KSafeBiometrics.biometricsAvailable() } }
             val trackpadBack =
