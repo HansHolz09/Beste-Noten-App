@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.hansholz.bestenotenapp.components.ProvidePlatformInteractionFeedback
 import com.hansholz.bestenotenapp.theme.AppTypography
+import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalSystemAccessibility
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
@@ -23,6 +24,7 @@ internal fun NativeTheme(
     val systemAccessibility = rememberSystemAccessibility()
     CompositionLocalProvider(
         LocalThemeIsDark provides nativeBridge.themeIsDarkState.value,
+        LocalAnimationsEnabled provides nativeBridge.animationsEnabledState,
         LocalSystemAccessibility provides systemAccessibility,
         LocalBlurEnabled provides remember(systemAccessibility.reduceTransparency) { mutableStateOf(!systemAccessibility.reduceTransparency) },
         LocalGlassAccessibilitySettings provides

@@ -13,6 +13,7 @@ class NativeComponentBridge {
     internal val selectedFragmentState = mutableStateOf("home")
     internal val themeColorSchemeState = mutableStateOf<ColorScheme?>(null)
     internal val themeIsDarkState = mutableStateOf(false)
+    internal val animationsEnabledState = mutableStateOf(true)
     internal val systemIsDarkState = mutableStateOf(false)
     internal val easterEggState = mutableStateOf<String?>(null)
     internal val sidebarTopInsetState = mutableStateOf(15.0)
@@ -152,6 +153,10 @@ class NativeComponentBridge {
 
     internal fun updateColorScheme(colorScheme: ColorScheme) {
         themeColorSchemeState.value = colorScheme
+    }
+
+    internal fun updateAnimationsEnabled(enabled: Boolean) {
+        if (animationsEnabledState.value != enabled) animationsEnabledState.value = enabled
     }
 
     internal fun updateTheme(

@@ -120,6 +120,7 @@ fun mainViewController(nativeBridge: NativeComponentBridge? = null): UIViewContr
                             onFragmentDestinationChanged = { route -> nativeBridge?.fragmentDestinationChanged(route) },
                             onCanNavigateBackChanged = { canNavigateBack -> nativeBridge?.canNavigateBackChanged(canNavigateBack) },
                             onOfflineStatusChanged = { offline -> nativeBridge?.offlineStatusChanged(offline) },
+                            onAnimationsEnabledChanged = { enabled -> nativeBridge?.updateAnimationsEnabled(enabled) },
                         )
                     }
                 }

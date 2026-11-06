@@ -43,6 +43,7 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
 import com.hansholz.bestenotenapp.navigation.AppNavigation
 import com.hansholz.bestenotenapp.reviews.StoreReviewHost
 import com.hansholz.bestenotenapp.theme.AppTheme
+import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.theme.LocalUseSystemIsDark
@@ -60,12 +61,14 @@ fun App(
     onFragmentDestinationChanged: (String) -> Unit = {},
     onCanNavigateBackChanged: (Boolean) -> Unit = {},
     onOfflineStatusChanged: (Boolean) -> Unit = {},
+    onAnimationsEnabledChanged: (Boolean) -> Unit = {},
 ) {
     KSafeBiometrics.defaultTitle = "Authentifizieren"
 
     AppTheme(colors) {
         val isDark = LocalThemeIsDark.current
         theme(isDark, LocalUseSystemIsDark.current.value)
+        onAnimationsEnabledChanged(LocalAnimationsEnabled.current.value)
         ProvidePlatformInteractionFeedback {
             ProvideCupertinoOverscrollEffect(getPlatform() != Platform.DESKTOP) {
                 val toasterState = rememberToasterState()
