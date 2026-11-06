@@ -3,6 +3,7 @@ package com.hansholz.bestenotenapp.components.enhanced
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.expandIn
 import androidx.compose.animation.expandVertically
@@ -11,7 +12,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.shrinkOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.runtime.Composable
@@ -28,22 +28,14 @@ fun EnhancedAnimatedVisibility(
     label: String = "AnimatedVisibility",
     content: @Composable () -> Unit,
 ) {
-    if (LocalAnimationsEnabled.current.value && animationEnabled) {
-        AnimatedVisibility(
-            visible = visible,
-            modifier = modifier,
-            enter = enter,
-            exit = exit,
-            label = label,
-        ) {
-            content()
-        }
-    } else {
-        if (visible) {
-            Box(modifier) {
-                content()
-            }
-        }
+    AnimatedVisibility(
+        visible = visible,
+        modifier = modifier,
+        enter = if (LocalAnimationsEnabled.current.value && animationEnabled) enter else simpleEnter,
+        exit = if (LocalAnimationsEnabled.current.value && animationEnabled) exit else simpleExit,
+        label = label,
+    ) {
+        content()
     }
 }
 
@@ -57,22 +49,14 @@ fun RowScope.EnhancedAnimatedVisibility(
     label: String = "AnimatedVisibility",
     content: @Composable () -> Unit,
 ) {
-    if (LocalAnimationsEnabled.current.value && animationEnabled) {
-        AnimatedVisibility(
-            visible = visible,
-            modifier = modifier,
-            enter = enter,
-            exit = exit,
-            label = label,
-        ) {
-            content()
-        }
-    } else {
-        if (visible) {
-            Box(modifier) {
-                content()
-            }
-        }
+    AnimatedVisibility(
+        visible = visible,
+        modifier = modifier,
+        enter = if (LocalAnimationsEnabled.current.value && animationEnabled) enter else simpleEnter,
+        exit = if (LocalAnimationsEnabled.current.value && animationEnabled) exit else simpleExit,
+        label = label,
+    ) {
+        content()
     }
 }
 
@@ -86,21 +70,16 @@ fun ColumnScope.EnhancedAnimatedVisibility(
     label: String = "AnimatedVisibility",
     content: @Composable () -> Unit,
 ) {
-    if (LocalAnimationsEnabled.current.value && animationEnabled) {
-        AnimatedVisibility(
-            visible = visible,
-            modifier = modifier,
-            enter = enter,
-            exit = exit,
-            label = label,
-        ) {
-            content()
-        }
-    } else {
-        if (visible) {
-            Box(modifier) {
-                content()
-            }
-        }
+    AnimatedVisibility(
+        visible = visible,
+        modifier = modifier,
+        enter = if (LocalAnimationsEnabled.current.value && animationEnabled) enter else simpleEnter,
+        exit = if (LocalAnimationsEnabled.current.value && animationEnabled) exit else simpleExit,
+        label = label,
+    ) {
+        content()
     }
 }
+
+private val simpleEnter = fadeIn(animationSpec = tween(50))
+private val simpleExit = fadeOut(animationSpec = tween(50))

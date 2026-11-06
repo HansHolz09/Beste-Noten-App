@@ -8,7 +8,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,20 +29,16 @@ fun <S> EnhancedAnimatedContent(
     contentKey: (targetState: S) -> Any? = { it },
     content: @Composable (targetState: S) -> Unit,
 ) {
-    if (LocalAnimationsEnabled.current.value && animationEnabled) {
-        AnimatedContent(
-            targetState = targetState,
-            modifier = modifier,
-            transitionSpec = transitionSpec,
-            contentAlignment = contentAlignment,
-            label = label,
-            contentKey = contentKey,
-        ) {
-            content(it)
-        }
-    } else {
-        Box(modifier) {
-            content(targetState)
-        }
+    val simpleTransitionSpec: AnimatedContentTransitionScope<S>.() -> ContentTransform =
+        { fadeIn(animationSpec = tween(50)).togetherWith(fadeOut(animationSpec = tween(50))) }
+    AnimatedContent(
+        targetState = targetState,
+        modifier = modifier,
+        transitionSpec = if (LocalAnimationsEnabled.current.value && animationEnabled) transitionSpec else simpleTransitionSpec,
+        contentAlignment = contentAlignment,
+        label = label,
+        contentKey = contentKey,
+    ) {
+        content(it)
     }
 }
