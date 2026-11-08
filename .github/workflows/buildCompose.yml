@@ -289,7 +289,7 @@ jobs:
 
   ios:
     if: ${{ inputs.build_ios }}
-    runs-on: macos-26
+    runs-on: xcode-27
     env:
       GOOGLE_CLIENT_ID_IOS: ${{ secrets.GOOGLE_CLIENT_ID_IOS }}
       GOOGLE_CLIENT_SECRET_IOS: ${{ secrets.GOOGLE_CLIENT_SECRET_IOS }}
@@ -344,7 +344,7 @@ jobs:
 
   ios_simulator:
     if: ${{ inputs.run_smoke_tests && inputs.build_ios_simulator }}
-    runs-on: macos-26
+    runs-on: xcode-27
     env:
       GOOGLE_CLIENT_ID_IOS: ${{ secrets.GOOGLE_CLIENT_ID_IOS }}
       GOOGLE_CLIENT_SECRET_IOS: ${{ secrets.GOOGLE_CLIENT_SECRET_IOS }}
@@ -966,7 +966,7 @@ jobs:
 
   macos-arm64:
     if: ${{ inputs.build_macos_arm64 }}
-    runs-on: macos-26
+    runs-on: xcode-27
     env:
       GOOGLE_CLIENT_ID_DESKTOP: ${{ secrets.GOOGLE_CLIENT_ID_DESKTOP }}
       GOOGLE_CLIENT_SECRET_DESKTOP: ${{ secrets.GOOGLE_CLIENT_SECRET_DESKTOP }}
