@@ -380,7 +380,7 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
             primaryTabsContent.setTabsVisible(false)
             view.addSubview(primaryTabsContent)
         }
-        view.bringSubviewToFront(primaryTabsContent)
+        view.insertSubview(primaryTabsContent, belowSubview: easterEggOverlayController.view)
         layoutPrimaryTabs()
         setPrimaryTabsScrollEdgeInteractionEnabled(visible)
         let animator = UIViewPropertyAnimator(
@@ -667,6 +667,11 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
                   let hitView = view.hitTest(trackpadBackGesture.location(in: view), with: nil),
                   hitView.isDescendant(of: contentNavigationController.view) || hitView.isDescendant(of: primaryTabsContent),
                   !hitView.isDescendant(of: sidebarController.view) else { return false }
+            var currentView: UIView? = hitView
+            while let current = currentView {
+                if current is UISlider { return false }
+                currentView = current.superview
+            }
             return bridge.trackpadBackShouldBegin()
         }
         guard gestureRecognizer === sidebarRevealGesture else { return true }
