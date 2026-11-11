@@ -30,7 +30,10 @@ fun <S> EnhancedAnimatedContent(
     content: @Composable (targetState: S) -> Unit,
 ) {
     val simpleTransitionSpec: AnimatedContentTransitionScope<S>.() -> ContentTransform =
-        { fadeIn(animationSpec = tween(50)).togetherWith(fadeOut(animationSpec = tween(50))) }
+        {
+            fadeIn(animationSpec = tween(if (animationEnabled) 50 else 0))
+                .togetherWith(fadeOut(animationSpec = tween(if (animationEnabled) 50 else 0)))
+        }
     AnimatedContent(
         targetState = targetState,
         modifier = modifier,
