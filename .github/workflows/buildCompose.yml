@@ -966,7 +966,7 @@ jobs:
 
   macos-arm64:
     if: ${{ inputs.build_macos_arm64 }}
-    runs-on: xcode-27
+    runs-on: macos-26
     env:
       GOOGLE_CLIENT_ID_DESKTOP: ${{ secrets.GOOGLE_CLIENT_ID_DESKTOP }}
       GOOGLE_CLIENT_SECRET_DESKTOP: ${{ secrets.GOOGLE_CLIENT_SECRET_DESKTOP }}
