@@ -1064,6 +1064,11 @@ fun Home(
                                                     modifier = Modifier.align(Alignment.Center),
                                                     style = typography.headlineSmall,
                                                 )
+                                                EnhancedIconButton(
+                                                    onClick = {},
+                                                    modifier = Modifier.clearAndSetSemantics {},
+                                                    enabled = false,
+                                                ) {}
                                             }
                                             if (showUsageHints) {
                                                 Text(
@@ -1115,6 +1120,11 @@ fun Home(
                                                     modifier = Modifier.align(Alignment.Center),
                                                     style = typography.headlineSmall,
                                                 )
+                                                EnhancedIconButton(
+                                                    onClick = {},
+                                                    modifier = Modifier.clearAndSetSemantics {},
+                                                    enabled = false,
+                                                ) {}
                                             }
                                             if (showUsageHints) {
                                                 Text(
