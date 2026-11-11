@@ -160,6 +160,22 @@ fun GradeDiagrams(
                     .toList()
             }
         }
+        val diagramGrades by remember {
+            derivedStateOf {
+                visibleFilteredGrades
+                    .mapNotNull { parseGradeValue(it.grades?.firstOrNull()?.value)?.toInt() }
+                    .sorted()
+            }
+        }
+        val averageGrade =
+            if (!gradesViewModel.analyzeYears && diagramGrades.isNotEmpty()) {
+                diagramGrades
+                    .average()
+                    .toString(2)
+                    .replace('.', ',')
+            } else {
+                null
+            }
 
         KoalaPlotTheme(animationSpec = if (LocalAnimationsEnabled.current.value) spring(2f) else snap()) {
             EnhancedAnimatedContent(gradesViewModel.analyzeYears, Modifier.hazeSource(hazeState)) { analyzeYears ->
@@ -170,13 +186,8 @@ fun GradeDiagrams(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         item {
-                            val grades =
-                                visibleFilteredGrades
-                                    .mapNotNull { parseGradeValue(it.grades?.firstOrNull()?.value)?.toInt() }
-                                    .sorted()
-
-                            if (grades.isNotEmpty()) {
-                                val counts: Map<Int, Int> = grades.groupingBy { it }.eachCount()
+                            if (diagramGrades.isNotEmpty()) {
+                                val counts: Map<Int, Int> = diagramGrades.groupingBy { it }.eachCount()
 
                                 val selectedScale =
                                     gradesViewModel.selectedYears.firstNotNullOfOrNull {
@@ -738,6 +749,19 @@ fun GradeDiagrams(
                     gradesViewModel.closeBarHeight = with(density) { it.size.height.toDp() }
                 },
         ) {
+            EnhancedAnimatedContent(
+                targetState = averageGrade,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp).align(Alignment.CenterStart),
+                contentAlignment = Alignment.Center,
+            ) { average ->
+                if (average != null) {
+                    Text(
+                        text = "∅ $average",
+                        color = colorScheme.primary,
+                        style = typography.bodyLarge,
+                    )
+                }
+            }
             EnhancedButton(
                 onClick = {
                     gradesViewModel.closeToolbar()
