@@ -403,6 +403,7 @@ fun GradeDiagrams(
                                         val uniqueGrades = processedData["uniqueGrades"] as List<String>
                                         val barEntries = processedData["barEntries"] as List<VerticalBarPlotGroupedPointEntry<String, Float>>
                                         val maxCount = grouped.values.maxOfOrNull { it.values.maxOrNull() ?: 0 }?.toFloat() ?: 1f
+                                        if (barEntries.isEmpty() || uniqueGrades.isEmpty() || !maxCount.isFinite() || maxCount < 1f) return@item
 
                                         val gradeColors =
                                             listOf(
@@ -470,6 +471,7 @@ fun GradeDiagrams(
                                         val sortedYears = processedData["sortedYears"] as List<Int>
                                         val yearColors = processedData["yearColors"] as List<Color>
                                         val maxY = stacked.maxOfOrNull { it.y.lastOrNull() ?: 0f } ?: 1f
+                                        if (stacked.isEmpty() || sortedYears.isEmpty() || !maxY.isFinite() || maxY < 5f) return@item
 
                                         ChartLayout(
                                             modifier = Modifier.padding(10.dp).fillMaxWidth().height(400.dp),
@@ -511,13 +513,7 @@ fun GradeDiagrams(
                                     item { Spacer(Modifier.height(20.dp)) }
                                     item {
                                         val avgPlot = processedData["avgPlot"] as List<Point<String, Float>>
-                                        if (avgPlot.isEmpty()) {
-                                            Text(
-                                                "Nicht genügend Daten für die Durchschnittsanzeige vorhanden",
-                                                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                                textAlign = TextAlign.Center,
-                                            )
-                                        } else {
+                                        if (avgPlot.size >= 2 && avgPlot.all { it.y.isFinite() }) {
                                             ChartLayout(modifier = Modifier.padding(10.dp).fillMaxWidth().height(400.dp)) {
                                                 XYGraph(
                                                     xAxisModel = CategoryAxisModel(categories = avgPlot.map { it.x }),
@@ -547,6 +543,7 @@ fun GradeDiagrams(
                                             val sortedYears = processedData["sortedYears"] as List<Int>
                                             val uniqueGrades = processedData["uniqueGrades"] as List<String>
                                             val radialMax = polarData.flatten().maxOfOrNull { it.r } ?: 0f
+                                            if (polarData.isEmpty() || sortedYears.size < 3 || !radialMax.isFinite() || radialMax <= 0f) return@item
                                             val tick =
                                                 when {
                                                     radialMax <= 20f -> 5
@@ -575,7 +572,7 @@ fun GradeDiagrams(
                                                         symbol = { i ->
                                                             Symbol(
                                                                 modifier = Modifier.size(12.dp).clip(CircleShape),
-                                                                fillBrush = SolidColor(gradeColors[i]),
+                                                                fillBrush = SolidColor(gradeColors[i % gradeColors.size]),
                                                             )
                                                         },
                                                         label = { Text("Note ${uniqueGrades[it]}") },
@@ -603,9 +600,9 @@ fun GradeDiagrams(
                                                     polarData.forEachIndexed { index, series ->
                                                         PolarPlotSeries(
                                                             data = series,
-                                                            lineStyle = LineStyle(SolidColor(gradeColors[index]), strokeWidth = 2.dp),
-                                                            areaStyle = AreaStyle(SolidColor(gradeColors[index]), alpha = 0.3f),
-                                                            symbols = { Symbol(shape = CircleShape, fillBrush = SolidColor(gradeColors[index])) },
+                                                            lineStyle = LineStyle(SolidColor(gradeColors[index % gradeColors.size]), strokeWidth = 2.dp),
+                                                            areaStyle = AreaStyle(SolidColor(gradeColors[index % gradeColors.size]), alpha = 0.3f),
+                                                            symbols = { Symbol(shape = CircleShape, fillBrush = SolidColor(gradeColors[index % gradeColors.size])) },
                                                         )
                                                     }
                                                 }
@@ -727,7 +724,7 @@ fun GradeDiagrams(
                             onClick = {
                                 if (gradesViewModel.deselectedSubjects.contains(subject)) {
                                     gradesViewModel.deselectedSubjects.remove(subject)
-                                } else {
+                                } else if (subjectFilterOptions.count { it !in gradesViewModel.deselectedSubjects } > 1) {
                                     gradesViewModel.deselectedSubjects.add(subject)
                                 }
                             },
