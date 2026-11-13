@@ -90,6 +90,7 @@ class SettingsViewModel : ViewModel() {
                             gradeNotificationsEnabled = get("gradeNotificationsEnabled", false),
                             gradeNotificationsIntervalMinutes = get("gradeNotificationsIntervalMinutes", 60L),
                             gradeNotificationsWifiOnly = get("gradeNotificationsWifiOnly", false),
+                            gradeNotificationsShowGrades = get("gradeNotificationsShowGrades", false),
                             requireBiometricAuthentification = get("requireBiometricAuthentification", false),
                         )
                     } else {

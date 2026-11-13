@@ -118,6 +118,7 @@ internal object GradeNotificationEngine {
 
                 if (newIds.isNotEmpty()) {
                     val showGreetings = get<Boolean?>("showGreetings", null) ?: (api.usersShow(studentId).data.role == "student")
+                    val showGrades = get("gradeNotificationsShowGrades", false)
                     val newGrades =
                         collections
                             .flatMap { collection ->
@@ -145,7 +146,7 @@ internal object GradeNotificationEngine {
                                 if (entry.first.id in loadGradeIds(KEY_SEEN_GRADE_IDS).orEmpty()) {
                                     true
                                 } else {
-                                    notifyNewGrades(listOf(entry), levelsByYear, showGreetings)
+                                    notifyNewGrades(listOf(entry), levelsByYear, showGreetings, showGrades)
                                 }
                             }
                         if (!submitted) return GradeNotificationOutcome.Retry
@@ -219,6 +220,7 @@ internal object GradeNotificationEngine {
         entries: List<Pair<Grade, GradeCollection>>,
         levelsByYear: Map<Int, Level>,
         showGreetings: Boolean,
+        showGrades: Boolean,
     ): Boolean {
         if (entries.isEmpty()) return true
 
@@ -228,8 +230,13 @@ internal object GradeNotificationEngine {
                 val isSecondaryTwo = collection.interval?.yearId?.let { levelsByYear[it]?.secondaryStage() } == SecondaryStage.TWO
                 val value = if (isSecondaryTwo) "${grade.value} Punkte" else "die Note ${grade.value}"
                 val body =
-                    "Bei " + (collection.name ?: "einer unbekannten Leistung") +
-                        if (showGreetings) " hast du $value erreicht" else " ${if (isSecondaryTwo) "wurden" else "wurde"} $value vergeben"
+                    if (showGrades) {
+                        "Für " + (collection.name ?: "eine unbekannte Leistung") +
+                            if (showGreetings) " hast du $value erreicht" else " ${if (isSecondaryTwo) "wurden" else "wurde"} $value vergeben"
+                    } else {
+                        "Für " + (collection.name ?: "eine unbekannte Leistung") +
+                            if (showGreetings) " hast du eine neue Note erhalten" else " wurde eine neue Note vergeben"
+                    }
                 GradeNotificationPayload(
                     id = grade.id.toString(),
                     title = title,

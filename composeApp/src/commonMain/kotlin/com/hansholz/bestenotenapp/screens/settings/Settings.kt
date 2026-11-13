@@ -71,6 +71,7 @@ import com.composables.icons.materialsymbols.rounded.Texture
 import com.composables.icons.materialsymbols.rounded.Title
 import com.composables.icons.materialsymbols.rounded.Touch_app
 import com.composables.icons.materialsymbols.rounded.Vibration
+import com.composables.icons.materialsymbols.rounded.Visibility
 import com.composables.icons.materialsymbols.rounded.Waving_hand
 import com.composables.icons.materialsymbols.rounded.Wifi
 import com.hansholz.bestenotenapp.components.InfoDialog
@@ -95,6 +96,7 @@ import com.hansholz.bestenotenapp.main.LocalGradeAverageEnabled
 import com.hansholz.bestenotenapp.main.LocalGradeAverageUseWeighting
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationIntervalMinutes
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationsEnabled
+import com.hansholz.bestenotenapp.main.LocalGradeNotificationsShowGrades
 import com.hansholz.bestenotenapp.main.LocalGradeNotificationsWifiOnly
 import com.hansholz.bestenotenapp.main.LocalHapticsEnabled
 import com.hansholz.bestenotenapp.main.LocalHideNativeInterop
@@ -138,9 +140,11 @@ import com.hansholz.bestenotenapp.theme.LocalSupportsCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalSystemAccessibility
 import com.hansholz.bestenotenapp.theme.LocalUseCustomColorScheme
 import com.hansholz.bestenotenapp.theme.LocalUseSystemIsDark
+import com.hansholz.bestenotenapp.utils.SecondaryStage
 import com.hansholz.bestenotenapp.utils.formateInterval
 import com.hansholz.bestenotenapp.utils.openGoogleCalendar
 import com.hansholz.bestenotenapp.utils.roundToDecimals
+import com.hansholz.bestenotenapp.utils.secondaryStage
 import dev.chrisbanes.haze.blur.HazeBlurDefaults
 import dev.chrisbanes.haze.hazeSource
 import eu.anifantakis.lib.ksafe.biometrics.KSafeBiometrics
@@ -180,6 +184,7 @@ fun Settings(
     var notificationsEnabled by LocalGradeNotificationsEnabled.current
     var notificationIntervalMinutes by LocalGradeNotificationIntervalMinutes.current
     var notificationsWifiOnly by LocalGradeNotificationsWifiOnly.current
+    var notificationsShowGrades by LocalGradeNotificationsShowGrades.current
     var showGreetings by LocalShowGreetings.current
     var showNewestGrades by LocalShowNewestGrades.current
     var newestGradesCount by LocalNewestGradesCount.current
@@ -415,6 +420,22 @@ fun Settings(
                     text = "Benachrichtigungen über neue Noten",
                     icon = MaterialSymbols.Rounded.Notifications,
                     position = PreferencePosition.Top,
+                )
+                settingsToggleItem(
+                    checked = notificationsShowGrades,
+                    onCheckedChange = { enabled ->
+                        if (!notificationsEnabled) {
+                            return@settingsToggleItem
+                        }
+                        notificationsShowGrades = enabled
+                        if (!viewModel.isDemoAccount.value) {
+                            put("gradeNotificationsShowGrades", enabled)
+                        }
+                    },
+                    text = "${if (viewModel.level.value?.secondaryStage() == SecondaryStage.TWO) "Punkte" else "Noten"} in Benachrichtigungen anzeigen",
+                    icon = MaterialSymbols.Rounded.Visibility,
+                    enabled = notificationsEnabled,
+                    position = PreferencePosition.Middle,
                 )
                 settingsToggleItem(
                     checked = notificationsWifiOnly,
@@ -936,6 +957,7 @@ fun Settings(
                                 notificationsEnabled = appSettings.gradeNotificationsEnabled
                                 notificationIntervalMinutes = appSettings.gradeNotificationsIntervalMinutes
                                 notificationsWifiOnly = appSettings.gradeNotificationsWifiOnly
+                                notificationsShowGrades = appSettings.gradeNotificationsShowGrades
                                 requireBiometricAuthentification = appSettings.requireBiometricAuthentification
                                 put("useSystemIsDark", appSettings.useSystemIsDark)
                                 put("isDark", appSettings.isDark)
@@ -966,6 +988,7 @@ fun Settings(
                                 put("gradeNotificationsEnabled", appSettings.gradeNotificationsEnabled)
                                 put("gradeNotificationsIntervalMinutes", appSettings.gradeNotificationsIntervalMinutes)
                                 put("gradeNotificationsWifiOnly", appSettings.gradeNotificationsWifiOnly)
+                                put("gradeNotificationsShowGrades", appSettings.gradeNotificationsShowGrades)
                                 putSecure("requireBiometricAuthentification", appSettings.requireBiometricAuthentification)
                                 GradeNotifications.onSettingsUpdated()
                             }

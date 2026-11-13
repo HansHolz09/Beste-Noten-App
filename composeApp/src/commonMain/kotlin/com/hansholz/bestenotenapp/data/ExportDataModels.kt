@@ -56,5 +56,6 @@ data class AppSettings(
     val gradeNotificationsEnabled: Boolean = false,
     val gradeNotificationsIntervalMinutes: Long = 60L,
     val gradeNotificationsWifiOnly: Boolean = false,
+    val gradeNotificationsShowGrades: Boolean = false,
     val requireBiometricAuthentification: Boolean = false,
 )
