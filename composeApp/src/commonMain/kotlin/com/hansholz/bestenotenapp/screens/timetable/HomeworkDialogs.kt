@@ -24,6 +24,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
@@ -36,6 +38,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldLabelPosition
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
@@ -101,6 +104,7 @@ import com.hansholz.bestenotenapp.homework.HomeworkPlacement
 import com.hansholz.bestenotenapp.homework.HomeworkSource
 import com.hansholz.bestenotenapp.homework.HomeworkStatus
 import com.hansholz.bestenotenapp.homework.HomeworkType
+import com.hansholz.bestenotenapp.homework.hasTypeAsTitle
 import com.hansholz.bestenotenapp.homework.newHomeworkId
 import com.hansholz.bestenotenapp.main.LocalHomeworkGoogleSyncEnabled
 import com.hansholz.bestenotenapp.main.LocalHomeworkTypeColors
@@ -143,12 +147,14 @@ fun LazyListScope.homeworkItems(
         PreferenceItem(
             title = entry.title,
             subtitle =
-                buildList {
-                    add(entry.type.label)
-                    if (done) add("erledigt")
-                    entry.reminderAt?.let { add(it.formatReminder()) }
-                    entry.description?.let { add("\n" + it) }
-                }.joinToString(" · "),
+                listOfNotNull(
+                    buildList {
+                        if (!entry.hasTypeAsTitle) add(entry.type.label)
+                        if (done) add("erledigt")
+                        entry.reminderAt?.let { add(it.formatReminder()) }
+                    }.joinToString(" · ").ifEmpty { null },
+                    entry.description,
+                ).joinToString("\n").ifEmpty { null },
             icon = MaterialSymbols.Rounded.News,
             iconTint = entry.color?.let { Color(it) } ?: colorScheme.error,
             enabled = enabled,
@@ -201,8 +207,8 @@ fun HomeworkEditorDialog(
     var titleFocused by remember { mutableStateOf(false) }
     var descriptionFocused by remember { mutableStateOf(false) }
 
-    var title by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.title.orEmpty()) }
-    var description by remember(initialEntry, visible.value) { mutableStateOf(initialEntry?.description.orEmpty()) }
+    val titleState = remember(initialEntry, visible.value) { TextFieldState(initialEntry?.takeUnless { it.hasTypeAsTitle }?.title.orEmpty()) }
+    val descriptionState = remember(initialEntry, visible.value) { TextFieldState(initialEntry?.description.orEmpty()) }
     val homeworkTypeColorsState = LocalHomeworkTypeColors.current
     val homeworkTypesState = LocalHomeworkTypes.current
     val homeworkTypes = homeworkTypesState.value
@@ -250,28 +256,28 @@ fun HomeworkEditorDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 EnhancedTextField(
-                    value = title,
-                    onValueChange = { title = it },
+                    state = titleState,
                     modifier =
                         Modifier
                             .fillMaxWidth()
                             .onFocusChanged { titleFocused = it.isFocused },
+                    labelPosition = TextFieldLabelPosition.Cutout(isAlwaysMinimized = true),
                     label = { Text("Titel") },
+                    placeholder = { Text(type.label) },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    keyboardActions = KeyboardActions(onNext = { descriptionFocusRequester.requestFocus() }),
-                    singleLine = true,
+                    onKeyboardAction = { descriptionFocusRequester.requestFocus() },
+                    lineLimits = TextFieldLineLimits.SingleLine,
                     enabled = !busy,
                 )
                 EnhancedTextField(
-                    value = description,
-                    onValueChange = { description = it },
+                    state = descriptionState,
                     modifier =
                         Modifier
                             .fillMaxWidth()
                             .focusRequester(descriptionFocusRequester)
                             .onFocusChanged { descriptionFocused = it.isFocused },
                     label = { Text("Beschreibung") },
-                    minLines = 2,
+                    lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 2),
                     enabled = !busy,
                 )
                 val typeScrollState = rememberScrollState()
@@ -356,13 +362,29 @@ fun HomeworkEditorDialog(
                         scope.launch {
                             saving = true
                             try {
+                                val savedTitle =
+                                    titleState.text
+                                        .trim()
+                                        .ifEmpty { type.label }
+                                        .toString()
                                 val entry =
                                     initialEntry?.copy(
-                                        title = title.trim(),
-                                        description = description.trim().ifBlank { null },
+                                        title = savedTitle,
+                                        description =
+                                            descriptionState.text
+                                                .trim()
+                                                .ifBlank { null }
+                                                ?.toString(),
                                         type = type,
                                         reminderAt = reminderAt,
-                                    ) ?: createEntry(title.trim(), description.trim().ifBlank { null }, type).copy(reminderAt = reminderAt)
+                                    ) ?: createEntry(
+                                        savedTitle,
+                                        descriptionState.text
+                                            .trim()
+                                            .ifBlank { null }
+                                            ?.toString(),
+                                        type,
+                                    ).copy(reminderAt = reminderAt)
                                 onSave(entry.copy(color = homeworkTypeColorsState.value[type.value]))
                                 visible.value = false
                             } finally {
@@ -370,7 +392,7 @@ fun HomeworkEditorDialog(
                             }
                         }
                     },
-                    enabled = !busy && title.isNotBlank() && reminderError == null,
+                    enabled = !busy && reminderError == null,
                 ) {
                     Text("Speichern")
                 }

@@ -145,3 +145,6 @@ fun HomeworkEntry.stableSyncHash(): String =
         deletedAt?.toString().orEmpty(),
         reminderAt?.toString().orEmpty(),
     ).plus(listOfNotNull(color?.toString())).joinToString("|")
+
+val HomeworkEntry.hasTypeAsTitle: Boolean
+    get() = title == type.label

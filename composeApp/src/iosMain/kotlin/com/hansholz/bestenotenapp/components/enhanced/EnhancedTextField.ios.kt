@@ -28,14 +28,13 @@ internal fun EnhancedNativeTextInputProvider(content: @Composable () -> Unit) {
     val options = remember { PlatformImeOptions { usingNativeTextInput(true) } }
     CompositionLocalProvider(
         LocalNativeTextInputOptions provides options,
-        LocalEnhancedTextFieldFocusOwner provides remember { mutableStateOf<Any?>(null) },
+        LocalEnhancedTextFieldFocusOwner provides remember { mutableStateOf(null) },
         LocalNativeTextInputRefresh provides rememberNativeTextInputRefresh(),
         LocalNativeKeyboardHandoff provides rememberNativeKeyboardHandoff(),
         content = content,
     )
 }
 
-@OptIn(ExperimentalForeignApi::class)
 @Composable
 private fun rememberNativeKeyboardHandoff(): ((() -> Unit) -> Unit) {
     val view = LocalUIView.current
@@ -44,18 +43,30 @@ private fun rememberNativeKeyboardHandoff(): ((() -> Unit) -> Unit) {
         { action ->
             action()
             dispatch_async(dispatch_get_main_queue()) {
-                if ((view.focusedTextInput() as? UIView)?.canBecomeFirstResponder() != false) return@dispatch_async
+                val input = view.focusedTextInput() as? UIView
+                if (input == null || input.canBecomeFirstResponder()) return@dispatch_async
                 // Keep the keyboard active while Compose replaces its native text input view.
-                val keeper = UITextField(frame = CGRectMake(0.0, 0.0, 1.0, 1.0))
+                // The keeper refuses to resign, so Compose's overlay view (which has no keyboard)
+                // cannot grab first responder in between; it hands over to the next text input itself.
+                val keeper = KeyboardKeeper()
                 keeper.alpha = 0.01
                 view.addSubview(keeper)
                 keeper.becomeFirstResponder()
                 scope.launch {
                     try {
                         withTimeoutOrNull(750.milliseconds) {
-                            while (keeper.isFirstResponder()) withFrameNanos {}
+                            while (keeper.isFirstResponder()) {
+                                val next = view.findTextInput { it !== keeper && it !== input && it.canBecomeFirstResponder() }
+                                if (next != null) {
+                                    keeper.holding = false
+                                    next.becomeFirstResponder()
+                                    break
+                                }
+                                withFrameNanos {}
+                            }
                         }
                     } finally {
+                        keeper.holding = false
                         keeper.resignFirstResponder()
                         keeper.removeFromSuperview()
                     }
@@ -77,6 +88,18 @@ private fun rememberNativeTextInputRefresh(): () -> Unit {
         }
     }
 }
+
+@OptIn(ExperimentalForeignApi::class)
+private class KeyboardKeeper : UITextField(frame = CGRectMake(0.0, 0.0, 1.0, 1.0)) {
+    var holding = true
+
+    override fun canResignFirstResponder(): Boolean = !holding
+}
+
+private fun UIView.findTextInput(predicate: (UIView) -> Boolean): UIView? =
+    subviews.firstNotNullOfOrNull { child ->
+        (child as? UIView)?.let { if (it is UITextInputProtocol && predicate(it)) it else it.findTextInput(predicate) }
+    }
 
 private fun UIView.focusedTextInput(): UITextInputProtocol? {
     if (isFirstResponder()) return this as? UITextInputProtocol

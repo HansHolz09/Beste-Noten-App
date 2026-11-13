@@ -28,6 +28,8 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldLabelPosition
+import androidx.compose.material3.TextFieldLabelScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -193,6 +195,8 @@ fun EnhancedTextField(
     enabled: Boolean = true,
     readOnly: Boolean = false,
     textStyle: TextStyle = LocalTextStyle.current,
+    labelPosition: TextFieldLabelPosition = TextFieldLabelPosition.Cutout(),
+    label: @Composable (TextFieldLabelScope.() -> Unit)? = null,
     placeholder: @Composable (() -> Unit)? = null,
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
@@ -228,6 +232,8 @@ fun EnhancedTextField(
             enabled = enabled,
             readOnly = readOnly,
             textStyle = textStyle,
+            labelPosition = labelPosition,
+            label = label,
             placeholder = placeholder,
             leadingIcon = leadingIcon,
             trailingIcon = trailingIcon,
@@ -244,6 +250,7 @@ fun EnhancedTextField(
         )
     } else {
         val focusRequester = remember { FocusRequester() }
+        val labelPadding = with(LocalDensity.current) { typography.bodySmall.lineHeight.toDp() / 2 }
         CompositionLocalProvider(
             LocalTextSelectionColors provides TextSelectionColors(cursorColor, colors.textSelectionColors.backgroundColor),
         ) {
@@ -251,6 +258,7 @@ fun EnhancedTextField(
                 modifier
                     .semantics(mergeDescendants = true) {}
                     .focusNativeTextFieldOnTap(focusRequester, focused, enabled)
+                    .padding(top = if (label != null) labelPadding else 0.dp)
                     .defaultMinSize(minWidth = OutlinedTextFieldDefaults.MinWidth, minHeight = OutlinedTextFieldDefaults.MinHeight),
                 propagateMinConstraints = true,
             ) {
@@ -261,6 +269,8 @@ fun EnhancedTextField(
                         lineLimits = lineLimits,
                         outputTransformation = outputTransformation,
                         interactionSource = resolvedInteractionSource,
+                        labelPosition = labelPosition,
+                        label = label,
                         placeholder = placeholder,
                         leadingIcon = leadingIcon?.redirectFocusOnEnter(focusRequester) { focused },
                         trailingIcon = trailingIcon?.redirectFocusOnEnter(focusRequester) { focused },

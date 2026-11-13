@@ -30,6 +30,7 @@ import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.homework.HomeworkEntry
 import com.hansholz.bestenotenapp.homework.HomeworkStatus
+import com.hansholz.bestenotenapp.homework.hasTypeAsTitle
 import com.hansholz.bestenotenapp.main.ViewModel
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -92,7 +93,7 @@ fun LessonHomeworkSection(
         HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
         ListItem(
             headlineContent = { Text(entry.title) },
-            overlineContent = { Text(entry.type.label) },
+            overlineContent = if (entry.hasTypeAsTitle) null else ({ Text(entry.type.label) }),
             supportingContent = { entry.description?.let { Text(it) } },
             modifier =
                 Modifier
