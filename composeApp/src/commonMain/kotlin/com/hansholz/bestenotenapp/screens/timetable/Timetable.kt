@@ -137,13 +137,13 @@ import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.main.isApplePlatform
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.utils.captureAsyncAndSaveOrShare
+import com.hansholz.bestenotenapp.utils.parseDateOrNull
 import com.hansholz.bestenotenapp.utils.withRelevantLessons
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
@@ -262,7 +262,9 @@ fun Timetable(
                                 if (isEmpty()) {
                                     viewModel.years
                                         .firstOrNull { year ->
-                                            weekDate in LocalDate.parse(year.from)..LocalDate.parse(year.to)
+                                            val from = parseDateOrNull(year.from) ?: return@firstOrNull false
+                                            val to = parseDateOrNull(year.to) ?: return@firstOrNull false
+                                            weekDate in from..to
                                         }?.id
                                         ?.let(::add)
                                 }
@@ -570,9 +572,9 @@ fun Timetable(
                                                                     )
                                                                 }
                                                                 pageContent(pagerState.currentPage, true) { containsDays ->
-                                                                    try {
-                                                                        if (containsDays) {
-                                                                            scope.launch {
+                                                                    if (containsDays) {
+                                                                        scope.launch {
+                                                                            try {
                                                                                 val formattedDate =
                                                                                     Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).format(
                                                                                         LocalDateTime.Format {
@@ -580,19 +582,28 @@ fun Timetable(
                                                                                         },
                                                                                     )
                                                                                 captureController.captureAsyncAndSaveOrShare("Stundenplan vom $formattedDate")
+                                                                            } catch (e: CancellationException) {
+                                                                                throw e
+                                                                            } catch (e: Exception) {
+                                                                                e.printStackTrace()
+                                                                                viewModel.toaster.show(
+                                                                                    Toast(
+                                                                                        message = "Stundenplan konnte nicht exportiert werden",
+                                                                                        type = ToastType.Error,
+                                                                                    ),
+                                                                                )
+                                                                            } finally {
                                                                                 showCaptureArea = false
                                                                             }
-                                                                        } else {
-                                                                            viewModel.toaster.show(
-                                                                                Toast(
-                                                                                    message = "Keine Stunden für diese Woche gefunden",
-                                                                                    type = ToastType.Warning,
-                                                                                ),
-                                                                            )
-                                                                            showCaptureArea = false
                                                                         }
-                                                                    } catch (e: Exception) {
-                                                                        e.printStackTrace()
+                                                                    } else {
+                                                                        viewModel.toaster.show(
+                                                                            Toast(
+                                                                                message = "Keine Stunden für diese Woche gefunden",
+                                                                                type = ToastType.Warning,
+                                                                            ),
+                                                                        )
+                                                                        showCaptureArea = false
                                                                     }
                                                                 }
                                                             }

@@ -83,15 +83,14 @@ import com.hansholz.bestenotenapp.utils.SimpleTime
 import com.hansholz.bestenotenapp.utils.TimetableLessonBlock
 import com.hansholz.bestenotenapp.utils.createTimetableLessonBlocks
 import com.hansholz.bestenotenapp.utils.formateDate
+import com.hansholz.bestenotenapp.utils.parseDateOrNull
 import com.hansholz.bestenotenapp.utils.parseMarkdown
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 
@@ -120,8 +119,8 @@ fun WeekScheduleView(
 
     val preparedDays =
         remember(days, timetableBlockViewEnabled) {
-            val firstDate = LocalDate.parse(days.firstOrNull()?.date ?: "2000-01-01")
             days.mapIndexedNotNull { dayIndex, day ->
+                val date = parseDateOrNull(day.date) ?: return@mapIndexedNotNull null
                 val normalizedLessons =
                     day.lessons
                         ?.mapIndexed { lessonIndex, lesson ->
@@ -144,7 +143,7 @@ fun WeekScheduleView(
                 } else {
                     PreparedScheduleDay(
                         sourceIndex = dayIndex,
-                        date = firstDate.plus(dayIndex, DateTimeUnit.DAY),
+                        date = date,
                         lessonBlocks =
                             createTimetableLessonBlocks(
                                 normalizedLessons,
@@ -418,8 +417,8 @@ fun WeekScheduleView(
                                 modifier = Modifier.align(Alignment.Center).skipToLookaheadSize(),
                                 color =
                                     if (absences.any {
-                                            LocalDate.parse(it.from.take(10)) <= selectedDay &&
-                                                LocalDate.parse(it.to.take(10)) >= selectedDay &&
+                                            parseDateOrNull(it.from)?.let { it <= selectedDay } == true &&
+                                                parseDateOrNull(it.to)?.let { it >= selectedDay } == true &&
                                                 SimpleTime.parse(it.from.takeLast(8)) <= SimpleTime.parse(selectedLesson?.time?.from ?: "00:00") &&
                                                 SimpleTime.parse(it.to.takeLast(8)) >= SimpleTime.parse(selectedLesson?.time?.to ?: "23:59")
                                         }
@@ -544,8 +543,8 @@ fun WeekScheduleView(
                         }
                         absences
                             .filter {
-                                LocalDate.parse(it.from.take(10)) <= selectedDay &&
-                                    LocalDate.parse(it.to.take(10)) >= selectedDay &&
+                                parseDateOrNull(it.from)?.let { it <= selectedDay } == true &&
+                                    parseDateOrNull(it.to)?.let { it >= selectedDay } == true &&
                                     SimpleTime.parse(it.from.takeLast(8)) <= SimpleTime.parse(selectedLesson?.time?.from ?: "00:00") &&
                                     SimpleTime.parse(it.to.takeLast(8)) >= SimpleTime.parse(selectedLesson?.time?.to ?: "23:59")
                             }.forEach { absence ->

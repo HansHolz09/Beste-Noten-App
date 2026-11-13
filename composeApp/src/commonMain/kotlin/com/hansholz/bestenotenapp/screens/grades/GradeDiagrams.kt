@@ -96,6 +96,7 @@ import io.github.koalaplot.core.xygraph.Point
 import io.github.koalaplot.core.xygraph.XYGraph
 import kotlinx.coroutines.launch
 import kotlin.math.ceil
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalKoalaPlotApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -281,7 +282,7 @@ fun GradeDiagrams(
                             } else {
                                 val years = viewModel.years
                                 val processedData =
-                                    remember(allFilteredGrades, years.size, gradesViewModel.filterSubjects, deselectedSubjects) {
+                                    remember(allFilteredGrades, years.toList(), gradesViewModel.filterSubjects, deselectedSubjects) {
                                         val allGradesByYear =
                                             allFilteredGrades
                                                 .filter {
@@ -309,8 +310,7 @@ fun GradeDiagrams(
                                                         .firstOrNull { it.id == yearId }
                                                         ?.name
                                                         .orEmpty()
-                                                        .removeRange(0, 2)
-                                                        .removeRange(3, 5)
+                                                        .let(::comparisonYearName)
                                                 val counts = groupedByYear[yearId] ?: emptyMap()
                                                 object : VerticalBarPlotGroupedPointEntry<String, Float> {
                                                     override val x = yearName.ifEmpty { yearId.toString() }
@@ -327,11 +327,10 @@ fun GradeDiagrams(
                                                 pivotedData.getOrPut(grade) { mutableMapOf() }[yearId] = count
                                             }
                                         }
-                                        val sortedGrades = uniqueGrades
                                         val yearColors = generateHueColorPalette(sortedYears.size)
 
                                         val stackedEntries =
-                                            sortedGrades.map { grade ->
+                                            uniqueGrades.map { grade ->
                                                 object : VerticalBarPlotStackedPointEntry<String, Float> {
                                                     override val x = grade
                                                     override val yOrigin = 0f
@@ -350,13 +349,7 @@ fun GradeDiagrams(
                                         val averageGrades =
                                             groupedByYear
                                                 .mapNotNull { (yearId, counts) ->
-                                                    val total = counts.values.sum()
-                                                    if (total > 0) {
-                                                        val sum = counts.entries.sumOf { (g, c) -> (g.toIntOrNull() ?: 0) * c }
-                                                        yearId to (sum.toFloat() / total)
-                                                    } else {
-                                                        null
-                                                    }
+                                                    comparisonAverage(counts)?.let { yearId to it }
                                                 }.toMap()
 
                                         val avgPlot =
@@ -366,8 +359,7 @@ fun GradeDiagrams(
                                                         .firstOrNull { it.id == yearId }
                                                         ?.name
                                                         .orEmpty()
-                                                        .removeRange(0, 2)
-                                                        .removeRange(3, 5)
+                                                        .let(::comparisonYearName)
                                                 DefaultPoint(yearName.ifEmpty { yearId.toString() }, averageGrades[yearId]!!)
                                             }
 
@@ -585,13 +577,12 @@ fun GradeDiagrams(
                                                     angularAxisModel =
                                                         rememberCategoryAngularAxisModel(
                                                             categories =
-                                                                sortedYears.map {
+                                                                sortedYears.map { yearId ->
                                                                     years
-                                                                        .firstOrNull { y ->
-                                                                            y.id ==
-                                                                                it
-                                                                        }?.name
+                                                                        .firstOrNull { it.id == yearId }
+                                                                        ?.name
                                                                         .orEmpty()
+                                                                        .ifEmpty { yearId.toString() }
                                                                 },
                                                         ),
                                                     radialAxisLabels = { Text(it.toInt().toString()) },
@@ -654,10 +645,13 @@ fun GradeDiagrams(
                             if (it) {
                                 if (!viewModel.allGradeCollectionsLoaded.value) {
                                     gradesViewModel.isLoading = true
-                                    viewModel.gradeCollections.clear()
-                                    viewModel.getCollections(viewModel.years)?.let {
-                                        viewModel.gradeCollections.addAll(it)
-                                        viewModel.allGradeCollectionsLoaded.value = true
+                                    try {
+                                        viewModel.getCollections(viewModel.years)?.let {
+                                            viewModel.gradeCollections.clear()
+                                            viewModel.gradeCollections.addAll(it)
+                                            viewModel.allGradeCollectionsLoaded.value = true
+                                        }
+                                    } finally {
                                         gradesViewModel.isLoading = false
                                     }
                                 }
@@ -769,4 +763,13 @@ fun GradeDiagrams(
             }
         }
     }
+}
+
+private fun comparisonYearName(name: String): String = if (name.matches(Regex("\\d{4}/\\d{4}"))) name.removeRange(0, 2).removeRange(3, 5) else name
+
+private fun comparisonAverage(counts: Map<String, Int>): Float? {
+    val total = counts.values.sum()
+    if (total <= 0) return null
+    val sum = counts.entries.sumOf { (grade, count) -> (parseGradeValue(grade)?.takeIf { it.isFinite() }?.roundToInt() ?: 0) * count }
+    return sum.toFloat() / total
 }

@@ -1,11 +1,28 @@
 package com.hansholz.bestenotenapp.utils
 
+import com.hansholz.bestenotenapp.api.models.Interval
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.datetime.until
 import kotlin.time.Clock
+
+fun schoolYearProgress(intervals: List<Interval>): Pair<Float, Float>? {
+    if (intervals.size != 2) return null
+    val periods =
+        intervals
+            .map {
+                val from = parseDateOrNull(it.from) ?: return null
+                val to = parseDateOrNull(it.to) ?: return null
+                if (from > to) return null
+                from to to
+            }.sortedBy { it.first }
+    val (firstStart, firstEnd) = periods[0]
+    val (secondStart, secondEnd) = periods[1]
+    if (firstEnd >= secondStart) return null
+    return percentOfSchoolYearAt(firstStart, firstEnd, secondStart, secondEnd) to switchPercent(firstStart, firstEnd, secondStart, secondEnd)
+}
 
 fun switchPercent(
     firstStart: LocalDate,

@@ -272,7 +272,7 @@ fun Grades(
                     }
                 }
             },
-            sideMenuExpanded = if (isOpened) false else viewModel.mediumExpandedDrawerState.value.isOpen,
+            sideMenuExpanded = !isOpened && viewModel.mediumExpandedDrawerState.value.isOpen,
             hazeState = viewModel.hazeBackgroundState,
         ) { innerPadding, topAppBarBackground ->
             Box(Modifier.fillMaxSize()) {
@@ -959,7 +959,7 @@ fun Grades(
                                     contentAlignment = Alignment.BottomCenter,
                                 ) {
                                     HorizontalFloatingToolbar(
-                                        expanded = if (animationsEnabled && !gradesViewModel.toolbarExpansionLocked) currentLazyListState.isScrollingUp() else true,
+                                        expanded = !(animationsEnabled && !gradesViewModel.toolbarExpansionLocked) || currentLazyListState.isScrollingUp(),
                                         modifier =
                                             Modifier
                                                 .enhancedSharedBounds(
@@ -1073,7 +1073,7 @@ fun Grades(
                                                     containerColor = colorScheme.primary.copy(0.5f),
                                                     disabledContainerColor = Color.Transparent,
                                                 ),
-                                            isExpressive = if (animationsEnabled) currentLazyListState.isScrollingUp() else true,
+                                            isExpressive = !animationsEnabled || currentLazyListState.isScrollingUp(),
                                         ) { enabled ->
                                             Icon(
                                                 imageVector = MaterialSymbols.Rounded.Bar_chart,
@@ -1193,10 +1193,13 @@ fun Grades(
                                         LaunchedEffect(Unit) {
                                             if (!viewModel.allGradeCollectionsLoaded.value) {
                                                 gradesViewModel.isLoading = true
-                                                viewModel.gradeCollections.clear()
-                                                viewModel.getCollections(viewModel.years)?.let {
-                                                    viewModel.gradeCollections.addAll(it)
-                                                    viewModel.allGradeCollectionsLoaded.value = true
+                                                try {
+                                                    viewModel.getCollections(viewModel.years)?.let {
+                                                        viewModel.gradeCollections.clear()
+                                                        viewModel.gradeCollections.addAll(it)
+                                                        viewModel.allGradeCollectionsLoaded.value = true
+                                                    }
+                                                } finally {
                                                     gradesViewModel.isLoading = false
                                                 }
                                             }

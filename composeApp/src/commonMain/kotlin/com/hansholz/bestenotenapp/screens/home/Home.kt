@@ -153,10 +153,10 @@ import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
 import com.hansholz.bestenotenapp.utils.SimpleTime
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.getGreeting
+import com.hansholz.bestenotenapp.utils.parseDateOrNull
 import com.hansholz.bestenotenapp.utils.parseMarkdown
-import com.hansholz.bestenotenapp.utils.percentOfSchoolYearAt
 import com.hansholz.bestenotenapp.utils.rememberCurrentSimpleTime
-import com.hansholz.bestenotenapp.utils.switchPercent
+import com.hansholz.bestenotenapp.utils.schoolYearProgress
 import com.hansholz.bestenotenapp.utils.withRelevantLessons
 import com.pushpal.jetlime.EventPointType
 import com.pushpal.jetlime.EventPosition
@@ -169,7 +169,6 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.datetime.LocalDate
 import org.kodein.emoji.compose.m3.TextWithNotoAnimatedEmoji
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
@@ -244,7 +243,8 @@ fun Home(
                 if (homeworkEnabled) {
                     viewModel.currentJournalDay.value
                         ?.date
-                        ?.let { viewModel.getHomeworkForDate(LocalDate.parse(it)) }
+                        ?.let(::parseDateOrNull)
+                        ?.let { viewModel.getHomeworkForDate(it) }
                         .orEmpty()
                 } else {
                     emptyList()
@@ -355,8 +355,7 @@ fun Home(
                                         EnhancedOutlinedButton(
                                             onClick = {
                                                 viewModel.viewModelScope.launch {
-                                                    viewModel.setCurrentYear()
-                                                    viewModel.reload()
+                                                    if (!viewModel.changeCurrentYear()) return@launch
                                                     homeViewModel.refreshGrades(viewModel)
                                                     homeViewModel.refreshTimetable(viewModel)
                                                     homeViewModel.refreshStats(viewModel)
@@ -662,7 +661,6 @@ fun Home(
                                                     ) {
                                                         val lessons = currentJournalDay.lessons
                                                         val groupedLessons = remember(lessons) { lessons.sortedBy { it.nr }.groupBy { it.nr } }
-                                                        val maxLessonNr = remember(lessons) { lessons.maxOf { it.nr.toInt() } }
                                                         val currentTime by rememberCurrentSimpleTime()
                                                         Column(Modifier.padding(10.dp).padding(start = 5.dp)) {
                                                             CompositionLocalProvider(
@@ -672,9 +670,9 @@ fun Home(
                                                                             lineBrush = JetLimeDefaults.lineSolidBrush(colorScheme.primary.copy(0.7f)),
                                                                         ),
                                                             ) {
-                                                                groupedLessons.forEach { groupLessons ->
+                                                                groupedLessons.entries.forEachIndexed { index, groupLessons ->
                                                                     val firstLesson = groupLessons.value[0]
-                                                                    val position = EventPosition.dynamic(firstLesson.nr.toInt() - 1, maxLessonNr)
+                                                                    val position = EventPosition.dynamic(index, groupedLessons.size)
                                                                     val lessonTimeStart = SimpleTime.parse(firstLesson.time?.from ?: "00:00")
                                                                     val lessonTimeEnd = SimpleTime.parse(firstLesson.time?.to ?: "00:00")
                                                                     BoxWithConstraints {
@@ -977,22 +975,13 @@ fun Home(
                                             }
                                         }
                                         if (showYearProgress) {
-                                            EnhancedAnimatedContent(homeViewModel.isStatsLoading || viewModel.intervals.isEmpty()) {
+                                            EnhancedAnimatedContent(homeViewModel.isStatsLoading) {
                                                 if (it) {
                                                     LinearWavyProgressIndicator(Modifier.height(40.dp).fillMaxWidth().padding(10.dp))
                                                 } else {
-                                                    val firstIntervalFrom = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[0].from) }
-                                                    val firstIntervalTo = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[0].to) }
-                                                    val secondIntervalFrom = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[1].from) }
-                                                    val secondIntervalTo = remember(viewModel.intervals) { LocalDate.parse(viewModel.intervals[1].to) }
-                                                    val progress =
-                                                        remember(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo) {
-                                                            percentOfSchoolYearAt(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo)
-                                                        }
-                                                    val split =
-                                                        remember(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo) {
-                                                            switchPercent(firstIntervalFrom, firstIntervalTo, secondIntervalFrom, secondIntervalTo)
-                                                        }
+                                                    val (progress, split) =
+                                                        remember(viewModel.intervals.toList()) { schoolYearProgress(viewModel.intervals) }
+                                                            ?: return@EnhancedAnimatedContent
                                                     Column {
                                                         TwoToneLinearWavyProgressIndicator(
                                                             progress = progress,

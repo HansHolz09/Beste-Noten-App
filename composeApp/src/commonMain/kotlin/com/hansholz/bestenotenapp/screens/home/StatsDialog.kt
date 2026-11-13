@@ -52,10 +52,10 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedOutlinedButton
 import com.hansholz.bestenotenapp.components.scrollableEdgeFade
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.utils.formateDate
+import com.hansholz.bestenotenapp.utils.parseDateOrNull
 import com.hansholz.bestenotenapp.utils.roundToDecimals
 import com.hansholz.bestenotenapp.utils.tryRemember
 import kotlinx.coroutines.launch
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.daysUntil
 import kotlinx.datetime.todayIn
@@ -161,11 +161,19 @@ fun StatsDialog(
 
             val currentAverage =
                 tryRemember(currentLessonData, currentDayData) {
-                    (currentLessonData!!.count!!.toFloat() / currentDayData!!.count!!.toFloat()).roundToDecimals(2).toString().replace('.', ',')
+                    val days = currentDayData?.count?.takeIf { it > 0 } ?: return@tryRemember null
+                    val lessons = currentLessonData?.count ?: return@tryRemember null
+                    (lessons.toFloat() / days).roundToDecimals(2).toString().replace('.', ',')
                 }
             val currentPresence =
                 tryRemember(currentLessonData, currentDayData) {
-                    (100 - currentLessonData!!.notPresentCount!!.toFloat() / currentDayData!!.lessonsCount!!.toFloat() * 100).roundToDecimals(1).toString().replace('.', ',')
+                    val lessons = currentDayData?.lessonsCount?.toFloatOrNull()?.takeIf { it.isFinite() && it > 0f } ?: return@tryRemember null
+                    val absent = currentLessonData?.notPresentCount ?: return@tryRemember null
+                    (100 - absent.toFloat() / lessons * 100)
+                        .coerceIn(0f, 100f)
+                        .roundToDecimals(1)
+                        .toString()
+                        .replace('.', ',')
                 }
             val currentDaysNotPresentWithoutAbsenceCount =
                 tryRemember(currentDayData) {
@@ -177,11 +185,19 @@ fun StatsDialog(
                 }
             val average =
                 tryRemember(lessonData, dayData) {
-                    (lessonData!!.count!!.toFloat() / dayData!!.count!!.toFloat()).roundToDecimals(2).toString().replace('.', ',')
+                    val days = dayData?.count?.takeIf { it > 0 } ?: return@tryRemember null
+                    val lessons = lessonData?.count ?: return@tryRemember null
+                    (lessons.toFloat() / days).roundToDecimals(2).toString().replace('.', ',')
                 }
             val presence =
                 tryRemember(lessonData, dayData) {
-                    (100 - lessonData!!.notPresentCount!!.toFloat() / dayData!!.lessonsCount!!.toFloat() * 100).roundToDecimals(1).toString().replace('.', ',')
+                    val lessons = dayData?.lessonsCount?.toFloatOrNull()?.takeIf { it.isFinite() && it > 0f } ?: return@tryRemember null
+                    val absent = lessonData?.notPresentCount ?: return@tryRemember null
+                    (100 - absent.toFloat() / lessons * 100)
+                        .coerceIn(0f, 100f)
+                        .roundToDecimals(1)
+                        .toString()
+                        .replace('.', ',')
                 }
             val daysNotPresentWithoutAbsenceCount =
                 tryRemember(dayData) {
@@ -206,11 +222,11 @@ fun StatsDialog(
                                         }
                                         append(
                                             viewModel.intervals.joinToString("\n") { interval ->
-                                                val daysRemaining = Clock.System.todayIn(TimeZone.currentSystemDefault()).daysUntil(LocalDate.parse(interval.to))
+                                                val daysRemaining = parseDateOrNull(interval.to)?.let { Clock.System.todayIn(TimeZone.currentSystemDefault()).daysUntil(it) }
                                                 interval.name.let { if (it.regionMatches(2, "HJ", 0, 2)) "${it.take(2)} ${it.substringAfter('.')}" else it } +
                                                     " vom ${formateDate(interval.from)} bis ${formateDate(interval.to)}" +
                                                     (if (interval.to != interval.editableTo) " mit Notenschluss am ${formateDate(interval.editableTo)}" else "") +
-                                                    (if (daysRemaining > 1) "\n➜ noch $daysRemaining Tage" else "")
+                                                    (if (daysRemaining != null && daysRemaining > 1) "\n➜ noch $daysRemaining Tage" else "")
                                             },
                                         )
                                         withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
@@ -223,7 +239,7 @@ fun StatsDialog(
                                                 "• Unterrichtsstunden: ${currentLessonData?.count}\n" +
                                                 "• Abwesende Stunden: ${currentLessonData?.notPresentCount} (davon ${currentLessonData?.notPresentWithAbsenceCount}" +
                                                 " entschuldigt, $currentLessonsNotPresentWithoutAbsenceCount nicht)\n" +
-                                                "➜ Durchschnittlich $currentAverage Stunden/Tag, $currentPresence% Anwesenheit",
+                                                "➜ Durchschnittlich ${currentAverage ?: "–"} Stunden/Tag, ${currentPresence ?: "–"}% Anwesenheit",
                                         )
                                         withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
                                             append("\n\nGesamtübersicht:\n")
@@ -235,7 +251,7 @@ fun StatsDialog(
                                                 "• Unterrichtsstunden: ${lessonData?.count}\n" +
                                                 "• Abwesende Stunden: ${lessonData?.notPresentCount} (davon ${lessonData?.notPresentWithAbsenceCount} entschuldigt," +
                                                 " $lessonsNotPresentWithoutAbsenceCount nicht)\n" +
-                                                "➜ Durchschnittlich $average Stunden/Tag, $presence% Anwesenheit",
+                                                "➜ Durchschnittlich ${average ?: "–"} Stunden/Tag, ${presence ?: "–"}% Anwesenheit",
                                         )
                                         if (viewModel.currentLessonStudentBySlot.isNotEmpty()) {
                                             withStyle(SpanStyle(colorScheme.onSurface, fontWeight = FontWeight.Bold)) {
@@ -338,12 +354,16 @@ fun LessonsBySlotView(lessonStudentBySlot: List<JournalLessonStudentBySlot>) {
                         Spacer(Modifier.height(40.dp))
                         continue
                     }
+                    val absenceRate =
+                        lesson.count?.takeIf { it > 0 }?.let { count ->
+                            lesson.presentCount?.let { (1f - it.toFloat() / count).coerceIn(0f, 1f) }
+                        } ?: 0f
                     OutlinedCard(
                         modifier = Modifier.fillMaxWidth().padding(5.dp),
                         colors =
                             CardDefaults.outlinedCardColors(
                                 containerColor =
-                                    Color.Red.copy(((lesson.count ?: 1).toFloat() / (lesson.presentCount ?: 1).toFloat() - 1)),
+                                    Color.Red.copy(alpha = absenceRate),
                             ),
                         border =
                             BorderStroke(

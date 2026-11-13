@@ -95,8 +95,7 @@ fun YearSelectionDialog(
                                         viewModel.viewModelScope.launch {
                                             vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
                                             homeViewModel.isYearSelectionDialogShown = false
-                                            viewModel.setCurrentYear(if (index == viewModel.years.lastIndex) null else year.id)
-                                            viewModel.reload()
+                                            if (!viewModel.changeCurrentYear(if (index == viewModel.years.lastIndex) null else year.id)) return@launch
                                             homeViewModel.refreshGrades(viewModel)
                                             homeViewModel.refreshTimetable(viewModel)
                                             homeViewModel.refreshStats(viewModel)

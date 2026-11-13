@@ -57,6 +57,7 @@ import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.hansholz.bestenotenapp.utils.IO
 import com.hansholz.bestenotenapp.utils.SecondaryStage
 import com.hansholz.bestenotenapp.utils.defaultFileKitDialogSettings
+import com.hansholz.bestenotenapp.utils.parseDateOrNull
 import com.hansholz.bestenotenapp.utils.parseGradeValue
 import com.hansholz.bestenotenapp.utils.secondaryStage
 import com.hansholz.bestenotenapp.utils.weekOfYear
@@ -193,8 +194,6 @@ class ViewModel(
         timetableTimeLessonId: String,
         sourceDate: LocalDate,
     ): List<HomeworkEntry> = homeworkRepository.getHomeworkForLesson(timetableTimeLessonId, sourceDate)
-
-    suspend fun hasUserHomeworkForDate(date: LocalDate): Boolean = homeworkSyncSettings.homeworkEnabled && homeworkRepository.hasUserDayNotes(date)
 
     suspend fun createHomework(entry: HomeworkEntry) {
         homeworkRepository.createHomework(entry)
@@ -988,8 +987,8 @@ class ViewModel(
             date?.let {
                 years
                     .firstOrNull { schoolYear ->
-                        val fromDate = LocalDate.parse(schoolYear.from)
-                        val toDate = LocalDate.parse(schoolYear.to)
+                        val fromDate = parseDateOrNull(schoolYear.from) ?: return@firstOrNull false
+                        val toDate = parseDateOrNull(schoolYear.to) ?: return@firstOrNull false
                         date in fromDate..toDate
                     }?.id
                     ?.toString()
@@ -1102,8 +1101,20 @@ class ViewModel(
         }
 
     suspend fun setCurrentYear(year: Int? = null) {
-        api.yearSetCurrent(SetCurrentYearRequest(year))
+        check(api.yearSetCurrent(SetCurrentYearRequest(year)).status.isSuccess()) { "Schuljahr konnte nicht gewechselt werden" }
     }
+
+    suspend fun changeCurrentYear(year: Int? = null): Boolean =
+        try {
+            setCurrentYear(year)
+            reload()
+            true
+        } catch (e: Exception) {
+            if (e is CancellationException && e !is TimeoutCancellationException) throw e
+            e.printStackTrace()
+            toaster.show(Toast(message = "Schuljahr konnte nicht gewechselt werden", type = ToastType.Error))
+            false
+        }
 
     suspend fun reload() {
         onCleared()
