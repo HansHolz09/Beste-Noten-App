@@ -1,5 +1,6 @@
 package com.hansholz.bestenotenapp.components
 
+import androidx.compose.runtime.snapshots.SnapshotStateObserver
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
@@ -8,9 +9,7 @@ import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
-import androidx.compose.ui.node.ObserverModifierNode
 import androidx.compose.ui.node.invalidateDraw
-import androidx.compose.ui.node.observeReads
 import androidx.compose.ui.node.requireGraphicsContext
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.getPlatform
@@ -34,27 +33,26 @@ private data class CacheAsBitmapElement(
 
 private class CacheAsBitmapNode :
     Modifier.Node(),
-    DrawModifierNode,
-    ObserverModifierNode {
+    DrawModifierNode {
+    private val observer = SnapshotStateObserver { coroutineScope.launch { it() } }
     private var layer: GraphicsLayer? = null
     private var bitmap: ImageBitmap? = null
     private var dirty = true
     private var captureJob: Job? = null
 
     override fun onAttach() {
+        observer.start()
         layer = requireGraphicsContext().createGraphicsLayer()
     }
 
     override fun onDetach() {
+        observer.stop()
+        observer.clear()
         captureJob = null
         bitmap = null
         dirty = true
         layer?.let { requireGraphicsContext().releaseGraphicsLayer(it) }
         layer = null
-    }
-
-    override fun onObservedReadsChanged() {
-        invalidateCache()
     }
 
     fun invalidateCache() {
@@ -64,7 +62,7 @@ private class CacheAsBitmapNode :
 
     override fun ContentDrawScope.draw() {
         val layer = layer ?: return drawContent()
-        observeReads { layer.record { this@draw.drawContent() } }
+        observer.observeReads(this@CacheAsBitmapNode, onContentChanged) { layer.record { this@draw.drawContent() } }
         val bitmap = bitmap
         if (!dirty && bitmap != null && bitmap.width == layer.size.width && bitmap.height == layer.size.height) {
             drawImage(bitmap)
@@ -82,3 +80,5 @@ private class CacheAsBitmapNode :
             }
     }
 }
+
+private val onContentChanged: (CacheAsBitmapNode) -> Unit = { it.invalidateCache() }
