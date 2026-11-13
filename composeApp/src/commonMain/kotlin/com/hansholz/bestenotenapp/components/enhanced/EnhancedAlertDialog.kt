@@ -58,6 +58,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.PredictiveBackHandler
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.BlendMode
@@ -210,6 +211,7 @@ fun BasicEnhancedAlertDialog(
     var dragOffset by remember { mutableFloatStateOf(0f) }
     var dragSpringBack by remember { mutableStateOf<Job?>(null) }
     var dismissedByDrag by remember { mutableStateOf(false) }
+    var textInputActive by remember { mutableStateOf(false) }
     val dragExitDistance = remember { floatArrayOf(0f) }
     val dragScope = rememberCoroutineScope()
     val currentVisible by rememberUpdatedState(visible)
@@ -273,7 +275,7 @@ fun BasicEnhancedAlertDialog(
                     available: Offset,
                     source: NestedScrollSource,
                 ): Offset {
-                    if (available.y == 0f || source != NestedScrollSource.UserInput) return Offset.Zero
+                    if (textInputActive || available.y == 0f || source != NestedScrollSource.UserInput) return Offset.Zero
                     dragSpringBack?.cancel()
                     dragOffset += available.y
                     return Offset(0f, available.y)
@@ -329,7 +331,7 @@ fun BasicEnhancedAlertDialog(
                 BoxWithConstraints(
                     modifier =
                         Modifier.fillMaxSize().trackpadSwipeToDismiss(
-                            enabled = nativeComponentsEnabled && visible,
+                            enabled = nativeComponentsEnabled && visible && !textInputActive,
                             onDrag = { offset ->
                                 dragSpringBack?.cancel()
                                 dragOffset = offset
@@ -436,11 +438,12 @@ fun BasicEnhancedAlertDialog(
                                 modifier =
                                     dialogContentModifier
                                         .offset { IntOffset(0, panelOffset.roundToPx() + rubberBand(dragOffset, 80.dp.toPx()).roundToInt()) }
+                                        .onFocusChanged { textInputActive = it.hasFocus }
                                         .nestedScroll(dragNestedScroll)
                                         .draggable(
                                             state = dragState,
                                             orientation = Orientation.Vertical,
-                                            enabled = visible,
+                                            enabled = visible && !textInputActive,
                                             onDragStarted = { dragSpringBack?.cancel() },
                                             onDragStopped = { velocity -> releaseDrag(dragOffset, velocity) },
                                         ),
