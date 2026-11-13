@@ -44,6 +44,7 @@ import com.composables.icons.materialsymbols.rounded.Brightness_4
 import com.composables.icons.materialsymbols.rounded.Brightness_auto
 import com.composables.icons.materialsymbols.rounded.Dark_mode
 import com.composables.icons.materialsymbols.rounded.Delete_sweep
+import com.composables.icons.materialsymbols.rounded.Density_small
 import com.composables.icons.materialsymbols.rounded.Disabled_visible
 import com.composables.icons.materialsymbols.rounded.Fiber_new
 import com.composables.icons.materialsymbols.rounded.File_export
@@ -101,6 +102,7 @@ import com.hansholz.bestenotenapp.main.LocalHomeworkEnabled
 import com.hansholz.bestenotenapp.main.LocalHomeworkGoogleSyncEnabled
 import com.hansholz.bestenotenapp.main.LocalHomeworkTypeColors
 import com.hansholz.bestenotenapp.main.LocalHomeworkTypes
+import com.hansholz.bestenotenapp.main.LocalMergeSchoolDayLessons
 import com.hansholz.bestenotenapp.main.LocalNativeAppearanceSelector
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNativeSlider
@@ -182,6 +184,7 @@ fun Settings(
     var showNewestGrades by LocalShowNewestGrades.current
     var newestGradesCount by LocalNewestGradesCount.current
     var showCurrentLesson by LocalShowCurrentLesson.current
+    var mergeSchoolDayLessons by LocalMergeSchoolDayLessons.current
     var showYearProgress by LocalShowYearProgress.current
     var showUsageHints by LocalShowUsageHints.current
     var showGradeHistory by LocalShowGradeHistory.current
@@ -568,6 +571,17 @@ fun Settings(
                 icon = MaterialSymbols.Rounded.Format_list_bulleted,
                 position = PreferencePosition.Middle,
             )
+            settingsToggleItem(
+                checked = mergeSchoolDayLessons,
+                onCheckedChange = {
+                    mergeSchoolDayLessons = it
+                    put("mergeSchoolDayLessons", it)
+                },
+                text = "Stunden im Schultag zusammenfassen",
+                icon = MaterialSymbols.Rounded.Density_small,
+                enabled = showCurrentLesson,
+                position = PreferencePosition.Middle,
+            )
             if (!viewModel.isDemoAccount.value) {
                 settingsToggleItem(
                     checked = showYearProgress,
@@ -904,6 +918,7 @@ fun Settings(
                                 showNewestGrades = appSettings.showNewestGrades
                                 newestGradesCount = appSettings.newestGradesCount.coerceIn(1, 10)
                                 showCurrentLesson = appSettings.showCurrentLesson
+                                mergeSchoolDayLessons = appSettings.mergeSchoolDayLessons
                                 showYearProgress = appSettings.showYearProgress
                                 showUsageHints = appSettings.showUsageHints
                                 showGradeHistory = appSettings.showGradeHistory
@@ -934,6 +949,7 @@ fun Settings(
                                 put("showNewestGrades", appSettings.showNewestGrades)
                                 put("newestGradesCount", newestGradesCount)
                                 put("showCurrentLesson", appSettings.showCurrentLesson)
+                                put("mergeSchoolDayLessons", appSettings.mergeSchoolDayLessons)
                                 put("showYearProgress", appSettings.showYearProgress)
                                 put("showUsageHints", appSettings.showUsageHints)
                                 put("showGradeHistory", appSettings.showGradeHistory)

@@ -39,6 +39,7 @@ data class AppSettings(
     val showNewestGrades: Boolean = true,
     val newestGradesCount: Int = 5,
     val showCurrentLesson: Boolean = true,
+    val mergeSchoolDayLessons: Boolean = true,
     val showYearProgress: Boolean = true,
     val showUsageHints: Boolean = true,
     val showGradeHistory: Boolean = false,

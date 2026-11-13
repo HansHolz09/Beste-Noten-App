@@ -10,6 +10,52 @@ internal data class TimetableLessonBlock(
     val stableKey: String = sourceLessons.joinToString("|") { it.homeworkLessonId() ?: "${it.nr}:${it.time?.from}-${it.time?.to}" }
 }
 
+internal sealed interface SchoolDayEntry {
+    data class Lessons(
+        val blocks: List<TimetableLessonBlock>,
+        val from: SimpleTime?,
+        val to: SimpleTime?,
+    ) : SchoolDayEntry {
+        val sourceLessons: List<JournalLesson> = blocks.flatMap(TimetableLessonBlock::sourceLessons)
+        val lessonCount: Int = blocks.maxOf { it.sourceLessons.size }
+    }
+
+    data class Break(
+        val from: SimpleTime,
+        val to: SimpleTime,
+    ) : SchoolDayEntry
+}
+
+internal fun createSchoolDayEntries(
+    lessons: List<JournalLesson>,
+    mergeLessons: Boolean,
+    timetableBlockViewEnabled: Boolean,
+): List<SchoolDayEntry> {
+    val timetableBlocks = createTimetableLessonBlocks(lessons, timetableBlockViewEnabled)
+    val groups =
+        createTimetableLessonBlocks(lessons, mergeLessons).groupBy { it.lesson.nr }.values.map { blocks ->
+            val times =
+                timetableBlocks
+                    .filter { block -> block.sourceLessons.any { lesson -> blocks.any { lesson in it.sourceLessons } } }
+                    .mapNotNull { it.lesson.time }
+            SchoolDayEntry.Lessons(
+                blocks = blocks,
+                from = times.mapNotNull { it.from?.let(SimpleTime::parse) }.minOrNull(),
+                to = times.mapNotNull { it.to?.let(SimpleTime::parse) }.maxOrNull(),
+            )
+        }
+
+    return groups.flatMapIndexed { index, group ->
+        val breakFrom = groups.getOrNull(index - 1)?.to
+        val breakTo = group.from
+        if (breakFrom != null && breakTo != null && breakFrom.minutesUntil(breakTo) > 45) {
+            listOf(SchoolDayEntry.Break(breakFrom, breakTo), group)
+        } else {
+            listOf(group)
+        }
+    }
+}
+
 internal fun createTimetableLessonBlocks(
     lessons: List<JournalLesson>,
     enabled: Boolean,

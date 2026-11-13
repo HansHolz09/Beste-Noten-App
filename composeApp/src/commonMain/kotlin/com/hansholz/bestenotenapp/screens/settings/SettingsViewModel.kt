@@ -73,6 +73,7 @@ class SettingsViewModel : ViewModel() {
                             showNewestGrades = get("showNewestGrades", true),
                             newestGradesCount = get("newestGradesCount", 5),
                             showCurrentLesson = get("showCurrentLesson", true),
+                            mergeSchoolDayLessons = get("mergeSchoolDayLessons", true),
                             showYearProgress = get("showYearProgress", true),
                             showUsageHints = get("showUsageHints", true),
                             showGradeHistory = get("showGradeHistory", false),

@@ -17,6 +17,7 @@ internal val LocalShowGreetings = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowNewestGrades = compositionLocalOf { mutableStateOf(false) }
 internal val LocalNewestGradesCount = compositionLocalOf { mutableStateOf(5) }
 internal val LocalShowCurrentLesson = compositionLocalOf { mutableStateOf(false) }
+internal val LocalMergeSchoolDayLessons = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowYearProgress = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowUsageHints = compositionLocalOf { mutableStateOf(true) }
 internal val LocalShowGradeHistory = compositionLocalOf { mutableStateOf(false) }
@@ -57,6 +58,7 @@ fun SettingsProvider(
     val showNewestGradesState = remember { mutableStateOf(get("showNewestGrades", true)) }
     val newestGradesCountState = remember { mutableStateOf(get("newestGradesCount", 5).coerceIn(1, 10)) }
     val showCurrentLessonState = remember { mutableStateOf(get("showCurrentLesson", true)) }
+    val mergeSchoolDayLessonsState = remember { mutableStateOf(get("mergeSchoolDayLessons", true)) }
     val showYearProgress = remember { mutableStateOf(get("showYearProgress", true)) }
     val showUsageHints = remember { mutableStateOf(get("showUsageHints", true)) }
     val showGradeHistoryState = remember { mutableStateOf(get("showGradeHistory", false)) }
@@ -85,6 +87,7 @@ fun SettingsProvider(
         LocalShowNewestGrades provides showNewestGradesState,
         LocalNewestGradesCount provides newestGradesCountState,
         LocalShowCurrentLesson provides showCurrentLessonState,
+        LocalMergeSchoolDayLessons provides mergeSchoolDayLessonsState,
         LocalShowYearProgress provides showYearProgress,
         LocalShowUsageHints provides showUsageHints,
         LocalShowGradeHistory provides showGradeHistoryState,

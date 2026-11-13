@@ -65,8 +65,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -136,6 +138,7 @@ import com.hansholz.bestenotenapp.components.scatteredIconBackground
 import com.hansholz.bestenotenapp.homework.HomeworkEntry
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalHomeworkEnabled
+import com.hansholz.bestenotenapp.main.LocalMergeSchoolDayLessons
 import com.hansholz.bestenotenapp.main.LocalNewestGradesCount
 import com.hansholz.bestenotenapp.main.LocalShowCurrentLesson
 import com.hansholz.bestenotenapp.main.LocalShowGreetings
@@ -144,13 +147,16 @@ import com.hansholz.bestenotenapp.main.LocalShowNotes
 import com.hansholz.bestenotenapp.main.LocalShowOnlyRelevantData
 import com.hansholz.bestenotenapp.main.LocalShowUsageHints
 import com.hansholz.bestenotenapp.main.LocalShowYearProgress
+import com.hansholz.bestenotenapp.main.LocalTimetableBlockViewEnabled
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.navigation.Fragment
 import com.hansholz.bestenotenapp.reviews.ReviewAfterDismiss
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
+import com.hansholz.bestenotenapp.utils.SchoolDayEntry
 import com.hansholz.bestenotenapp.utils.SimpleTime
+import com.hansholz.bestenotenapp.utils.createSchoolDayEntries
 import com.hansholz.bestenotenapp.utils.formateDate
 import com.hansholz.bestenotenapp.utils.getGreeting
 import com.hansholz.bestenotenapp.utils.parseDateOrNull
@@ -209,6 +215,8 @@ fun Home(
         val showNewestGrades by LocalShowNewestGrades.current
         val newestGradesCount by LocalNewestGradesCount.current
         val showCurrentLesson by LocalShowCurrentLesson.current
+        val mergeSchoolDayLessons by LocalMergeSchoolDayLessons.current
+        val timetableBlockViewEnabled by LocalTimetableBlockViewEnabled.current
         val showNotes by LocalShowNotes.current
         val showOnlyRelevantData by LocalShowOnlyRelevantData.current
         val showYearProgress by LocalShowYearProgress.current
@@ -660,7 +668,10 @@ fun Home(
                                                             .isNullOrEmpty()
                                                     ) {
                                                         val lessons = currentJournalDay.lessons
-                                                        val groupedLessons = remember(lessons) { lessons.sortedBy { it.nr }.groupBy { it.nr } }
+                                                        val schoolDayEntries =
+                                                            remember(lessons, mergeSchoolDayLessons, timetableBlockViewEnabled) {
+                                                                createSchoolDayEntries(lessons, mergeSchoolDayLessons, timetableBlockViewEnabled)
+                                                            }
                                                         val currentTime by rememberCurrentSimpleTime()
                                                         Column(Modifier.padding(10.dp).padding(start = 5.dp)) {
                                                             CompositionLocalProvider(
@@ -670,11 +681,50 @@ fun Home(
                                                                             lineBrush = JetLimeDefaults.lineSolidBrush(colorScheme.primary.copy(0.7f)),
                                                                         ),
                                                             ) {
-                                                                groupedLessons.entries.forEachIndexed { index, groupLessons ->
-                                                                    val firstLesson = groupLessons.value[0]
-                                                                    val position = EventPosition.dynamic(index, groupedLessons.size)
-                                                                    val lessonTimeStart = SimpleTime.parse(firstLesson.time?.from ?: "00:00")
-                                                                    val lessonTimeEnd = SimpleTime.parse(firstLesson.time?.to ?: "00:00")
+                                                                schoolDayEntries.forEachIndexed { index, entry ->
+                                                                    val position = EventPosition.dynamic(index, schoolDayEntries.size)
+                                                                    if (entry is SchoolDayEntry.Break) {
+                                                                        BoxWithConstraints {
+                                                                            if (maxWidth >= 96.dp) {
+                                                                                @OptIn(ExperimentalComposeApi::class)
+                                                                                JetLimeExtendedEvent(
+                                                                                    style =
+                                                                                        JetLimeEventDefaults.eventStyle(
+                                                                                            position = position,
+                                                                                            pointAnimation =
+                                                                                                if (currentTime in entry.from..entry.to) {
+                                                                                                    JetLimeEventDefaults.pointAnimation(targetValue = 1.4f)
+                                                                                                } else {
+                                                                                                    null
+                                                                                                },
+                                                                                            pointType =
+                                                                                                if (entry.from <=
+                                                                                                    currentTime
+                                                                                                ) {
+                                                                                                    EventPointType.Default
+                                                                                                } else {
+                                                                                                    EventPointType.EMPTY
+                                                                                                },
+                                                                                            pointColor = colorScheme.surface,
+                                                                                            pointFillColor = colorScheme.outline,
+                                                                                            pointRadius = 8.dp,
+                                                                                            pointStrokeColor = colorScheme.outline,
+                                                                                        ),
+                                                                                    additionalContent = {
+                                                                                        Spacer(Modifier.width(60.dp))
+                                                                                    },
+                                                                                ) {
+                                                                                    Spacer(Modifier.height(16.dp))
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                        return@forEachIndexed
+                                                                    }
+                                                                    val lessonEntry = entry as SchoolDayEntry.Lessons
+                                                                    val groupLessons = lessonEntry.sourceLessons
+                                                                    val firstLesson = groupLessons[0]
+                                                                    val lessonTimeStart = lessonEntry.from ?: SimpleTime.parse("00:00")
+                                                                    val lessonTimeEnd = lessonEntry.to ?: SimpleTime.parse("00:00")
                                                                     BoxWithConstraints {
                                                                         if (maxWidth >= 96.dp) {
                                                                             @OptIn(ExperimentalComposeApi::class)
@@ -699,7 +749,7 @@ fun Home(
                                                                                                 EventPointType.EMPTY
                                                                                             },
                                                                                         pointColor =
-                                                                                            if (groupLessons.value.size > 1) {
+                                                                                            if (lessonEntry.blocks.size > 1) {
                                                                                                 colorScheme.surface
                                                                                             } else {
                                                                                                 when (firstLesson.status) {
@@ -715,7 +765,7 @@ fun Home(
                                                                                     Box(Modifier.clip(ClamShell.toShape()).background(colorScheme.primaryContainer)) {
                                                                                         Text(
                                                                                             text =
-                                                                                                groupLessons.value
+                                                                                                groupLessons
                                                                                                     .flatMap { it.rooms.orEmpty() }
                                                                                                     .map { it.localId }
                                                                                                     .toSet()
@@ -731,10 +781,19 @@ fun Home(
                                                                                 Column(Modifier.padding(start = 5.dp)) {
                                                                                     Text(
                                                                                         text =
-                                                                                            groupLessons.value
-                                                                                                .map { it.subject?.name ?: "?" }
-                                                                                                .toSet()
-                                                                                                .joinToString(),
+                                                                                            buildAnnotatedString {
+                                                                                                if (lessonEntry.lessonCount > 1) {
+                                                                                                    withStyle(
+                                                                                                        SpanStyle(color = colorScheme.secondary),
+                                                                                                    ) { append("${lessonEntry.lessonCount}× ") }
+                                                                                                }
+                                                                                                append(
+                                                                                                    groupLessons
+                                                                                                        .map { it.subject?.name ?: "?" }
+                                                                                                        .toSet()
+                                                                                                        .joinToString(),
+                                                                                                )
+                                                                                            },
                                                                                         color =
                                                                                             if (currentTime in
                                                                                                 lessonTimeStart..lessonTimeEnd
@@ -744,12 +803,17 @@ fun Home(
                                                                                                 Color.Unspecified
                                                                                             },
                                                                                     )
-                                                                                    groupLessons.value.flatMap { it.notes.orEmpty() }.forEach {
+                                                                                    lessonEntry.blocks.flatMap { it.lesson.notes.orEmpty() }.forEach {
                                                                                         Text(
                                                                                             text =
                                                                                                 buildAnnotatedString {
-                                                                                                    append(it.type?.name?.replace("Substitution Plan", "Vertretungsplan") ?: "?")
-                                                                                                    append(": ")
+                                                                                                    withStyle(SpanStyle(color = colorScheme.onSecondaryContainer)) {
+                                                                                                        append(
+                                                                                                            it.type?.name?.replace("Substitution Plan", "Vertretungsplan") ?: "?",
+                                                                                                        )
+                                                                                                        append(":")
+                                                                                                    }
+                                                                                                    append(if (it.description?.contains('\n') == true) "\n" else " ")
                                                                                                     append(it.description?.parseMarkdown() ?: AnnotatedString("Keine Beschreibung"))
                                                                                                 },
                                                                                             modifier = Modifier.padding(vertical = 5.dp),
