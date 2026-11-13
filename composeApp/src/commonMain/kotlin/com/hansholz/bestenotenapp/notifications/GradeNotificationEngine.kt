@@ -65,6 +65,8 @@ internal object GradeNotificationEngine {
 
     fun shouldSchedule(): Boolean = isEnabled() && hasCredentials()
 
+    fun disable() = kSafeProvider(kSafe) { put("gradeNotificationsEnabled", false) }
+
     fun clearKnownGrades() {
         kSafe.deleteDirect(KEY_KNOWN_GRADE_IDS)
         kSafe.deleteDirect(KEY_SEEN_GRADE_IDS)

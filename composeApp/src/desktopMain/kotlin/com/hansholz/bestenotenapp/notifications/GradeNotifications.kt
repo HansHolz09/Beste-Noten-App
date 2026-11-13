@@ -16,4 +16,8 @@ actual object GradeNotifications {
     actual fun onLogout() {}
 
     actual suspend fun requestPermission(): Boolean = false
+
+    actual suspend fun hasPermission(): Boolean = false
+
+    actual fun openSystemSettings() {}
 }

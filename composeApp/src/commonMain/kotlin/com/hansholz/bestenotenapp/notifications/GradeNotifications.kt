@@ -14,4 +14,8 @@ expect object GradeNotifications {
     fun onLogout()
 
     suspend fun requestPermission(): Boolean
+
+    suspend fun hasPermission(): Boolean
+
+    fun openSystemSettings()
 }

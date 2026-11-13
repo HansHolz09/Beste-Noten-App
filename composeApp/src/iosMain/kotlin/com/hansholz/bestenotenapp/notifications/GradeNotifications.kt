@@ -26,6 +26,7 @@ import platform.BackgroundTasks.BGTaskScheduler
 import platform.Foundation.NSDate
 import platform.Foundation.NSError
 import platform.Foundation.NSLog
+import platform.Foundation.NSURL
 import platform.Foundation.dateByAddingTimeInterval
 import platform.Network.nw_interface_type_wifi
 import platform.Network.nw_path_monitor_cancel
@@ -35,9 +36,13 @@ import platform.Network.nw_path_monitor_set_update_handler
 import platform.Network.nw_path_monitor_start
 import platform.Network.nw_path_t
 import platform.Network.nw_path_uses_interface_type
+import platform.UIKit.UIApplication
+import platform.UIKit.UIApplicationOpenNotificationSettingsURLString
 import platform.UserNotifications.UNAuthorizationOptionAlert
 import platform.UserNotifications.UNAuthorizationOptionBadge
 import platform.UserNotifications.UNAuthorizationOptionSound
+import platform.UserNotifications.UNAuthorizationStatusAuthorized
+import platform.UserNotifications.UNAuthorizationStatusProvisional
 import platform.UserNotifications.UNUserNotificationCenter
 import platform.darwin.DISPATCH_QUEUE_PRIORITY_BACKGROUND
 import platform.darwin.dispatch_get_global_queue
@@ -140,6 +145,19 @@ actual object GradeNotifications {
             }
         }
 
+    actual suspend fun hasPermission(): Boolean =
+        suspendCancellableCoroutine { continuation ->
+            UNUserNotificationCenter.currentNotificationCenter().getNotificationSettingsWithCompletionHandler { settings ->
+                val status = settings?.authorizationStatus
+                if (continuation.isActive) continuation.resume(status == UNAuthorizationStatusAuthorized || status == UNAuthorizationStatusProvisional)
+            }
+        }
+
+    actual fun openSystemSettings() {
+        val url = NSURL(string = UIApplicationOpenNotificationSettingsURLString)
+        UIApplication.sharedApplication.openURL(url, options = emptyMap<Any?, Any>(), completionHandler = null)
+    }
+
     private fun registerTaskHandler() {
         val success =
             BGTaskScheduler.sharedScheduler().registerForTaskWithIdentifier(
@@ -211,6 +229,11 @@ actual object GradeNotifications {
                 }
                 checkMutex.withLock {
                     if (!GradeNotificationEngine.shouldSchedule()) {
+                        return@withLock true
+                    }
+                    if (!hasPermission()) {
+                        GradeNotificationEngine.disable()
+                        cancelScheduledTasks()
                         return@withLock true
                     }
                     if (GradeNotificationEngine.isWifiOnlyEnabled() && withTimeoutOrNull(3.seconds) { isOnWifi() } != true) {

@@ -211,10 +211,21 @@ fun Settings(
     val biometricAuthentificationAvailable = LocalBiometricAuthenticationAvailable.current
     val authToken by secureMutableStateOf("", "authToken")
     val showReminderInfoDialog = remember { mutableStateOf(false) }
+    val showNotificationPermissionDialog = remember { mutableStateOf(false) }
     var offlineCacheSize by remember { mutableStateOf<Long?>(null) }
 
     LaunchedEffect(Unit) {
         if (viewModel.offlineCacheAvailable) offlineCacheSize = viewModel.offlineCacheSize()
+    }
+
+    LaunchedEffect(Unit) {
+        if (notificationsEnabled && GradeNotifications.isSupported && !GradeNotifications.hasPermission()) {
+            notificationsEnabled = false
+            if (!viewModel.isDemoAccount.value) {
+                put("gradeNotificationsEnabled", false)
+                GradeNotifications.onSettingsUpdated()
+            }
+        }
     }
 
     TopAppBarScaffold(
@@ -401,18 +412,12 @@ fun Settings(
                 settingsToggleItem(
                     checked = notificationsEnabled,
                     onCheckedChange = {
-                        if (viewModel.isDemoAccount.value) {
-                            notificationsEnabled = it
-                        } else {
-                            scope.launch {
-                                if (it) {
-                                    val granted = GradeNotifications.requestPermission()
-                                    notificationsEnabled = granted
-                                    put("gradeNotificationsEnabled", granted)
-                                } else {
-                                    notificationsEnabled = false
-                                    put("gradeNotificationsEnabled", it)
-                                }
+                        scope.launch {
+                            val enabled = it && GradeNotifications.requestPermission()
+                            notificationsEnabled = enabled
+                            if (it && !enabled) showNotificationPermissionDialog.value = true
+                            if (!viewModel.isDemoAccount.value) {
+                                put("gradeNotificationsEnabled", enabled)
                                 GradeNotifications.onSettingsUpdated()
                             }
                         }
@@ -1130,6 +1135,23 @@ fun Settings(
                     append("Um Benachrichtigungen für Hausaufgaben zu erhalten, bitte die Google-Kalender-App")
                     append(" mit dem verknüpften Google-Konto auf einem mobilen Gerät installiert haben.")
                 }
+            },
+    )
+    InfoDialog(
+        visible = showNotificationPermissionDialog,
+        title = "Benachrichtigungen nicht erlaubt",
+        message =
+            buildAnnotatedString {
+                append("Benachrichtigungen sind für diese App derzeit nicht erlaubt. Um über neue Noten informiert zu werden, bitte die Berechtigung in den ")
+                withLink(
+                    LinkAnnotation.Clickable("open_notification_settings") {
+                        vibrator.enhancedVibrate(EnhancedVibrations.CLICK)
+                        GradeNotifications.openSystemSettings()
+                    },
+                ) {
+                    append("Systemeinstellungen")
+                }
+                append(" erteilen und die Option anschließend erneut aktivieren.")
             },
     )
 }

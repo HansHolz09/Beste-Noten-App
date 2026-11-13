@@ -15,6 +15,7 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import kotlinx.coroutines.CompletableDeferred
@@ -112,6 +113,22 @@ actual object GradeNotifications {
             }
         }
 
+    actual suspend fun hasPermission(): Boolean {
+        val context = applicationContext ?: return false
+        return NotificationManagerCompat.from(context).areNotificationsEnabled()
+    }
+
+    actual fun openSystemSettings() {
+        val context = activityRef.get() ?: applicationContext ?: return
+        val intent =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+            } else {
+                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, "package:${context.packageName}".toUri())
+            }
+        context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    }
+
     internal fun onAlarmFired(
         context: Context,
         pendingResult: BroadcastReceiver.PendingResult,
@@ -182,6 +199,11 @@ actual object GradeNotifications {
     }
 
     private suspend fun runCheckIfPermitted(context: Context) {
+        if (!hasPermission()) {
+            GradeNotificationEngine.disable()
+            cancelScheduledAlarms()
+            return
+        }
         if (isWifiRequiredAndUnavailable(context)) {
             return
         }
