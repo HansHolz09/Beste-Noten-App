@@ -50,8 +50,8 @@ composeMultiplatformIos = "1.13.0-beta02"
 
 # App configurations
 appName = "Beste-Noten-App"
-appVersion = "4.0.3"
-appVersionCode = "13"
+appVersion = "4.0.4"
+appVersionCode = "14"
 android-compileSdk = "37"
 android-minSdk = "24"
 android-targetSdk = "37"
