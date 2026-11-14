@@ -32,9 +32,11 @@ import androidx.navigationevent.NavigationEventInput
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import bestenotenapp.composeapp.generated.resources.Res
 import bestenotenapp.composeapp.generated.resources.logo
+import com.hansholz.bestenotenapp.components.NativeAlignmentHaptics
 import com.hansholz.bestenotenapp.main.App
 import com.hansholz.bestenotenapp.main.ExactPlatform
 import com.hansholz.bestenotenapp.main.LocalBiometricAuthenticationAvailable
+import com.hansholz.bestenotenapp.main.LocalNativeAlignmentHaptic
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.hansholz.bestenotenapp.navigation.Fragment
@@ -147,6 +149,7 @@ fun main() {
                     LocalNavigationDrawerTopPadding provides
                         if (getExactPlatform() == ExactPlatform.MACOS && !window.isFullscreen) titleBarHeight.value else null,
                     LocalBiometricAuthenticationAvailable provides runBlocking { KSafeBiometrics.biometricsAvailable() },
+                    LocalNativeAlignmentHaptic provides if (hostOs.isMacOS) ({ NativeAlignmentHaptics.alignmentOccurred() }) else null,
                 ) {
                     NativeTextContextMenuProvider(isDark) {
                         val scope = rememberCoroutineScope()

@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -105,6 +106,7 @@ import com.hansholz.bestenotenapp.main.LocalHomeworkGoogleSyncEnabled
 import com.hansholz.bestenotenapp.main.LocalHomeworkTypeColors
 import com.hansholz.bestenotenapp.main.LocalHomeworkTypes
 import com.hansholz.bestenotenapp.main.LocalMergeSchoolDayLessons
+import com.hansholz.bestenotenapp.main.LocalNativeAlignmentHaptic
 import com.hansholz.bestenotenapp.main.LocalNativeAppearanceSelector
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNativeSlider
@@ -166,6 +168,7 @@ fun Settings(
     val hideNativeInterop = LocalHideNativeInterop.current
     val nativeAppearanceSelector = LocalNativeAppearanceSelector.current
     val nativeSlider = LocalNativeSlider.current
+    val nativeAlignmentHaptic = LocalNativeAlignmentHaptic.current
     val isCompactWindow =
         !currentWindowAdaptiveInfoV2()
             .windowSizeClass
@@ -467,6 +470,7 @@ fun Settings(
                         if (interval != notificationIntervalMinutes) {
                             notificationIntervalMinutes = interval
                             vibrator.enhancedVibrate(EnhancedVibrations.TICK)
+                            if (getPlatform() == Platform.DESKTOP) nativeAlignmentHaptic?.invoke(Offset.Zero)
                             if (!viewModel.isDemoAccount.value) {
                                 put("gradeNotificationsIntervalMinutes", interval)
                                 GradeNotifications.onSettingsUpdated()
@@ -551,6 +555,7 @@ fun Settings(
                         if (showNewestGrades && count != newestGradesCount) {
                             newestGradesCount = count
                             vibrator.enhancedVibrate(EnhancedVibrations.TICK)
+                            if (getPlatform() == Platform.DESKTOP) nativeAlignmentHaptic?.invoke(Offset.Zero)
                             put("newestGradesCount", count)
                         }
                     }

@@ -159,5 +159,31 @@
                 }
             ]
         }
-    ]
+    ],
+    "foreign": {
+        "downcalls": [
+            {
+                "returnType": "void*",
+                "parameterTypes": [
+                    "void*"
+                ]
+            },
+            {
+                "returnType": "void*",
+                "parameterTypes": [
+                    "void*",
+                    "void*"
+                ]
+            },
+            {
+                "returnType": "void",
+                "parameterTypes": [
+                    "void*",
+                    "void*",
+                    "jlong",
+                    "jlong"
+                ]
+            }
+        ]
+    }
 }
