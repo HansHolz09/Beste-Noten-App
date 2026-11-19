@@ -22,20 +22,21 @@ This cross-platform client for beste.schule makes everyday school life more orga
 - Home page with daily overview, current grades, and annual progress
 - Simple grade overview with the option to view grade history and configurable average calculation
 - Mark grades as read when using a guardian account
-- Grade charts for comparing different school years
+- Grade charts with overall average for comparing different school years
 - Clear timetable view with substitute teacher schedule changes, absence entries, and current daily notes
 - Alternative block view for the timetable (automatically enabled in upper secondary school) with automatic filtering of unnecessary lessons
-- Digital homework planner with customizable entry types and colors and optional Google Calendar synchronization including when returning to the app
+- Digital homework planner with customizable entry types and colors, movable entries and optional Google Calendar synchronization including when returning to the app
 - Overview of current subjects and teachers with their abbreviations
 - Annual information on half-year periods and absence statistics, including a heatmap of attendance by lesson
 - Dialogs for viewing lesson times as well as account and school data
 - Direct support for changing the school year
 - Import/export of app settings, homework entry types and grade weightings as well as grades with the option to view them later without a beste.schule account
-- Full offline mode thanks to caching
+- Full offline mode thanks to caching with automatic switching during server outages
 - Adaptive Material 3 Expressive design on all platforms with dynamically generated background images
 - Native controls with Liquid Glass on iOS/iPadOS 26+
 - Beautiful animations and transitions
 - Immersive haptic feedback on supported devices
+- Support for accessibility features such as VoiceOver and TalkBack
 - Notifications for new grades with a customizable check interval for Android and iOS/iPadOS (on iOS/iPadOS, the system determines when checks actually run)
 - Optional biometric authentication on every app launch for Android, iOS, and supported desktop devices
 - Native desktop apps (including via GraalVM) with platform-specific context menus

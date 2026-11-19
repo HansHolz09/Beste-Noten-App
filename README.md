@@ -22,20 +22,21 @@ Dieser plattformübergreifende Client für beste.schule macht den Schulalltag ü
 - Startseite mit Tagesübersicht, aktuellen Noten und dem Jahresfortschritt
 - Einfache Notenübersicht mit Möglichkeit zum Ansehen der Noten-Historien und konfigurierbarer Durchschnittsberechnung
 - Noten als gelesen bestätigen bei Elternkonten
-- Noten-Diagramme zum Vergleich der verschiedenen Schuljahre
+- Noten-Diagramme mit Gesamtdurchschnitt zum Vergleich der verschiedenen Schuljahre
 - Übersichtliche Stundenplan-Ansicht mit Vertretungsplan-Änderungen, Abwesenheits-Einträgen und aktuellen Tagesnotizen
 - Alternative Blockansicht für den Stundenplan (in Sek. 2 automatisch aktiv) mit automatischer Ausfilterung unnötiger Stunden
-- Digitales Hausaufgabenheft mit anpassbaren Eintragsarten und Farben sowie optionaler Google-Kalender-Synchronisierung, auch beim Zurückkehren in die App
+- Digitales Hausaufgabenheft mit anpassbaren Eintragsarten und Farben, verschiebbaren Einträgen sowie optionaler Google-Kalender-Synchronisierung, auch beim Zurückkehren in die App
 - Übersicht aktueller Fächer und Lehrer mit ihren Abkürzungen
 - Jahresinformationen zu den Halbjahres-Zeiträumen und Abwesenheits-Statistiken inklusive Heatmap zur Anwesenheit nach Stunden
 - Dialoge zum Einsehen der Unterrichtszeiten sowie Account- und Schuldaten
 - Direkte Unterstützung zum Wechsel des Schuljahres
 - Import/Export von App-Einstellungen, Hausaufgaben-Eintragstypen und Noten-Gewichtungen sowie der Noten mit Möglichkeit zur späteren Ansicht ohne beste.schule-Account
-- Vollständiger Offline-Modus dank Caching
+- Vollständiger Offline-Modus dank Caching mit automatischem Wechsel bei Serverausfällen
 - Adaptives Material-3-Expressive-Design auf allen Plattformen mit dynamisch generierten Hintergrundbildern
 - Native Bedienelemente mit Liquid Glass auf iOS/iPadOS 26+
 - Schöne Animationen und Übergänge
 - Immersives haptisches Feedback auf unterstützten Geräten
+- Unterstützung von Bedienungshilfen wie VoiceOver und TalkBack
 - Benachrichtigungen über neue Noten mit anpassbarem Überprüfungsintervall für Android und iOS/iPadOS (auf iOS/iPadOS bestimmt das System den tatsächlichen Prüfzeitpunkt)
 - Optionale biometrische Authentifizierung bei jedem Start der App auf Android, iOS und unterstützten Desktop-Geräten
 - Native Desktop-Apps (u. a. über GraalVM) mit plattformspezifischem Rechtsklickmenü
