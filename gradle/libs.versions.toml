@@ -20,7 +20,7 @@ haze = "2.1.0"
 #noinspection NewerVersionAvailable
 koalaplotCore = "0.9.1"
 kotlin = "2.4.10"
-ksafe = "3.3.1"
+ksafe = "3.3.2"
 ksoup = "0.2.6"
 ktlint = "14.2.0"
 alarmee = "2.7.2"
