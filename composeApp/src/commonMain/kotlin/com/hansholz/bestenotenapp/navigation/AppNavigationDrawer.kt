@@ -24,6 +24,8 @@ import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalNavigationDrawerTopPadding
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.reviews.LocalStoreReviewManager
+import com.hansholz.bestenotenapp.screens.website.BesteSchuleWebsite
+import com.hansholz.bestenotenapp.screens.website.isBesteSchuleWebViewSupported
 import io.github.vinceglb.confettikit.compose.ConfettiKit
 import kotlinx.coroutines.launch
 
@@ -59,6 +61,8 @@ fun AppNavigationDrawer(
         onCanNavigateBackChanged(navController.previousBackStackEntry != null)
     }
     val nativeComponentsEnabled = LocalNativeComponentsEnabled.current.value
+    val showWebsite = isBesteSchuleWebViewSupported && !viewModel.isDemoAccount.value
+    LaunchedEffect(showWebsite) { BesteSchuleWebsite.isAvailable = showWebsite }
     val navigationDrawerTopPadding = LocalNavigationDrawerTopPadding.current ?: 15.dp
     val screenContent: @Composable () -> Unit = {
         FragmentNavigation(
@@ -72,11 +76,13 @@ fun AppNavigationDrawer(
             compactDrawerState = viewModel.compactDrawerState.value,
             mediumExpandedDrawerState = viewModel.mediumExpandedDrawerState.value,
             hazeState = viewModel.hazeBackgroundState,
+            gesturesEnabled = currentRoute?.destination?.route != Fragment.Website.route,
             drawerContent = {
                 AppDrawerContent(
                     selectedRoute = currentRoute?.destination?.route,
                     topPadding = navigationDrawerTopPadding,
                     animateLogo = viewModel.compactDrawerState.value.isOpen,
+                    showWebsite = showWebsite,
                     onDestinationSelected = { screen ->
                         scope.launch {
                             navController.navigate(screen.route)

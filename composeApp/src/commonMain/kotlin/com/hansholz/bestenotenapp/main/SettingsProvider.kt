@@ -32,6 +32,9 @@ internal val LocalHomeworkEnabled = compositionLocalOf { mutableStateOf(true) }
 internal val LocalHomeworkGoogleSyncEnabled = compositionLocalOf { mutableStateOf(false) }
 internal val LocalHomeworkTypeColors = compositionLocalOf { mutableStateOf(emptyMap<String, Int>()) }
 internal val LocalHomeworkTypes = compositionLocalOf { mutableStateOf(HomeworkType.defaults) }
+internal val LocalShowWebsiteShortcuts = compositionLocalOf { mutableStateOf(true) }
+internal val LocalWebsiteDesignEnabled = compositionLocalOf { mutableStateOf(true) }
+internal val LocalWebsiteBackgroundEnabled = compositionLocalOf { mutableStateOf(true) }
 internal val LocalShowTeachersWithFirstname = compositionLocalOf { mutableStateOf(false) }
 internal val LocalShowOnlyRelevantData = compositionLocalOf { mutableStateOf(true) }
 internal val LocalGradeNotificationsEnabled = compositionLocalOf { mutableStateOf(false) }
@@ -74,6 +77,9 @@ fun SettingsProvider(
     val homeworkGoogleSyncEnabled = remember { mutableStateOf(get("homeworkGoogleSyncEnabled", false)) }
     val homeworkTypeColors = remember { mutableStateOf(get("homeworkTypeColors", emptyMap<String, Int>())) }
     val homeworkTypes = remember { mutableStateOf(get("homeworkTypes", HomeworkType.defaults.map(HomeworkType::value)).map(::HomeworkType).distinct()) }
+    val showWebsiteShortcutsState = remember { mutableStateOf(get("showWebsiteShortcuts", true)) }
+    val websiteDesignEnabledState = remember { mutableStateOf(get("websiteDesignEnabled", true)) }
+    val websiteBackgroundEnabledState = remember { mutableStateOf(get("websiteBackgroundEnabled", true)) }
     val showTeachersWithFirstnameState = remember { mutableStateOf(get("showTeachersWithFirstname", false)) }
     val showOnlyRelevantDataState = remember { mutableStateOf(get("showOnlyRelevantData", get("showOnlyGroupRelevantData", true))) }
     val gradeNotificationsEnabledState = remember { mutableStateOf(get("gradeNotificationsEnabled", false)) }
@@ -104,6 +110,9 @@ fun SettingsProvider(
         LocalHomeworkGoogleSyncEnabled provides homeworkGoogleSyncEnabled,
         LocalHomeworkTypes provides homeworkTypes,
         LocalHomeworkTypeColors provides homeworkTypeColors,
+        LocalShowWebsiteShortcuts provides showWebsiteShortcutsState,
+        LocalWebsiteDesignEnabled provides websiteDesignEnabledState,
+        LocalWebsiteBackgroundEnabled provides websiteBackgroundEnabledState,
         LocalShowTeachersWithFirstname provides showTeachersWithFirstnameState,
         LocalShowOnlyRelevantData provides showOnlyRelevantDataState,
         LocalGradeNotificationsEnabled provides gradeNotificationsEnabledState,

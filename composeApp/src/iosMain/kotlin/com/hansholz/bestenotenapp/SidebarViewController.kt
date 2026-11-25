@@ -16,6 +16,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedVibrations
 import com.hansholz.bestenotenapp.components.enhanced.enhancedVibrateN
 import com.hansholz.bestenotenapp.components.enhanced.rememberEnhancedVibrator
 import com.hansholz.bestenotenapp.navigation.AppDrawerContent
+import com.hansholz.bestenotenapp.screens.website.BesteSchuleWebsite
 import platform.UIKit.UIColor
 import platform.UIKit.UIViewController
 
@@ -42,6 +43,7 @@ private fun SidebarContent(nativeBridge: NativeComponentBridge) {
             selectedRoute = nativeBridge.selectedFragmentState.value,
             topPadding = nativeBridge.sidebarTopInsetState.value.dp,
             animateLogo = false,
+            showWebsite = BesteSchuleWebsite.isAvailable,
             onDestinationSelected = {
                 nativeBridge.selectFragment(it.route)
                 vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)

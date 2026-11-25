@@ -27,6 +27,7 @@ Dieser plattformübergreifende Client für beste.schule macht den Schulalltag ü
 - Alternative Blockansicht für den Stundenplan (in Sek. 2 automatisch aktiv) mit automatischer Ausfilterung unnötiger Stunden
 - Digitales Hausaufgabenheft mit anpassbaren Eintragsarten und Farben, verschiebbaren Einträgen sowie optionaler Google-Kalender-Synchronisierung, auch beim Zurückkehren in die App
 - Übersicht aktueller Fächer und Lehrer mit ihren Abkürzungen
+- Integrierte beste.schule-Webseite für alle weiteren Funktionen, direkt angemeldet und optional an das App-Design angepasst, mit Direktlinks auf der Startseite
 - Jahresinformationen zu den Halbjahres-Zeiträumen und Abwesenheits-Statistiken inklusive Heatmap zur Anwesenheit nach Stunden
 - Dialoge zum Einsehen der Unterrichtszeiten sowie Account- und Schuldaten
 - Direkte Unterstützung zum Wechsel des Schuljahres
@@ -100,7 +101,7 @@ Dieser plattformübergreifende Client für beste.schule macht den Schulalltag ü
 - [Alarmee](https://github.com/Tweener/alarmee) - Apache 2.0 - Benachrichtigungen für Android; auf iOS werden diese direkt über UserNotifications gesendet
 - [multihaptic](https://github.com/xfqwdsj/multihaptic) - MIT - Vielseitig anpassbares haptisches Feedback
 - [Advanced MenuBar for Compose Desktop](https://github.com/HansHolz09/Advanced-MenuBar) - Apache 2.0 - Deutsche macOS Menubar mit mehr Optionen
-- [Nucleus](https://github.com/NucleusFramework/Nucleus) - MIT - Erzeugen optimierter Tao-Fenster und App-Installer sowie Ermitteln der Systemfarben für die Desktop-Ziele
+- [Nucleus](https://github.com/NucleusFramework/Nucleus) - MIT - Erzeugen optimierter Tao-Fenster und App-Installer, Ermitteln der Systemfarben sowie WebView auf den Desktop-Zielen
 - [Oracle GraalVM](https://www.oracle.com/de/developer/graalvm-developers/) - [GFTC](https://www.oracle.com/downloads/licenses/graal-free-license.html) - Kompilieren der Desktop Apps in nativen Code
 - [Ktlint Gradle](https://github.com/JLLeitschuh/ktlint-gradle) - MIT - Wrapper-Plugin für [ktlint](https://github.com/pinterest/ktlint)
 - [gradle-buildconfig-plugin](https://github.com/gmazzo/gradle-buildconfig-plugin) - Apache 2.0 - Automatisches Erzeugen von BuildConfig-Klasse für App-Version

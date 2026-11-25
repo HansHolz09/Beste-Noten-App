@@ -27,6 +27,7 @@ This cross-platform client for beste.schule makes everyday school life more orga
 - Alternative block view for the timetable (automatically enabled in upper secondary school) with automatic filtering of unnecessary lessons
 - Digital homework planner with customizable entry types and colors, movable entries and optional Google Calendar synchronization including when returning to the app
 - Overview of current subjects and teachers with their abbreviations
+- Integrated beste.schule website for all other features, signed in automatically and optionally adapted to the app design, with direct links on the home page
 - Annual information on half-year periods and absence statistics, including a heatmap of attendance by lesson
 - Dialogs for viewing lesson times as well as account and school data
 - Direct support for changing the school year
@@ -100,7 +101,7 @@ This cross-platform client for beste.schule makes everyday school life more orga
 - [Alarmee](https://github.com/Tweener/alarmee) - Apache 2.0 - Notifications for Android; iOS notifications are sent directly through UserNotifications
 - [multihaptic](https://github.com/xfqwdsj/multihaptic) - MIT - Highly customizable haptic feedback
 - [Advanced MenuBar for Compose Desktop](https://github.com/HansHolz09/Advanced-MenuBar) - Apache 2.0 - German macOS menu bar with more options
-- [Nucleus](https://github.com/NucleusFramework/Nucleus) - MIT - Creating optimized Tao windows and app installers, and detecting system colors for desktop targets
+- [Nucleus](https://github.com/NucleusFramework/Nucleus) - MIT - Creating optimized Tao windows and app installers, detecting system colors and the WebView on desktop targets
 - [Oracle GraalVM](https://www.oracle.com/de/developer/graalvm-developers/) - [GFTC](https://www.oracle.com/downloads/licenses/graal-free-license.html) - Compiling desktop apps to native code
 - [Ktlint Gradle](https://github.com/JLLeitschuh/ktlint-gradle) - MIT - Wrapper plugin for [ktlint](https://github.com/pinterest/ktlint)
 - [gradle-buildconfig-plugin](https://github.com/gmazzo/gradle-buildconfig-plugin) - Apache 2.0 - Automatic generation of BuildConfig class for app version

@@ -34,6 +34,7 @@ fun NavigationDrawer(
     compactDrawerState: DrawerState,
     mediumExpandedDrawerState: DrawerState,
     hazeState: HazeState,
+    gesturesEnabled: Boolean = true,
     drawerContent: @Composable () -> Unit,
     content: @Composable () -> Unit,
 ) {
@@ -68,7 +69,7 @@ fun NavigationDrawer(
                 }
             }
         },
-        gesturesEnabled = isCompactWindow,
+        gesturesEnabled = isCompactWindow && (gesturesEnabled || compactDrawerState.isOpen),
     ) {
         BoxWithConstraints {
             val drawerSheetModifier =

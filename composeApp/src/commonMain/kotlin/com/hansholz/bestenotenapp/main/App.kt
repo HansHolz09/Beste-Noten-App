@@ -33,13 +33,16 @@ import com.composables.icons.materialsymbols.rounded.School
 import com.composables.icons.materialsymbols.rounded.Stylus
 import com.dokar.sonner.Toaster
 import com.dokar.sonner.rememberToasterState
+import com.hansholz.bestenotenapp.components.LocalAppBackgroundCapture
 import com.hansholz.bestenotenapp.components.ProvideCupertinoOverscrollEffect
 import com.hansholz.bestenotenapp.components.ProvidePlatformInteractionFeedback
 import com.hansholz.bestenotenapp.components.ScatterConfig
 import com.hansholz.bestenotenapp.components.ScatterItem
 import com.hansholz.bestenotenapp.components.ScatteredIconBackground
 import com.hansholz.bestenotenapp.components.cacheAsBitmap
+import com.hansholz.bestenotenapp.components.capturable
 import com.hansholz.bestenotenapp.components.enhanced.enhancedHazeEffect
+import com.hansholz.bestenotenapp.components.rememberCaptureController
 import com.hansholz.bestenotenapp.navigation.AppNavigation
 import com.hansholz.bestenotenapp.reviews.StoreReviewHost
 import com.hansholz.bestenotenapp.theme.AppTheme
@@ -93,6 +96,8 @@ fun App(
                         onOfflineStatusChanged(viewModel.isUsingOfflineCache.value)
                     }
 
+                    val backgroundCapture =
+                        if (getPlatform() == Platform.DESKTOP || getPlatform() == Platform.IOS) rememberCaptureController() else null
                     val blurEnabled = LocalBlurEnabled.current.value
                     val targetBackgroundAlpha = if (LocalBackgroundEnabled.current.value) (if (blurEnabled) 0.5f else 0.15f) else 0f
                     val backgroundAlpha by animateFloatAsState(targetBackgroundAlpha, tween(750))
@@ -123,6 +128,7 @@ fun App(
                                     .hazeSource(viewModel.hazeBackgroundState1)
                                     .hazeSource(viewModel.hazeBackgroundState2)
                                     .hazeSource(viewModel.hazeBackgroundState3)
+                                    .then(backgroundCapture?.let { Modifier.capturable(it) } ?: Modifier)
                                     .cacheAsBitmap(backgroundAlpha, blurEnabled)
                                     .enhancedHazeEffect(),
                             config =
@@ -135,7 +141,10 @@ fun App(
                     }
 
                     StoreReviewHost(viewModel) {
-                        CompositionLocalProvider(LocalUsingOfflineCache provides viewModel.isUsingOfflineCache) {
+                        CompositionLocalProvider(
+                            LocalUsingOfflineCache provides viewModel.isUsingOfflineCache,
+                            LocalAppBackgroundCapture provides backgroundCapture,
+                        ) {
                             AppNavigation(
                                 viewModel = viewModel,
                                 onNavHostReady = onNavHostReady,

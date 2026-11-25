@@ -132,6 +132,7 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.androidx.fragment)
+            implementation(libs.androidx.webkit)
             implementation(libs.androidx.core.splashscreen)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.alarmee)
@@ -154,6 +155,7 @@ kotlin {
             implementation(libs.nucleus.aot.runtime)
             implementation(libs.nucleus.graalvm.runtime)
             implementation(libs.nucleus.decorated.window.tao)
+            implementation(libs.nucleus.composewebview)
             implementation(libs.advanced.menubar)
             implementation(libs.navigation.event)
             implementation(libs.navigation.event.compose)
@@ -226,6 +228,8 @@ nucleus.application {
             debPackageVersion = appVersion
             debMaintainer = "HansHolz09 <mail@hansholz.dev>"
             shortcut = true
+            debDepends += listOf("libwebkit2gtk-4.1-0")
+            rpmRequires += listOf("libwebkit2gtk-4.1.so.0()(64bit)")
 
             modules += "jdk.security.auth"
 
