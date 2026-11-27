@@ -20,10 +20,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.KeyboardActionHandler
 import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextObfuscationMode
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
@@ -60,12 +62,8 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewModelScope
@@ -134,10 +132,10 @@ fun Login(
     var welcomeChromeAlpha by remember { mutableFloatStateOf(if (showWelcomeIntro && animationsEnabled) 0f else 1f) }
     var stayLoggedIn by rememberSaveable { mutableStateOf(true) }
     var otherOptions by rememberSaveable { mutableStateOf(getPlatform() == Platform.WEB) }
-    var identifier by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val identifier = rememberTextFieldState()
+    val password = rememberTextFieldState()
     var passwordVisible by remember { mutableStateOf(false) }
-    var code by remember { mutableStateOf(TextFieldValue()) }
+    val code = rememberTextFieldState()
     val passwordFocus = remember { FocusRequester() }
     val codeFocus = remember { FocusRequester() }
     var identifierFocused by remember { mutableStateOf(false) }
@@ -199,19 +197,19 @@ fun Login(
             try {
                 val step =
                     if (loginViewModel.twoFactorRequired) {
-                        loginViewModel.passwordLogin.submitCode(code.text)
+                        loginViewModel.passwordLogin.submitCode(code.text.toString())
                     } else {
-                        loginViewModel.passwordLogin.submitCredentials(identifier.trim(), password)
+                        loginViewModel.passwordLogin.submitCredentials(identifier.text.trim().toString(), password.text.toString())
                     }
                 when (step) {
                     PasswordLoginStep.TwoFactorRequired -> {
-                        password = ""
-                        code = TextFieldValue()
+                        password.clearText()
+                        code.clearText()
                         loginViewModel.twoFactorRequired = true
                     }
 
                     is PasswordLoginStep.Complete -> {
-                        password = ""
+                        password.clearText()
                         completeNativeLogin(step.credential)
                     }
                 }
@@ -366,21 +364,19 @@ fun Login(
                                                 horizontalAlignment = Alignment.CenterHorizontally,
                                             ) {
                                                 EnhancedTextField(
-                                                    value = identifier,
-                                                    onValueChange = { identifier = it },
+                                                    state = identifier,
                                                     modifier =
                                                         Modifier
                                                             .fillMaxWidth()
                                                             .onFocusChanged { identifierFocused = it.isFocused },
                                                     label = { Text("E-Mail oder Nutzername") },
-                                                    singleLine = true,
+                                                    lineLimits = TextFieldLineLimits.SingleLine,
                                                     enabled = !loginViewModel.isSubmitting && !loginViewModel.twoFactorRequired,
                                                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                                                    keyboardActions = KeyboardActions(onNext = { passwordFocus.requestFocus() }),
+                                                    onKeyboardAction = { passwordFocus.requestFocus() },
                                                 )
                                                 EnhancedTextField(
-                                                    value = password,
-                                                    onValueChange = { password = it },
+                                                    state = password,
                                                     modifier =
                                                         Modifier
                                                             .fillMaxWidth()
@@ -400,11 +396,10 @@ fun Login(
                                                             }
                                                         }
                                                     },
-                                                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                                                    singleLine = true,
                                                     enabled = !loginViewModel.isSubmitting && !loginViewModel.twoFactorRequired,
                                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-                                                    keyboardActions = KeyboardActions(onDone = { submitNativeLogin() }),
+                                                    onKeyboardAction = { submitNativeLogin() },
+                                                    textObfuscationMode = if (passwordVisible) TextObfuscationMode.Visible else TextObfuscationMode.Hidden,
                                                 )
                                                 EnhancedAnimatedVisibility(loginViewModel.twoFactorRequired) {
                                                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -414,11 +409,12 @@ fun Login(
                                                             textAlign = TextAlign.Center,
                                                         )
                                                         EnhancedBasicTextField(
-                                                            value = code,
-                                                            onValueChange = { value ->
-                                                                val digits = value.text.filter(Char::isDigit).take(6)
-                                                                code = if (digits == value.text) value else TextFieldValue(digits, selection = TextRange(digits.length))
-                                                            },
+                                                            state = code,
+                                                            inputTransformation =
+                                                                InputTransformation {
+                                                                    val digits = asCharSequence().filter(Char::isDigit).take(6)
+                                                                    if (digits.length != length) replace(0, length, digits)
+                                                                },
                                                             modifier =
                                                                 Modifier
                                                                     .fillMaxWidth()
@@ -426,7 +422,7 @@ fun Login(
                                                                     .focusRequester(codeFocus)
                                                                     .onFocusChanged { codeFocused = it.isFocused },
                                                             enabled = !loginViewModel.isSubmitting,
-                                                            singleLine = true,
+                                                            lineLimits = TextFieldLineLimits.SingleLine,
                                                             textStyle = typography.titleLarge.copy(color = Color.Transparent),
                                                             cursorBrush = SolidColor(Color.Transparent),
                                                             keyboardOptions =
@@ -434,8 +430,8 @@ fun Login(
                                                                     keyboardType = KeyboardType.NumberPassword,
                                                                     imeAction = ImeAction.Done,
                                                                 ),
-                                                            keyboardActions = KeyboardActions(onDone = { submitNativeLogin() }),
-                                                            decorationBox = { innerTextField ->
+                                                            onKeyboardAction = { submitNativeLogin() },
+                                                            decorator = { innerTextField ->
                                                                 Box {
                                                                     Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                                                         repeat(6) { index ->
@@ -474,7 +470,7 @@ fun Login(
                                                                         .orEmpty()
                                                                         .filter(Char::isDigit)
                                                                 if (digits.length == 6) {
-                                                                    code = TextFieldValue(digits, selection = TextRange(digits.length))
+                                                                    code.setTextAndPlaceCursorAtEnd(digits)
                                                                     loginViewModel.loginError = null
                                                                 } else {
                                                                     loginViewModel.loginError = "Die Zwischenablage enthält keinen sechsstelligen Code."
@@ -502,7 +498,12 @@ fun Login(
                                                     modifier = Modifier.fillMaxWidth(),
                                                     enabled =
                                                         !loginViewModel.isSubmitting &&
-                                                            if (loginViewModel.twoFactorRequired) code.text.length == 6 else identifier.isNotBlank() && password.isNotBlank(),
+                                                            if (loginViewModel.twoFactorRequired) {
+                                                                code.text.length == 6
+                                                            } else {
+                                                                identifier.text.isNotBlank() &&
+                                                                    password.text.isNotBlank()
+                                                            },
                                                 ) {
                                                     EnhancedAnimatedContent(
                                                         if (loginViewModel.isSubmitting) {
@@ -610,8 +611,8 @@ fun Login(
                                             onClick = {
                                                 otherOptions = !otherOptions
                                                 loginViewModel.resetPasswordLogin()
-                                                password = ""
-                                                code = TextFieldValue()
+                                                password.clearText()
+                                                code.clearText()
                                             },
                                             modifier = modifier,
                                         ) {

@@ -48,6 +48,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
@@ -302,7 +304,7 @@ fun Grades(
                 val filteredGradeItems by remember {
                     derivedStateOf {
                         val selectedYearIds = gradesViewModel.selectedYears.mapTo(mutableSetOf()) { it.id }
-                        val query = gradesViewModel.searchQuery.trim()
+                        val query = gradesViewModel.searchQuery.text.trim()
                         viewModel
                             .gradeCollections
                             .asSequence()
@@ -354,8 +356,13 @@ fun Grades(
                                             }
                                         } else {
                                             EmptyStateMessage(
-                                                title = if (gradesViewModel.searchQuery.isEmpty()) "Keine Noten vorhanden" else "Keine Noten gefunden",
-                                                icon = if (gradesViewModel.searchQuery.isEmpty()) MaterialSymbols.Rounded.Playlist_remove else MaterialSymbols.Rounded.Search_off,
+                                                title = if (gradesViewModel.searchQuery.text.isEmpty()) "Keine Noten vorhanden" else "Keine Noten gefunden",
+                                                icon =
+                                                    if (gradesViewModel.searchQuery.text.isEmpty()) {
+                                                        MaterialSymbols.Rounded.Playlist_remove
+                                                    } else {
+                                                        MaterialSymbols.Rounded.Search_off
+                                                    },
                                                 modifier = Modifier.padding(overlayPadding).consumeWindowInsets(overlayPadding).imePadding(),
                                             )
                                         }
@@ -386,9 +393,6 @@ fun Grades(
                                                             val notRead = grade?.read == false && viewModel.user.value?.role == "guardian"
                                                             ListItem(
                                                                 modifier = Modifier.weight(1f),
-                                                                headlineContent = {
-                                                                    Text("${it.subject?.name}: ${it.name}")
-                                                                },
                                                                 supportingContent = {
                                                                     Column {
                                                                         Text("${it.type} vom ${formateDate(it.givenAt)}")
@@ -449,7 +453,9 @@ fun Grades(
                                                                     }
                                                                 },
                                                                 colors = ListItemDefaults.colors(Color.Transparent),
-                                                            )
+                                                            ) {
+                                                                Text("${it.subject?.name}: ${it.name}")
+                                                            }
                                                             EnhancedAnimatedVisibility(notRead) {
                                                                 val isLoading = grade?.id in viewModel.gradesBeingMarkedAsRead
                                                                 Box(
@@ -705,9 +711,6 @@ fun Grades(
                                                                 val grade = it.grades?.getOrNull(0)
                                                                 val notRead = grade?.read == false && viewModel.user.value?.role == "guardian"
                                                                 ListItem(
-                                                                    headlineContent = {
-                                                                        Text("${it.name} - ${it.type}")
-                                                                    },
                                                                     supportingContent = {
                                                                         Column {
                                                                             Text("Gegeben am ${formateDate(it.givenAt)}")
@@ -769,7 +772,9 @@ fun Grades(
                                                                     },
                                                                     colors = ListItemDefaults.colors(Color.Transparent),
                                                                     modifier = Modifier.weight(1f).hazeSource(viewModel.hazeBackgroundState2),
-                                                                )
+                                                                ) {
+                                                                    Text("${it.name} - ${it.type}")
+                                                                }
                                                                 EnhancedAnimatedVisibility(notRead) {
                                                                     val isLoading = grade?.id in viewModel.gradesBeingMarkedAsRead
                                                                     Box(
@@ -890,7 +895,7 @@ fun Grades(
                             }
 
                             scope.launch {
-                                gradesViewModel.searchQuery = ""
+                                gradesViewModel.searchQuery.clearText()
                                 gradesViewModel.toolbarState = 0
                                 gradesViewModel.contentBlurred = false
                                 gradesViewModel.toolbarExpansionLocked = true
@@ -922,7 +927,7 @@ fun Grades(
                     LaunchedEffect(isScreenExiting) {
                         if (isScreenExiting && gradesViewModel.toolbarState != 0) {
                             gradesViewModel.toolbarState = 0
-                            gradesViewModel.searchQuery = ""
+                            gradesViewModel.searchQuery.clearText()
                             gradesViewModel.contentBlurred = false
                             gradesViewModel.userScrollEnabled = true
                             isBackInProgress = false
@@ -1137,21 +1142,20 @@ fun Grades(
                                                 )
                                             }
                                             EnhancedBasicTextField(
-                                                value = gradesViewModel.searchQuery,
-                                                onValueChange = { gradesViewModel.searchQuery = it },
+                                                state = gradesViewModel.searchQuery,
                                                 modifier =
                                                     Modifier
                                                         .weight(1f)
                                                         .padding(vertical = 15.dp)
                                                         .focusRequester(focusRequester),
-                                                singleLine = true,
+                                                lineLimits = TextFieldLineLimits.SingleLine,
                                                 textStyle = TextStyle.Default.copy(hazeContentColor, 20.sp),
                                                 cursorBrush = SolidColor(hazeContentColor),
                                             )
                                             EnhancedIconButton(
                                                 onClick = {
                                                     softwareKeyboardController?.hide()
-                                                    gradesViewModel.searchQuery = ""
+                                                    gradesViewModel.searchQuery.clearText()
                                                     gradesViewModel.closeToolbar()
                                                 },
                                                 isExpressive = false,

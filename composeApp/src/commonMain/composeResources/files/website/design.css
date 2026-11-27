@@ -216,6 +216,7 @@ html:not(#bna) .mxvd-datepicker-main {
     color: rgb(var(--bna-on-surface)) !important;
     border-color: rgb(var(--bna-outline-variant)) !important;
     border-radius: 16px !important;
+    overflow: hidden;
 }
 
 html:not(#bna) .mxvd-btn:hover {
@@ -250,6 +251,42 @@ html:not(#bna) .mxvd-calendar-content .cell.disabled {
 
 html:not(#bna) .mxvd-table-date .cell.not-current-month {
     color: rgba(var(--bna-on-surface), .38) !important;
+}
+
+html:not(#bna) .mxvd-time {
+    background: rgb(var(--bna-surface-container-high)) !important;
+}
+
+html:not(#bna) .mxvd-time + .mxvd-time,
+html:not(#bna) .mxvd-time-header,
+html:not(#bna) .mxvd-time-column {
+    border-color: rgb(var(--bna-outline-variant)) !important;
+}
+
+html:not(#bna) .mxvd-time-column .mxvd-time-item:hover,
+html:not(#bna) .mxvd-time-option:hover {
+    background-color: rgba(var(--bna-on-surface), .08) !important;
+    color: rgb(var(--bna-on-surface)) !important;
+}
+
+html:not(#bna) .mxvd-time-column .mxvd-time-item.active,
+html:not(#bna) .mxvd-time-option.active {
+    color: rgb(var(--bna-primary)) !important;
+}
+
+html:not(#bna) .mxvd-time-column .mxvd-time-item.disabled,
+html:not(#bna) .mxvd-time-option.disabled {
+    background-color: rgba(var(--bna-on-surface), .06) !important;
+    color: rgba(var(--bna-on-surface), .38) !important;
+}
+
+html:not(#bna) .mxvd-icon-calendar,
+html:not(#bna) .mxvd-icon-clear {
+    color: rgb(var(--bna-on-surface-variant)) !important;
+}
+
+html:not(#bna) .mxvd-icon-clear:hover {
+    color: rgb(var(--bna-on-surface)) !important;
 }
 
 html:not(#bna) .v-sheet {

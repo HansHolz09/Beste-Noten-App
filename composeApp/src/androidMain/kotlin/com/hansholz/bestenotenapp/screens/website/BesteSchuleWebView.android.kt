@@ -54,7 +54,6 @@ internal actual fun BesteSchuleWebView(
     bridge: BesteSchuleWebBridge,
     transparent: Boolean,
     backgroundColor: Color,
-    alpha: Float,
     modifier: Modifier,
 ) {
     var webView by remember { mutableStateOf<WebView?>(null) }

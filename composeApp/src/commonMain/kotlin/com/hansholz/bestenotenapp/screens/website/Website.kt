@@ -28,6 +28,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -111,12 +112,10 @@ fun Website(
     var wasSettled by remember { mutableStateOf(false) }
     LaunchedEffect(settled) { if (settled) wasSettled = true }
     val showWebView = if (getPlatform() == Platform.DESKTOP) settled else wasSettled
-    val morphOnExit = getPlatform() != Platform.IOS
-    val webViewAlpha by transition.animateFloat(label = "WebViewAlpha") { if (it == EnterExitState.Visible) 1f else 0f }
 
     TopAppBarScaffold(
         modifier =
-            if (transition.targetState == EnterExitState.Visible || morphOnExit) {
+            if (transition.targetState == EnterExitState.Visible || getPlatform() != Platform.IOS) {
                 Modifier.enhancedSharedBounds(
                     sharedTransitionScope = sharedTransitionScope,
                     sharedContentState = rememberSharedContentState(key = "website-card"),
@@ -231,7 +230,16 @@ fun Website(
                     )
                 }
 
-                if (showWebView) {
+                // WebKitGTK leaves its GL context current while mounting, so the cover image has to reach the GPU a frame earlier
+                var coverDrawn by remember { mutableStateOf(false) }
+                LaunchedEffect(showWebView, backgroundDone) {
+                    if (showWebView && backgroundDone) {
+                        withFrameNanos {}
+                        coverDrawn = true
+                    }
+                }
+
+                if (showWebView && coverDrawn) {
                     LaunchedEffect(bridge) {
                         delay(15.seconds)
                         bridge.isReady = true
@@ -242,7 +250,6 @@ fun Website(
                         bridge = bridge,
                         transparent = transparent,
                         backgroundColor = colorScheme.background,
-                        alpha = if (morphOnExit) 1f else webViewAlpha,
                         modifier =
                             Modifier
                                 .fillMaxSize()

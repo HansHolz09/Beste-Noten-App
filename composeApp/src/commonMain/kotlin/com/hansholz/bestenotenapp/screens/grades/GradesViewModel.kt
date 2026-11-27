@@ -1,5 +1,6 @@
 package com.hansholz.bestenotenapp.screens.grades
 
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -20,7 +21,7 @@ class GradesViewModel(
     viewModel: AppViewModel,
 ) : ViewModel() {
     var isLoading by mutableStateOf(false)
-    var searchQuery by mutableStateOf("")
+    val searchQuery = TextFieldState()
     val selectedYears = mutableStateListOf<Year>()
     var selectedSecondaryStage by mutableStateOf<SecondaryStage?>(null)
 

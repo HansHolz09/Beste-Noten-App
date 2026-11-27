@@ -14,6 +14,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -514,7 +515,9 @@ fun Settings(
                                 )
                             } else {
                                 Slider(
-                                    value = selectedIndex.toFloat(),
+                                    state =
+                                        rememberSliderState(steps = intervalOptions.size - 2, trackRange = 0f..intervalOptions.lastIndex.toFloat())
+                                            .apply { value = selectedIndex.toFloat() },
                                     onValueChange = { onIntervalSelected(it.roundToInt()) },
                                     modifier =
                                         sliderModifier.semantics {
@@ -522,8 +525,6 @@ fun Settings(
                                             stateDescription = formateInterval(notificationIntervalMinutes)
                                         },
                                     enabled = notificationsEnabled,
-                                    valueRange = 0f..intervalOptions.lastIndex.toFloat(),
-                                    steps = intervalOptions.size - 2,
                                 )
                             }
                         },
@@ -582,7 +583,7 @@ fun Settings(
                         )
                     } else {
                         Slider(
-                            value = newestGradesCount.toFloat(),
+                            state = rememberSliderState(steps = 8, trackRange = 1f..10f).apply { value = newestGradesCount.toFloat() },
                             onValueChange = { onCountSelected(it.roundToInt() - 1) },
                             modifier =
                                 sliderModifier.semantics {
@@ -590,8 +591,6 @@ fun Settings(
                                     stateDescription = newestGradesCount.toString()
                                 },
                             enabled = showNewestGrades,
-                            valueRange = 1f..10f,
-                            steps = 8,
                         )
                     }
                 },

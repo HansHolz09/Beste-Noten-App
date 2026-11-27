@@ -49,7 +49,6 @@ internal actual fun BesteSchuleWebView(
     bridge: BesteSchuleWebBridge,
     transparent: Boolean,
     backgroundColor: Color,
-    alpha: Float,
     modifier: Modifier,
 ) {
     val messageHandler = remember(bridge) { MessageHandler(bridge) }
@@ -104,7 +103,6 @@ internal actual fun BesteSchuleWebView(
             }
         },
         modifier = modifier,
-        update = { it.alpha = alpha.toDouble() },
         onRelease = {
             bridge.attach(null)
             it.stopLoading()

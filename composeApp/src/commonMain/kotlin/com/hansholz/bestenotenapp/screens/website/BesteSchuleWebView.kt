@@ -169,6 +169,5 @@ internal expect fun BesteSchuleWebView(
     bridge: BesteSchuleWebBridge,
     transparent: Boolean,
     backgroundColor: Color,
-    alpha: Float,
     modifier: Modifier = Modifier,
 )

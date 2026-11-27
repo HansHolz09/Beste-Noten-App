@@ -12,19 +12,22 @@ import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicSecureTextField
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.KeyboardActionHandler
 import androidx.compose.foundation.text.input.OutputTransformation
+import androidx.compose.foundation.text.input.TextFieldDecorator
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.TextFieldColors
@@ -61,132 +64,14 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.hansholz.bestenotenapp.main.LocalNativeKeyboardHandoff
 import com.hansholz.bestenotenapp.main.LocalNativeTextInputOptions
 
 internal val LocalEnhancedTextFieldFocusOwner = compositionLocalOf<MutableState<Any?>?> { null }
 internal val LocalNativeTextInputRefresh = compositionLocalOf<(() -> Unit)?> { null }
-
-@Composable
-fun EnhancedTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    readOnly: Boolean = false,
-    textStyle: TextStyle = LocalTextStyle.current,
-    label: @Composable (() -> Unit)? = null,
-    placeholder: @Composable (() -> Unit)? = null,
-    leadingIcon: @Composable (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null,
-    prefix: @Composable (() -> Unit)? = null,
-    suffix: @Composable (() -> Unit)? = null,
-    supportingText: @Composable (() -> Unit)? = null,
-    isError: Boolean = false,
-    visualTransformation: VisualTransformation = VisualTransformation.None,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    keyboardActions: KeyboardActions = KeyboardActions.Default,
-    singleLine: Boolean = false,
-    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
-    minLines: Int = 1,
-    interactionSource: MutableInteractionSource? = null,
-    shape: Shape = OutlinedTextFieldDefaults.shape,
-    colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
-) {
-    val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
-    val focused by resolvedInteractionSource.collectIsFocusedAsState()
-    val cursorColor = colors.cursorColor(isError)
-    val inputModifier = Modifier.enhancedNativeTextInput(cursorColor, visualTransformation)
-    val options = enhancedKeyboardOptions(keyboardOptions)
-    val actions = enhancedKeyboardActions(keyboardActions)
-    if (LocalNativeTextInputOptions.current == null) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = modifier.then(inputModifier),
-            enabled = enabled,
-            readOnly = readOnly,
-            textStyle = textStyle,
-            label = label,
-            placeholder = placeholder,
-            leadingIcon = leadingIcon,
-            trailingIcon = trailingIcon,
-            prefix = prefix,
-            suffix = suffix,
-            supportingText = supportingText,
-            isError = isError,
-            visualTransformation = visualTransformation,
-            keyboardOptions = options,
-            keyboardActions = actions,
-            singleLine = singleLine,
-            maxLines = maxLines,
-            minLines = minLines,
-            interactionSource = resolvedInteractionSource,
-            shape = shape,
-            colors = colors,
-        )
-    } else {
-        // Keep native input bounds inside the text slot, excluding Compose icon buttons.
-        val focusRequester = remember { FocusRequester() }
-        val labelPadding = with(LocalDensity.current) { typography.bodySmall.lineHeight.toDp() / 2 }
-        CompositionLocalProvider(
-            LocalTextSelectionColors provides TextSelectionColors(cursorColor, colors.textSelectionColors.backgroundColor),
-        ) {
-            Box(
-                modifier
-                    .semantics(mergeDescendants = true) {}
-                    .focusNativeTextFieldOnTap(focusRequester, focused, enabled)
-                    .padding(top = if (label != null) labelPadding else 0.dp)
-                    .defaultMinSize(minWidth = OutlinedTextFieldDefaults.MinWidth, minHeight = OutlinedTextFieldDefaults.MinHeight),
-                propagateMinConstraints = true,
-            ) {
-                OutlinedTextFieldDefaults.DecorationBox(
-                    value = value,
-                    innerTextField = {
-                        BasicTextField(
-                            value = value,
-                            onValueChange = onValueChange,
-                            modifier = inputModifier.focusRequester(focusRequester).fillMaxWidth(),
-                            enabled = enabled,
-                            readOnly = readOnly,
-                            textStyle = textStyle.merge(TextStyle(color = textStyle.color.takeIf { it != Color.Unspecified } ?: colors.textColor(enabled, isError, focused))),
-                            cursorBrush = SolidColor(cursorColor),
-                            visualTransformation = visualTransformation,
-                            singleLine = singleLine,
-                            maxLines = maxLines,
-                            minLines = minLines,
-                            interactionSource = resolvedInteractionSource,
-                            keyboardOptions = options,
-                            keyboardActions = actions,
-                        )
-                    },
-                    enabled = enabled,
-                    singleLine = singleLine,
-                    visualTransformation = visualTransformation,
-                    interactionSource = resolvedInteractionSource,
-                    label = label,
-                    placeholder = placeholder,
-                    leadingIcon = leadingIcon?.redirectFocusOnEnter(focusRequester) { focused },
-                    trailingIcon = trailingIcon?.redirectFocusOnEnter(focusRequester) { focused },
-                    prefix = prefix,
-                    suffix = suffix,
-                    supportingText = supportingText,
-                    isError = isError,
-                    colors = colors,
-                    container = {
-                        OutlinedTextFieldDefaults.Container(enabled, isError, resolvedInteractionSource, colors = colors, shape = shape)
-                    },
-                )
-            }
-        }
-    }
-}
 
 @Composable
 fun EnhancedTextField(
@@ -210,22 +95,35 @@ fun EnhancedTextField(
     shape: Shape = OutlinedTextFieldDefaults.shape,
     colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
     interactionSource: MutableInteractionSource? = null,
+    textObfuscationMode: TextObfuscationMode? = null,
 ) {
     val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
     val focused by resolvedInteractionSource.collectIsFocusedAsState()
     val cursorColor = colors.cursorColor(isError)
-    val inputModifier = Modifier.enhancedNativeTextInput(cursorColor, outputTransformation)
+    val inputModifier = Modifier.enhancedNativeTextInput(cursorColor, outputTransformation ?: textObfuscationMode)
     val options = enhancedKeyboardOptions(keyboardOptions)
-    val handoff = LocalNativeKeyboardHandoff.current
-    val keyboardAction =
-        if (handoff != null && options.imeAction == ImeAction.Next) {
-            KeyboardActionHandler { defaultAction ->
-                handoff { onKeyboardAction?.onKeyboardAction(defaultAction) ?: defaultAction() }
-            }
-        } else {
-            onKeyboardAction
-        }
-    if (LocalNativeTextInputOptions.current == null) {
+    val keyboardAction = enhancedKeyboardAction(options, onKeyboardAction)
+    if (LocalNativeTextInputOptions.current == null && textObfuscationMode != null) {
+        OutlinedSecureTextField(
+            state = state,
+            modifier = modifier.then(inputModifier),
+            enabled = enabled,
+            textStyle = textStyle,
+            labelPosition = labelPosition,
+            label = label,
+            placeholder = placeholder,
+            leadingIcon = leadingIcon,
+            trailingIcon = trailingIcon,
+            isError = isError,
+            inputTransformation = inputTransformation,
+            textObfuscationMode = textObfuscationMode,
+            keyboardOptions = options,
+            onKeyboardAction = keyboardAction,
+            shape = shape,
+            colors = colors,
+            interactionSource = resolvedInteractionSource,
+        )
+    } else if (LocalNativeTextInputOptions.current == null) {
         OutlinedTextField(
             state = state,
             modifier = modifier.then(inputModifier),
@@ -280,21 +178,40 @@ fun EnhancedTextField(
                             OutlinedTextFieldDefaults.Container(enabled, isError, resolvedInteractionSource, colors = colors, shape = shape)
                         },
                     ).Decoration {
-                        BasicTextField(
-                            state = state,
-                            modifier = inputModifier.focusRequester(focusRequester).fillMaxWidth(),
-                            enabled = enabled,
-                            readOnly = readOnly,
-                            textStyle = textStyle.merge(TextStyle(color = textStyle.color.takeIf { it != Color.Unspecified } ?: colors.textColor(enabled, isError, focused))),
-                            cursorBrush = SolidColor(cursorColor),
-                            inputTransformation = inputTransformation,
-                            outputTransformation = outputTransformation,
-                            keyboardOptions = options,
-                            onKeyboardAction = keyboardAction,
-                            lineLimits = lineLimits,
-                            scrollState = scrollState,
-                            interactionSource = resolvedInteractionSource,
-                        )
+                        val fieldModifier = inputModifier.focusRequester(focusRequester).fillMaxWidth()
+                        val fieldTextStyle = textStyle.merge(TextStyle(color = textStyle.color.takeIf { it != Color.Unspecified } ?: colors.textColor(enabled, isError, focused)))
+                        if (textObfuscationMode != null) {
+                            BasicSecureTextField(
+                                state = state,
+                                modifier = fieldModifier,
+                                enabled = enabled,
+                                readOnly = readOnly,
+                                inputTransformation = inputTransformation,
+                                textStyle = fieldTextStyle,
+                                keyboardOptions = options,
+                                onKeyboardAction = keyboardAction,
+                                interactionSource = resolvedInteractionSource,
+                                cursorBrush = SolidColor(cursorColor),
+                                textObfuscationMode = textObfuscationMode,
+                                scrollState = scrollState,
+                            )
+                        } else {
+                            BasicTextField(
+                                state = state,
+                                modifier = fieldModifier,
+                                enabled = enabled,
+                                readOnly = readOnly,
+                                textStyle = fieldTextStyle,
+                                cursorBrush = SolidColor(cursorColor),
+                                inputTransformation = inputTransformation,
+                                outputTransformation = outputTransformation,
+                                keyboardOptions = options,
+                                onKeyboardAction = keyboardAction,
+                                lineLimits = lineLimits,
+                                scrollState = scrollState,
+                                interactionSource = resolvedInteractionSource,
+                            )
+                        }
                     }
             }
         }
@@ -303,84 +220,33 @@ fun EnhancedTextField(
 
 @Composable
 fun EnhancedBasicTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
+    state: TextFieldState,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    readOnly: Boolean = false,
+    inputTransformation: InputTransformation? = null,
     textStyle: TextStyle = TextStyle.Default,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    keyboardActions: KeyboardActions = KeyboardActions.Default,
-    singleLine: Boolean = false,
-    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
-    minLines: Int = 1,
-    visualTransformation: VisualTransformation = VisualTransformation.None,
-    onTextLayout: (TextLayoutResult) -> Unit = {},
-    interactionSource: MutableInteractionSource? = null,
+    onKeyboardAction: KeyboardActionHandler? = null,
+    lineLimits: TextFieldLineLimits = TextFieldLineLimits.Default,
     cursorBrush: Brush = SolidColor(colorScheme.primary),
-    decorationBox: @Composable (@Composable () -> Unit) -> Unit = { it() },
+    outputTransformation: OutputTransformation? = null,
+    decorator: TextFieldDecorator? = null,
 ) {
     val cursorColor = (cursorBrush as? SolidColor)?.value ?: colorScheme.primary
+    val options = enhancedKeyboardOptions(keyboardOptions)
     EnhancedNativeTextSelectionColors(cursorColor) {
         BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = modifier.enhancedNativeTextInput(cursorColor, visualTransformation),
+            state = state,
+            modifier = modifier.enhancedNativeTextInput(cursorColor, outputTransformation),
             enabled = enabled,
-            readOnly = readOnly,
+            inputTransformation = inputTransformation,
             textStyle = textStyle,
-            keyboardOptions = enhancedKeyboardOptions(keyboardOptions),
-            keyboardActions = enhancedKeyboardActions(keyboardActions),
-            singleLine = singleLine,
-            maxLines = maxLines,
-            minLines = minLines,
-            visualTransformation = visualTransformation,
-            onTextLayout = onTextLayout,
-            interactionSource = interactionSource,
+            keyboardOptions = options,
+            onKeyboardAction = enhancedKeyboardAction(options, onKeyboardAction),
+            lineLimits = lineLimits,
             cursorBrush = cursorBrush,
-            decorationBox = decorationBox,
-        )
-    }
-}
-
-@Composable
-fun EnhancedBasicTextField(
-    value: TextFieldValue,
-    onValueChange: (TextFieldValue) -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    readOnly: Boolean = false,
-    textStyle: TextStyle = TextStyle.Default,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    keyboardActions: KeyboardActions = KeyboardActions.Default,
-    singleLine: Boolean = false,
-    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
-    minLines: Int = 1,
-    visualTransformation: VisualTransformation = VisualTransformation.None,
-    onTextLayout: (TextLayoutResult) -> Unit = {},
-    interactionSource: MutableInteractionSource? = null,
-    cursorBrush: Brush = SolidColor(colorScheme.primary),
-    decorationBox: @Composable (@Composable () -> Unit) -> Unit = { it() },
-) {
-    val cursorColor = (cursorBrush as? SolidColor)?.value ?: colorScheme.primary
-    EnhancedNativeTextSelectionColors(cursorColor) {
-        BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = modifier.enhancedNativeTextInput(cursorColor, visualTransformation),
-            enabled = enabled,
-            readOnly = readOnly,
-            textStyle = textStyle,
-            keyboardOptions = enhancedKeyboardOptions(keyboardOptions),
-            keyboardActions = enhancedKeyboardActions(keyboardActions),
-            singleLine = singleLine,
-            maxLines = maxLines,
-            minLines = minLines,
-            visualTransformation = visualTransformation,
-            onTextLayout = onTextLayout,
-            interactionSource = interactionSource,
-            cursorBrush = cursorBrush,
-            decorationBox = decorationBox,
+            outputTransformation = outputTransformation,
+            decorator = decorator,
         )
     }
 }
@@ -410,16 +276,15 @@ private fun enhancedKeyboardOptions(options: KeyboardOptions): KeyboardOptions =
     )
 
 @Composable
-private fun enhancedKeyboardActions(actions: KeyboardActions): KeyboardActions {
-    val handoff = LocalNativeKeyboardHandoff.current ?: return actions
-    return KeyboardActions(
-        onDone = actions.onDone,
-        onGo = actions.onGo,
-        onNext = { handoff { actions.onNext?.invoke(this) ?: defaultKeyboardAction(ImeAction.Next) } },
-        onPrevious = { handoff { actions.onPrevious?.invoke(this) ?: defaultKeyboardAction(ImeAction.Previous) } },
-        onSearch = actions.onSearch,
-        onSend = actions.onSend,
-    )
+private fun enhancedKeyboardAction(
+    options: KeyboardOptions,
+    onKeyboardAction: KeyboardActionHandler?,
+): KeyboardActionHandler? {
+    val handoff = LocalNativeKeyboardHandoff.current
+    if (handoff == null || options.imeAction != ImeAction.Next) return onKeyboardAction
+    return KeyboardActionHandler { defaultAction ->
+        handoff { onKeyboardAction?.onKeyboardAction(defaultAction) ?: defaultAction() }
+    }
 }
 
 private fun (@Composable () -> Unit).redirectFocusOnEnter(

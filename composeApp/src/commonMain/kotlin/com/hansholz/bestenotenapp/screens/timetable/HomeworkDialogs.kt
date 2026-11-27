@@ -22,10 +22,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularWavyProgressIndicator
@@ -811,18 +811,18 @@ private fun HomeworkTypeEditorDialog(
     val draft = remember(visible) { types.toMutableStateList() }
     var draftColors by remember(visible) { mutableStateOf(colors) }
     val listState = rememberLazyListState()
-    var newType by remember(visible) { mutableStateOf("") }
+    val newType = remember(visible) { TextFieldState() }
     var draggedType by remember(visible) { mutableStateOf<HomeworkType?>(null) }
     var draggedOffset by remember(visible) { mutableFloatStateOf(0f) }
     var newTypeFocused by remember { mutableStateOf(false) }
     var colorPickerVisible by remember { mutableStateOf(false) }
 
     fun addType() {
-        val label = newType.trim()
+        val label = newType.text.trim().toString()
         val type = HomeworkType(label)
         if (label.isBlank() || draft.any { it == type || it.label.equals(label, ignoreCase = true) }) return
         draft += type
-        newType = ""
+        newType.clearText()
         scope.launch {
             listState.animateScrollToItem(draft.lastIndex)
         }
@@ -948,13 +948,12 @@ private fun HomeworkTypeEditorDialog(
                     }
                 }
                 EnhancedTextField(
-                    value = newType,
-                    onValueChange = { newType = it },
+                    state = newType,
                     modifier = Modifier.fillMaxWidth().onFocusChanged { newTypeFocused = it.isFocused },
                     label = { Text("Neuer Eintragstyp") },
-                    singleLine = true,
+                    lineLimits = TextFieldLineLimits.SingleLine,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { addType() }),
+                    onKeyboardAction = { addType() },
                     trailingIcon = {
                         IconButton(
                             onClick = {
@@ -962,9 +961,9 @@ private fun HomeworkTypeEditorDialog(
                                 vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                             },
                             enabled =
-                                newType.isNotBlank() &&
+                                newType.text.isNotBlank() &&
                                     draft.none {
-                                        it == HomeworkType(newType.trim()) || it.label.equals(newType.trim(), ignoreCase = true)
+                                        it == HomeworkType(newType.text.trim().toString()) || it.label.equals(newType.text.trim().toString(), ignoreCase = true)
                                     },
                         ) {
                             Icon(

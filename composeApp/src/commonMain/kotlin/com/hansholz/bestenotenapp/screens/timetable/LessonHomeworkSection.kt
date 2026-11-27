@@ -61,7 +61,6 @@ fun LessonHomeworkSection(
 
     HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
     ListItem(
-        headlineContent = { Text("Hausaufgaben und Notizen") },
         supportingContent = {
             Text(
                 if (homework.value.isEmpty()) {
@@ -86,13 +85,12 @@ fun LessonHomeworkSection(
             }
         },
         colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f)),
-    )
+    ) { Text("Hausaufgaben und Notizen") }
 
     homework.value.forEach { entry ->
         val done = entry.status == HomeworkStatus.DONE
         HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
         ListItem(
-            headlineContent = { Text(entry.title) },
             overlineContent = if (entry.hasTypeAsTitle) null else ({ Text(entry.type.label) }),
             supportingContent = { entry.description?.let { Text(it) } },
             modifier =
@@ -130,7 +128,7 @@ fun LessonHomeworkSection(
                 }
             },
             colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f)),
-        )
+        ) { Text(entry.title) }
     }
 
     HomeworkEditorDialog(

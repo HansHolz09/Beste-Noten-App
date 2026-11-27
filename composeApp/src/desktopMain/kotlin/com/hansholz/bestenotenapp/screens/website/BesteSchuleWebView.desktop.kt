@@ -47,9 +47,10 @@ internal actual fun BesteSchuleWebView(
     bridge: BesteSchuleWebBridge,
     transparent: Boolean,
     backgroundColor: Color,
-    alpha: Float,
     modifier: Modifier,
 ) {
+    // An opaque WebKitGTK view gets a forced white html/body background from Nucleus
+    val nativeTransparent = transparent || getExactPlatform() == ExactPlatform.LINUX
     val state =
         remember {
             WebViewState(WebContent.Url(url)).apply {
@@ -62,9 +63,9 @@ internal actual fun BesteSchuleWebView(
                             fileUploads = getExactPlatform() != ExactPlatform.MACOS,
                         )
                     incognito = true
-                    this.transparent = transparent
+                    this.transparent = nativeTransparent
                 }
-                webSettings.backgroundColor = if (transparent) Color.Transparent else backgroundColor
+                webSettings.backgroundColor = if (nativeTransparent) Color.Transparent else backgroundColor
             }
         }
     val interceptor =

@@ -15,6 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.OutputTransformation
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -22,10 +27,8 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
@@ -197,7 +200,14 @@ private fun WeightControlRow(
         remember(useWeightingInsteadOfPercent) {
             if (useWeightingInsteadOfPercent) 1 else 10
         }
-    var textFieldValue by remember(value) { mutableStateOf(value.toString()) }
+    val textFieldState = rememberTextFieldState(value.toString())
+    LaunchedEffect(value) {
+        if ((textFieldState.text.toString().toIntOrNull() ?: 0) != value) textFieldState.setTextAndPlaceCursorAtEnd(value.toString())
+    }
+    LaunchedEffect(textFieldState.text) {
+        val number = textFieldState.text.toString().toIntOrNull() ?: 0
+        if (number != value) onValueChange(number)
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -220,20 +230,16 @@ private fun WeightControlRow(
                 )
             }
             EnhancedBasicTextField(
-                value = if (useWeightingInsteadOfPercent) textFieldValue else "$textFieldValue%",
-                onValueChange = { newValue ->
-                    val cleanNumber = newValue.replace("%", "").filter { it.isDigit() }
-                    if (cleanNumber.isEmpty()) {
-                        textFieldValue = ""
-                        onValueChange(0)
-                    } else {
-                        val parsed = cleanNumber.toIntOrNull() ?: 0
-                        if (parsed in 0..100) {
-                            textFieldValue = cleanNumber
-                            onValueChange(parsed)
+                state = textFieldState,
+                inputTransformation =
+                    InputTransformation {
+                        val number = asCharSequence().filter(Char::isDigit)
+                        if (number.length > 3 || (number.toString().toIntOrNull() ?: 0) > 100) {
+                            revertAllChanges()
+                        } else if (number.length != length) {
+                            replace(0, length, number)
                         }
-                    }
-                },
+                    },
                 modifier = Modifier.width(60.dp),
                 textStyle =
                     typography.bodyLarge.copy(
@@ -245,8 +251,9 @@ private fun WeightControlRow(
                         keyboardType = KeyboardType.Number,
                         imeAction = ImeAction.Done,
                     ),
-                singleLine = true,
+                lineLimits = TextFieldLineLimits.SingleLine,
                 cursorBrush = SolidColor(colorScheme.primary),
+                outputTransformation = if (useWeightingInsteadOfPercent) null else OutputTransformation { append("%") },
             )
             EnhancedIconButton(
                 onClick = {

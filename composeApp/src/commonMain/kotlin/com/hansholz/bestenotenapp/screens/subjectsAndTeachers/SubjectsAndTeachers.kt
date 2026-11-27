@@ -70,6 +70,7 @@ import com.hansholz.bestenotenapp.main.LocalScrollZoomAnimationEnabled
 import com.hansholz.bestenotenapp.main.LocalShowAllSubjects
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.nomanr.animate.compose.presets.zoomingextrances.ZoomIn
 import dev.chrisbanes.haze.hazeSource
 import kotlinx.coroutines.launch
@@ -189,36 +190,36 @@ fun SubjectsAndTeachers(
                                                         }
                                                     }
                                                     ListItem(
-                                                        headlineContent = {
-                                                            Text(
-                                                                text =
-                                                                    "${subject?.name ?: "Unbekanntes Fach"} " +
-                                                                        "(${teachers?.joinToString {
-                                                                            (
-                                                                                if (showTeachersWithFirstname) {
-                                                                                    it.forename
-                                                                                } else {
-                                                                                    it.forename?.take(
-                                                                                        1,
-                                                                                    ) + "."
-                                                                                }
-                                                                            ) + " " + it.name
-                                                                        }
-                                                                            ?: "Kein Lehrer"})",
-                                                            )
-                                                        },
                                                         leadingContent = {
                                                             Box(Modifier.clip(ClamShell.toShape()).background(colorScheme.primaryContainer)) {
                                                                 Text(
                                                                     text = subject?.localId ?: "?",
                                                                     color = colorScheme.onPrimaryContainer,
                                                                     textAlign = TextAlign.Center,
+                                                                    fontFamily = FontFamilies.Sniglet,
                                                                     modifier = Modifier.width(50.dp).padding(vertical = 5.dp),
                                                                 )
                                                             }
                                                         },
                                                         colors = ListItemDefaults.colors(Color.Transparent),
-                                                    )
+                                                    ) {
+                                                        Text(
+                                                            text =
+                                                                "${subject?.name ?: "Unbekanntes Fach"} " +
+                                                                    "(${teachers?.joinToString {
+                                                                        (
+                                                                            if (showTeachersWithFirstname) {
+                                                                                it.forename
+                                                                            } else {
+                                                                                it.forename?.take(
+                                                                                    1,
+                                                                                ) + "."
+                                                                            }
+                                                                        ) + " " + it.name
+                                                                    }
+                                                                        ?: "Kein Lehrer"})",
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
@@ -251,24 +252,24 @@ fun SubjectsAndTeachers(
                                                         }
                                                     }
                                                     ListItem(
-                                                        headlineContent = {
-                                                            Text(
-                                                                (if (showTeachersWithFirstname) teacher?.forename else teacher?.forename?.take(1) + ".") + " " +
-                                                                    teacher?.name + " (" + subjects.joinToString { it?.name ?: "unbekanntes Fach" } + ")",
-                                                            )
-                                                        },
                                                         leadingContent = {
                                                             Box(Modifier.clip(ClamShell.toShape()).background(colorScheme.primaryContainer)) {
                                                                 Text(
                                                                     text = teacher?.localId ?: "",
                                                                     color = colorScheme.onPrimaryContainer,
                                                                     textAlign = TextAlign.Center,
+                                                                    fontFamily = FontFamilies.Sniglet,
                                                                     modifier = Modifier.width(50.dp).padding(vertical = 5.dp),
                                                                 )
                                                             }
                                                         },
                                                         colors = ListItemDefaults.colors(Color.Transparent),
-                                                    )
+                                                    ) {
+                                                        Text(
+                                                            (if (showTeachersWithFirstname) teacher?.forename else teacher?.forename?.take(1) + ".") + " " +
+                                                                teacher?.name + " (" + subjects.joinToString { it?.name ?: "unbekanntes Fach" } + ")",
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }

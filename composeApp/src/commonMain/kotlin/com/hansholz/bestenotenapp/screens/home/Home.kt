@@ -551,9 +551,6 @@ fun Home(
                                                     Column {
                                                         newestGrades.forEach {
                                                             ListItem(
-                                                                headlineContent = {
-                                                                    Text("${it.subject?.name}: ${it.name}")
-                                                                },
                                                                 supportingContent = {
                                                                     Column {
                                                                         Text("${it.type} vom ${formateDate(it.givenAt)}")
@@ -563,7 +560,9 @@ fun Home(
                                                                     GradeValueBox(it.grades?.getOrNull(0)?.value, viewModel.levelFor(it))
                                                                 },
                                                                 colors = ListItemDefaults.colors(Color.Transparent),
-                                                            )
+                                                            ) {
+                                                                Text("${it.subject?.name}: ${it.name}")
+                                                            }
                                                         }
                                                     }
                                                 }
