@@ -56,18 +56,22 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedButton
 import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
+import com.hansholz.bestenotenapp.main.ExactPlatform
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalWebsiteBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalWebsiteDesignEnabled
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
+import com.hansholz.bestenotenapp.main.getExactPlatform
 import com.hansholz.bestenotenapp.main.getPlatform
 import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -113,7 +117,15 @@ fun Website(
     val settled = transition.currentState == EnterExitState.Visible && transition.targetState == EnterExitState.Visible
     var wasSettled by remember { mutableStateOf(false) }
     LaunchedEffect(settled) { if (settled) wasSettled = true }
-    val showWebView = if (getPlatform() == Platform.DESKTOP) settled else wasSettled
+    // TODO: Use settled directly on Windows once https://github.com/NucleusFramework/Nucleus/issues/901 is fixed
+    var windowsSettled by remember { mutableStateOf(false) }
+    LaunchedEffect(settled) { withContext(Dispatchers.Main) { windowsSettled = settled } }
+    val showWebView =
+        when {
+            getExactPlatform() == ExactPlatform.WINDOWS -> windowsSettled
+            getPlatform() == Platform.DESKTOP -> settled
+            else -> wasSettled
+        }
 
     // Haze can't sample native views, so the drawer blurs a snapshot of the page instead
     val drawerState = viewModel.compactDrawerState.value

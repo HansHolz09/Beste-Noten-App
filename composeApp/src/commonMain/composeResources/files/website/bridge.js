@@ -56,6 +56,15 @@
       try { return block.apply(null, arguments); } catch (e) { post('problem', name + ': ' + (e && e.message)); }
     };
   }
+  function whenRoot(block) {
+    if (document.documentElement) return block();
+    var observer = new MutationObserver(function () {
+      if (!document.documentElement) return;
+      observer.disconnect();
+      safe('root', block)();
+    });
+    observer.observe(document, { childList: true });
+  }
   safe('week', function () {
     var NativeResizeObserver = window.ResizeObserver;
     if (!NativeResizeObserver) return;
@@ -237,10 +246,12 @@
   define('__bnaApplyTheme', function (theme) {
     if (typeof theme === 'string') theme = JSON.parse(theme);
     if (!theme || typeof theme.css !== 'string') return;
-    document.documentElement.setAttribute('data-bs-theme', theme.dark ? 'dark' : 'light');
     if (!themeStyle) themeStyle = styleElement('beste-noten-app-theme');
     themeStyle.textContent = theme.css;
-    keepLast();
+    whenRoot(function () {
+      document.documentElement.setAttribute('data-bs-theme', theme.dark ? 'dark' : 'light');
+      keepLast();
+    });
   });
   define('__bnaSetBackdrop', function (base64) {
     var url = null;
@@ -264,6 +275,8 @@
       decoded = next.decode ? next.decode().catch(function () {}) : new Promise(function (resolve) { next.onload = next.onerror = resolve; });
     }
     backdropShown = decoded.then(function () {
+      return new Promise(function (resolve) { whenRoot(resolve); });
+    }).then(function () {
       if (backdropElement) backdropElement.remove();
       if (next) document.documentElement.appendChild(next);
       backdropElement = next;
@@ -273,14 +286,16 @@
     }).then(function () { post('backdropShown', ''); });
   });
   define('__bnaPlaceBackdrop', function (x, y, width, height) {
-    var style = document.documentElement.style;
-    style.setProperty('--bna-backdrop-x', String(x));
-    style.setProperty('--bna-backdrop-y', String(y));
-    style.setProperty('--bna-backdrop-w', String(width));
-    style.setProperty('--bna-backdrop-h', String(height));
+    whenRoot(function () {
+      var style = document.documentElement.style;
+      style.setProperty('--bna-backdrop-x', String(x));
+      style.setProperty('--bna-backdrop-y', String(y));
+      style.setProperty('--bna-backdrop-w', String(width));
+      style.setProperty('--bna-backdrop-h', String(height));
+    });
   });
   window.__bnaApplyTheme({{theme}});
-  startJournalWithDay();
+  whenRoot(startJournalWithDay);
   post('getTheme', '').then(function (theme) { if (theme) window.__bnaApplyTheme(theme); });
 
   var health = safe('health', function () {
@@ -328,7 +343,7 @@
     new MutationObserver(function () {
       scheduleUpdate();
       if (!done && rendered()) settle();
-    }).observe(document.documentElement, { childList: true, subtree: true });
+    }).observe(document, { childList: true, subtree: true });
     document.addEventListener('load', scheduleUpdate, true);
     document.addEventListener('DOMContentLoaded', function () {
       update();
