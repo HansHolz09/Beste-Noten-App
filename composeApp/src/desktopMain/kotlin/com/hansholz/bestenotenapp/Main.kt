@@ -67,6 +67,8 @@ import kotlin.system.exitProcess
 import kotlin.time.Duration.Companion.seconds
 
 fun main() {
+    // The native-image builder runs headless and Nucleus bakes that into the image, which disables the AWT clipboard
+    System.setProperty("java.awt.headless", "false")
     GraalVmInitializer.initialize()
     System.setProperty("ksafe.jvm.keyVault", "software") // because no signed macOS app
     FileKit.init(NucleusApp.appId)
