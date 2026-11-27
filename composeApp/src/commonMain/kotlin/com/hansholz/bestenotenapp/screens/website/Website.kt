@@ -3,7 +3,6 @@ package com.hansholz.bestenotenapp.screens.website
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
@@ -41,6 +40,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.unit.IntSize
 import androidx.window.core.layout.WindowSizeClass
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Language
@@ -57,6 +57,7 @@ import com.hansholz.bestenotenapp.components.enhanced.EnhancedIconButton
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedBounds
 import com.hansholz.bestenotenapp.components.enhanced.enhancedSharedElement
 import com.hansholz.bestenotenapp.main.LocalBackgroundEnabled
+import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import com.hansholz.bestenotenapp.main.LocalWebsiteBackgroundEnabled
 import com.hansholz.bestenotenapp.main.LocalWebsiteDesignEnabled
 import com.hansholz.bestenotenapp.main.Platform
@@ -69,6 +70,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.max
+import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -113,6 +115,14 @@ fun Website(
     LaunchedEffect(settled) { if (settled) wasSettled = true }
     val showWebView = if (getPlatform() == Platform.DESKTOP) settled else wasSettled
 
+    // Haze can't sample native views, so the drawer blurs a snapshot of the page instead
+    val drawerState = viewModel.compactDrawerState.value
+    val snapshotForDrawer = isCompactWindow && blurEnabled && !LocalNativeComponentsEnabled.current.value
+    var webBridge by remember { mutableStateOf<BesteSchuleWebBridge?>(null) }
+    var drawerSnapshot by remember { mutableStateOf<ImageBitmap?>(null) }
+    val drawerHidden = drawerState.isClosed && !drawerState.isAnimationRunning
+    LaunchedEffect(drawerHidden) { if (drawerHidden) drawerSnapshot = null }
+
     TopAppBarScaffold(
         modifier =
             if (transition.targetState == EnterExitState.Visible || getPlatform() != Platform.IOS) {
@@ -136,6 +146,7 @@ fun Website(
             EnhancedIconButton(
                 onClick = {
                     scope.launch {
+                        if (snapshotForDrawer && drawerState.isClosed) drawerSnapshot = webBridge?.snapshot?.invoke()
                         viewModel.closeOrOpenDrawer(isCompactWindow)
                     }
                 },
@@ -179,6 +190,8 @@ fun Website(
                     )
                 }
             }
+
+        LaunchedEffect(bridge) { webBridge = bridge }
 
         Box(Modifier.fillMaxSize()) {
             if (bridge != null) {
@@ -256,6 +269,14 @@ fun Website(
                                 .padding(contentPadding)
                                 .onGloballyPositioned { webViewPosition = it.positionInWindow() },
                     )
+                    drawerSnapshot?.let { snapshot ->
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .padding(contentPadding)
+                                .drawBehind { drawImage(snapshot, dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt())) },
+                        )
+                    }
                 }
 
                 if (!transparent) {

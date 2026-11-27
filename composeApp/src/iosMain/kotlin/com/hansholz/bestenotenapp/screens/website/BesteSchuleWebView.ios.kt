@@ -7,24 +7,42 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asSkiaBitmap
+import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.viewinterop.UIKitInteropInteractionMode
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
 import com.hansholz.bestenotenapp.main.LocalNativeComponentsEnabled
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.readValue
+import kotlinx.cinterop.usePinned
+import kotlinx.coroutines.suspendCancellableCoroutine
+import org.jetbrains.skia.ColorAlphaType
+import org.jetbrains.skia.ColorType
 import org.jetbrains.skia.EncodedImageFormat
 import org.jetbrains.skia.Image
+import org.jetbrains.skia.ImageInfo
+import platform.CoreGraphics.CGBitmapContextCreate
+import platform.CoreGraphics.CGColorSpaceCreateDeviceRGB
+import platform.CoreGraphics.CGColorSpaceRelease
+import platform.CoreGraphics.CGContextDrawImage
+import platform.CoreGraphics.CGContextRelease
+import platform.CoreGraphics.CGImageAlphaInfo
+import platform.CoreGraphics.CGImageGetHeight
+import platform.CoreGraphics.CGImageGetWidth
+import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGRectZero
 import platform.Foundation.NSURL
 import platform.Foundation.NSURLRequest
 import platform.UIKit.UIColor
+import platform.UIKit.UIImage
 import platform.UIKit.UIScrollViewContentInsetAdjustmentBehavior
 import platform.WebKit.WKNavigationAction
 import platform.WebKit.WKNavigationActionPolicy
 import platform.WebKit.WKNavigationDelegateProtocol
 import platform.WebKit.WKScriptMessage
 import platform.WebKit.WKScriptMessageHandlerProtocol
+import platform.WebKit.WKSnapshotConfiguration
 import platform.WebKit.WKUserContentController
 import platform.WebKit.WKUserScript
 import platform.WebKit.WKUserScriptInjectionTime
@@ -32,6 +50,7 @@ import platform.WebKit.WKWebView
 import platform.WebKit.WKWebViewConfiguration
 import platform.WebKit.WKWebsiteDataStore
 import platform.darwin.NSObject
+import kotlin.coroutines.resume
 import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.ref.WeakReference
 
@@ -96,6 +115,7 @@ internal actual fun BesteSchuleWebView(
                 scrollView.backgroundColor = fill
                 messageHandler.attach(this)
                 val target = this
+                bridge.snapshot = { target.snapshot() }
                 bridge.attach { js ->
                     if (BesteSchuleWebsite.isInternalUrl(target.URL?.absoluteString)) target.evaluateJavaScript(js, null)
                 }
@@ -105,6 +125,7 @@ internal actual fun BesteSchuleWebView(
         modifier = modifier,
         onRelease = {
             bridge.attach(null)
+            bridge.snapshot = null
             it.stopLoading()
             it.navigationDelegate = null
             it.configuration.userContentController.removeScriptMessageHandlerForName(MESSAGE_HANDLER)
@@ -177,6 +198,37 @@ private class NavigationDelegate(
             }
         }
     }
+}
+
+private suspend fun WKWebView.snapshot(): ImageBitmap? =
+    suspendCancellableCoroutine { continuation ->
+        val configuration = WKSnapshotConfiguration().apply { afterScreenUpdates = false }
+        takeSnapshotWithConfiguration(configuration) { image, _ -> continuation.resume(image?.toImageBitmap()) }
+    }
+
+@OptIn(ExperimentalForeignApi::class)
+private fun UIImage.toImageBitmap(): ImageBitmap? {
+    val image = CGImage ?: return null
+    val width = CGImageGetWidth(image).toInt()
+    val height = CGImageGetHeight(image).toInt()
+    val pixels = ByteArray(width * height * 4)
+    val colorSpace = CGColorSpaceCreateDeviceRGB()
+    pixels.usePinned { pinned ->
+        val context =
+            CGBitmapContextCreate(
+                pinned.addressOf(0),
+                width.toULong(),
+                height.toULong(),
+                8u,
+                (width * 4).toULong(),
+                colorSpace,
+                CGImageAlphaInfo.kCGImageAlphaPremultipliedLast.value,
+            )
+        CGContextDrawImage(context, CGRectMake(0.0, 0.0, width.toDouble(), height.toDouble()), image)
+        CGContextRelease(context)
+    }
+    CGColorSpaceRelease(colorSpace)
+    return Image.makeRaster(ImageInfo(width, height, ColorType.RGBA_8888, ColorAlphaType.PREMUL), pixels, width * 4).toComposeImageBitmap()
 }
 
 internal actual fun encodeJpeg(image: ImageBitmap) = Image.makeFromBitmap(image.asSkiaBitmap()).encodeToData(EncodedImageFormat.JPEG, 85)?.bytes

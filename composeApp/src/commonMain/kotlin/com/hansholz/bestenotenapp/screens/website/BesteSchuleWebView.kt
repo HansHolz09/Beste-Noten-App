@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import io.ktor.http.Url
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -49,6 +50,7 @@ internal class BesteSchuleWebBridge(
     var unavailableReason by mutableStateOf<String?>(null)
     var problem by mutableStateOf<String?>(null)
     var systemBottomInset by mutableStateOf(0f)
+    var snapshot: (suspend () -> ImageBitmap?)? = null
 
     private var evaluate: ((String) -> Unit)? = null
     private var backdrop: String? = null
