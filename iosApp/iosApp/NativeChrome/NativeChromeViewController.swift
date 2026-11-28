@@ -101,7 +101,7 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
         super.viewDidLoad()
         view.backgroundColor = .clear
         registerBundledFont(named: "Sniglet-Regular", resource: "Sniglet-Regular")
-        view.tintColor = .systemYellow
+        view.tintColor = .appYellow
         configureBridge()
         configureSplitView()
         configureTabBar()
@@ -118,7 +118,7 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        view.window?.tintColor = .systemYellow
+        view.window?.tintColor = .appYellow
         bridge.systemAppearanceChanged(isDark: currentSystemIsDark)
         applyTheme(isDark: isDarkTheme, usesSystemAppearance: usesSystemAppearance)
         refreshSidebarPresentationIfNeeded()
@@ -199,8 +199,8 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
     private func configureSplitView() {
         composeController = MainViewControllerKt.mainViewController(nativeBridge: bridge)
         contentHostController = ComposeScrollHostViewController(contentController: composeController)
-        composeController.view.tintColor = .systemYellow
-        contentHostController.view.tintColor = .systemYellow
+        composeController.view.tintColor = .appYellow
+        contentHostController.view.tintColor = .appYellow
         contentHostController.extendedLayoutIncludesOpaqueBars = true
         contentHostController.edgesForExtendedLayout = .all
 
@@ -252,7 +252,7 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
 
     private func configureTabBar() {
         tabBar.delegate = self
-        tabBar.tintColor = .systemYellow
+        tabBar.tintColor = .appYellow
         tabBar.isHidden = true
         tabBar.translatesAutoresizingMaskIntoConstraints = false
         let tabSections: [AppSection] = [.home, .settings]
@@ -699,5 +699,14 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
         displayModeForExpandingToProposedDisplayMode proposedDisplayMode: UISplitViewController.DisplayMode
     ) -> UISplitViewController.DisplayMode {
         usesSidebar && displaysMainContent ? .oneBesideSecondary : .secondaryOnly
+    }
+}
+
+extension UIColor {
+    /// systemYellow, darkened in light mode for better contrast on light backgrounds.
+    static let appYellow = UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? .systemYellow.resolvedColor(with: traits)
+            : UIColor(red: 0.85, green: 0.66, blue: 0.0, alpha: 1)
     }
 }

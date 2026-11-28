@@ -18,7 +18,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
@@ -89,7 +88,6 @@ fun DayHeader(
     val formattedDate = "${date.day.toString().padStart(2, '0')}.${date.month.number.toString().padStart(2, '0')}."
 
     val isNotesDialogShown = remember { mutableStateOf(false) }
-    val allHomeworkDone = notes.isNullOrEmpty() && homework.isNotEmpty() && homework.all { it.status == HomeworkStatus.DONE }
     val noteColor = LocalContentColor.current
     val errorColor = colorScheme.error
     val colors =
@@ -104,7 +102,8 @@ fun DayHeader(
                 )
             }
             homework.sortedWith(compareBy({ it.lessonNumber ?: 0 }, { it.dueDateTime?.time }, { it.createdAt })).forEach {
-                add(it.color?.let { color -> Color(color) } ?: errorColor)
+                val color = it.color?.let { color -> Color(color) } ?: errorColor
+                add(if (it.status == HomeworkStatus.DONE) color.copy(alpha = color.alpha * 0.45f) else color)
             }
         }
 
@@ -129,7 +128,6 @@ fun DayHeader(
                         Modifier
                             .padding(start = 5.dp)
                             .size(20.dp)
-                            .alpha(if (allHomeworkDone) 0.45f else 1f)
                             .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
                             .drawWithCache {
                                 val brush = Brush.linearGradient(colors.ifEmpty { listOf(noteColor) }.let { if (it.size == 1) it + it else it })
