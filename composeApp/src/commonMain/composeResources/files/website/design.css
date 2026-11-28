@@ -1,0 +1,432 @@
+html:not(#bna),
+html:not(#bna) [data-bs-theme] {
+    --bna-tweaks: 1;
+    --bs-body-font-family: "BNA Sniglet", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --bs-body-bg: rgb(var(--bna-surface));
+    --bs-body-bg-rgb: var(--bna-surface);
+    --bs-body-color: rgb(var(--bna-on-surface));
+    --bs-body-color-rgb: var(--bna-on-surface);
+    --bs-emphasis-color: rgb(var(--bna-on-surface));
+    --bs-emphasis-color-rgb: var(--bna-on-surface);
+    --bs-heading-color: rgb(var(--bna-on-surface));
+    --bs-secondary-color: rgba(var(--bna-on-surface-variant), .85);
+    --bs-secondary-color-rgb: var(--bna-on-surface-variant);
+    --bs-tertiary-color: rgba(var(--bna-on-surface-variant), .6);
+    --bs-tertiary-color-rgb: var(--bna-on-surface-variant);
+    --bs-secondary-bg: rgb(var(--bna-surface-container-high));
+    --bs-secondary-bg-rgb: var(--bna-surface-container-high);
+    --bs-tertiary-bg: rgb(var(--bna-surface-container));
+    --bs-tertiary-bg-rgb: var(--bna-surface-container);
+    --bs-border-color: rgb(var(--bna-outline-variant));
+    --bs-border-color-translucent: rgba(var(--bna-outline), .4);
+    --bs-primary: rgb(var(--bna-primary));
+    --bs-primary-rgb: var(--bna-primary);
+    --bs-primary-text-emphasis: rgb(var(--bna-on-primary-container));
+    --bs-primary-bg-subtle: rgb(var(--bna-primary-container));
+    --bs-primary-border-subtle: rgb(var(--bna-primary));
+    --bs-secondary: rgb(var(--bna-secondary));
+    --bs-secondary-rgb: var(--bna-secondary);
+    --bs-secondary-text-emphasis: rgb(var(--bna-on-secondary-container));
+    --bs-secondary-bg-subtle: rgb(var(--bna-secondary-container));
+    --bs-secondary-border-subtle: rgb(var(--bna-secondary));
+    --bs-danger: rgb(var(--bna-error));
+    --bs-danger-rgb: var(--bna-error);
+    --bs-danger-text-emphasis: rgb(var(--bna-on-error-container));
+    --bs-danger-bg-subtle: rgb(var(--bna-error-container));
+    --bs-link-color: rgb(var(--bna-primary));
+    --bs-link-color-rgb: var(--bna-primary);
+    --bs-link-hover-color: rgb(var(--bna-primary));
+    --bs-link-hover-color-rgb: var(--bna-primary);
+    --bs-focus-ring-color: rgba(var(--bna-primary), .3);
+    --bs-border-radius: 12px;
+    --bs-border-radius-sm: 8px;
+    --bs-border-radius-lg: 16px;
+    --bs-border-radius-xl: 24px;
+    --bs-border-radius-xxl: 28px;
+    --app-ground: var(--bna-page);
+    --app-hover-bg: rgba(var(--bna-on-surface), .08);
+    --app-shadow-sm: none;
+    --app-shadow-md: none;
+    --app-primary: rgb(var(--bna-primary));
+    --app-primary-rgb: var(--bna-primary);
+}
+
+html:not(#bna) {
+    background: var(--bna-page) !important;
+}
+
+html:not(#bna) body,
+html:not(#bna) #app,
+html:not(#bna) .has-bottom-nav {
+    background: transparent !important;
+}
+
+html:not(#bna) .navbar-light,
+html:not(#bna) .mobile-topbar,
+html:not(#bna) .bottom-nav {
+    background: rgba(var(--bna-surface-container), .55) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    backdrop-filter: blur(20px) saturate(1.4);
+    box-shadow: none !important;
+}
+
+html:not(#bna) .navbar-light {
+    border-bottom: 1px solid rgba(var(--bna-outline-variant), .6);
+}
+
+html:not(#bna) .bottom-nav {
+    border-top: 1px solid rgba(var(--bna-outline-variant), .6) !important;
+}
+
+html:not(#bna) .card {
+    --bs-card-bg: rgba(var(--bna-surface-container-highest), .7);
+    --bs-card-cap-bg: transparent;
+    --bs-card-border-width: 2px;
+    --bs-card-border-color: rgb(var(--bna-outline));
+    --bs-card-border-radius: 24px;
+    --bs-card-inner-border-radius: 22px;
+    --bs-card-box-shadow: none;
+    box-shadow: none;
+}
+
+html:not(#bna) .card .card {
+    --bs-card-bg: rgba(var(--bna-surface-container-highest), .35);
+    --bs-card-border-color: rgb(var(--bna-outline-variant));
+}
+
+html:not(#bna) .btn {
+    --bs-btn-border-radius: 50rem;
+    --bs-btn-focus-shadow-rgb: var(--bna-primary);
+}
+
+html:not(#bna) .btn-primary {
+    --bs-btn-bg: rgb(var(--bna-primary));
+    --bs-btn-border-color: rgb(var(--bna-primary));
+    --bs-btn-color: rgb(var(--bna-on-primary));
+    --bs-btn-hover-bg: color-mix(in srgb, rgb(var(--bna-primary)), rgb(var(--bna-on-primary)) 12%);
+    --bs-btn-hover-border-color: color-mix(in srgb, rgb(var(--bna-primary)), rgb(var(--bna-on-primary)) 12%);
+    --bs-btn-hover-color: rgb(var(--bna-on-primary));
+    --bs-btn-active-bg: color-mix(in srgb, rgb(var(--bna-primary)), rgb(var(--bna-on-primary)) 20%);
+    --bs-btn-active-border-color: color-mix(in srgb, rgb(var(--bna-primary)), rgb(var(--bna-on-primary)) 20%);
+    --bs-btn-active-color: rgb(var(--bna-on-primary));
+    --bs-btn-disabled-bg: rgb(var(--bna-primary));
+    --bs-btn-disabled-border-color: rgb(var(--bna-primary));
+    --bs-btn-disabled-color: rgb(var(--bna-on-primary));
+}
+
+html:not(#bna) .btn-outline-primary {
+    --bs-btn-color: rgb(var(--bna-primary));
+    --bs-btn-border-color: rgb(var(--bna-primary));
+    --bs-btn-hover-bg: rgb(var(--bna-primary));
+    --bs-btn-hover-border-color: rgb(var(--bna-primary));
+    --bs-btn-hover-color: rgb(var(--bna-on-primary));
+    --bs-btn-active-bg: rgb(var(--bna-primary));
+    --bs-btn-active-border-color: rgb(var(--bna-primary));
+    --bs-btn-active-color: rgb(var(--bna-on-primary));
+    --bs-btn-disabled-color: rgb(var(--bna-primary));
+    --bs-btn-disabled-border-color: rgb(var(--bna-primary));
+}
+
+html:not(#bna) .dropdown-menu {
+    --bs-dropdown-bg: rgb(var(--bna-surface-container-high));
+    --bs-dropdown-border-color: rgb(var(--bna-outline-variant));
+    --bs-dropdown-border-radius: 16px;
+    --bs-dropdown-link-active-bg: rgb(var(--bna-primary));
+    --bs-dropdown-link-active-color: rgb(var(--bna-on-primary));
+}
+
+html:not(#bna) .modal {
+    --bs-modal-bg: rgb(var(--bna-surface-container-high));
+    --bs-modal-border-radius: 28px;
+    --bs-modal-inner-border-radius: 27px;
+}
+
+html:not(#bna) .nav-pills {
+    --bs-nav-pills-link-active-bg: rgb(var(--bna-primary));
+    --bs-nav-pills-link-active-color: rgb(var(--bna-on-primary));
+}
+
+html:not(#bna) .sidebar .nav-link[aria-current=page] {
+    background-color: rgb(var(--bna-secondary-container));
+    color: rgb(var(--bna-on-secondary-container));
+    border-radius: 50rem;
+}
+
+html:not(#bna) .list-group {
+    --bs-list-group-bg: transparent;
+    --bs-list-group-border-color: rgb(var(--bna-outline-variant));
+    --bs-list-group-active-bg: rgb(var(--bna-primary));
+    --bs-list-group-active-border-color: rgb(var(--bna-primary));
+    --bs-list-group-active-color: rgb(var(--bna-on-primary));
+}
+
+html:not(#bna) .table {
+    --bs-table-bg: transparent;
+}
+
+html:not(#bna) .form-control:focus,
+html:not(#bna) .form-select:focus,
+html:not(#bna) .form-check-input:focus,
+html:not(#bna) .mxvd-input:focus {
+    border-color: rgb(var(--bna-primary)) !important;
+    box-shadow: 0 0 0 .25rem rgba(var(--bna-primary), .25) !important;
+}
+
+html:not(#bna) .markdown-editor-wrapper:focus-within {
+    border-color: rgb(var(--bna-primary)) !important;
+    box-shadow: 0 0 0 .25rem rgba(var(--bna-primary), .25) !important;
+}
+
+html:not(#bna) .multiselect__option--highlight,
+html:not(#bna) .multiselect__option--highlight::after,
+html:not(#bna) .multiselect__option--selected.multiselect__option--highlight,
+html:not(#bna) .multiselect__option--selected.multiselect__option--highlight::after {
+    background: rgb(var(--bna-primary)) !important;
+    color: rgb(var(--bna-on-primary)) !important;
+}
+
+html:not(#bna) .multiselect__option--highlight *,
+html:not(#bna) .multiselect__option--selected.multiselect__option--highlight * {
+    color: inherit;
+}
+
+html:not(#bna) :focus-visible {
+    outline-color: rgb(var(--bna-primary));
+}
+
+html:not(#bna) .form-check-input:checked {
+    background-color: rgb(var(--bna-primary));
+    border-color: rgb(var(--bna-primary));
+}
+
+html:not(#bna) .form-check-input:checked[type=checkbox] {
+    --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='{{onPrimaryHex}}' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e") !important;
+}
+
+html:not(#bna) .form-check-input:checked[type=radio] {
+    --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='{{onPrimaryHex}}'/%3e%3c/svg%3e") !important;
+}
+
+html:not(#bna) .form-switch .form-check-input:checked {
+    --bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='{{onPrimaryHex}}'/%3e%3c/svg%3e") !important;
+}
+
+html:not(#bna) .mxvd-datepicker-main {
+    background-color: rgb(var(--bna-surface-container-high)) !important;
+    color: rgb(var(--bna-on-surface)) !important;
+    border-color: rgb(var(--bna-outline-variant)) !important;
+    border-radius: 16px !important;
+    overflow: hidden;
+}
+
+html:not(#bna) .mxvd-btn:hover {
+    color: rgb(var(--bna-primary)) !important;
+    border-color: rgb(var(--bna-primary)) !important;
+}
+
+html:not(#bna) .mxvd-table-date .today {
+    color: rgb(var(--bna-primary)) !important;
+}
+
+html:not(#bna) .mxvd-calendar-content .cell:hover {
+    background-color: rgba(var(--bna-on-surface), .08) !important;
+    color: rgb(var(--bna-on-surface)) !important;
+}
+
+html:not(#bna) .mxvd-calendar-content .cell.active {
+    background-color: rgb(var(--bna-primary)) !important;
+    color: rgb(var(--bna-on-primary)) !important;
+}
+
+html:not(#bna) .mxvd-calendar-content .cell.in-range,
+html:not(#bna) .mxvd-calendar-content .cell.hover-in-range {
+    background-color: rgb(var(--bna-secondary-container)) !important;
+    color: rgb(var(--bna-on-secondary-container)) !important;
+}
+
+html:not(#bna) .mxvd-calendar-content .cell.disabled {
+    background-color: rgba(var(--bna-on-surface), .06) !important;
+    color: rgba(var(--bna-on-surface), .38) !important;
+}
+
+html:not(#bna) .mxvd-table-date .cell.not-current-month {
+    color: rgba(var(--bna-on-surface), .38) !important;
+}
+
+html:not(#bna) .mxvd-time {
+    background: rgb(var(--bna-surface-container-high)) !important;
+}
+
+html:not(#bna) .mxvd-time + .mxvd-time,
+html:not(#bna) .mxvd-time-header,
+html:not(#bna) .mxvd-time-column {
+    border-color: rgb(var(--bna-outline-variant)) !important;
+}
+
+html:not(#bna) .mxvd-time-column .mxvd-time-item:hover,
+html:not(#bna) .mxvd-time-option:hover {
+    background-color: rgba(var(--bna-on-surface), .08) !important;
+    color: rgb(var(--bna-on-surface)) !important;
+}
+
+html:not(#bna) .mxvd-time-column .mxvd-time-item.active,
+html:not(#bna) .mxvd-time-option.active {
+    color: rgb(var(--bna-primary)) !important;
+}
+
+html:not(#bna) .mxvd-time-column .mxvd-time-item.disabled,
+html:not(#bna) .mxvd-time-option.disabled {
+    background-color: rgba(var(--bna-on-surface), .06) !important;
+    color: rgba(var(--bna-on-surface), .38) !important;
+}
+
+html:not(#bna) .mxvd-icon-calendar,
+html:not(#bna) .mxvd-icon-clear {
+    color: rgb(var(--bna-on-surface-variant)) !important;
+}
+
+html:not(#bna) .mxvd-icon-clear:hover {
+    color: rgb(var(--bna-on-surface)) !important;
+}
+
+html:not(#bna) .v-sheet {
+    background: rgb(var(--bna-surface-container-high)) !important;
+}
+
+html:not(#bna) .v-sheet li {
+    list-style: none;
+}
+
+html:not(#bna) .v-sheet .dropdown-item.active {
+    color: rgb(var(--bna-primary)) !important;
+    background: rgba(var(--bna-secondary-container), .5) !important;
+}
+
+html:not(#bna) .mxvd-calendar-week-mode .mxvd-date-row:hover {
+    background-color: rgba(var(--bna-on-surface), .08) !important;
+}
+
+html:not(#bna) .mxvd-calendar-week-mode .mxvd-date-row.mxvd-active-week {
+    background-color: rgb(var(--bna-secondary-container)) !important;
+}
+
+html:not(#bna) .mxvd-calendar-week-mode .mxvd-date-row.mxvd-active-week .cell:not(.active),
+html:not(#bna) .mxvd-calendar-week-mode .mxvd-date-row.mxvd-active-week .mxvd-week-number {
+    color: rgb(var(--bna-on-secondary-container)) !important;
+}
+
+html:not(#bna) [data-bna-hidden] {
+    display: none !important;
+}
+
+html:not(#bna) .v-segmented .btn.active,
+html:not(#bna) .v-segmented .btn[aria-current=true],
+html:not(#bna) .btn-check:checked + .btn-primary {
+    background-color: rgb(var(--bna-primary)) !important;
+    border-color: rgb(var(--bna-primary)) !important;
+}
+
+html:not(#bna) .btn-primary,
+html:not(#bna) .btn-primary *,
+html:not(#bna) .v-segmented .btn.active,
+html:not(#bna) .v-segmented .btn.active *,
+html:not(#bna) .v-segmented .btn[aria-current=true],
+html:not(#bna) .btn-check:checked + .btn-primary,
+html:not(#bna) .bg-primary,
+html:not(#bna) .bg-primary .text-white,
+html:not(#bna) .text-bg-primary,
+html:not(#bna) .badge.bg-primary,
+html:not(#bna) .nav-pills .nav-link.active,
+html:not(#bna) .page-item.active .page-link,
+html:not(#bna) .list-group-item.active,
+html:not(#bna) .dropdown-menu .dropdown-item.active,
+html:not(#bna) .dropdown-menu .dropdown-item:active,
+html:not(#bna) .btn-toolbar.active,
+html:not(#bna) .btn-toolbar.active *,
+html:not(#bna) .bubble-btn.active,
+html:not(#bna) .bubble-btn.active * {
+    color: rgb(var(--bna-on-primary)) !important;
+}
+
+html:not(#bna) .text-bg-secondary,
+html:not(#bna) .badge.bg-secondary,
+html:not(#bna) .bg-secondary .text-white {
+    color: rgb(var(--bna-on-secondary)) !important;
+}
+
+html:not(#bna) .text-bg-danger,
+html:not(#bna) .badge.bg-danger,
+html:not(#bna) .bg-danger .text-white {
+    color: rgb(var(--bna-on-error)) !important;
+}
+
+html:not(#bna) h1,
+html:not(#bna) h2,
+html:not(#bna) .h1,
+html:not(#bna) .h2,
+html:not(#bna) .navbar-brand,
+html:not(#bna) .mobile-topbar-title,
+html:not(#bna) .modal-title,
+html:not(#bna) .offcanvas-title {
+    font-family: "BNA Keania One", "BNA Sniglet", system-ui, sans-serif !important;
+    font-weight: 400 !important;
+    letter-spacing: 0;
+}
+
+html:not(#bna) .container-max-lg > .d-flex > h1.h2 {
+    font-family: "BNA Schoolbell", "BNA Sniglet", system-ui, sans-serif !important;
+}
+
+html:not(#bna) button,
+html:not(#bna) input,
+html:not(#bna) select,
+html:not(#bna) textarea,
+html:not(#bna) .btn,
+html:not(#bna) .bottom-nav-item {
+    font-family: inherit;
+}
+
+html:not(#bna) [class*=error-dialog] {
+    background: rgb(var(--bna-surface-container-high)) !important;
+    color: rgb(var(--bna-on-surface)) !important;
+    border: 2px solid rgb(var(--bna-outline)) !important;
+    border-radius: 28px !important;
+    box-shadow: none !important;
+}
+
+html:not(#bna) [class*=error-dialog] h1,
+html:not(#bna) [class*=error-dialog] h2,
+html:not(#bna) [class*=error-dialog] h3 {
+    color: rgb(var(--bna-on-surface)) !important;
+}
+
+html:not(#bna) .error-icon {
+    background: rgb(var(--bna-error-container)) !important;
+    color: rgb(var(--bna-on-error-container)) !important;
+}
+
+html:not(#bna) .error-kicker,
+html:not(#bna) [class*=error-dialog] .error-meta dt {
+    color: rgb(var(--bna-error)) !important;
+}
+
+html:not(#bna) .error-meta {
+    background: rgb(var(--bna-surface-container-highest)) !important;
+}
+
+html:not(#bna) .error-hide-button {
+    color: rgb(var(--bna-on-surface-variant)) !important;
+}
+
+html:not(#bna) .v-sheet .btn-primary,
+html:not(#bna) .v-sheet .btn-primary *,
+html:not(#bna) .v-sheet .btn.active,
+html:not(#bna) .v-sheet .btn.active * {
+    color: rgb(var(--bna-primary)) !important;
+}
+
+html:not(#bna) .v-sheet .btn-primary,
+html:not(#bna) .v-sheet .btn.active {
+    background-color: rgba(var(--bna-secondary-container), .5) !important;
+    border-color: transparent !important;
+}

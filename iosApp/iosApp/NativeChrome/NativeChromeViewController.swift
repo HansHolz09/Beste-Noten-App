@@ -72,6 +72,7 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
     private var isDarkTheme = false
     private var usesSystemAppearance = true
     private var bottomTabsVisible = false
+    private var displaysWebsite = false
     private var bottomTabsAnimationGeneration = 0
     private var storeUpdateBannerBottomConstraint: NSLayoutConstraint?
     private lazy var primaryTabsContent = PrimaryTabsPaletteContentView(
@@ -322,6 +323,12 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
     }
 
     private func setFragmentDestination(_ route: String) {
+        displaysWebsite = route == "website"
+        if displaysWebsite {
+            updateNavigationTitle("beste.schule")
+            updateChrome(animated: true)
+            return
+        }
         guard let section = AppSection(rawValue: route) else { return }
         selectedSection = section
         updateNavigationTitle(section.title, backwards: section == .home)
@@ -505,7 +512,8 @@ final class NativeChromeViewController: UIViewController, UISplitViewControllerD
         let sidebarVisible = displaysMainContent && usesSidebar
         let compactChromeVisible = visible && !sidebarVisible
         let shouldShowBottomTabs =
-            displaysMainContent && compactChromeVisible && (selectedSection == .home || selectedSection == .settings)
+            displaysMainContent && compactChromeVisible && !displaysWebsite &&
+            (selectedSection == .home || selectedSection == .settings)
 
         contentNavigationController.setNavigationBarHidden(!visible, animated: animated)
 

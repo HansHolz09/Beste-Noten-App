@@ -1,0 +1,10 @@
+html:not(#bna) .navbar-light,
+html:not(#bna) .mobile-topbar,
+html:not(#bna) .bottom-nav,
+html:not(#bna) .sidebar:not(.sidebar--embedded) {
+    display: none !important;
+}
+
+html:not(#bna) .has-bottom-nav [class*=container-max-] {
+    padding-bottom: var(--bna-inset-bottom) !important;
+}

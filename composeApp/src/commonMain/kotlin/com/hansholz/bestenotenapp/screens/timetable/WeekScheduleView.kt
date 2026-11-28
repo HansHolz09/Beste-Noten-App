@@ -432,12 +432,6 @@ fun WeekScheduleView(
                         }
                         HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
                         ListItem(
-                            headlineContent = {
-                                Text(
-                                    text = selectedLesson?.subject?.name ?: "Unbekanntes Fach",
-                                    style = typography.headlineSmall,
-                                )
-                            },
                             overlineContent = {
                                 Text(
                                     text =
@@ -470,51 +464,52 @@ fun WeekScheduleView(
                             },
                             modifier = Modifier.skipToLookaheadSize(),
                             colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f)),
-                        )
+                        ) {
+                            Text(
+                                text = selectedLesson?.subject?.name ?: "Unbekanntes Fach",
+                                style = typography.headlineSmall,
+                            )
+                        }
                         HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
                         ListItem(
-                            headlineContent = { Text(selectedLesson?.group?.name?.ifEmpty { "Unbekannt" } ?: "Unbekannt") },
                             overlineContent = { Text("Klasse/Gruppe") },
                             modifier = Modifier.skipToLookaheadSize(),
                             colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f)),
-                        )
+                        ) { Text(selectedLesson?.group?.name?.ifEmpty { "Unbekannt" } ?: "Unbekannt") }
                         HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
                         ListItem(
-                            headlineContent = {
-                                Text(
-                                    selectedLesson
-                                        ?.teachers
-                                        ?.joinToString {
-                                            (
-                                                (
-                                                    if (showTeachersWithFirstname) {
-                                                        it.forename
-                                                    } else {
-                                                        it.forename?.take(
-                                                            1,
-                                                        ) + "."
-                                                    }
-                                                ) + " " + it.name
-                                            )
-                                        }?.ifEmpty { "Unbekannt" }
-                                        ?: "Unbekannt",
-                                )
-                            },
                             overlineContent = { Text("Lehrer/-in(nen)") },
                             modifier = Modifier.skipToLookaheadSize(),
                             colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f)),
-                        )
+                        ) {
+                            Text(
+                                selectedLesson
+                                    ?.teachers
+                                    ?.joinToString {
+                                        (
+                                            (
+                                                if (showTeachersWithFirstname) {
+                                                    it.forename
+                                                } else {
+                                                    it.forename?.take(
+                                                        1,
+                                                    ) + "."
+                                                }
+                                            ) + " " + it.name
+                                        )
+                                    }?.ifEmpty { "Unbekannt" }
+                                    ?: "Unbekannt",
+                            )
+                        }
                         HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
                         ListItem(
-                            headlineContent = { Text(selectedLesson?.rooms?.joinToString { it.localId }?.ifEmpty { "Unbekannt" } ?: "Unbekannt") },
                             overlineContent = { Text("Raum/Räume") },
                             modifier = Modifier.skipToLookaheadSize(),
                             colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f)),
-                        )
+                        ) { Text(selectedLesson?.rooms?.joinToString { it.localId }?.ifEmpty { "Unbekannt" } ?: "Unbekannt") }
                         selectedLesson?.notes?.forEach { note ->
                             HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
                             ListItem(
-                                headlineContent = { Text(note.description?.parseMarkdown() ?: AnnotatedString("Leer")) },
                                 overlineContent = { Text(note.type?.name?.replace("Substitution Plan", "Vertretungsplan") ?: "Unbenannte Notiz") },
                                 trailingContent = {
                                     note.type?.color?.let {
@@ -529,7 +524,7 @@ fun WeekScheduleView(
                                 },
                                 modifier = Modifier.skipToLookaheadSize(),
                                 colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f)),
-                            )
+                            ) { Text(note.description?.parseMarkdown() ?: AnnotatedString("Leer")) }
                         }
                         if (homeworkEnabled) {
                             selectedLesson?.let { lesson ->
@@ -551,7 +546,6 @@ fun WeekScheduleView(
                                 val dialogShown = remember { mutableStateOf(false) }
                                 HorizontalDivider(thickness = 2.dp, color = colorScheme.outline)
                                 ListItem(
-                                    headlineContent = { Text(absence.type.name, color = colorScheme.error) },
                                     overlineContent = { Text("Abwesenheit durch") },
                                     modifier =
                                         Modifier
@@ -560,7 +554,7 @@ fun WeekScheduleView(
                                                 vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
                                             }.skipToLookaheadSize(),
                                     colors = ListItemDefaults.colors(colorScheme.surfaceContainer.copy(0.5f)),
-                                )
+                                ) { Text(absence.type.name, color = colorScheme.error) }
                                 AbsenceInfoDialog(dialogShown, absence)
                             }
                     }

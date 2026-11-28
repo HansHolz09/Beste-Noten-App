@@ -5,6 +5,7 @@ import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Date_range
 import com.composables.icons.materialsymbols.rounded.Demography
 import com.composables.icons.materialsymbols.rounded.Home
+import com.composables.icons.materialsymbols.rounded.Language
 import com.composables.icons.materialsymbols.rounded.School
 import com.composables.icons.materialsymbols.rounded.Settings
 import kotlinx.serialization.Contextual
@@ -46,16 +47,19 @@ sealed class Fragment(
     data object SubjectsAndTeachers : Fragment("Fächer und Lehrer", MaterialSymbols.Rounded.Demography, "subjects_and_teachers")
 
     @Serializable
+    data object Website : Fragment("beste.schule", MaterialSymbols.Rounded.Language, "website")
+
+    @Serializable
     data object Settings : Fragment("Einstellungen", MaterialSymbols.Rounded.Settings, "settings")
 
     companion object {
-        val entries: List<Fragment> by lazy {
+        fun entries(showWebsite: Boolean): List<Fragment> =
             listOfNotNull(
                 Home,
                 Grades,
                 Timetable,
                 SubjectsAndTeachers,
+                Website.takeIf { showWebsite },
             )
-        }
     }
 }

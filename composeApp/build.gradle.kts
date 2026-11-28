@@ -47,10 +47,19 @@ buildConfig {
 kotlin {
     android {
         namespace = "com.hansholz.bestenotenapp"
-        compileSdk =
-            libs.versions.android.compileSdk
-                .get()
-                .toInt()
+        compileSdk {
+            version =
+                release(
+                    libs.versions.android.compileSdk
+                        .get()
+                        .toInt(),
+                ) {
+                    minorApiLevel =
+                        libs.versions.android.compileSdkMinor
+                            .get()
+                            .toInt()
+                }
+        }
         minSdk =
             libs.versions.android.minSdk
                 .get()
@@ -132,6 +141,7 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.androidx.fragment)
+            implementation(libs.androidx.webkit)
             implementation(libs.androidx.core.splashscreen)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.alarmee)
@@ -141,11 +151,7 @@ kotlin {
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
             implementation(libs.alarmee)
-
-            // TODO: Remove the iOS-specific Compose overrides when upgrading to the final Compose Multiplatform 1.13.0 release.
-            implementation(libs.ios.compose.foundation)
-            implementation(libs.ios.compose.runtime)
-            implementation(libs.ios.compose.ui)
+            implementation(libs.skiko.skottie)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
@@ -154,15 +160,19 @@ kotlin {
             implementation(libs.nucleus.aot.runtime)
             implementation(libs.nucleus.graalvm.runtime)
             implementation(libs.nucleus.decorated.window.tao)
+            implementation(libs.nucleus.composewebview)
             implementation(libs.advanced.menubar)
             implementation(libs.navigation.event)
             implementation(libs.navigation.event.compose)
             implementation(libs.ktor.client.apache5)
             implementation(libs.ktor.server.core)
+            implementation(libs.skiko.skottie)
+            runtimeOnly(libs.skiko.skottie.awt.runtime)
             compileOnly(libs.graalvm.svm)
         }
         wasmJsMain.dependencies {
             implementation(libs.ktor.client.js)
+            implementation(libs.skiko.skottie)
         }
     }
 }
@@ -226,6 +236,8 @@ nucleus.application {
             debPackageVersion = appVersion
             debMaintainer = "HansHolz09 <mail@hansholz.dev>"
             shortcut = true
+            debDepends += listOf("libwebkit2gtk-4.1-0")
+            rpmRequires += listOf("libwebkit2gtk-4.1.so.0()(64bit)")
 
             modules += "jdk.security.auth"
 

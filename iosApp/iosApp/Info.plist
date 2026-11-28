@@ -32,6 +32,8 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Die Kamera wird nur verwendet, wenn du auf der beste.schule-Webseite ein Foto als Anhang aufnimmst.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>$(PRODUCT_NAME) Authentication with TouchId or FaceID</string>
 	<key>UIApplicationSceneManifest</key>

@@ -52,6 +52,7 @@ import com.hansholz.bestenotenapp.homework.KSafeHomeworkRepository
 import com.hansholz.bestenotenapp.homework.KSafeHomeworkSyncSettings
 import com.hansholz.bestenotenapp.notifications.GradeNotificationEngine
 import com.hansholz.bestenotenapp.notifications.GradeNotifications
+import com.hansholz.bestenotenapp.screens.website.BesteSchuleWebsite
 import com.hansholz.bestenotenapp.security.kSafe
 import com.hansholz.bestenotenapp.security.kSafeProvider
 import com.hansholz.bestenotenapp.utils.IO
@@ -69,6 +70,7 @@ import io.github.vinceglb.filekit.readString
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.client.request.head
 import io.ktor.http.isSuccess
 import io.ktor.utils.io.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -676,6 +678,40 @@ class ViewModel(
                 ),
             )
         }
+    }
+
+    suspend fun getWebsiteAccessToken(): String? = if (isDemoAccount.value) null else besteSchuleAuth.getValidAccessToken()
+
+    var websiteStartUrl: String? = null
+    private var isCheckingWebsite = false
+
+    suspend fun prepareWebsite(url: String): Boolean {
+        if (isCheckingWebsite) return false
+        isCheckingWebsite = true
+        val reachable =
+            try {
+                withTimeout(6.seconds) { httpClient.head(BesteSchuleWebsite.ORIGIN) }
+                true
+            } catch (_: TimeoutCancellationException) {
+                false
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                !e.isConnectionFailure()
+            } finally {
+                isCheckingWebsite = false
+            }
+        if (reachable) {
+            websiteStartUrl = url
+        } else {
+            toaster.show(
+                Toast(
+                    message = "beste.schule ist gerade nicht erreichbar. Bitte überprüfe deine Internetverbindung.",
+                    type = ToastType.Error,
+                ),
+            )
+        }
+        return reachable
     }
 
     suspend fun closeOrOpenDrawer(isCompactWindow: Boolean) {

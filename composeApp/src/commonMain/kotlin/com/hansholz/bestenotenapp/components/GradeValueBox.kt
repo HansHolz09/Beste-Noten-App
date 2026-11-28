@@ -15,6 +15,7 @@ import androidx.compose.material3.MaterialShapes.Companion.PixelCircle
 import androidx.compose.material3.MaterialShapes.Companion.Slanted
 import androidx.compose.material3.MaterialShapes.Companion.SoftBurst
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,10 +29,10 @@ import androidx.compose.ui.unit.sp
 import com.composables.icons.materialsymbols.MaterialSymbols
 import com.composables.icons.materialsymbols.rounded.Block
 import com.hansholz.bestenotenapp.api.models.Level
+import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.utils.GradeScale
 import com.hansholz.bestenotenapp.utils.gradeScale
 import com.hansholz.bestenotenapp.utils.parseGradeValue
-import org.kodein.emoji.compose.m3.TextWithNotoImageEmoji
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -59,12 +60,13 @@ fun GradeValueBox(
             ?: PixelCircle.toShape()
     Box(Modifier.clip(shape).background(color).size(30.dp)) {
         gradeValue?.let {
-            TextWithNotoImageEmoji(
+            Text(
                 text = it,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.align(Alignment.Center),
                 color = Color.Black,
                 fontSize = 20.sp,
+                fontFamily = FontFamilies.Sniglet,
             )
         } ?: Icon(
             imageVector = MaterialSymbols.Rounded.Block,

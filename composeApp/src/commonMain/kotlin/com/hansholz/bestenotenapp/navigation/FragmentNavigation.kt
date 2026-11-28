@@ -16,6 +16,7 @@ import com.hansholz.bestenotenapp.screens.home.Home
 import com.hansholz.bestenotenapp.screens.settings.Settings
 import com.hansholz.bestenotenapp.screens.subjectsAndTeachers.SubjectsAndTeachers
 import com.hansholz.bestenotenapp.screens.timetable.Timetable
+import com.hansholz.bestenotenapp.screens.website.Website
 
 @Composable
 fun FragmentNavigation(
@@ -76,6 +77,15 @@ fun FragmentNavigation(
                     viewModel = viewModel,
                     sharedTransitionScope = this@SharedTransitionLayout,
                     animatedVisibilityScope = this,
+                )
+            }
+
+            composable(route = Fragment.Website.route) {
+                Website(
+                    viewModel = viewModel,
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedVisibilityScope = this,
+                    onClose = { navController.popBackStack() },
                 )
             }
 

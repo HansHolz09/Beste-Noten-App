@@ -44,6 +44,7 @@ internal fun AppDrawerContent(
     selectedRoute: String?,
     topPadding: Dp,
     animateLogo: Boolean,
+    showWebsite: Boolean,
     onDestinationSelected: (Fragment) -> Unit,
     onLogoClick: () -> Unit,
 ) {
@@ -93,7 +94,7 @@ internal fun AppDrawerContent(
             )
         }
         Spacer(Modifier.height(15.dp))
-        Fragment.entries.forEach { screen ->
+        Fragment.entries(showWebsite).forEach { screen ->
             DrawerItem(
                 screen = screen,
                 selected = selectedRoute == screen.route,

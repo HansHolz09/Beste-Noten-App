@@ -14,6 +14,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,11 +58,13 @@ import com.composables.icons.materialsymbols.rounded.How_to_reg
 import com.composables.icons.materialsymbols.rounded.Info
 import com.composables.icons.materialsymbols.rounded.Invert_colors
 import com.composables.icons.materialsymbols.rounded.Light_mode
+import com.composables.icons.materialsymbols.rounded.Link
 import com.composables.icons.materialsymbols.rounded.Local_library
 import com.composables.icons.materialsymbols.rounded.Lock
 import com.composables.icons.materialsymbols.rounded.Logout
 import com.composables.icons.materialsymbols.rounded.Menu
 import com.composables.icons.materialsymbols.rounded.Notifications
+import com.composables.icons.materialsymbols.rounded.Palette
 import com.composables.icons.materialsymbols.rounded.Percent
 import com.composables.icons.materialsymbols.rounded.Privacy_tip
 import com.composables.icons.materialsymbols.rounded.Settings_backup_restore
@@ -73,6 +76,7 @@ import com.composables.icons.materialsymbols.rounded.Title
 import com.composables.icons.materialsymbols.rounded.Touch_app
 import com.composables.icons.materialsymbols.rounded.Vibration
 import com.composables.icons.materialsymbols.rounded.Visibility
+import com.composables.icons.materialsymbols.rounded.Wallpaper
 import com.composables.icons.materialsymbols.rounded.Waving_hand
 import com.composables.icons.materialsymbols.rounded.Wifi
 import com.hansholz.bestenotenapp.components.InfoDialog
@@ -124,8 +128,11 @@ import com.hansholz.bestenotenapp.main.LocalShowNotes
 import com.hansholz.bestenotenapp.main.LocalShowOnlyRelevantData
 import com.hansholz.bestenotenapp.main.LocalShowTeachersWithFirstname
 import com.hansholz.bestenotenapp.main.LocalShowUsageHints
+import com.hansholz.bestenotenapp.main.LocalShowWebsiteShortcuts
 import com.hansholz.bestenotenapp.main.LocalShowYearProgress
 import com.hansholz.bestenotenapp.main.LocalTimetableBlockViewEnabled
+import com.hansholz.bestenotenapp.main.LocalWebsiteBackgroundEnabled
+import com.hansholz.bestenotenapp.main.LocalWebsiteDesignEnabled
 import com.hansholz.bestenotenapp.main.Platform
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.main.getExactPlatform
@@ -134,6 +141,7 @@ import com.hansholz.bestenotenapp.notifications.GradeNotifications
 import com.hansholz.bestenotenapp.reviews.LocalStoreReviewManager
 import com.hansholz.bestenotenapp.reviews.StoreReview
 import com.hansholz.bestenotenapp.screens.grades.GradeAverageCalculator
+import com.hansholz.bestenotenapp.screens.website.isBesteSchuleWebViewSupported
 import com.hansholz.bestenotenapp.security.kSafeProviderCompose
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.theme.LocalBlurEnabled
@@ -208,6 +216,9 @@ fun Settings(
     var homeworkTypes by LocalHomeworkTypes.current
     var homeworkTypeColors by LocalHomeworkTypeColors.current
     var showTeachersWithFirstname by LocalShowTeachersWithFirstname.current
+    var showWebsiteShortcuts by LocalShowWebsiteShortcuts.current
+    var websiteDesignEnabled by LocalWebsiteDesignEnabled.current
+    var websiteBackgroundEnabled by LocalWebsiteBackgroundEnabled.current
     var showOnlyRelevantData by LocalShowOnlyRelevantData.current
     var requireBiometricAuthentification by LocalRequireBiometricAuthentification.current
     val nativeComponentsEnabled = LocalNativeComponentsEnabled.current.value
@@ -504,7 +515,9 @@ fun Settings(
                                 )
                             } else {
                                 Slider(
-                                    value = selectedIndex.toFloat(),
+                                    state =
+                                        rememberSliderState(steps = intervalOptions.size - 2, trackRange = 0f..intervalOptions.lastIndex.toFloat())
+                                            .apply { value = selectedIndex.toFloat() },
                                     onValueChange = { onIntervalSelected(it.roundToInt()) },
                                     modifier =
                                         sliderModifier.semantics {
@@ -512,8 +525,6 @@ fun Settings(
                                             stateDescription = formateInterval(notificationIntervalMinutes)
                                         },
                                     enabled = notificationsEnabled,
-                                    valueRange = 0f..intervalOptions.lastIndex.toFloat(),
-                                    steps = intervalOptions.size - 2,
                                 )
                             }
                         },
@@ -572,7 +583,7 @@ fun Settings(
                         )
                     } else {
                         Slider(
-                            value = newestGradesCount.toFloat(),
+                            state = rememberSliderState(steps = 8, trackRange = 1f..10f).apply { value = newestGradesCount.toFloat() },
                             onValueChange = { onCountSelected(it.roundToInt() - 1) },
                             modifier =
                                 sliderModifier.semantics {
@@ -580,8 +591,6 @@ fun Settings(
                                     stateDescription = newestGradesCount.toString()
                                 },
                             enabled = showNewestGrades,
-                            valueRange = 1f..10f,
-                            steps = 8,
                         )
                     }
                 },
@@ -628,6 +637,18 @@ fun Settings(
                     },
                     text = "Schuljahres-Fortschritt anzeigen",
                     icon = MaterialSymbols.Rounded.Percent,
+                    position = PreferencePosition.Middle,
+                )
+            }
+            if (isBesteSchuleWebViewSupported && !viewModel.isDemoAccount.value) {
+                settingsToggleItem(
+                    checked = showWebsiteShortcuts,
+                    onCheckedChange = {
+                        showWebsiteShortcuts = it
+                        put("showWebsiteShortcuts", it)
+                    },
+                    text = "Direktlinks zur Webseite anzeigen",
+                    icon = MaterialSymbols.Rounded.Link,
                     position = PreferencePosition.Middle,
                 )
             }
@@ -816,6 +837,32 @@ fun Settings(
                     )
                 }
             }
+            if (isBesteSchuleWebViewSupported && !viewModel.isDemoAccount.value) {
+                item {
+                    PreferenceCategory("beste.schule-Webseite", Modifier.padding(horizontal = 15.dp))
+                }
+                settingsToggleItem(
+                    checked = websiteDesignEnabled,
+                    onCheckedChange = {
+                        websiteDesignEnabled = it
+                        put("websiteDesignEnabled", it)
+                    },
+                    text = "An das App-Design anpassen",
+                    icon = MaterialSymbols.Rounded.Palette,
+                    position = PreferencePosition.Top,
+                )
+                settingsToggleItem(
+                    checked = websiteBackgroundEnabled,
+                    onCheckedChange = {
+                        websiteBackgroundEnabled = it
+                        put("websiteBackgroundEnabled", it)
+                    },
+                    text = "App-Hintergrund durchscheinen lassen",
+                    icon = MaterialSymbols.Rounded.Wallpaper,
+                    enabled = websiteDesignEnabled,
+                    position = PreferencePosition.Bottom,
+                )
+            }
             if (!viewModel.isDemoAccount.value) {
 //                [beste.schule currently doesn't return the needed data]
 //
@@ -963,6 +1010,9 @@ fun Settings(
                                 homeworkEnabled = appSettings.homeworkEnabled ?: true
                                 viewModel.homeworkSyncSettings.homeworkEnabled = homeworkEnabled
                                 showTeachersWithFirstname = appSettings.showTeachersWithFirstname
+                                showWebsiteShortcuts = appSettings.showWebsiteShortcuts ?: true
+                                websiteDesignEnabled = appSettings.websiteDesignEnabled ?: true
+                                websiteBackgroundEnabled = appSettings.websiteBackgroundEnabled ?: true
                                 showOnlyRelevantData = appSettings.showOnlyRelevantData
                                 notificationsEnabled = appSettings.gradeNotificationsEnabled
                                 notificationIntervalMinutes = appSettings.gradeNotificationsIntervalMinutes
@@ -994,6 +1044,9 @@ fun Settings(
                                 put("timetableBlockViewEnabled", appSettings.timetableBlockViewEnabled)
                                 put("homeworkEnabled", appSettings.homeworkEnabled)
                                 put("showTeachersWithFirstname", appSettings.showTeachersWithFirstname)
+                                put("showWebsiteShortcuts", showWebsiteShortcuts)
+                                put("websiteDesignEnabled", websiteDesignEnabled)
+                                put("websiteBackgroundEnabled", websiteBackgroundEnabled)
                                 put("showOnlyRelevantData", appSettings.showOnlyRelevantData)
                                 put("gradeNotificationsEnabled", appSettings.gradeNotificationsEnabled)
                                 put("gradeNotificationsIntervalMinutes", appSettings.gradeNotificationsIntervalMinutes)

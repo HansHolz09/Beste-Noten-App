@@ -12,9 +12,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,11 +28,14 @@ import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.ContainedLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
@@ -81,6 +86,7 @@ import com.composables.icons.materialsymbols.rounded.Apartment
 import com.composables.icons.materialsymbols.rounded.Architecture
 import com.composables.icons.materialsymbols.rounded.Calculate
 import com.composables.icons.materialsymbols.rounded.Calendar_clock
+import com.composables.icons.materialsymbols.rounded.Campaign
 import com.composables.icons.materialsymbols.rounded.Clock_loader_80
 import com.composables.icons.materialsymbols.rounded.Date_range
 import com.composables.icons.materialsymbols.rounded.Demography
@@ -101,9 +107,14 @@ import com.composables.icons.materialsymbols.rounded.Hourglass
 import com.composables.icons.materialsymbols.rounded.Info
 import com.composables.icons.materialsymbols.rounded.Insights
 import com.composables.icons.materialsymbols.rounded.Labs
+import com.composables.icons.materialsymbols.rounded.Language
+import com.composables.icons.materialsymbols.rounded.Link
 import com.composables.icons.materialsymbols.rounded.Location_on
 import com.composables.icons.materialsymbols.rounded.Menu
+import com.composables.icons.materialsymbols.rounded.Menu_book
 import com.composables.icons.materialsymbols.rounded.News
+import com.composables.icons.materialsymbols.rounded.Open_in_browser
+import com.composables.icons.materialsymbols.rounded.Public
 import com.composables.icons.materialsymbols.rounded.Refresh
 import com.composables.icons.materialsymbols.rounded.Schedule
 import com.composables.icons.materialsymbols.rounded.School
@@ -146,11 +157,14 @@ import com.hansholz.bestenotenapp.main.LocalShowNewestGrades
 import com.hansholz.bestenotenapp.main.LocalShowNotes
 import com.hansholz.bestenotenapp.main.LocalShowOnlyRelevantData
 import com.hansholz.bestenotenapp.main.LocalShowUsageHints
+import com.hansholz.bestenotenapp.main.LocalShowWebsiteShortcuts
 import com.hansholz.bestenotenapp.main.LocalShowYearProgress
 import com.hansholz.bestenotenapp.main.LocalTimetableBlockViewEnabled
 import com.hansholz.bestenotenapp.main.ViewModel
 import com.hansholz.bestenotenapp.navigation.Fragment
 import com.hansholz.bestenotenapp.reviews.ReviewAfterDismiss
+import com.hansholz.bestenotenapp.screens.website.BesteSchuleWebsite
+import com.hansholz.bestenotenapp.screens.website.isBesteSchuleWebViewSupported
 import com.hansholz.bestenotenapp.theme.FontFamilies
 import com.hansholz.bestenotenapp.theme.LocalAnimationsEnabled
 import com.hansholz.bestenotenapp.theme.LocalThemeIsDark
@@ -222,6 +236,7 @@ fun Home(
         val showYearProgress by LocalShowYearProgress.current
         val showUsageHints by LocalShowUsageHints.current
         val homeworkEnabled by LocalHomeworkEnabled.current
+        val showWebsiteShortcuts by LocalShowWebsiteShortcuts.current
         val homeworkRevision = viewModel.homeworkRevision.intValue
         var homework by remember { mutableStateOf(emptyList<HomeworkEntry>()) }
 
@@ -536,9 +551,6 @@ fun Home(
                                                     Column {
                                                         newestGrades.forEach {
                                                             ListItem(
-                                                                headlineContent = {
-                                                                    Text("${it.subject?.name}: ${it.name}")
-                                                                },
                                                                 supportingContent = {
                                                                     Column {
                                                                         Text("${it.type} vom ${formateDate(it.givenAt)}")
@@ -548,7 +560,9 @@ fun Home(
                                                                     GradeValueBox(it.grades?.getOrNull(0)?.value, viewModel.levelFor(it))
                                                                 },
                                                                 colors = ListItemDefaults.colors(Color.Transparent),
-                                                            )
+                                                            ) {
+                                                                Text("${it.subject?.name}: ${it.name}")
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -977,6 +991,104 @@ fun Home(
                                             )
                                         } else {
                                             Spacer(Modifier.height(10.dp))
+                                        }
+                                    }
+                                }
+                            }
+                            if (isBesteSchuleWebViewSupported && !viewModel.isDemoAccount.value) {
+                                MasonryItem("website-card", masonryLookaheadScope, animationsEnabled) {
+                                    val openWebsite: (String) -> Unit = { url ->
+                                        vibrator.enhancedVibrateN(EnhancedVibrations.CLICK)
+                                        scope.launch {
+                                            if (!viewModel.prepareWebsite(url)) return@launch
+                                            bringIntoView()
+                                            onNavigateToScreen(Fragment.Website)
+                                        }
+                                    }
+                                    Box(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(10.dp)
+                                            .clip(RoundedCornerShape(24.dp))
+                                            .background(colorScheme.surfaceContainerHighest.copy(0.7f))
+                                            .scatteredIconBackground(
+                                                items =
+                                                    remember {
+                                                        listOf(
+                                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Language),
+                                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Public),
+                                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Open_in_browser),
+                                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Link),
+                                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Language),
+                                                            ScatterItem.IconItem(MaterialSymbols.Rounded.Public),
+                                                        )
+                                                    },
+                                                alpha = backgroundAlpha.value,
+                                            ).border(BorderStroke(2.dp, colorScheme.outline), RoundedCornerShape(24.dp))
+                                            .clickable { openWebsite(BesteSchuleWebsite.START_URL) }
+                                            .enhancedSharedBounds(
+                                                sharedTransitionScope = sharedTransitionScope,
+                                                sharedContentState = rememberSharedContentState(key = "website-card"),
+                                                animatedVisibilityScope = animatedVisibilityScope,
+                                            ),
+                                    ) {
+                                        Column(
+                                            Modifier
+                                                .fillMaxWidth(),
+                                        ) {
+                                            Box(Modifier.fillMaxWidth().padding(10.dp).padding(top = 10.dp)) {
+                                                Text(
+                                                    text = "beste.schule",
+                                                    modifier =
+                                                        Modifier
+                                                            .align(Alignment.Center)
+                                                            .enhancedSharedElement(
+                                                                sharedTransitionScope = sharedTransitionScope,
+                                                                sharedContentState = rememberSharedContentState(key = "website-title"),
+                                                                animatedVisibilityScope = animatedVisibilityScope,
+                                                            ).skipToLookaheadSize(),
+                                                    style = typography.headlineSmall,
+                                                )
+                                                EnhancedIconButton(
+                                                    onClick = {},
+                                                    modifier = Modifier.clearAndSetSemantics {},
+                                                    enabled = false,
+                                                ) {}
+                                            }
+                                            val studentId = viewModel.studentId.value
+                                            if (showWebsiteShortcuts && !studentId.isNullOrEmpty()) {
+                                                FlowRow(
+                                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+                                                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                                                ) {
+                                                    listOf(
+                                                        Triple("Noten", MaterialSymbols.Rounded.School, "grades"),
+                                                        Triple("Stundenplan", MaterialSymbols.Rounded.Date_range, "timetables"),
+                                                        Triple("Mitteilungen", MaterialSymbols.Rounded.Campaign, "announcements"),
+                                                        Triple("Einträge", MaterialSymbols.Rounded.Sticky_note_2, "notes"),
+                                                        Triple("Klassenbuch", MaterialSymbols.Rounded.Menu_book, "journal"),
+                                                        Triple("Fehlzeiten", MaterialSymbols.Rounded.Event_busy, "absences"),
+                                                    ).forEach { (label, icon, page) ->
+                                                        AssistChip(
+                                                            onClick = { openWebsite(BesteSchuleWebsite.studentUrl(studentId, page)) },
+                                                            label = { Text(label) },
+                                                            leadingIcon = { Icon(icon, null, Modifier.size(AssistChipDefaults.IconSize)) },
+                                                            shape = RoundedCornerShape(50),
+                                                            colors = AssistChipDefaults.assistChipColors(containerColor = colorScheme.surfaceContainerHigh.copy(0.6f)),
+                                                            border = BorderStroke(1.dp, colorScheme.outline),
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                            if (showUsageHints) {
+                                                Text(
+                                                    text = "Tippen, um die beste.schule-Webseite direkt angemeldet zu öffnen",
+                                                    modifier = Modifier.padding(10.dp).align(Alignment.CenterHorizontally),
+                                                    textAlign = TextAlign.Center,
+                                                )
+                                            } else {
+                                                Spacer(Modifier.height(10.dp))
+                                            }
                                         }
                                     }
                                 }

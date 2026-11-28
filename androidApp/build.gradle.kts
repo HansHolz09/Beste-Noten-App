@@ -8,10 +8,19 @@ plugins {
 
 android {
     namespace = "com.hansholz.bestenotenapp.android"
-    compileSdk =
-        libs.versions.android.compileSdk
-            .get()
-            .toInt()
+    compileSdk {
+        version =
+            release(
+                libs.versions.android.compileSdk
+                    .get()
+                    .toInt(),
+            ) {
+                minorApiLevel =
+                    libs.versions.android.compileSdkMinor
+                        .get()
+                        .toInt()
+            }
+    }
 
     val keystorePropsFile = rootProject.file("keystore.properties")
     val hasKeystore = keystorePropsFile.exists()
