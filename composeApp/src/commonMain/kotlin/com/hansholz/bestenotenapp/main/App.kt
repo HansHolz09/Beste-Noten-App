@@ -31,6 +31,7 @@ import com.composables.icons.materialsymbols.rounded.Nest_clock_farsight_analog
 import com.composables.icons.materialsymbols.rounded.Pinboard
 import com.composables.icons.materialsymbols.rounded.School
 import com.composables.icons.materialsymbols.rounded.Stylus
+import com.dokar.sonner.ToastSwipeDirections
 import com.dokar.sonner.Toaster
 import com.dokar.sonner.rememberToasterState
 import com.hansholz.bestenotenapp.components.LocalAppBackgroundCapture
@@ -161,6 +162,7 @@ fun App(
                         state = toasterState,
                         richColors = true,
                         darkTheme = isDark,
+                        swipeDirections = ToastSwipeDirections.Down + ToastSwipeDirections.Horizontal,
                     )
                 }
             }

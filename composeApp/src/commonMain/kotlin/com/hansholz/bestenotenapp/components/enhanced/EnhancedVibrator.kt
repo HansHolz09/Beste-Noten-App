@@ -12,6 +12,7 @@ import top.ltfan.multihaptic.DelayType
 import top.ltfan.multihaptic.HapticEffect
 import top.ltfan.multihaptic.PrimitiveType
 import top.ltfan.multihaptic.getVibrator
+import top.ltfan.multihaptic.predefined
 import top.ltfan.multihaptic.vibrator.Vibrator
 import kotlin.time.Duration.Companion.milliseconds
 
