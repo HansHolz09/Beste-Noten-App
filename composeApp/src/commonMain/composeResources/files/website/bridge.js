@@ -156,12 +156,29 @@
     var head = document.head || document.documentElement;
     [fontStyle, themeStyle].forEach(function (style) { if (style) head.appendChild(style); });
   }
-  var adaptInsets = safe('insets', function () {
+  var appDark = false;
+  var schemeMedia = new WeakMap();
+  // The page follows the system color scheme, so its media queries are pinned to the app theme instead
+  function adaptScheme(rule) {
+    if (!rule.media) return;
+    var original = schemeMedia.get(rule);
+    if (original === undefined) {
+      if (rule.media.mediaText.indexOf('prefers-color-scheme') < 0) return;
+      original = rule.media.mediaText;
+      schemeMedia.set(rule, original);
+    }
+    var pinned = original.replace(/\(\s*prefers-color-scheme\s*:\s*(dark|light)\s*\)/g, function (_, scheme) {
+      return (scheme === 'dark') === appDark ? '(min-width: 0px)' : '(not (min-width: 0px))';
+    });
+    if (rule.media.mediaText !== pinned) rule.media.mediaText = pinned;
+  }
+  var adaptRules = safe('rules', function () {
     Array.prototype.forEach.call(document.styleSheets, function (sheet) {
       var rules;
       try { rules = sheet.cssRules; } catch (e) { return; }
       (function walk(list) {
         Array.prototype.forEach.call(list, function (rule) {
+          adaptScheme(rule);
           if (rule.cssRules) walk(rule.cssRules);
           if (rule.style && rule.style.cssText.indexOf('safe-area-inset-bottom') >= 0) {
             rule.style.cssText = rule.style.cssText.replace(/env\(\s*safe-area-inset-bottom\s*(,[^)]*)?\)/g, 'var(--bna-inset-bottom, 0px)');
@@ -229,7 +246,7 @@
   var update = safe('update', function () {
     guardRouter();
     keepLast();
-    adaptInsets();
+    adaptRules();
     hideUnusable();
   });
   var updateScheduled = false;
@@ -248,6 +265,8 @@
     if (!theme || typeof theme.css !== 'string') return;
     if (!themeStyle) themeStyle = styleElement('beste-noten-app-theme');
     themeStyle.textContent = theme.css;
+    appDark = !!theme.dark;
+    adaptRules();
     whenRoot(function () {
       document.documentElement.setAttribute('data-bs-theme', theme.dark ? 'dark' : 'light');
       keepLast();

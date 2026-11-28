@@ -164,7 +164,7 @@ fun EnhancedTextField(
                     .decorator(
                         state = state,
                         enabled = enabled,
-                        lineLimits = lineLimits,
+                        lineLimits = if (textObfuscationMode != null) TextFieldLineLimits.SingleLine else lineLimits,
                         outputTransformation = outputTransformation,
                         interactionSource = resolvedInteractionSource,
                         labelPosition = labelPosition,
