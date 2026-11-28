@@ -1,6 +1,6 @@
 # Datenschutzerklärung der Beste-Noten-App
 
-**Stand: 22. Oktober 2026**
+**Stand: 28. November 2026**
 
 Diese Erklärung gilt für die über Google Play und den App Store vertriebenen Android-, iOS- und iPadOS-Versionen der Beste-Noten-App. Die App ist ein unabhängiger Client für beste.schule und keine offizielle Anwendung dieses Dienstes. Die Datenverarbeitung durch beste.schule und die angebundene Schule richtet sich nach deren eigenen Datenschutzhinweisen.
 
@@ -11,6 +11,8 @@ Die App verarbeitet die für Anmeldung und Nutzung erforderlichen Kontodaten sow
 Hausaufgaben werden lokal gespeichert. Nur bei aktivierter Google-Kalender-Synchronisierung werden zugehörige Termine einschließlich Titel, Beschreibung, Fach, Fälligkeit, Erinnerung und technischer Zuordnungsdaten an Google übertragen. Diese Daten können auch eine Schüler-ID und Stundenplanbezüge enthalten. Die App erhält dafür Google-Zugriffstoken und liest die für die Synchronisierung erforderlichen Kalenderdaten. Bereits in Google gespeicherte Termine bleiben nach dem Trennen der Verbindung dort bestehen.
 
 Bei aktivierten Notenbenachrichtigungen ruft die App in den vom Betriebssystem zugelassenen Intervallen neue Noten bei beste.schule ab und erzeugt lokale Benachrichtigungen; ein eigener Push-Server wird nicht eingesetzt. Eine optionale biometrische Sperre verwendet die Systemfunktion, ohne dass die App biometrische Rohdaten erhält. Ein manuell angelegter JSON-Export kann Einstellungen und Notendaten enthalten und wird nicht zusätzlich von der App verschlüsselt.
+
+Für weitere Funktionen kann die Webseite von beste.schule innerhalb der App geöffnet werden. Sie wird direkt von beste.schule geladen; die App übergibt ihr dafür den vorhandenen Zugriffstoken, damit keine erneute Anmeldung nötig ist. Dort eingegebene Inhalte, etwa Abwesenheitsmeldungen oder Nachrichten, sowie bewusst ausgewählte Dateien, Fotos oder Kameraaufnahmen als Anhänge werden unmittelbar an beste.schule übertragen und von der App weder gespeichert noch ausgewertet. Zur Anpassung an das App-Design fügt die App lokal Gestaltungsregeln und gegebenenfalls ein auf dem Gerät erzeugtes Hintergrundbild in die Seite ein; diese werden nicht übertragen. Cookies, Zwischenspeicher und Webspeicher der eingebetteten Seite werden nicht dauerhaft aufbewahrt, sondern beim Verlassen der Ansicht beziehungsweise Beenden der App verworfen. Links zu anderen Anbietern öffnet die App außerhalb der eingebetteten Seite.
 
 Updates erfolgen über den App Store beziehungsweise Google Play. Beim bewussten Aufruf externer Links gelten die Datenschutzhinweise des jeweiligen Anbieters.
 
